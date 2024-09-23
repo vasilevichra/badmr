@@ -30,9 +30,13 @@ class Service {
 
         console.log(pairsRatingDiff);
 
-        return pairsRatingDiff;
+        return pairsRatingDiff; // HashMap<Tuple(List<Int, Int>, List<Int, Int>)>
       })
     });
+  }
+
+  getAvailableCourts() {
+    return this.repository.getAvailableCourts();
   }
 }
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="badm.sqlite3" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser query" current="0"/></window><tab_structure><column_width id="0" width="569"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="37201"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="ready" custom_title="0" dock_id="7" table="4,5:mainready"/><table title="tournament_user" custom_title="0" dock_id="6" table="4,15:maintournament_user"/><table title="rating" custom_title="0" dock_id="1" table="4,6:mainrating"/><table title="tournament_user" custom_title="0" dock_id="2" table="4,15:maintournament_user"/><table title="court" custom_title="0" dock_id="3" table="4,5:maincourt"/><dock_state state="000000ff00000000fd00000001000000020000074f0000041cfc0100000001fc000000000000074f0000010f00fffffffa000000040100000005fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500320100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500330100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500360100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500370100000000ffffffff0000010f00ffffff0000074f0000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="city" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="132"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="court" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="119"/><column index="3" value="73"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="game" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="154"/><column index="3" value="79"/><column index="4" value="78"/><column index="5" value="82"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="match" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="154"/><column index="3" value="119"/><column index="4" value="175"/><column index="5" value="178"/><column index="6" value="177"/><column index="7" value="178"/><column index="8" value="72"/><column index="9" value="92"/><column index="10" value="91"/><column index="11" value="72"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="rating" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="0" mode="0"/></sort><column_widths><column index="1" value="37"/><column index="2" value="65"/><column index="3" value="73"/><column index="4" value="72"/><column index="5" value="52"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="ready" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="164"/><column index="2" value="22"/><column index="3" value="52"/><column index="4" value="72"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tournament" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="73"/><column index="3" value="73"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tournament_user" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="119"/><column index="3" value="65"/><column index="4" value="73"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="user" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="29"/><column index="2" value="117"/><column index="3" value="90"/><column index="4" value="123"/><column index="5" value="59"/><column index="6" value="89"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1">SELECT *
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="badm.sqlite3" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser query" current="0"/></window><tab_structure><column_width id="0" width="569"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="37201"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="court" custom_title="0" dock_id="3" table="4,5:maincourt"/><table title="tournament_user" custom_title="0" dock_id="2" table="4,15:maintournament_user"/><table title="rating" custom_title="0" dock_id="1" table="4,6:mainrating"/><table title="tournament_user" custom_title="0" dock_id="6" table="4,15:maintournament_user"/><table title="ready" custom_title="0" dock_id="7" table="4,5:mainready"/><dock_state state="000000ff00000000fd00000001000000020000074f0000041cfc0100000001fc000000000000074f0000010f00fffffffa000000040100000005fb000000160064006f0063006b00420072006f00770073006500310100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500320100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500330100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500360100000000ffffffff0000010f00fffffffb000000160064006f0063006b00420072006f00770073006500370100000000ffffffff0000010f00ffffff0000074f0000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="city" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="132"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="court" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="119"/><column index="3" value="73"/><column index="4" value="65"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="game" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="154"/><column index="3" value="79"/><column index="4" value="78"/><column index="5" value="82"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="match" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="154"/><column index="3" value="119"/><column index="4" value="175"/><column index="5" value="178"/><column index="6" value="177"/><column index="7" value="178"/><column index="8" value="72"/><column index="9" value="92"/><column index="10" value="91"/><column index="11" value="72"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="rating" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort><column index="0" mode="0"/></sort><column_widths><column index="1" value="37"/><column index="2" value="65"/><column index="3" value="73"/><column index="4" value="72"/><column index="5" value="52"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="ready" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="164"/><column index="2" value="22"/><column index="3" value="52"/><column index="4" value="72"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tournament" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="73"/><column index="3" value="73"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="tournament_user" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="22"/><column index="2" value="119"/><column index="3" value="65"/><column index="4" value="73"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="user" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="29"/><column index="2" value="117"/><column index="3" value="90"/><column index="4" value="123"/><column index="5" value="59"/><column index="6" value="89"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1">SELECT *
 FROM match AS m
 JOIN game AS g ON (g.id = m.game_1_id OR g.id = m.game_2_id OR g.id = m.game_3_id)
 GROUP BY m.id,g.lost_1_by,g.lost_2_by
@@ -829,219 +829,48 @@ JOIN court AS c ON c.tournament_id = t.id
 JOIN rating AS r ON r.user_id = tu.user_id
 WHERE t.available = 1 AND tu.available = 1 AND c.available = 1
 GROUP BY u.id
-ORDER BY r.id DESC LIMIT 6</sql><sql name="Edit Trigger calculate_rating_lost_1*">DROP TRIGGER &quot;main&quot;.&quot;calculate_rating_lost_1&quot;;
-CREATE TRIGGER calculate_rating_lost_1
-AFTER INSERT ON game
-WHEN new.lost_1_by IS NOT NULL
+ORDER BY r.id DESC LIMIT 6</sql><sql name="Edit Trigger calculate_rating_lost_1*">CREATE TRIGGER enable_court_and_tournament_users_by_match_deleted AFTER DELETE ON match
 BEGIN
-    INSERT INTO rating (user_id, game_id, previous, delta)
-    VALUES
-        (
-            (
-                SELECT tu.user_id
-                FROM game AS g
-                JOIN match AS m ON m.id = g.match_id
-                JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_1_id
-                LIMIT 1
-            ),
-            new.id,
-            (
-                SELECT (p + coalesce(d, 0))
-                FROM
-                    (
-                        SELECT r.previous AS p, r.delta AS d, max(r.id)
-                        FROM game AS g
-                        JOIN match AS m ON m.id = g.match_id
-                        JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_1_id
-                        JOIN user AS u on tu.user_id = u.id
-                        JOIN rating AS r on u.id = r.user_id
-                        GROUP BY u.id
-                    )
-            ),
-            (
-                SELECT round(((100 - rating_win + rating_lose) / (-10)), 1)
-                FROM
-                    (
-                        SELECT (sum(rate1) / 2.0) AS rating_win
-                        FROM (
-                            SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                            FROM game AS g1
-                            JOIN match AS m1 ON m1.id = g1.match_id
-                            JOIN tournament_user AS tu1 ON tu1.user_id IN (m1.tournament_user_3_id, m1.tournament_user_4_id)
-                            JOIN user AS u1 ON u1.id = tu1.user_id
-                            JOIN rating AS r1 ON r1.user_id = u1.id
-                            GROUP BY u1.id
-                        )
-                    ),
-                    (
-                        SELECT (sum(rate2) / 2.0) AS rating_lose
-                        FROM (
-                            SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                            FROM game AS g2
-                            JOIN match AS m2 ON m2.id = g2.match_id
-                            JOIN tournament_user AS tu2 ON tu2.user_id IN (m2.tournament_user_1_id, m2.tournament_user_2_id)
-                            JOIN user AS u2 ON u2.id = tu2.user_id
-                            JOIN rating AS r2 ON r2.user_id = u2.id
-                            GROUP BY u2.id
-                        )
-                    )
-                LIMIT 1
-            )
-        ),
-        (
-            (
-                SELECT tu.user_id
-                FROM game AS g
-                JOIN match AS m ON m.id = g.match_id
-                JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_2_id
-                LIMIT 1
-            ),
-            new.id,
-            (
-                SELECT (p + coalesce(d, 0))
-                FROM
-                    (
-                        SELECT r.previous AS p, r.delta AS d, max(r.id)
-                        FROM game AS g
-                        JOIN match AS m ON m.id = g.match_id
-                        JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_2_id
-                        JOIN user AS u on tu.user_id = u.id
-                        JOIN rating AS r on u.id = r.user_id
-                        GROUP BY u.id
-                    )
-            ),
-            (
-                SELECT round(((100 - rating_win + rating_lose) / (-10)), 1)
-                FROM
-                    (
-                        SELECT (sum(rate1) / 2.0) AS rating_win
-                        FROM (
-                            SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                            FROM game AS g1
-                            JOIN match AS m1 ON m1.id = g1.match_id
-                            JOIN tournament_user AS tu1 ON tu1.user_id IN (m1.tournament_user_3_id, m1.tournament_user_4_id)
-                            JOIN user AS u1 ON u1.id = tu1.user_id
-                            JOIN rating AS r1 ON r1.user_id = u1.id
-                            GROUP BY u1.id
-                        )
-                    ),
-                    (
-                        SELECT (sum(rate2) / 2.0) AS rating_lose
-                        FROM (
-                            SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                            FROM game AS g2
-                            JOIN match AS m2 ON m2.id = g2.match_id
-                            JOIN tournament_user AS tu2 ON tu2.user_id IN (m2.tournament_user_1_id, m2.tournament_user_2_id)
-                            JOIN user AS u2 ON u2.id = tu2.user_id
-                            JOIN rating AS r2 ON r2.user_id = u2.id
-                            GROUP BY u2.id
-                        )
-                    )
-                LIMIT 1
-            )
-        ),
-        (
-            (
-                SELECT tu.user_id
-                FROM game AS g
-                JOIN match AS m ON m.id = g.match_id
-                JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_3_id
-                LIMIT 1
-            ),
-            new.id,
-            (
-                SELECT (p + coalesce(d, 0))
-                FROM
-                    (
-                        SELECT r.previous AS p, r.delta AS d, max(r.id)
-                        FROM game AS g
-                        JOIN match AS m ON m.id = g.match_id
-                        JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_3_id
-                        JOIN user AS u on tu.user_id = u.id
-                        JOIN rating AS r on u.id = r.user_id
-                        GROUP BY u.id
-                    )
-            ),
-            (
-                SELECT round(((100 - rating_win + rating_lose) / 10), 1)
-                FROM
-                    (
-                        SELECT (sum(rate1) / 2.0) AS rating_win
-                        FROM (
-                            SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                            FROM game AS g1
-                            JOIN match AS m1 ON m1.id = g1.match_id
-                            JOIN tournament_user AS tu1 ON tu1.user_id IN (m1.tournament_user_3_id, m1.tournament_user_4_id)
-                            JOIN user AS u1 ON u1.id = tu1.user_id
-                            JOIN rating AS r1 ON r1.user_id = u1.id
-                            GROUP BY u1.id
-                        )
-                    ),
-                    (
-                        SELECT (sum(rate2) / 2.0) AS rating_lose
-                        FROM (
-                            SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                            FROM game AS g2
-                            JOIN match AS m2 ON m2.id = g2.match_id
-                            JOIN tournament_user AS tu2 ON tu2.user_id IN (m2.tournament_user_1_id, m2.tournament_user_2_id)
-                            JOIN user AS u2 ON u2.id = tu2.user_id
-                            JOIN rating AS r2 ON r2.user_id = u2.id
-                            GROUP BY u2.id
-                        )
-                    )
-                LIMIT 1
-            )
-        ),
-        (
-            (
-                SELECT tu.user_id
-                FROM game AS g
-                JOIN match AS m ON m.id = g.match_id
-                JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_4_id
-                LIMIT 1
-            ),
-            new.id,
-            (
-                SELECT (p + coalesce(d, 0))
-                FROM
-                    (
-                        SELECT r.previous AS p, r.delta AS d, max(r.id)
-                        FROM game AS g
-                        JOIN match AS m ON m.id = g.match_id
-                        JOIN tournament_user AS tu ON tu.user_id = m.tournament_user_4_id
-                        JOIN user AS u on tu.user_id = u.id
-                        JOIN rating AS r on u.id = r.user_id
-                        GROUP BY u.id
-                    )
-            ),
-            (
-                SELECT round(((100 - rating_win + rating_lose) / 10), 1)
-                FROM
-                    (
-                        SELECT (sum(rate1) / 2.0) AS rating_win
-                        FROM (
-                            SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                            FROM game AS g1
-                            JOIN match AS m1 ON m1.id = g1.match_id
-                            JOIN tournament_user AS tu1 ON tu1.user_id IN (m1.tournament_user_3_id, m1.tournament_user_4_id)
-                            JOIN user AS u1 ON u1.id = tu1.user_id
-                            JOIN rating AS r1 ON r1.user_id = u1.id
-                            GROUP BY u1.id
-                        )
-                    ),
-                    (
-                        SELECT (sum(rate2) / 2.0) AS rating_lose
-                        FROM (
-                            SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                            FROM game AS g2
-                            JOIN match AS m2 ON m2.id = g2.match_id
-                            JOIN tournament_user AS tu2 ON tu2.user_id IN (m2.tournament_user_1_id, m2.tournament_user_2_id)
-                            JOIN user AS u2 ON u2.id = tu2.user_id
-                            JOIN rating AS r2 ON r2.user_id = u2.id
-                            GROUP BY u2.id
-                        )
-                    )
-                LIMIT 1
-            )
-        );
-END</sql><current_tab id="8"/></tab_sql></sqlb_project>
+	UPDATE court
+		SET available = 1
+		WHERE id = OLD.court_id;
+	
+	UPDATE tournament_user
+		SET available = 1
+		WHERE
+			user_id IN (OLD.tournament_user_1_id, OLD.tournament_user_2_id, OLD.tournament_user_3_id, OLD.tournament_user_4_id) AND
+			tournament_id IN (SELECT id FROM tournament AS t WHERE t.available = 1);
+END;
+
+CREATE TRIGGER enable_court_and_tournament_users_by_games
+AFTER INSERT ON game
+WHEN (
+	(SELECT COUNT (g.lost_1_by) FROM game AS g WHERE g.match_id = NEW.match_id) &gt;= 2 OR
+	(SELECT COUNT (g.lost_2_by) FROM game AS g WHERE g.match_id = NEW.match_id) &gt;= 2
+)
+BEGIN
+	UPDATE court
+		SET available = 1
+		WHERE id IN (SELECT court_id FROM match WHERE id = NEW.match_id);
+		
+	UPDATE tournament_user
+	SET available = 1
+	WHERE
+		user_id IN (SELECT tournament_user_1_id FROM match WHERE id = NEW.match_id) OR
+		user_id IN (SELECT tournament_user_2_id FROM match WHERE id = NEW.match_id) OR
+		user_id IN (SELECT tournament_user_3_id FROM match WHERE id = NEW.match_id) OR
+		user_id IN (SELECT tournament_user_4_id FROM match WHERE id = NEW.match_id);
+END;
+
+CREATE TRIGGER disable_court_and_tournament_users_by_match_created AFTER INSERT ON match
+BEGIN
+	UPDATE court
+		SET available = 0
+		WHERE id = NEW.court_id;
+	
+	UPDATE tournament_user
+		SET available = 0
+		WHERE
+			user_id IN (NEW.tournament_user_1_id, NEW.tournament_user_2_id, NEW.tournament_user_3_id, NEW.tournament_user_4_id) AND
+			tournament_id IN (SELECT id FROM tournament AS t WHERE t.available = 1);
+END;</sql><current_tab id="8"/></tab_sql></sqlb_project>

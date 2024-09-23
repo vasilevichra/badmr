@@ -37,7 +37,6 @@ class Repository {
            AND c.available = 1`
     );
   }
-
 }
 
 module.exports = Repository;

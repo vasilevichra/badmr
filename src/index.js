@@ -3,7 +3,12 @@ const Service = require('./service')
 
 function main() {
   const service = new Service();
-  service.calcReady()
+  // service.calcReady()
+  // .catch((err) => {
+  //   console.log('Error: ')
+  //   console.log(JSON.stringify(err))
+  // });
+  service.getAvailableCourts()
   .catch((err) => {
     console.log('Error: ')
     console.log(JSON.stringify(err))
@@ -11,12 +16,12 @@ function main() {
 }
 
 const server = http.createServer((req, res) => {
-  res.write('>>>>>')
-  res.end()
+  res.write('>>>>>');
+  res.end();
 })
 
 server.listen(3000, () => {
-  main()
+  main();
   console.log('Server running on port 3000');
 });
 
