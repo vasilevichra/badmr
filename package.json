@@ -5,8 +5,10 @@
   "private": true,
   "dependencies": {
     "bluebird": "^3.7.2",
-    "sqlite3": "^5.1.7",
-    "vue-good-table": "^2.21.11"
+    "express": "^4.21.2",
+    "express-promise-json-router": "^1.0.8",
+    "nodemon": "^3.1.9",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "webpack": "^5.94.0",
