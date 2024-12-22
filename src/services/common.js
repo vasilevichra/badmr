@@ -1,5 +1,5 @@
 const Repository = require('../repositories/common')
-const Promise = require('bluebird')
+const _ = require('lodash');
 
 class Common {
   constructor() {
@@ -22,18 +22,25 @@ class Common {
         }
       }
 
-      const pairsRatingDiff = new Map();
+      const usersMatches = new Map(ready.map(i => [i.id, i.matches]));
+
+      const pairsRatingDiff = [];
       for (let [i_key, i_value] of pairsRating.entries()) {
         for (let [j_key, j_value] of pairsRating.entries()) {
-          if (!i_key.some(r => j_key.includes(r)) && !pairsRatingDiff.has(JSON.stringify({first: j_key, second: i_key}))) {
-            pairsRatingDiff.set(JSON.stringify({first: i_key, second: j_key}), Math.abs(i_value - j_value));
+          if (
+              !i_key.some(r => j_key.includes(r)) &&
+              !pairsRatingDiff.some(p => _.isEqual(p.ids1, j_key) && _.isEqual(p.ids2, i_key))
+          ) {
+            pairsRatingDiff.push({
+              ids1: i_key,
+              ids2: j_key,
+              diff: Math.abs(i_value - j_value),
+              matches: usersMatches.get(i_key[0]) + usersMatches.get(i_key[1]) + usersMatches.get(j_key[0]) + usersMatches.get(j_key[1])
+            });
           }
         }
       }
-
-      console.log(pairsRatingDiff);
-
-      return Object.fromEntries(pairsRatingDiff.entries()); // HashMap<Tuple(List<Int, Int>, List<Int, Int>)>
+      return pairsRatingDiff;
     });
   }
 }

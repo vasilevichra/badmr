@@ -8,8 +8,4 @@ router.get('/ready', (req, res) => {
   res.promise(commonService.calcReady());
 });
 
-router.get('/1', (req, res) => {
-  throw new Error('This is synchronous error!');
-});
-
 module.exports = router;
