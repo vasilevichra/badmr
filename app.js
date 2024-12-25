@@ -13,6 +13,7 @@ app.use(promiseMiddleware());
 
 app.use('/api/common', require('./src/routes/common'));
 app.use('/api/courts', require('./src/routes/court'));
+app.use('/api/settings', require('./src/routes/settings'));
 app.use('/api/users', require('./src/routes/user'));
 
 app.use(function (req, res, next) {

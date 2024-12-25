@@ -21,11 +21,10 @@ class Court {
 
   getAvailable() {
     return this.db.all(
-        `SELECT c.number
-         FROM tournament t
-                  JOIN court c ON t.id = c.tournament_id
-         WHERE t.available = 1
-           AND c.available = 1`
+      `SELECT c.number
+       FROM tournament t
+       JOIN court c ON t.id = c.tournament_id
+       WHERE t.available = 1 AND c.available = 1`
     );
   }
 }

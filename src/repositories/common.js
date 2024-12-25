@@ -10,10 +10,12 @@ class Common {
     this.db = new DB('./badm.sqlite3');
   }
 
-  ready() {
+  ready(tournament_id) {
     return this.db.all(
-        `SELECT *
-         FROM ready`
+      `SELECT *
+       FROM ready
+       WHERE tournament_id = ?`,
+     [tournament_id]
     );
   }
 }
