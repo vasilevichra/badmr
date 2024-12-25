@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway');
+
+body{
+	padding: 0;
+	margin: 0;
+	background:#f4f4f4;
+
+}
+html,h1,h2,h3,h4,h5,h6,a{
+	font-family: "Raleway", sans-serif;
+}
+
+.navbar{
+	background: #007df9;
+}
+
+.nav-link , .navbar-brand{
+	color: #f4f4f4;
+	cursor: pointer;
+}
+.nav-link{
+	margin-right: 1em !important;
+}
+.nav-link:hover{
+	background: #f4f4f4;
+	color: #007df9;
+
+}
+.navbar .navbar-collapse{
+ justify-content: flex-end;
+}
+.navbar-toggler{
+  background:#fff !important;
+}
+
+.tournament{
+	margin: 4em 0;
+	padding: 1em;
+	position: relative;
+}
+.tournament h1{
+	color:#007df9;
+	margin: 2em;
+}
+.tournament img{
+	height: 100%;
+    width: 100%;
+    border-radius: 50%
+}
+.tournament span{
+	display: block;
+	color: #888;
+	position: absolute;
+	left: 115px;
+}
+/**/
+.tournament .desc p{
+	line-height:2;
+	color:#888;
+}
+
+.settings{
+	margin: 4em 0;
+	padding: 1em;
+	position: relative;
+}
+.settings h1{
+	color:#007df9;
+	margin: 2em;
+}
+
+/*Portfolio*/
+.cort{
+	margin: 4em 0;
+    position: relative;	
+}
+.cort h1{
+	color:#007df9;
+	margin: 2em;	
+}
+.cort img{
+	 height: 15rem;
+	 width: 100%;
+	 margin: 1em;
+}
+
+/*blog style*/
+
+.player{
+	margin: 4em 0;
+	position: relative;	
+}
+.player h1{
+	color:#007df9;
+	margin: 2em;	
+}
+.player .card{
+	box-shadow: 0 0 20px #ccc;
+}
+.player .card img{
+	width: 100%;
+	height: 12em;
+}
+.player .card-title{
+	color:#007df9;
+	 
+}
+.player .card-body{
+	padding: 1em;
+}
+.select{
+	margin: 4em 0;
+	position: relative;
+
+}
+.select h1{
+	color:#007df9;
+	margin: 2em;	
+}
+.select .item{
+	position: relative;
+	overflow: hidden;	
+}
+.select .des{
+	background: #007df9;
+	color: #fff;
+	text-align: center;
+	border-top-right-radius: 93%;
+	transition:.3s ease-in-out;
+	position: absolute;
+	width: 88%;
+	bottom: 24px;
+
+
+}
+.select .item:hover .des{
+	height: 100%;
+	background:#f973007d;
+    position: absolute;
+	width: 89%;
+	padding: 5em;
+	top: 0;
+	border-top-right-radius: 0;
+}
+
+.match{
+	margin: 4em 0;
+	padding: 1em;
+	position: relative;
+}
+.match h1{
+	color:#007df9;
+	margin: 2em;
+}
+
+.game {
+	margin: 4em 0;
+	padding: 1em;
+	position: relative;
+}
+.game h1{
+	color:#007df9;
+	margin: 2em;
+}
+
+.rating {
+	margin: 4em 0;
+	padding: 1em;
+	position: relative;
+}
+.rating h1{
+	color:#007df9;
+	margin: 2em;
+}

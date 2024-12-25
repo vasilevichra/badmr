@@ -1,4 +1,5 @@
 require('use-strict')
+const cors = require('cors')
 const createError = require('http-errors');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -6,6 +7,7 @@ const promiseMiddleware = require('./src/middleware/promise');
 
 const app = express();
 
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());

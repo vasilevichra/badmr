@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,
+                 initial-scale=1,
+                 shrink-to-fit=no">
+    <title>Бадминтон и ром</title>
+
+    <link rel="stylesheet" type="text/css" href="./src/public/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="./src/public/css/bootstrap-icons.css">
+    <link rel="stylesheet" type="text/css" href="./src/public/css/bootstrap-table.min.css">
+    <link rel="stylesheet" type="text/css" href="./src/public/css/main.css">
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top">
+    <button class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse " id="navbarSupportedContent">
+        <ul class="navbar-nav navbar-center mx-auto text-center">
+            <li class="nav-item">
+                <a class="nav-link" data-value="tournament" href="#">🏸 Турнир</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-value="settings" href="#">⚙️ Настройки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-value="cort" href="#">⛳️ Корты</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-value="player" href="#">🧍‍Игроки</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-value="select" href="#">🔢 Подбор</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-value="match" href="#">🏟️ Матчи</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-value="game" href="#">🤼 Игры</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " data-value="rating" href="#">🏆 Рейтинг</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="tournament" id="tournament">
+    <div class="container">
+        <h1 class="text-center">Турнир</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table id="tournament-table" data-editable="true"></table>
+        </div>
+    </div>
+</div>
+
+<div class="settings" id="settings">
+    <div class="container">
+        <h1 class="text-center">Настройки</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table data-toggle="table">
+                <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Item Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Item 1</td>
+                    <td>$1</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Item 2</td>
+                    <td>$2</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="cort" id="cort">
+    <div class="container">
+        <h1 class="text-center">Корты</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table data-toggle="table">
+                <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Item Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Item 1</td>
+                    <td>$1</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Item 2</td>
+                    <td>$2</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="tournament" id="player">
+    <div class="container">
+        <h1 class="text-center">Игроки</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table id="player-table" data-editable="true"></table>
+        </div>
+    </div>
+</div>
+
+<!-- Team section -->
+<div class="select" id="select">
+    <div class="container">
+        <h1 class="text-center">Подбор</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table data-toggle="table">
+                <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Item Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Item 1</td>
+                    <td>$1</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Item 2</td>
+                    <td>$2</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="match" id="match">
+    <div class="container">
+        <h1 class="text-center">Матчи</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table data-toggle="table">
+                <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Item Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Item 1</td>
+                    <td>$1</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Item 2</td>
+                    <td>$2</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="game" id="game">
+    <div class="container">
+        <h1 class="text-center">Игры</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table data-toggle="table">
+                <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Item Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Item 1</td>
+                    <td>$1</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Item 2</td>
+                    <td>$2</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="rating" id="rating">
+    <div class="container">
+        <h1 class="text-center">Рейтинг</h1>
+        <div class="col-lg-12 col-md-8 col-sm-12 desc">
+            <table data-toggle="table">
+                <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Item Price</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Item 1</td>
+                    <td>$1</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Item 2</td>
+                    <td>$2</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer class="footer mt-auto py-3" style="background:#007df9;">
+    <div class="container">
+        <p class="text-center text-white lead">Бадминтон и ром &copy;
+            <script type="text/javascript">
+              document.write(new Date().getFullYear());
+            </script>
+            R.
+        </p>
+
+    </div>
+</footer>
+
+<script type="text/javascript" src="./src/public/js/jquery.min.js"></script>
+<script type="text/javascript" src="./src/public/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./src/public/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="./src/public/js/bootstrap-table.min.js"></script>
+<script type="text/javascript" src="./src/public/js/bootstrap-table-editable.js"></script>
+<script type="text/javascript" src="./src/public/js/index.js"></script>
+
+</body>
+</html>
