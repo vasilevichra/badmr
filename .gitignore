@@ -127,4 +127,7 @@ dist
 # TernJS port file
 .tern-port
 
+# Sqlite
 *.sqbpro
+*.sqlite
+*.sqlite3
