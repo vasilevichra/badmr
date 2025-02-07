@@ -7,12 +7,15 @@ class User {
     }
     User._instance = this;
 
-    this.repository = new UserRepository();
+    this.user = new UserRepository();
   }
 
-  getAvailable = () => this.repository.getAvailable();
-  getById = (id) => this.repository.getById(id);
-  getAll = () => this.repository.getAll();
+  getAll = () => this.user.getAll();
+  getById = (id) => this.user.getById(id);
+  registerAll = () => this.user.registerAll();
+  registerById = (id) => this.user.registerById(id);
+  deregisterAll = () => this.user.deregisterAll();
+  deregisterById = (id) => this.user.deregisterById(id);
 }
 
 module.exports = User;

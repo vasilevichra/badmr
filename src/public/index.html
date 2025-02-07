@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width,
+                 initial-scale=1,
+                 shrink-to-fit=no">
+  <title>Бадминтон и ром</title>
+
+  <link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="./css/bootstrap-icons.min.css">
+  <link rel="stylesheet" type="text/css" href="./css/bootstrap-table.min.css">
+  <link rel="stylesheet" type="text/css" href="./css/main.css">
+
+  <style>
+    li {
+      float: left;
+      display: inline-block;
+      width: 250px;
+      margin: 5px;
+      text-align: center;
+    }
+
+    span {
+      display: block;
+    }
+  </style>
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top">
+  <button class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav navbar-center mx-auto text-center w-auto">
+      <li class="nav-item">
+        <a class="nav-link" data-value="tournament" href="#">🏸 Турнир</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-value="settings" href="#">⚙️ Настройки</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-value="cort" href="#">⛳️ Корты</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " data-value="player" href="#">🧍‍Игроки</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " data-value="select" href="#">🔢 Подбор</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-value="game" href="#">🤼 Игры</a>
+      </li>
+      <!--      <li class="nav-item">-->
+      <!--        <a class="nav-link" data-value="match" href="#">🏟️ Матчи</a>-->
+      <!--      </li>-->
+    </ul>
+  </div>
+</nav>
+
+<div class="tournament" id="tournament">
+  <div class="container">
+    <h1 class="text-center">Турнир</h1>
+    <div class="col-lg-12 col-md-8 col-sm-12 desc">
+      <table id="tournament-table" class="mx-auto w-auto"></table>
+    </div>
+  </div>
+</div>
+
+<div class="settings" id="settings">
+  <div class="container">
+    <h1 class="text-center">Настройки</h1>
+    <div class="col-lg-12 col-md-8 col-sm-12 desc">
+      <table id="settings-table" class="mx-auto w-auto">
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cort" id="cort">
+  <div class="container">
+    <h1 class="text-center">Корты</h1>
+    <div class="col-lg-12 col-md-8 col-sm-12 desc">
+      <table id="cort-table" class="mx-auto w-auto">
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="player" id="player">
+  <div class="container">
+    <h1 class="text-center">Игроки</h1>
+    <div class="col-lg-12 col-md-8 col-sm-12 desc">
+      <table id="player-table" data-editable="true"></table>
+    </div>
+  </div>
+</div>
+
+<div class="select" id="select">
+  <div class="container">
+    <h1 class="text-center">Подбор</h1>
+    <div class="col-lg-12 col-md-8 col-sm-12 desc">
+      <div id="select-info" class="row" style="display:none">
+        <div class="text-center">
+          <label>Нет игроков, подходящих под критерии выбора: попробуйте добавить больше игроков в </label>
+          <a onclick="scrollToId('player')" href="#">турнир</a>
+        </div>
+      </div>
+      <div class="row">
+        <div class="text-center">
+          <button id="select-button" type="button" class="btn btn-lg btn-success mx-auto w-auto">
+            Подобрать
+          </button>
+        </div>
+      </div>
+      <form class="select-form" style="display:none">
+        <div class="row justify-content-center">
+          <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
+            <table class="select-form-table-1 table table-responsive mx-auto w-auto"></table>
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
+            <table class="select-form-table-2 table table-responsive mx-auto w-auto"></table>
+          </div>
+        </div>
+        <div class="row">
+          <div class="text-center">
+            <label class="select-form-info"></label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="text-center">
+            <button type="submit" class="select-form-button-submit btn btn-primary">Начать</button>
+            <button type="reset" class="select-form-button-reset btn btn-danger">Отменить</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="game" id="game">
+  <div class="container">
+    <h1 class="text-center">Игры</h1>
+    <div class="game-info row">
+      <div class="text-center">
+        <label>Тут появится информация по играм, после их </label>
+        <a onclick="scrollToId('select')" href="#">подбора</a>
+      </div>
+    </div>
+    <div class="game-form row justify-content-center align-items-center" style="display:none">
+      <div class="col-auto">
+        <table class="game-table-1 table table-responsive mx-auto w-auto"></table>
+      </div>
+      <div class="col-auto">
+        <div>
+          <input class="game-input-left game-input-11" type="text" required minlength="1"
+                 maxlength="2" size="2"/>
+          <label>:</label>
+          <input class="game-input-right game-input-12" type="text" required minlength="1"
+                 maxlength="2" size="2"/>
+        </div>
+        <div>
+          <input class="game-input-left game-input-21" type="text" required minlength="1"
+                 maxlength="2" size="2"/>
+          <label>:</label>
+          <input class="game-input-right game-input-22" type="text" required minlength="1"
+                 maxlength="2" size="2"/>
+        </div>
+        <div>
+          <input class="game-input-left game-input-31" type="text" required minlength="1"
+                 maxlength="2" size="2"/>
+          <label>:</label>
+          <input class="game-input-right game-input-32" type="text" required minlength="1"
+                 maxlength="2" size="2"/>
+        </div>
+      </div>
+      <div class="col-auto">
+        <table class="game-table-2 table table-responsive mx-auto w-auto"></table>
+      </div>
+      <div class="row">
+        <div class="text-center">
+          <label class="game-form-info">Корт</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="text-center">
+          <button type="submit" class="game-form-button-submit btn btn-primary">Завершить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--<div class="match" id="match">-->
+<!--  <div class="container">-->
+<!--    <h1 class="text-center">Матчи</h1>-->
+<!--    <div class="col-lg-12 col-md-8 col-sm-12 desc">-->
+<!--      <table data-toggle="table">-->
+<!--        <thead>-->
+<!--        <tr>-->
+<!--          <th>Item ID</th>-->
+<!--          <th>Item Name</th>-->
+<!--          <th>Item Price</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--        <tr>-->
+<!--          <td>1</td>-->
+<!--          <td>Item 1</td>-->
+<!--          <td>$1</td>-->
+<!--        </tr>-->
+<!--        <tr>-->
+<!--          <td>2</td>-->
+<!--          <td>Item 2</td>-->
+<!--          <td>$2</td>-->
+<!--        </tr>-->
+<!--        </tbody>-->
+<!--      </table>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<footer class="footer mt-auto py-3" style="background:#007df9;">
+  <div class="container">
+    <p class="text-center text-white lead">Бадминтон и ром &copy;
+      <script type="text/javascript">
+        document.write(new Date().getFullYear());
+      </script>
+    </p>
+
+  </div>
+</footer>
+
+<script type="text/javascript" src="./js/jquery.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap-table.min.js"></script>
+<script type="text/javascript" src="./js/bootstrap-table-editable.js"></script>
+<script type="text/javascript" src="./js/index.js"></script>
+<script type="text/javascript" src="./js/lib.js"></script>
+
+</body>
+</html>

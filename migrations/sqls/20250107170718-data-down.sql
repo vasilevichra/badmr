@@ -1,0 +1,11 @@
+delete from rating;
+delete from game;
+delete from match;
+delete from tournament_user;
+delete from user;
+delete from user_pic;
+delete from tournament_settings;
+delete from court;
+delete from tournament;
+delete from defaults;
+delete from city;

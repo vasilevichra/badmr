@@ -4,9 +4,12 @@ const SettingsService = require('../services/settings');
 const router = Express.Router();
 const settingsService = new SettingsService();
 
+router.get('/', (req, res) => {
+  res.promise(() => settingsService.getAll());
+});
+
 router.get('/:name', (req, res) => {
-  const {id, tournament_id} = req.query;
-  res.promise(() => settingsService.get(req.params.name, tournament_id));
+  res.promise(() => settingsService.get(req.params.name));
 });
 
 module.exports = router;

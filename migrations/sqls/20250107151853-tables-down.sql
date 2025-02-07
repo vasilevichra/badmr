@@ -1,0 +1,11 @@
+drop table rating;
+drop table game;
+drop table match;
+drop table tournament_user;
+drop table user;
+drop table user_pic;
+drop table tournament_settings;
+drop table court;
+drop table tournament;
+drop table defaults;
+drop table city;

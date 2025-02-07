@@ -1,4 +1,4 @@
-const CourtRepository = require('../repositories/court')
+const CourtRepository = require('../repositories/court');
 
 class Court {
   constructor() {
@@ -7,11 +7,15 @@ class Court {
     }
     Court._instance = this;
 
-    this.repository = new CourtRepository();
+    this.court = new CourtRepository();
   }
 
-  getAvailable = () => this.repository.getAvailable();
-  getById = (id) => this.repository.getById(id);
+  getAll = () => this.court.getAll();
+  getById = (id) => this.court.getById(id);
+  enableAll = () => this.court.enableAll();
+  enable = (number) => this.court.enable(number);
+  disableAll = () => this.court.disableAll();
+  disable = (number) => this.court.disable(number);
 }
 
 module.exports = Court;

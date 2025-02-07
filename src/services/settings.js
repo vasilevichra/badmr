@@ -7,14 +7,15 @@ class Settings {
     }
     Settings._instance = this;
 
-    this.repository = new SettingsRepository();
+    this.settings = new SettingsRepository();
     this.opt = {
       DELTA: 'delta',
       TYPE: 'type',
     };
   }
 
-  get = (name, tournament_id) => this.repository.get(name, tournament_id).then((result) => result.value);
+  get = (name) => this.settings.get(name).then((result) => result.value);
+  getAll = () => this.settings.getAll();
 }
 
 module.exports = Settings;

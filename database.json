@@ -1,0 +1,16 @@
+{
+  "dev": {
+    "driver": "sqlite3",
+    "filename": "badmr.sqlite3"
+  },
+  "test": {
+    "driver": "sqlite3",
+    "filename": ":memory:"
+  },
+  "prod": {
+    "driver": "sqlite3",
+    "filename": "badmr.sqlite3"
+  },
+  "defaultEnv": "dev",
+  "sql-file" : true
+}

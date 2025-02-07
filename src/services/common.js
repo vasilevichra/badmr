@@ -15,18 +15,21 @@ class Common {
     this.repository = new Repository();
   }
 
-  calcReady(tournament_id) {
-    const deltaP = settingsService.get(settingsService.opt.DELTA, tournament_id);
-    const readyP = this.repository.ready(tournament_id);
+  calcReady(calculated_objects = [], available_courts = 2) {
+    if (available_courts === 0) {
+      return new Promise(calculated_objects);
+    }
+    const deltaP = settingsService.get(settingsService.opt.DELTA);
+    const readyP = this.repository.ready(calculated_objects);
     return Promise.join(deltaP, readyP, (delta, ready) => {
       const pairsRating = new Map();
       for (let i = 0; i < ready.length; i++) {
         for (let j = i + 1; j < ready.length; j++) {
-          pairsRating.set([ready[i].id, ready[j].id], ready[i].rating + ready[j].rating);
+          pairsRating.set([ready[i].user_id, ready[j].user_id], ready[i].rating + ready[j].rating);
         }
       }
 
-      const usersMatches = new Map(ready.map(i => [i.id, i.matches]));
+      const usersMatches = new Map(ready.map(i => [i.user_id, i.matches]));
 
       const pairsRatingDiff = [];
       for (let [i_key, i_value] of pairsRating.entries()) {
@@ -35,11 +38,14 @@ class Common {
           if (
               diff <= delta &&
               !i_key.some(r => j_key.includes(r)) &&
-              !pairsRatingDiff.some(p => _.isEqual(p.ids1, j_key) && _.isEqual(p.ids2, i_key))
+              !pairsRatingDiff.some(p =>
+                  _.isEqual([p.players1[0].user_id, p.players1[1].user_id], j_key) &&
+                  _.isEqual([p.players2[0].user_id, p.players2[1].user_id], i_key)
+              )
           ) {
             pairsRatingDiff.push({
-              ids1: i_key,
-              ids2: j_key,
+              players1: [ready.find(u => u.user_id === i_key[0]), ready.find(u => u.user_id === i_key[1])],
+              players2: [ready.find(u => u.user_id === j_key[0]), ready.find(u => u.user_id === j_key[1])],
               diff: diff,
               matches: usersMatches.get(i_key[0]) + usersMatches.get(i_key[1]) + usersMatches.get(j_key[0]) + usersMatches.get(j_key[1])
             });
@@ -47,8 +53,9 @@ class Common {
         }
       }
       const pairsWithMinMatches = this.groupByNameAndGetMin(pairsRatingDiff, 'matches');
-      return this.groupByNameAndGetMin(pairsWithMinMatches, 'diff')[0];
+      return [this.groupByNameAndGetMin(pairsWithMinMatches, 'diff')[0]];
     })
+    // .then(r => this.calcReady(calculated_objects.push(r), --available_courts))
     .tap((pairs) => console.log(pairs));
   }
 

@@ -7,15 +7,22 @@ class Common {
     }
     Common._instance = this;
 
-    this.db = new DB('./badm.sqlite3');
+    this.db = new DB('./badmr.sqlite3');
   }
 
-  ready(tournament_id) {
+  ready(calculated_objects = []) {
+    // console.log(calculated_objects);
+    //
+    // const calculatedUserIds = calculated_objects ? calculated_objects.reduce((ids, users) => {
+    //   ids.push(users.players1[0].id, users.players1[1].id, users.players2[0].id, users.players2[1].id);
+    //   return ids;
+    // }, []) : [];
+
     return this.db.all(
-      `SELECT *
-       FROM ready
-       WHERE tournament_id = ?`,
-     [tournament_id]
+        `SELECT *
+         FROM ready
+         WHERE user_id NOT IN (SELECT value FROM json_each(?))`,
+        [JSON.stringify(calculated_objects)]
     );
   }
 }

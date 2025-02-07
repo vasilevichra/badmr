@@ -12,10 +12,14 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(promiseMiddleware());
+app.use(express.static('./src/public'));
 
 app.use('/api/common', require('./src/routes/common'));
 app.use('/api/courts', require('./src/routes/court'));
+app.use('/api/games', require('./src/routes/game'));
+app.use('/api/matches', require('./src/routes/match'));
 app.use('/api/settings', require('./src/routes/settings'));
+app.use('/api/tournaments', require('./src/routes/tournament'));
 app.use('/api/users', require('./src/routes/user'));
 
 app.use(function (req, res, next) {
@@ -26,7 +30,3 @@ app.use(function (err, req, res, next) {
 });
 
 module.exports = app;
-
-// https://github.com/6pac/SlickGrid?tab=readme-ov-file
-// https://stackabuse.com/a-sqlite-tutorial-with-node-js/
-// https://habr.com/ru/companies/ruvds/articles/458324/

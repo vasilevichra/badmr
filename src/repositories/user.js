@@ -12,19 +12,15 @@ class User {
 
   getAvailable() {
     return this.db.all(
-        `SELECT c.number
-         FROM tournament t
-                  JOIN User c ON t.id = c.tournament_id
-         WHERE t.available = 1
-           AND c.available = 1`
+        `SELECT u.*
+         FROM user u
+                  JOIN tournament_user tu ON u.id = tu.user_id
+                  JOIN tournament t on t.id = tu.tournament_id AND t.current = 1`
     );
   }
 
   getAll() {
-    return this.db.all(
-        `SELECT *
-         FROM user`
-    );
+    return this.db.all(`SELECT * FROM players`);
   }
 
   getById(id) {
@@ -41,7 +37,46 @@ class User {
         `INSERT INTO user (lastname, firstname, patronomic, sex, city_id, birthday)
          VALUES (?, ?, ?, ?, ?, ?)`,
         [lastname, firstname, patronomic, sex, city_id, birthday]
-    )
+    );
+  }
+
+  registerAll() {
+    return this.db.run(
+        `INSERT INTO tournament_user (tournament_id, user_id, available)
+         SELECT (SELECT t.id FROM tournament t WHERE t.current = 1), u.id, 1
+         FROM user u
+         WHERE true
+         ON CONFLICT DO NOTHING`
+    );
+  }
+
+  registerById(id) {
+    return this.db.run(
+        `INSERT INTO tournament_user (tournament_id, user_id, available)
+         SELECT (SELECT id FROM tournament WHERE current = 1), u.id, 1
+         FROM user u
+         WHERE u.id = ?
+         ON CONFLICT DO NOTHING`,
+        [id]
+    );
+  }
+
+  deregisterAll() {
+    return this.db.run(
+        `DELETE
+         FROM tournament_user
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)`
+    );
+  }
+
+  deregisterById(id) {
+    return this.db.run(
+        `DELETE
+         FROM tournament_user
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND user_id = ?`,
+        [id]
+    );
   }
 }
 
