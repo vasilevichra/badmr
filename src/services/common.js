@@ -1,9 +1,11 @@
 const Repository = require('../repositories/common')
 const SettingsService = require('./settings')
+const CourtService = require('./court')
 const Promise = require('bluebird')
 const _ = require('lodash');
 
 const settingsService = new SettingsService();
+const courtService = new CourtService();
 
 class Common {
   constructor() {
@@ -15,13 +17,24 @@ class Common {
     this.repository = new Repository();
   }
 
-  calcReady(calculated_objects = [], available_courts = 2) {
+  ready = async () => {
+    let available_courts = await courtService.countAvailable();
     if (available_courts === 0) {
-      return new Promise(calculated_objects);
+      return Promise.resolve([]);
     }
-    const deltaP = settingsService.get(settingsService.opt.DELTA);
-    const readyP = this.repository.ready(calculated_objects);
-    return Promise.join(deltaP, readyP, (delta, ready) => {
+    const delta = await settingsService.get(settingsService.opt.DELTA).then(Number);
+
+    let calculated_objects = [];
+    while (available_courts-- > 0) {
+      calculated_objects.push(await this.calcReadyRec(delta, calculated_objects));
+    }
+
+    return Promise.resolve(calculated_objects.flat(1));
+  };
+
+  calcReadyRec(delta, calculated_objects) {
+    return this.repository.ready(calculated_objects)
+    .then(ready => {
       const pairsRating = new Map();
       for (let i = 0; i < ready.length; i++) {
         for (let j = i + 1; j < ready.length; j++) {
@@ -55,8 +68,7 @@ class Common {
       const pairsWithMinMatches = this.groupByNameAndGetMin(pairsRatingDiff, 'matches');
       return [this.groupByNameAndGetMin(pairsWithMinMatches, 'diff')[0]];
     })
-    // .then(r => this.calcReady(calculated_objects.push(r), --available_courts))
-    .tap((pairs) => console.log(pairs));
+    .tap((pairs) => console.log(JSON.stringify(pairs)));
   }
 
   groupByNameAndGetMin(array, name) {

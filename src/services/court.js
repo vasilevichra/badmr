@@ -16,6 +16,7 @@ class Court {
   enable = (number) => this.court.enable(number);
   disableAll = () => this.court.disableAll();
   disable = (number) => this.court.disable(number);
+  countAvailable = () => this.court.countAvailable();
 }
 
 module.exports = Court;

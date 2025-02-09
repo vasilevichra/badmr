@@ -103,7 +103,7 @@ $(document).ready(function () {
         title: 'Участвует?',
         checkbox: true,
         sortable: true,
-        cellStyle: function (value, row, index) {
+        cellStyle: function (value, row) {
           return row.enabled === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}};
         }
       },
@@ -112,10 +112,10 @@ $(document).ready(function () {
         title: 'Имя',
         sortable: true,
         formatter: (value, row) => {
-          const avatar = row.pic ? '<img src="data:image/png;base64, ' + row.pic + '" alt="Red dot" width="30" height="30"/>' : (row.sex ? '👨🏻‍🦰' : '👩🏻');
+          const avatar = row.pic ? '<img src="data:image/png;base64, ' + row.pic + '" alt="'+ value + '" width="30" height="30"/>' : (row.sex ? '👨🏻‍🦰' : '👩🏻');
           return avatar + ' ' + value + ' <nobr style="color: rgba(128,128,128,0.3)">#' + row.id + '</nobr>';
         },
-        cellStyle: function (value, row, index) {
+        cellStyle: function (value, row) {
           return row.sex ? {css: {"white-space": "nowrap", "background-color": "rgba(100,149,237,0.13)"}} : {css: {"background-color": "rgba(250,218,221,0.33)"}};
         }
       },
@@ -214,6 +214,15 @@ $(document).ready(function () {
   })
   .on('uncheck.bs.table', (row, element) => {
     $.post(`/api/users/deregister/${element.id}`);
+  })
+  .on('click-row.bs.table td', function (e, row, $element) {
+    let modal = new bootstrap.Modal(document.getElementById('player-window'));
+
+    function showModal() {
+      modal.show();
+    }
+
+    // showModal();
   });
 
   const selectColumns = [
@@ -244,17 +253,17 @@ $(document).ready(function () {
   ];
 
   $('#select-button').click(() => {
-    $.getJSON("/api/common/ready/", result => {
+    $.getJSON("/api/common/ready/", ready => {
       $('#select-button').hide();
-      if (result.join("").length) {
+      if (ready.join("").length) {
         $('.select-form').show();
-        $.getJSON("/api/matches/unfinished/has", result => {
-          if (result.has) {
+        $.getJSON("/api/matches/unfinished/has", unfinished_matches => {
+          if (unfinished_matches.has) {
             $('.select-form-button-submit').prop("disabled", true);
           }
         });
 
-        $.each(result, (i, field) => {
+        $.each(ready, (i, field) => {
           let players1 = field.players1;
           let players2 = field.players2;
           $('.select-form-table-1')

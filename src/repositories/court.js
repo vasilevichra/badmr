@@ -65,6 +65,16 @@ class Court {
         [number]
     );
   }
+
+  countAvailable() {
+    return this.db.get(
+        `SELECT count(id) AS count
+         FROM court
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND available = 1`
+    )
+    .then(result => result.count);
+  }
 }
 
 module.exports = Court;

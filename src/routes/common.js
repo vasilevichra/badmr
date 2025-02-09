@@ -5,7 +5,7 @@ const router = Express.Router();
 const commonService = new CommonService();
 
 router.get('/ready/', (req, res) => {
-  res.promise(commonService.calcReady());
+  res.promise(commonService.ready());
 });
 
 module.exports = router;
