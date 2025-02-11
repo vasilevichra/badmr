@@ -29,7 +29,8 @@ class Common {
       calculated_objects.push(await this.calcReadyRec(delta, calculated_objects));
     }
 
-    return Promise.resolve(calculated_objects.flat(1));
+    return Promise.resolve(calculated_objects.flat(1))
+    .tap((pairs) => console.log(`count: ${pairs.length}, pairs: ${JSON.stringify(pairs)}`));
   };
 
   calcReadyRec(delta, calculated_objects) {
@@ -65,10 +66,13 @@ class Common {
           }
         }
       }
-      const pairsWithMinMatches = this.groupByNameAndGetMin(pairsRatingDiff, 'matches');
-      return [this.groupByNameAndGetMin(pairsWithMinMatches, 'diff')[0]];
-    })
-    .tap((pairs) => console.log(JSON.stringify(pairs)));
+      if (pairsRatingDiff.length === 0) {
+        return [];
+      } else {
+        const pairsWithMinMatches = this.groupByNameAndGetMin(pairsRatingDiff, 'matches');
+        return [this.groupByNameAndGetMin(pairsWithMinMatches, 'diff')[0]];
+      }
+    });
   }
 
   groupByNameAndGetMin(array, name) {
