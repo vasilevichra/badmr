@@ -1,4 +1,6 @@
 const renderSelect = () => {
+  $(selectFormTemplate).appendTo($('#select-block'));
+
   $('#select-button').click(() => {
     $.getJSON("/api/common/ready/", ready => {
       $('#select-button').hide();
@@ -42,6 +44,31 @@ const renderSelect = () => {
   });
 }
 
+const selectFormTemplate = `
+      <form class="select-form" style="display:none">
+        <div class="row justify-content-center">
+          <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
+            <table class="select-form-table-1 table table-responsive mx-auto w-auto"></table>
+          </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
+            <table class="select-form-table-2 table table-responsive mx-auto w-auto"></table>
+          </div>
+        </div>
+        <div class="row">
+          <div class="text-center">
+            <label class="select-form-info"></label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="text-center">
+            <button type="submit" class="select-form-button-submit btn btn-primary">Начать</button>
+            <button type="reset" class="select-form-button-reset btn btn-danger">Отменить</button>
+          </div>
+        </div>
+      </form>`;
+
 const selectColumns = [
   {
     field: 'user_id',
@@ -68,3 +95,4 @@ const selectColumns = [
     align: 'center'
   }
 ];
+
