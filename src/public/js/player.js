@@ -106,9 +106,11 @@ const renderPlayers = () => {
   })
   .on('check-all.bs.table', () => {
     $.post(`/api/users/register`);
+    showSelectButton();
   })
   .on('check.bs.table', (row, element) => {
     $.post(`/api/users/register/${element.id}`);
+    showSelectButton();
   })
   .on('uncheck-all.bs.table', () => {
     $.post(`/api/users/deregister`);

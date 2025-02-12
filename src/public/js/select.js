@@ -33,8 +33,12 @@ const renderSelect = () => {
             );
 
             $(`#select-form-${i}`).hide();
-            $("#game").load(location.href + " #game");
-            // $('#select-button').show(); // todo показывать только когда это был последний подтверждённый подбор
+
+            renderMatches();
+
+            if ($('.select-form-button-submit:visible').length === 0) {
+              $('#select-button').show();
+            }
           });
         });
       } else {
@@ -96,3 +100,10 @@ const selectColumns = [
   }
 ];
 
+const showSelectButton = () => {
+  const info = $('#select-info');
+  if (info.is(":visible")) {
+    info.hide();
+    $('#select-button').show();
+  }
+}

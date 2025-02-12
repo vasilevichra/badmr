@@ -3,8 +3,10 @@ const renderMatches = () => {
     if (matches.length > 0) {
       $('.game-info').hide();
 
+      const gameBlock = $('#game-block');
+      gameBlock.empty();
       $.each(matches, (i, match) => {
-        $(gameFormTemplate(i)).appendTo($('#game-block'));
+        $(gameFormTemplate(i)).appendTo(gameBlock);
 
         fillMatch(i, match);
       });
@@ -121,9 +123,13 @@ const fillMatch = (counter, match) => {
         );
       }
     }
-    // $('.game-info').show(); // todo показывать только когда это был последний завершённый матч
     $(`#game-form-${counter}`).hide();
     $('#player-table').bootstrapTable('refresh');
+    $('#cort-table').bootstrapTable('refresh');
+
+    if ($('.game-form-button-submit:visible').length === 0) {
+      $('.game-info').show();
+    }
   });
 }
 
