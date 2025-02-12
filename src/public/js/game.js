@@ -1,17 +1,19 @@
 const renderMatches = () => {
-  $.getJSON("/api/matches/unfinished", result => {
-    if (result.length > 0) {
-      // result.forEach((row) => {})
+  $.getJSON("/api/matches/unfinished", matches => {
+    if (matches.length > 0) {
       $('.game-info').hide();
-      $('.game-form').show();
-      const match = result[0];
-      renderMatch(match);
+
+      $.each(matches, (i, match) => {
+        $(gameFormTemplate(i)).appendTo($('#game-block'));
+
+        fillMatch(i, match);
+      });
     }
   });
 }
 
-const renderMatch = (match) => {
-  $('.game-table-1')
+const fillMatch = (counter, match) => {
+  $(`#game-table-1-${counter}`)
   .bootstrapTable({
     showHeader: false,
     columns: [{
@@ -25,7 +27,7 @@ const renderMatch = (match) => {
     }]
   });
 
-  $('.game-table-2')
+  $(`#game-table-2-${counter}`)
   .bootstrapTable({
     showHeader: false,
     columns: [{
@@ -39,17 +41,17 @@ const renderMatch = (match) => {
     }]
   });
 
-  $('.game-form-info').text(`Корт №${match.court}`);
+  $(`#game-form-info-${counter}`).text(`Корт №${match.court}`);
 
-  $('.game-form-button-submit').click((event) => {
+  $(`#game-form-button-submit-${counter}`).click((event) => {
     event.preventDefault();
 
-    const gamePoint11 = $('.game-input-11').val();
-    const gamePoint12 = $('.game-input-12').val();
-    const gamePoint21 = $('.game-input-21').val();
-    const gamePoint22 = $('.game-input-22').val();
-    const gamePoint31 = $('.game-input-31').val();
-    const gamePoint32 = $('.game-input-32').val();
+    const gamePoint11 = $(`#game-input-11-${counter}`).val();
+    const gamePoint12 = $(`#game-input-12-${counter}`).val();
+    const gamePoint21 = $(`#game-input-21-${counter}`).val();
+    const gamePoint22 = $(`#game-input-22-${counter}`).val();
+    const gamePoint31 = $(`#game-input-31-${counter}`).val();
+    const gamePoint32 = $(`#game-input-32-${counter}`).val();
 
     if (gamePoint11 === '' && gamePoint12 === '') {
       alert('Введите результат первой игры');
@@ -119,9 +121,45 @@ const renderMatch = (match) => {
         );
       }
     }
-    $('.game-info').show();
-    $('.game-form').hide();
+    // $('.game-info').show(); // todo показывать только когда это был последний завершённый матч
+    $(`#game-form-${counter}`).hide();
     $('#player-table').bootstrapTable('refresh');
-    // todo остановился тут
   });
 }
+
+const gameFormTemplate = (counter) => `
+<div id="game-form-${counter}" class="game-form row justify-content-center align-items-center">
+  <div class="col-auto">
+    <table id="game-table-1-${counter}" class="game-table-1 table table-responsive mx-auto w-auto"></table>
+  </div>
+  <div class="col-auto">
+    <div>
+      <input id="game-input-11-${counter}" class="game-input-left game-input-11" type="text" required minlength="1" maxlength="2" size="2"/>
+      <label>:</label>
+      <input id="game-input-12-${counter}" class="game-input-right game-input-12" type="text" required minlength="1" maxlength="2" size="2"/>
+    </div>
+    <div>
+      <input id="game-input-21-${counter}" class="game-input-left game-input-21" type="text" required minlength="1" maxlength="2" size="2"/>
+      <label>:</label>
+      <input id="game-input-22-${counter}" class="game-input-right game-input-22" type="text" required minlength="1" maxlength="2" size="2"/>
+    </div>
+    <div>
+      <input id="game-input-31-${counter}" class="game-input-left game-input-31" type="text" required minlength="1" maxlength="2" size="2"/>
+      <label>:</label>
+      <input id="game-input-32-${counter}" class="game-input-right game-input-32" type="text" required minlength="1" maxlength="2" size="2"/>
+    </div>
+  </div>
+  <div class="col-auto">
+    <table id="game-table-2-${counter}" class="game-table-2 table table-responsive mx-auto w-auto"></table>
+  </div>
+  <div class="row">
+    <div class="text-center">
+      <label id="game-form-info-${counter}" class="game-form-info">Корт</label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="text-center">
+      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-primary">Завершить</button>
+    </div>
+  </div>
+</div>`;
