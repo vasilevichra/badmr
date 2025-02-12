@@ -12,7 +12,7 @@ const renderSelect = () => {
           }
         });
 
-        $.each(ready, (i, field) => {
+        $.each([ready[0]], (i, field) => { // todo заменить на ready, в случае множественного выбора
           let players1 = field.players1;
           let players2 = field.players2;
           $('.select-form-table-1')

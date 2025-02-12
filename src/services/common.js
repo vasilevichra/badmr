@@ -30,7 +30,7 @@ class Common {
     }
 
     return Promise.resolve(calculated_objects.flat(1))
-    .tap((pairs) => console.log(`count: ${pairs.length}, pairs: ${JSON.stringify(pairs)}`));
+    .tap((pairs) => console.log(`Selected ${pairs.length} pairs: ${JSON.stringify(pairs)}`));
   };
 
   calcReadyRec(delta, calculated_objects) {
