@@ -36,9 +36,12 @@ const renderSelect = () => {
 
             renderMatches();
 
-            if ($('.select-form-button-submit:visible').length === 0) {
-              $('#select-button').show();
-            }
+            showSelectButton();
+          });
+          $(`#select-form-button-reset-${i}`).click(() => {
+            $(`#select-form-${i}`).hide();
+
+            showSelectButton();
           });
         });
       } else {
@@ -102,7 +105,7 @@ const selectColumns = [
 
 const showSelectButton = () => {
   const info = $('#select-info');
-  if (info.is(":visible")) {
+  if (info.is(":visible") || $('.select-form-button-submit:visible').length === 0) {
     info.hide();
     $('#select-button').show();
   }
