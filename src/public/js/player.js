@@ -118,14 +118,10 @@ const renderPlayers = () => {
   .on('uncheck.bs.table', (row, element) => {
     $.post(`/api/users/deregister/${element.id}`);
   })
-  .on('click-row.bs.table td', function (e, row, $element) {
-    let modal = new bootstrap.Modal(document.getElementById('player-window'));
-
-    function showModal() {
-      modal.show();
+  .on('click-cell.bs.table', (field, value, row, $element) => {
+    if (value === 'name') {
+      renderPlayerModal($element);
     }
-
-    // showModal();
   });
 }
 
@@ -138,3 +134,32 @@ const playerDeltaCss = (value) => {
   }
   return {css: {}};
 }
+
+const renderPlayerModal = (player) => {
+  $("#player-window").empty().append($(playerModalTemplate(player)));
+
+  let modal = new bootstrap.Modal(document.getElementById('player-window'));
+  modal.show();
+}
+
+const playerModalTemplate = (player) => `
+<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">${player['name']}</h5>
+      <button id="player-window-button-close"
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close">
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="avatar">
+        <img class="avatar-img" src="data:image/png;base64, ${player['pic']}" alt="user@email.com" width="200">
+      </div>
+    </div>
+    <div class="modal-footer">
+    </div>
+  </div>
+</div>`;
