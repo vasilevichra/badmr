@@ -91,16 +91,6 @@ const renderPlayers = () => {
         title: 'Город',
         align: 'center',
         sortable: true
-      },
-      {
-        field: 'birthday',
-        title: 'День рождения',
-        align: 'center',
-        sortable: true,
-        formatter: (value) => {
-          // return '<button class="btn btn-secondary" @click="clickRow(row)">Click</button>'
-          return `${value} (${age(value)})`;
-        }
       }
     ]
   })
@@ -136,19 +126,24 @@ const playerDeltaCss = (value) => {
 }
 
 const renderPlayerModal = (player) => {
-  $("#player-window").empty().append($(playerModalTemplate(player)));
+  $.getJSON(`/api/users/${player['id']}`, user => {
+    player['patronymic'] = user.patronymic;
+    player['birthday'] = user.birthday;
+    player['age'] = age(user.birthday);
 
-  let modal = new bootstrap.Modal(document.getElementById('player-window'));
-  modal.show();
+    $("#player-window").html($(playerModalTemplate(player)));
+
+    let modal = new bootstrap.Modal(document.getElementById('player-window'));
+    modal.show();
+  });
 }
 
 const playerModalTemplate = (player) => `
 <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
   <div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title">${player['name']}</h5>
-      <button id="player-window-button-close"
-              type="button"
+      <h5 class="modal-title">${player['name']} ${player['patronymic']}</h5>
+      <button type="button"
               class="btn-close"
               data-bs-dismiss="modal"
               aria-label="Close">
@@ -158,6 +153,7 @@ const playerModalTemplate = (player) => `
       <div class="avatar">
         <img class="avatar-img" src="data:image/png;base64, ${player['pic']}" alt="user@email.com" width="200">
       </div>
+      <label id="player-window-label-birthday">${player['birthday']} (${player['age']})</label>
     </div>
     <div class="modal-footer">
     </div>

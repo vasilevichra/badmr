@@ -45,7 +45,7 @@ create table user
     id         INTEGER not null primary key autoincrement unique,
     lastname   TEXT    not null,
     firstname  TEXT    not null,
-    patronomic TEXT,
+    patronymic TEXT,
     sex        INTEGER not null,
     city_id    INTEGER not null
         constraint city references city,

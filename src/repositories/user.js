@@ -32,11 +32,11 @@ class User {
     );
   }
 
-  create(lastname, firstname, patronomic, sex, city_id, birthday) {
+  create(lastname, firstname, patronymic, sex, city_id, birthday) {
     return this.db.run(
-        `INSERT INTO user (lastname, firstname, patronomic, sex, city_id, birthday)
+        `INSERT INTO user (lastname, firstname, patronymic, sex, city_id, birthday)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [lastname, firstname, patronomic, sex, city_id, birthday]
+        [lastname, firstname, patronymic, sex, city_id, birthday]
     );
   }
 
