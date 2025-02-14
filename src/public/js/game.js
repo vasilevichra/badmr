@@ -128,6 +128,7 @@ const fillMatch = (counter, match) => {
     $('#cort-table').bootstrapTable('refresh');
 
     if ($('.game-form-button-submit:visible').length === 0) {
+      $('.game-form').remove();
       $('.game-info').show();
     }
   });

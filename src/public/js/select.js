@@ -107,6 +107,7 @@ const showSelectButton = () => {
   const info = $('#select-info');
   if (info.is(":visible") || $('.select-form-button-submit:visible').length === 0) {
     info.hide();
+    $('.select-form').remove();
     $('#select-button').show();
   }
 }
