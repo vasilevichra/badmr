@@ -25,8 +25,8 @@
     "webpack-cli": "^5.1.4"
   },
   "engines" : {
-    "npm" : ">=9.2.0",
-    "node" : ">=18.0.0"
+    "npm" : ">=10.9.2",
+    "node" : ">=23.7.0"
   },
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up",
