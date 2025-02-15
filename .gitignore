@@ -131,3 +131,6 @@ dist
 *.sqbpro
 *.sqlite
 *.sqlite3
+
+# IDE
+.idea/
