@@ -4,7 +4,7 @@ SELECT u.lastname || ' ' || u.firstname                           AS name,
        round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1) AS rating,
        count(DISTINCT m.id)                                       AS matches
 FROM tournament as t
-         JOIN tournament_user AS tu ON tu.tournament_id = t.id AND tu.available = 1
+         JOIN tournament_user AS tu ON tu.tournament_id = t.id AND tu.available = 1 AND tu.archived = 0
          JOIN user AS u ON u.id = tu.user_id
          LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
          JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r
@@ -27,11 +27,12 @@ SELECT u.id                                                       AS id,
        c.name                                                     AS city,
        u.birthday                                                 AS birthday,
        CASE WHEN tu.id IS NULL THEN 0 ELSE 1 END                  AS registered,
-       coalesce(tu.available, 0)                                  AS enabled
+       coalesce(tu.available, 0)                                  AS enabled,
+       tu.archived                                                AS archived
 FROM user u
          JOIN city c on c.id = u.city_id
          LEFT OUTER JOIN tournament_user tu ON u.id = tu.user_id
-         LEFT OUTER JOIN tournament t on t.id = tu.tournament_id AND t.current = 1
+         LEFT OUTER JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
          LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
          LEFT OUTER JOIN (SELECT max(id) AS id, user_id, previous, delta
                           FROM rating
@@ -40,6 +41,7 @@ FROM user u
          LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
          LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id
          LEFT OUTER JOIN user_pic up ON up.user_id = u.id
+WHERE tu.archived IS NULL OR tu.archived = 0
 GROUP BY u.id;
 
 CREATE VIEW delta_today AS

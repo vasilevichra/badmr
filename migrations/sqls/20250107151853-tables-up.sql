@@ -66,7 +66,9 @@ create table tournament_user
     tournament_id INTEGER not null references tournament,
     user_id       INTEGER not null references user,
     available     BOOLEAN not null default 1,
+    archived      BOOLEAN not null default 0,
     CHECK ("available" IN (0, 1)),
+    CHECK ("archived" IN (0, 1)),
     UNIQUE (tournament_id, user_id)
 );
 

@@ -3,6 +3,7 @@ drop trigger calculate_rating_lost_2;
 
 drop trigger delete_rating_when_game_deleted;
 
-drop trigger enable_court_and_tournament_users_by_games;
+drop trigger enable_resources_when_match_finished;
+
 drop trigger disable_court_and_tournament_users_by_match_created;
 drop trigger enable_court_and_tournament_users_by_match_deleted;
