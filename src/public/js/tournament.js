@@ -9,18 +9,19 @@ const renderTournaments = () => {
       },
       {
         field: 'name',
-        title: 'Название турнира',
+        title: isPhone() ? 'Турнир' : 'Название турнира',
         align: 'center'
       },
       {
         field: 'current',
-        title: 'Текущий',
+        title: 'Текущий?',
         radio: true
       },
       {
         field: 'available',
         title: 'Доступен?',
         checkbox: true
-      }]
+      }
+    ].filter(column => isPhone() ? !['id'].includes(column.field) : true)
   });
 }

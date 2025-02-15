@@ -5,8 +5,9 @@ const renderMatches = () => {
 
       const gameBlock = $('#game-block');
       gameBlock.empty();
+      const formTemplate = isPhone() ? gameFormPhoneTemplate : gameFormTemplate;
       $.each(matches, (i, match) => {
-        $(gameFormTemplate(i)).appendTo(gameBlock);
+        $(formTemplate(i)).appendTo(gameBlock);
 
         fillMatch(i, match);
       });
@@ -20,12 +21,20 @@ const fillMatch = (counter, match) => {
     showHeader: false,
     columns: [{
       field: 'name',
-      title: 'Name'
+      title: 'Name',
+      formatter: (value, row) => playerNameFormatter(row.id, value, row.sex, row.pic),
+      cellStyle: (value, row) => playerSexStyle(row.sex)
     }],
     data: [{
-      name: match.name1
+      id: match.user_1_id,
+      name: match.name1,
+      sex: match.sex1,
+      pic: match.pic1
     }, {
-      name: match.name2
+      id: match.user_2_id,
+      name: match.name2,
+      sex: match.sex2,
+      pic: match.pic2
     }]
   });
 
@@ -34,12 +43,20 @@ const fillMatch = (counter, match) => {
     showHeader: false,
     columns: [{
       field: 'name',
-      title: 'Name'
+      title: 'Name',
+      formatter: (value, row) => playerNameFormatter(row.id, value, row.sex, row.pic),
+      cellStyle: (value, row) => playerSexStyle(row.sex)
     }],
     data: [{
-      name: match.name3
+      id: match.user_3_id,
+      name: match.name3,
+      sex: match.sex3,
+      pic: match.pic3
     }, {
-      name: match.name4
+      id: match.user_4_id,
+      name: match.name4,
+      sex: match.sex4,
+      pic: match.pic4
     }]
   });
 
@@ -158,6 +175,42 @@ const gameFormTemplate = (counter) => `
   </div>
   <div class="col-auto">
     <table id="game-table-2-${counter}" class="game-table-2 table table-responsive mx-auto w-auto"></table>
+  </div>
+  <div class="row">
+    <div class="text-center">
+      <label id="game-form-info-${counter}" class="game-form-info">Корт</label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="text-center">
+      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-primary">Завершить</button>
+    </div>
+  </div>
+</div>`;
+
+const gameFormPhoneTemplate = (counter) => `
+<div id="game-form-${counter}" class="game-form row justify-content-center align-items-center">
+  <div class="col-auto">
+    <div class="row">
+      <table id="game-table-1-${counter}" class="game-table-1 table table-responsive mx-auto w-auto"></table>
+    </div>
+    <div class="row input-group justify-content-center game-form-horizontal-inputs">
+      <div class="col col-2">
+        <input id="game-input-11-${counter}" class="game-input-left game-input-11" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-12-${counter}" class="game-input-right game-input-12" type="text" required minlength="1" maxlength="2" size="2"/>
+      </div>
+      <div class="col col-2">
+        <input id="game-input-21-${counter}" class="game-input-left game-input-21" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-22-${counter}" class="game-input-right game-input-22" type="text" required minlength="1" maxlength="2" size="2"/>
+      </div>
+      <div class="col col-2">
+        <input id="game-input-31-${counter}" class="game-input-left game-input-31" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-32-${counter}" class="game-input-right game-input-32" type="text" required minlength="1" maxlength="2" size="2"/>
+      </div>
+    </div>
+    <div class="row">
+      <table id="game-table-2-${counter}" class="game-table-2 table table-responsive mx-auto w-auto"></table>
+    </div>
   </div>
   <div class="row">
     <div class="text-center">

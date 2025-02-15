@@ -206,3 +206,7 @@ html, h1, h2, h3, h4, h5, h6, a {
 .game-form-button-submit {
   margin: 0 0 3em 0;
 }
+
+.game-form-horizontal-inputs {
+  margin: 1em 0 1em 0;
+}

@@ -12,13 +12,27 @@ const renderSelect = () => {
         $.each(ready, (i, field) => {
           let players1 = field.players1;
           let players2 = field.players2;
+
+          $.each(players1, (i, player) => {
+            const user = getJson(`/api/users/${player.user_id}`);
+            players1[i]['pic'] = user.pic;
+            players1[i]['sex'] = user.sex;
+          });
+          $.each(players2, (i, player) => {
+            const user = getJson(`/api/users/${player.user_id}`);
+            players2[i]['pic'] = user.pic;
+            players2[i]['sex'] = user.sex;
+          });
+
           $(`#select-form-table-1-${i}`)
           .bootstrapTable({
-            data: field.players1, columns: selectColumns,
+            data: field.players1,
+            columns: selectColumns
           });
           $(`#select-form-table-2-${i}`)
           .bootstrapTable({
-            data: field.players2, columns: selectColumns
+            data: field.players2,
+            columns: selectColumns
           });
           $(`#select-form-info-${i}`).text(`Δ ${field.diff.toFixed(1)} баллов`);
           $(`#select-form-button-submit-${i}`).click((event) => {
@@ -78,27 +92,19 @@ const selectFormTemplate = (counter) => `
 
 const selectColumns = [
   {
-    field: 'user_id',
-    title: 'ID',
-    align: 'center'
-  },
-  {
     field: 'name',
-    title: 'Имя'
-  },
-  {
-    field: 'sex',
-    title: 'Пол',
-    align: 'center'
+    title: 'Имя',
+    formatter: (value, row) => playerNameFormatter(row.user_id, value, row.sex, row.pic),
+    cellStyle: (value, row) => playerSexStyle(row.sex)
   },
   {
     field: 'rating',
-    title: 'Рейтинг',
+    title: isPhone() ? 'Р.' : 'Рейтинг',
     align: 'center'
   },
   {
     field: 'matches',
-    title: 'Сыграно',
+    title: isPhone() ? 'И.' : 'Сыграно',
     align: 'center'
   }
 ];

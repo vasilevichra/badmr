@@ -4,12 +4,12 @@ const renderSettings = () => {
     url: '/api/settings/', columns: [
       {
         field: 'name',
-        title: 'Название',
+        title: isPhone()? 'Наз.' : 'Название',
         align: 'center'
       },
       {
         field: 'value',
-        title: 'Значение',
+        title: isPhone()? 'Зн.' : 'Значение',
         align: 'center'
       },
       {

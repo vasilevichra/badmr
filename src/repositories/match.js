@@ -31,12 +31,24 @@ class Match {
 
   getAllUnfinished() {
     return this.db.all(
-        `SELECT m.id                               AS id,
-                u1.lastname || ' ' || u1.firstname AS name1,
-                u2.lastname || ' ' || u2.firstname AS name2,
-                u3.lastname || ' ' || u3.firstname AS name3,
-                u4.lastname || ' ' || u4.firstname AS name4,
-                c.number                           AS court
+        `SELECT m.id                                                   AS id,
+                m.user_1_id                                            AS user_1_id,
+                m.user_2_id                                            AS user_2_id,
+                m.user_3_id                                            AS user_3_id,
+                m.user_4_id                                            AS user_4_id,
+                u1.sex                                                 AS sex1,
+                u2.sex                                                 AS sex2,
+                u3.sex                                                 AS sex3,
+                u4.sex                                                 AS sex4,
+                (SELECT pic FROM user_pic WHERE user_id = m.user_1_id) AS pic1,
+                (SELECT pic FROM user_pic WHERE user_id = m.user_2_id) AS pic2,
+                (SELECT pic FROM user_pic WHERE user_id = m.user_3_id) AS pic3,
+                (SELECT pic FROM user_pic WHERE user_id = m.user_4_id) AS pic4,
+                u1.lastname || ' ' || u1.firstname                     AS name1,
+                u2.lastname || ' ' || u2.firstname                     AS name2,
+                u3.lastname || ' ' || u3.firstname                     AS name3,
+                u4.lastname || ' ' || u4.firstname                     AS name4,
+                c.number                                               AS court
          FROM match m
                   JOIN user u1 on u1.id = m.user_1_id
                   JOIN user u2 on u2.id = m.user_2_id
