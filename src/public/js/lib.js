@@ -7,3 +7,7 @@ const age = (date) => {
   const [day, month, year] = date.split('.');
   return Math.floor((new Date().getTime() - new Date(+year, +month - 1, +day).getTime()) / MS_PER_YEAR);
 }
+
+const isPhone = () => {
+  return new MobileDetect(window.navigator.userAgent).phone() !== null;
+}
