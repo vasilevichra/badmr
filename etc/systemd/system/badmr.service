@@ -1,0 +1,30 @@
+[Unit]
+Description=My Little Server
+# Documentation=https://github.com/vasilevichra/badmr/README.md
+# Author: Vasilevich Roman
+
+[Service]
+# Start Service and Examples
+ExecStart=npm run start
+
+# Options Stop and Restart
+# ExecStop=
+# ExecReload=
+
+# Required on some systems
+WorkingDirectory=/home/r/badmr/
+
+# Restart service after 10 seconds if node service crashes
+RestartSec=10
+Restart=on-failure
+
+# Output to syslog
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=badmr
+
+User=r
+Group=r
+
+[Install]
+WantedBy=multi-user.target
