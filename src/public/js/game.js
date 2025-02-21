@@ -190,26 +190,26 @@ const gameFormTemplate = (counter) => `
 
 const gameFormPhoneTemplate = (counter) => `
 <div id="game-form-${counter}" class="game-form row justify-content-center align-items-center">
-  <div class="col-auto">
+  <div class="col col-auto justify-content-center">
     <div class="row">
-      <table id="game-table-1-${counter}" class="game-table-1 table table-responsive mx-auto w-auto"></table>
+      <table id="game-table-1-${counter}" class="game-table-1-p table table-responsive mx-auto w-auto"></table>
     </div>
     <div class="row input-group justify-content-center game-form-horizontal-inputs">
       <div class="col col-2">
-        <input id="game-input-11-${counter}" class="game-input-left game-input-11" type="text" required minlength="1" maxlength="2" size="2"/>
-        <input id="game-input-12-${counter}" class="game-input-right game-input-12" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-11-${counter}" class="game-input-left-p game-input-11-p" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-12-${counter}" class="game-input-right-p game-input-12-p" type="text" required minlength="1" maxlength="2" size="2"/>
       </div>
       <div class="col col-2">
-        <input id="game-input-21-${counter}" class="game-input-left game-input-21" type="text" required minlength="1" maxlength="2" size="2"/>
-        <input id="game-input-22-${counter}" class="game-input-right game-input-22" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-21-${counter}" class="game-input-left-p game-input-21" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-22-${counter}" class="game-input-right-p game-input-22" type="text" required minlength="1" maxlength="2" size="2"/>
       </div>
       <div class="col col-2">
-        <input id="game-input-31-${counter}" class="game-input-left game-input-31" type="text" required minlength="1" maxlength="2" size="2"/>
-        <input id="game-input-32-${counter}" class="game-input-right game-input-32" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-31-${counter}" class="game-input-left-p game-input-31-p" type="text" required minlength="1" maxlength="2" size="2"/>
+        <input id="game-input-32-${counter}" class="game-input-right-p game-input-32-p" type="text" required minlength="1" maxlength="2" size="2"/>
       </div>
     </div>
     <div class="row">
-      <table id="game-table-2-${counter}" class="game-table-2 table table-responsive mx-auto w-auto"></table>
+      <table id="game-table-2-${counter}" class="game-table-2-p table table-responsive mx-auto w-auto"></table>
     </div>
   </div>
   <div class="row">

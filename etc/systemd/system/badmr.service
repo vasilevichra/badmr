@@ -4,14 +4,10 @@ Description=My Little Server
 # Author: Vasilevich Roman
 
 [Service]
-# Start Service and Examples
-ExecStart=npm run start
+ExecStart=/home/r/.nvm/versions/node/v23.7.0/bin/npm run start
+ExecStop=/bin/kill -HUP $MAINPID
+PIDFile=/home/r/badmr/badmr.pid
 
-# Options Stop and Restart
-# ExecStop=
-# ExecReload=
-
-# Required on some systems
 WorkingDirectory=/home/r/badmr/
 
 # Restart service after 10 seconds if node service crashes
@@ -22,6 +18,8 @@ Restart=on-failure
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=badmr
+
+Environment=PATH=/usr/bin:/usr/local/bin:/home/r/.nvm/versions/node/v23.7.0/bin
 
 User=r
 Group=r

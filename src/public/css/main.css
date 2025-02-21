@@ -10,41 +10,13 @@ html, h1, h2, h3, h4, h5, h6, a {
   font-family: "Raleway", sans-serif;
 }
 
-.navbar {
-  background: #007df9;
-}
-
-.nav-link, .navbar-brand {
-  color: #f4f4f4;
-  cursor: pointer;
-}
-
-.nav-link {
-  margin-right: 1em !important;
-}
-
-.nav-link:hover {
-  background: #f4f4f4;
-  color: #007df9;
-}
-
-.navbar .navbar-collapse {
-  justify-content: flex-end;
-}
-
-.navbar-toggler {
-  background: #fff !important;
-}
-
 .tournament {
-  margin: 1em 0;
-  padding: 1em;
+  margin: 1em 0 3em 0;
   position: relative;
 }
 
 .tournament h1 {
   color: #007df9;
-  margin: 1em;
 }
 
 .tournament img {
@@ -60,32 +32,27 @@ html, h1, h2, h3, h4, h5, h6, a {
   left: 115px;
 }
 
-/**/
 .tournament .desc p {
   line-height: 2;
   color: #888;
 }
 
 .settings {
-  margin: 4em 0;
-  /*padding: 1em;*/
+  margin: 1em 0 3em 0;
   position: relative;
 }
 
 .settings h1 {
   color: #007df9;
-  margin: 1em;
 }
 
-/*Portfolio*/
 .cort {
-  margin: 1em 0;
+  margin: 1em 0 3em 0;
   position: relative;
 }
 
 .cort h1 {
   color: #007df9;
-  margin: 1em;
 }
 
 .cort img {
@@ -94,42 +61,26 @@ html, h1, h2, h3, h4, h5, h6, a {
   margin: 1em;
 }
 
-/*blog style*/
-
 .player {
-  margin: 1em 0;
+  margin: 1em 0 3em 0;
   position: relative;
 }
 
 .player h1 {
   color: #007df9;
-  margin: 1em;
-}
-
-.player .card {
-  box-shadow: 0 0 20px #ccc;
-}
-
-.player .card img {
-  width: 100%;
-  height: 12em;
 }
 
 .player .card-title {
   color: #007df9;
 }
 
-/*.player .card-body{*/
-/*	padding: 1em;*/
-/*}*/
 .select {
-  margin: 1em 0;
+  margin: 1em 0 3em 0;
   position: relative;
 }
 
 .select h1 {
   color: #007df9;
-  margin: 1em;
 }
 
 .select .item {
@@ -153,7 +104,6 @@ html, h1, h2, h3, h4, h5, h6, a {
   background: #f973007d;
   position: absolute;
   width: 89%;
-  /*padding: 1em;*/
   top: 0;
   border-top-right-radius: 0;
 }
@@ -171,24 +121,21 @@ html, h1, h2, h3, h4, h5, h6, a {
 }
 
 .match {
-  margin: 1em 0;
-  /*padding: 1em;*/
+  margin: 1em 0 3em 0;
   position: relative;
 }
 
 .match h1 {
   color: #007df9;
-  margin: 1em;
 }
 
 .game {
-  margin: 1em 0;
+  margin: 1em 0 3em 0;
   position: relative;
 }
 
 .game h1 {
   color: #007df9;
-  margin: 1em;
 }
 
 .game-input-left {
