@@ -32,10 +32,10 @@
     "migrate": "node node_modules/db-migrate/bin/db-migrate up",
     "compile": "nodemon src/bin/start.js",
     "open": "concurrently \"npm run compile\" \"sleep 1 && open http://localhost:3000/\"",
-    "dev": "(rm badmr.sqlite3 || true) && npm run start",
-    "start": "npm run migrate && npm run open",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node build"
+    "dev": "(rm badmr.sqlite3 || true) && npm run migrate && npm run open",
+    "prod": "npm run migrate && node src/bin/start.js",
+    "release": "rsync --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r.vasilevich/Desktop/badmr/.gitignore' /Users/r.vasilevich/Desktop/badmr box:~/ && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'"
   },
   "author": "Vasilevich Roman <vasilevich@gmail.com>",
   "license": "MIT",

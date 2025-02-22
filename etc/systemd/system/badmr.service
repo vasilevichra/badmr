@@ -1,20 +1,18 @@
 [Unit]
-Description=My Little Server
+Description=Amateur badminton rating scoring system
 # Documentation=https://github.com/vasilevichra/badmr/README.md
 # Author: Vasilevich Roman
 
 [Service]
-ExecStart=/home/r/.nvm/versions/node/v23.7.0/bin/npm run start
-ExecStop=/bin/kill -HUP $MAINPID
+ExecStart=/home/r/.nvm/versions/node/v23.7.0/bin/npm run prod
+ExecStop=/bin/kill $MAINPID
 PIDFile=/home/r/badmr/badmr.pid
 
 WorkingDirectory=/home/r/badmr/
 
-# Restart service after 10 seconds if node service crashes
 RestartSec=10
 Restart=on-failure
 
-# Output to syslog
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=badmr
