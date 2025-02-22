@@ -10,17 +10,12 @@ class User {
     this.db = new Repository().db;
   }
 
-  getAvailable() {
-    return this.db.all(
-        `SELECT u.*
-         FROM user u
-                  JOIN tournament_user tu ON u.id = tu.user_id
-                  JOIN tournament t on t.id = tu.tournament_id AND t.current = 1`
-    );
+  getArchived() {
+    return this.db.all('SELECT * FROM archived');
   }
 
   getAll() {
-    return this.db.all(`SELECT * FROM players`);
+    return this.db.all('SELECT * FROM players');
   }
 
   getById(id) {
@@ -76,6 +71,46 @@ class User {
          WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
            AND user_id = ?`,
         [id]
+    );
+  }
+
+  archive(id) {
+    return this.db.run(
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
+         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 0, 1)
+         ON CONFLICT DO UPDATE SET archived  = 1,
+                                   available = 0`,
+        [id]
+    );
+  }
+
+  archiveAll() {
+    return this.db.run(
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
+         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
+         FROM players
+         ON CONFLICT DO UPDATE SET available = 0,
+                                   archived  = 1`
+    );
+  }
+
+  unarchive(id) {
+    return this.db.run(
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
+         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 1, 0)
+         ON CONFLICT DO UPDATE SET available = 1,
+                                   archived  = 0`,
+        [id]
+    );
+  }
+
+  unarchiveAll() {
+    return this.db.run(
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
+         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
+         FROM players
+         ON CONFLICT DO UPDATE SET available = 1,
+                                   archived  = 0`
     );
   }
 }

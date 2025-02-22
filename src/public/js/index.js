@@ -11,5 +11,6 @@ $(document).ready(function () {
   renderPlayers();
   renderSelect();
   renderMatches();
+  renderArchive();
 });
 

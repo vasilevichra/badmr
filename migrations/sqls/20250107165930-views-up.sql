@@ -30,7 +30,7 @@ SELECT u.id                                                       AS id,
        coalesce(tu.available, 0)                                  AS enabled,
        tu.archived                                                AS archived
 FROM user u
-         JOIN city c on c.id = u.city_id
+         JOIN city c ON c.id = u.city_id
          LEFT OUTER JOIN tournament_user tu ON u.id = tu.user_id
          LEFT OUTER JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
          LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
@@ -41,8 +41,23 @@ FROM user u
          LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
          LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id
          LEFT OUTER JOIN user_pic up ON up.user_id = u.id
-WHERE tu.archived IS NULL OR tu.archived = 0
+WHERE tu.archived IS NULL
+   OR tu.archived = 0
 GROUP BY u.id;
+
+CREATE VIEW archived AS
+SELECT u.id                             AS id,
+       u.lastname || ' ' || u.firstname AS name,
+       u.sex                            AS sex,
+       up.pic                           AS pic,
+       c.name                           AS city,
+       tu.archived                      AS archived
+FROM user u
+         JOIN city c ON c.id = u.city_id
+         JOIN tournament_user tu ON u.id = tu.user_id
+         JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
+         LEFT OUTER JOIN user_pic up ON up.user_id = u.id
+WHERE tu.archived = 1;
 
 CREATE VIEW delta_today AS
 SELECT u.id AS user_id, u.lastname || ' ' || u.firstname AS name, round(sum(r.delta), 1) AS sum

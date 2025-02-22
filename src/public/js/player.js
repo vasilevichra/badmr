@@ -23,7 +23,7 @@ const renderPlayers = () => {
         title: 'Участвует?',
         checkbox: true,
         sortable: true,
-        cellStyle: function (value, row) {
+        cellStyle: (value, row) => {
           return row.enabled === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}};
         }
       },
@@ -48,7 +48,7 @@ const renderPlayers = () => {
         formatter: (value) => {
           return value > 0 ? '+' + value : value;
         },
-        cellStyle: function (value) {
+        cellStyle: (value) => {
           return playerDeltaCss(value);
         }
       },
@@ -121,6 +121,22 @@ const playerDeltaCss = (value) => {
   return {css: {}};
 }
 
+const archiveUser = (id, name) => {
+  if (confirm(`Сделать игрока ${name} неактивным?`)) {
+    $.post(`/api/users/archive/${id}`);
+    $('#player-table').bootstrapTable('refresh');
+    $('#player-archive-table').bootstrapTable('refresh');
+  }
+}
+
+const unarchiveUser = (id, name) => {
+  if (confirm(`Сделать игрока ${name} активным?`)) {
+    $.post(`/api/users/unarchive/${id}`);
+    $('#player-table').bootstrapTable('refresh');
+  }
+  $('#player-archive-table').bootstrapTable('refresh');
+}
+
 const renderPlayerModal = (player) => {
   $.getJSON(`/api/users/${player['id']}`, user => {
     player['patronymic'] = user.patronymic;
@@ -128,6 +144,10 @@ const renderPlayerModal = (player) => {
     player['age'] = age(user.birthday);
 
     $("#player-window").html($(playerModalTemplate(player)));
+
+    $('.player-window-archive-button').click(() => {
+      archiveUser(player['id'], player['name']);
+    });
 
     let modal = new bootstrap.Modal(document.getElementById('player-window'));
 
@@ -191,6 +211,7 @@ const playerModalTemplate = (player) => `
         <img class="avatar-img" src="data:image/png;base64, ${player['pic']}" alt="user@email.com" width="200">
       </div>
       <label id="player-window-label-birthday">${player['birthday']} (${player['age']})</label>
+      <button class="player-window-archive-button" type="button">Архивировать</button>
     </div>
     <canvas id="line-chart" width="800" height="450"></canvas>
     <div class="modal-footer">

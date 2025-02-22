@@ -8,15 +8,20 @@ body {
 
 html, h1, h2, h3, h4, h5, h6, a {
   font-family: "Raleway", sans-serif;
+  color: #007df9;
+}
+
+div.search {
+  width: 93%;
+}
+
+div.pagination {
+  width: 64%;
 }
 
 .tournament {
   margin: 1em 0 3em 0;
   position: relative;
-}
-
-.tournament h1 {
-  color: #007df9;
 }
 
 .tournament img {
@@ -25,25 +30,9 @@ html, h1, h2, h3, h4, h5, h6, a {
   border-radius: 50%
 }
 
-.tournament span {
-  display: block;
-  color: #888;
-  position: absolute;
-  left: 115px;
-}
-
-.tournament .desc p {
-  line-height: 2;
-  color: #888;
-}
-
 .settings {
   margin: 1em 0 3em 0;
   position: relative;
-}
-
-.settings h1 {
-  color: #007df9;
 }
 
 .cort {
@@ -51,61 +40,14 @@ html, h1, h2, h3, h4, h5, h6, a {
   position: relative;
 }
 
-.cort h1 {
-  color: #007df9;
-}
-
-.cort img {
-  height: 15rem;
-  width: 100%;
-  margin: 1em;
-}
-
 .player {
   margin: 1em 0 3em 0;
   position: relative;
 }
 
-.player h1 {
-  color: #007df9;
-}
-
-.player .card-title {
-  color: #007df9;
-}
-
 .select {
   margin: 1em 0 3em 0;
   position: relative;
-}
-
-.select h1 {
-  color: #007df9;
-}
-
-.select .item {
-  position: relative;
-  overflow: hidden;
-}
-
-.select .des {
-  background: #007df9;
-  color: #fff;
-  text-align: center;
-  border-top-right-radius: 93%;
-  transition: .3s ease-in-out;
-  position: absolute;
-  width: 88%;
-  bottom: 24px;
-}
-
-.select .item:hover .des {
-  height: 100%;
-  background: #f973007d;
-  position: absolute;
-  width: 89%;
-  top: 0;
-  border-top-right-radius: 0;
 }
 
 .select-form-table-2 {
@@ -125,17 +67,9 @@ html, h1, h2, h3, h4, h5, h6, a {
   position: relative;
 }
 
-.match h1 {
-  color: #007df9;
-}
-
 .game {
   margin: 1em 0 3em 0;
   position: relative;
-}
-
-.game h1 {
-  color: #007df9;
 }
 
 .game-input-left {
@@ -156,4 +90,9 @@ html, h1, h2, h3, h4, h5, h6, a {
 
 .game-form-horizontal-inputs {
   margin: 1em 0 1em 0;
+}
+
+.player-archive {
+  margin: 1em 0 3em 0;
+  position: relative;
 }

@@ -12,28 +12,13 @@
   <link rel="stylesheet" type="text/css" href="./css/bootstrap-icons.min.css">
   <link rel="stylesheet" type="text/css" href="./css/bootstrap-table.min.css">
   <link rel="stylesheet" type="text/css" href="./css/main.css">
-
-  <style>
-    li {
-      float: left;
-      display: inline-block;
-      width: 250px;
-      margin: 5px;
-      text-align: center;
-    }
-
-    span {
-      display: block;
-    }
-  </style>
-
 </head>
 <body>
 
 <div class="tournament" id="tournament">
   <div class="container">
     <h1 class="text-center">Турнир</h1>
-    <div class="col-lg-12 col-md-8 col-sm-12 desc">
+    <div class="col-lg-12 col-md-12 col-sm-12 desc">
       <table id="tournament-table" class="mx-auto w-auto"></table>
     </div>
   </div>
@@ -62,7 +47,7 @@
 <div class="player" id="player">
   <div class="container">
     <h1 class="text-center">Игроки</h1>
-    <div class="col-lg-12 col-md-8 col-sm-12 desc">
+    <div class="col-lg-12 col-md-12 col-sm-12 desc">
       <table id="player-table" data-editable="true"></table>
     </div>
   </div>
@@ -74,10 +59,11 @@
 <div class="select" id="select">
   <div class="container">
     <h1 class="text-center">Подбор</h1>
-    <div id="select-block" class="col-lg-12 col-md-8 col-sm-12 desc">
+    <div id="select-block" class="col-lg-12 col-md-12 col-sm-12 desc">
       <div id="select-info" class="row" style="display:none">
         <div class="text-center">
-          <label>Нет игроков, подходящих под критерии выбора: зарегистрируйте больше игроков на </label>
+          <label>Нет игроков, подходящих под критерии выбора: зарегистрируйте больше игроков
+            на </label>
           <a onclick="scrollToId('player')" href="#">турнир</a>
           <label>или добавьте </label>
           <a onclick="scrollToId('court')" href="#">корты</a>
@@ -136,6 +122,16 @@
 <!--  </div>-->
 <!--</div>-->
 
+<div class="player-archive" id="player-archive">
+  <div class="container">
+    <h1 class="text-center">Архив</h1>
+    <div class="col-lg-12 col-md-12 col-sm-12 desc">
+      <table id="player-archive-table" class="mx-auto w-auto table-secondary"
+             data-editable="true"></table>
+    </div>
+  </div>
+</div>
+
 <footer class="footer mt-auto py-3" style="background:#007df9;">
   <div class="container">
     <p class="text-center text-white lead">Бадминтон и ром &copy;
@@ -163,6 +159,7 @@
 <script type="text/javascript" src="./js/player.js"></script>
 <script type="text/javascript" src="./js/select.js"></script>
 <script type="text/javascript" src="./js/game.js"></script>
+<script type="text/javascript" src="./js/archive.js"></script>
 
 </body>
 </html>

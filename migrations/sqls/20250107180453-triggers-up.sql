@@ -290,7 +290,7 @@ CREATE TRIGGER enable_resources_when_match_finished
     ON game
     WHEN ((SELECT count(g.lost_1_by)
            FROM game g
-                    JOIN match m on m.id = g.match_id
+                    JOIN match m ON m.id = g.match_id
            -- todo переписать 2 на:
            -- (SELECT coalesce(s.value, d.value) AS value FROM defaults d
            --  LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id

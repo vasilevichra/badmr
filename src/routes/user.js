@@ -4,6 +4,26 @@ const UserService = require('../services/user');
 const router = Express.Router();
 const userService = new UserService();
 
+router.get('/archived', (req, res) => {
+  res.promise(userService.getArchived());
+});
+
+router.post('/archive/:id', (req, res) => {
+  res.promise(userService.archive(req.params.id));
+});
+
+router.post('/archive', (req, res) => {
+  res.promise(userService.archiveAll());
+});
+
+router.post('/unarchive/:id', (req, res) => {
+  res.promise(userService.unarchive(req.params.id));
+});
+
+router.post('/unarchive', (req, res) => {
+  res.promise(userService.unarchiveAll());
+});
+
 router.get('/', (req, res) => {
   res.promise(userService.getAll());
 });
