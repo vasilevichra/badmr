@@ -211,7 +211,7 @@ const playerModalTemplate = (player) => `
         <img class="avatar-img" src="data:image/png;base64, ${player['pic']}" alt="user@email.com" width="200">
       </div>
       <label id="player-window-label-birthday">${player['birthday']} (${player['age']})</label>
-      <button class="player-window-archive-button" type="button">Архивировать</button>
+      <button class="player-window-archive-button bi bi-box-seam btn btn-outline-danger" type="button">  Архивировать</button>
     </div>
     <canvas id="line-chart" width="800" height="450"></canvas>
     <div class="modal-footer">

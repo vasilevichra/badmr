@@ -50,8 +50,7 @@ SELECT u.id                             AS id,
        u.lastname || ' ' || u.firstname AS name,
        u.sex                            AS sex,
        up.pic                           AS pic,
-       c.name                           AS city,
-       tu.archived                      AS archived
+       c.name                           AS city
 FROM user u
          JOIN city c ON c.id = u.city_id
          JOIN tournament_user tu ON u.id = tu.user_id

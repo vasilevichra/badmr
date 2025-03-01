@@ -12,9 +12,11 @@ const renderArchive = () => {
     paginationNextText: '⟶',
     columns: [
       {
-        field: 'archived',
-        title: 'В архиве?',
-        checkbox: true,
+        title: '🏸',
+        align: 'center',
+        formatter: (value, row) => {
+          return `<button type="button" class="btn btn-sm btn-outline-success" onclick="unarchiveUser(${row.id}, '${row.name}')"><i class="bi bi-arrow-bar-up"></i></button>`;
+        },
       },
       {
         field: 'name',
@@ -29,15 +31,5 @@ const renderArchive = () => {
         sortable: true
       }
     ]
-  })
-  .on('uncheck-all.bs.table', () => {
-    if (confirm("Сделать всех игроков активнымы?")) {
-      $.post('/api/users/unarchive');
-      $('#player-table').bootstrapTable('refresh');
-    }
-    $('#player-archive-table').bootstrapTable('refresh');
-  })
-  .on('uncheck.bs.table', (row, element) => {
-    unarchiveUser(element.id, element.name);
   });
 }
