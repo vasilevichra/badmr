@@ -18,8 +18,8 @@ create table tournament
     name      TEXT    not null,
     current   INTEGER not null default 0,
     available INTEGER not null default 1,
-    CHECK ("current" IN (0, 1)),
-    CHECK ("available" IN (0, 1))
+    CHECK (current IN (0, 1)),
+    CHECK (available IN (0, 1))
 );
 
 create table court
@@ -29,7 +29,7 @@ create table court
         constraint tournament references tournament,
     number        INTEGER not null,
     available     BOOLEAN not null default 1,
-    CHECK ("available" IN (0, 1))
+    CHECK (available IN (0, 1))
 );
 
 create table tournament_settings
@@ -42,15 +42,23 @@ create table tournament_settings
 
 create table user
 (
-    id         INTEGER not null primary key autoincrement unique,
-    lastname   TEXT    not null,
-    firstname  TEXT    not null,
-    patronymic TEXT,
-    sex        INTEGER not null,
-    city_id    INTEGER not null
+    id              INTEGER not null primary key autoincrement unique,
+    lastname        TEXT    not null,
+    firstname       TEXT    not null,
+    patronymic      TEXT,
+    phone           TEXT,
+    email           TEXT,
+    hashed_password BLOB,
+    salt            BLOB,
+    sex             INTEGER not null,
+    city_id         INTEGER not null
         constraint city references city,
-    birthday   DATE,
-    CHECK ("sex" IN (0, 1))
+    birthday        DATE,
+    CHECK (phone GLOB '+79[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
+    CHECK (email LIKE '%_@_%._%' AND LENGTH(email) - LENGTH(REPLACE(email, '@', '')) = 1 AND
+           SUBSTR(LOWER(email), 1, INSTR(email, '.') - 1) NOT GLOB '*[^@0-9a-z]*' AND
+           SUBSTR(LOWER(email), INSTR(email, '.') + 1) NOT GLOB '*[^a-z]*' ),
+    CHECK (sex IN (0, 1))
 );
 
 create table user_pic
@@ -67,8 +75,8 @@ create table tournament_user
     user_id       INTEGER not null references user,
     available     BOOLEAN not null default 1,
     archived      BOOLEAN not null default 0,
-    CHECK ("available" IN (0, 1)),
-    CHECK ("archived" IN (0, 1)),
+    CHECK (available IN (0, 1)),
+    CHECK (archived IN (0, 1)),
     UNIQUE (tournament_id, user_id)
 );
 
@@ -83,7 +91,7 @@ create table match
     user_4_id     INTEGER  not null references user,
     court_id      INTEGER  not null references court,
     finished      INTEGER  not null default 0,
-    CHECK ("finished" IN (0, 1))
+    CHECK (finished IN (0, 1))
 );
 
 create table game

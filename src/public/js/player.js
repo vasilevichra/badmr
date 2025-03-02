@@ -88,7 +88,9 @@ const renderPlayers = () => {
         align: 'center',
         sortable: true
       }
-    ].filter(column => isPhone() ? ['registered', 'name', 'rating'].includes(column.field) : true)
+    ]
+    .filter(column => loggedInUser ? true : !['registered'].includes(column.field))
+    .filter(column => isPhone() ? ['registered', 'name', 'rating'].includes(column.field) : true)
   })
   .on('check-all.bs.table', () => {
     $.post(`/api/users/register`);
@@ -145,9 +147,13 @@ const renderPlayerModal = (player) => {
 
     $("#player-window").html($(playerModalTemplate(player)));
 
-    $('.player-window-archive-button').click(() => {
-      archiveUser(player['id'], player['name']);
-    });
+    if (loggedInUser) {
+      const archiveButton = $('.player-window-archive-button');
+      archiveButton.show();
+      archiveButton.click(() => {
+        archiveUser(player['id'], player['name']);
+      });
+    }
 
     let modal = new bootstrap.Modal(document.getElementById('player-window'));
 
@@ -211,7 +217,7 @@ const playerModalTemplate = (player) => `
         <img class="avatar-img" src="data:image/png;base64, ${player['pic']}" alt="user@email.com" width="200">
       </div>
       <label id="player-window-label-birthday">${player['birthday']} (${player['age']})</label>
-      <button class="player-window-archive-button bi bi-box-seam btn btn-outline-danger" type="button">  Архивировать</button>
+      <button class="player-window-archive-button bi bi-box-seam btn btn-outline-danger" type="button" style="display:none;">  Архивировать</button>
     </div>
     <canvas id="line-chart" width="800" height="450"></canvas>
     <div class="modal-footer">

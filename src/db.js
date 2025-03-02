@@ -59,6 +59,9 @@ class DB {
     })
   }
 
+  database() {
+    return this.db;
+  }
 }
 
 module.exports = DB

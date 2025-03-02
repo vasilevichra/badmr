@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Бадминтон и ром</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+<section class="prompt">
+    <h3><a href="/">Бадминтон и ром</a></h3>
+    <h1>Вход</h1>
+    <% if (hasMessages) { %>
+        <section class="messages">
+            <% messages.forEach(function(message) { %>
+                <p><%= message %></p>
+            <% }); %>
+        </section>
+    <% } %>
+    <form action="/api/auth/login/password" method="post">
+        <section>
+            <label for="username">Пользователь</label>
+            <input id="username" name="username" type="text" autocomplete="username" required
+                   autofocus>
+        </section>
+        <section>
+            <label for="current-password">Пароль</label>
+            <input id="current-password" name="password" type="password"
+                   autocomplete="current-password" required>
+        </section>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="btn">Войти</button>
+    </form>
+    <hr>
+    <p class="help">Нет аккаунта? <a href="/api/auth/signup">Зарегистрироваться</a></p>
+</section>
+<footer class="info">
+    <p>По всем вопросам пишите <a href="https://t.me/vasilevichr">сюда</a></p>
+</footer>
+</body>
+</html>

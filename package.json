@@ -6,27 +6,43 @@
   "dependencies": {
     "bluebird": "^3.7.2",
     "concurrently": "^9.1.2",
+    "connect-ensure-login": "^0.1.1",
+    "connect-sqlite3": "^0.9.13",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
+    "csurf": "^1.11.0",
     "db-migrate": "^0.11.14",
     "db-migrate-sqlite3": "^1.0.2",
+    "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-promise-json-router": "^1.0.8",
+    "express-session": "^1.17.2",
     "http-errors": "~1.6.3",
     "lodash": "^4.17.21",
+    "morgan": "~1.9.1",
     "nodemon": "^3.1.9",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
     "sqlite3": "^5.1.7",
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
     "copy-dir": "^1.3.0",
-    "nexe": "^4.0.0-rc.6",
+    "nexe": "^1.1.6",
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4"
   },
-  "engines" : {
-    "npm" : ">=10.9.2",
-    "node" : ">=23.7.0"
+  "engines": {
+    "npm": ">=10.9.2",
+    "node": ">=23.7.0"
+  },
+  "homepage": "https://github.com/vasilevichra/badmr",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vasilevichra/badmr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vasilevichra/badmr/issues"
   },
   "scripts": {
     "migrate": "node node_modules/db-migrate/bin/db-migrate up",
@@ -34,10 +50,14 @@
     "open": "concurrently \"npm run compile\" \"sleep 1 && open http://localhost:3000/\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "(rm badmr.sqlite3 || true) && npm run migrate && npm run open",
-    "prod": "npm run migrate && node src/bin/start.js",
+    "prod": "npm install && npm run migrate && node src/bin/start.js",
     "release": "rsync --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r.vasilevich/Desktop/badmr/.gitignore' /Users/r.vasilevich/Desktop/badmr box:~/ && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'"
   },
-  "author": "Vasilevich Roman <vasilevich@gmail.com>",
+  "author": {
+    "name": "Vasilevich Roman",
+    "email": "vasilevich@gmail.com",
+    "url": "https://t.me/vasilevichr"
+  },
   "license": "MIT",
   "description": "Бадминтон и ром"
 }

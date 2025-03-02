@@ -1,4 +1,5 @@
 const Repository = require('./common');
+const crypto = require('crypto');
 
 class User {
   constructor() {
@@ -113,6 +114,19 @@ class User {
                                    archived  = 0`
     );
   }
+
+  setPassword(id, password) {
+    const salt = crypto.randomBytes(16);
+    const hashed_password = crypto.pbkdf2Sync(password, salt, 310000, 32, 'sha256');
+    return this.db.run(
+        `UPDATE user
+         SET hashed_password = ?,
+             salt = ?
+         WHERE id = ?`,
+        [hashed_password, salt, id]
+    );
+  }
+
 }
 
 module.exports = User;
