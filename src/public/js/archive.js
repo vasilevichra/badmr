@@ -2,7 +2,7 @@ const renderArchive = () => {
   $('#player-archive-table')
   .bootstrapTable({
     url: '/api/users/archived',
-    // search: isNotPhone(),
+    search: isNotPhone(),
     sortName: 'name',
     pagination: true,
     pageSize: 5,

@@ -20,24 +20,22 @@
     <div class="container">
         <div class="col-lg-12 col-md-12 col-sm-12 desc">
             <div class="text-end">
-                <div class="row">
-                    <% if (user) { %>
-                        <form action="/api/auth/logout" method="post">
-                            <label class="user"><%= user.username %></label>
-                            <button class="btn logout" type="submit">
-                                <p class="bi bi-box-arrow-right"></p>
-                            </button>
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        </form>
-                    <% } else{ %>
-                        <form action="/api/auth/login" method="get">
-                            <button class="btn login" type="submit">
-                                <p class="bi bi-box-arrow-in-left"> Войти</p>
-                            </button>
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        </form>
-                    <% } %>
-                </div>
+                <% if (user) { %>
+                    <form action="/api/auth/logout" method="post">
+                        <label class="user"><%= user.username %></label>
+                        <button class="btn logout" type="submit">
+                            <p class="bi bi-box-arrow-right" style="display:inline"></p>
+                        </button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    </form>
+                <% } else{ %>
+                    <form action="/api/auth/login" method="get">
+                        <button class="btn login" type="submit">
+                            <p class="bi bi-box-arrow-in-left"> Войти</p>
+                        </button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    </form>
+                <% } %>
             </div>
         </div>
     </div>
@@ -47,9 +45,7 @@
     <div class="tournament" id="tournament">
         <div class="container">
             <h1 class="text-center">Турнир</h1>
-            <div class="col-lg-12 col-md-12 col-sm-12 desc">
-                <table id="tournament-table" class="mx-auto w-auto"></table>
-            </div>
+            <table id="tournament-table" class="mx-auto w-auto"></table>
         </div>
     </div>
 <% } %>
@@ -58,10 +54,7 @@
     <div class="settings" id="settings">
         <div class="container">
             <h1 class="text-center">Настройки</h1>
-            <div class="col-lg-12 col-md-12 col-sm-12 desc">
-                <table id="settings-table" class="mx-auto w-auto">
-                </table>
-            </div>
+            <table id="settings-table" class="mx-auto w-auto"></table>
         </div>
     </div>
 <% } %>
@@ -70,10 +63,7 @@
     <div class="cort" id="cort">
         <div class="container">
             <h1 class="text-center">Корты</h1>
-            <div class="col-lg-12 col-md-8 col-sm-12 desc">
-                <table id="cort-table" class="mx-auto w-auto">
-                </table>
-            </div>
+            <table id="cort-table" class="mx-auto w-auto"></table>
         </div>
     </div>
 <% } %>
@@ -87,8 +77,7 @@
     </div>
 </div>
 
-<div id="player-window" class="modal" tabindex="-1">
-</div>
+<div id="player-window" class="modal" tabindex="-1"></div>
 
 <% if (user) { %>
     <div class="select" id="select">
@@ -97,19 +86,17 @@
             <div id="select-block" class="col-lg-12 col-md-12 col-sm-12 desc">
                 <div id="select-info" class="row" style="display:none">
                     <div class="text-center">
-                        <label>Нет игроков, подходящих под критерии выбора: зарегистрируйте больше
-                            игроков
-                            на </label>
+                        <label>Нет игроков, подходящих под критерии выбора: зарегистрируйте больше игроков на </label>
                         <a onclick="scrollToId('player')" href="#">турнир</a>
                         <label>или добавьте </label>
                         <a onclick="scrollToId('court')" href="#">корты</a>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     </div>
                 </div>
                 <div class="row">
                     <div class="text-center">
                         <button id="select-button" type="button"
-                                class="btn btn-lg btn-success mx-auto w-auto">
-                            Подобрать
+                                class="btn btn-lg btn-success mx-auto w-auto">Подобрать
                         </button>
                     </div>
                 </div>
@@ -133,26 +120,52 @@
     </div>
 <% } %>
 
+<!--<div class="match-history" id="match-history">-->
+<!--    <div class="container">-->
+<!--        <h1 class="text-center">Сыгранные матчи</h1>-->
+<!--        <div class="d-flex justify-content-center">-->
+<!--            <table id="match-history-table" class="table mx-auto w-auto" data-editable="true">-->
+<!--                <tbody>-->
+<!--                <tr style="text-align: center;">-->
+<!--                    <td rowspan="4" style="text-align: center;vertical-align: middle;">1</td>-->
+<!--                    <td>Vasya</td>-->
+<!--                    <td rowspan="2" style="text-align: center;vertical-align: middle;">15</td>-->
+<!--                    <td rowspan="2" style="text-align: center;vertical-align: middle;">23</td>-->
+<!--                    <td rowspan="2" style="text-align: center;vertical-align: middle;">12</td>-->
+<!--                    <td rowspan="4" style="text-align: center;vertical-align: middle;">2025-02-04<br>16:25:52</td>-->
+<!--                    <td rowspan="4" style="text-align: center;vertical-align: middle;">15' 30''</td>-->
+<!--                </tr>-->
+<!--                <tr style="text-align: center;">-->
+<!--                    <td>Petya</td>-->
+<!--                </tr>-->
+<!--                <tr style="text-align: center;">-->
+<!--                    <td>Kolya</td>-->
+<!--                    <td rowspan="2" style="text-align: center;vertical-align: middle;">21</td>-->
+<!--                    <td rowspan="2" style="text-align: center;vertical-align: middle;">21</td>-->
+<!--                    <td rowspan="2" style="text-align: center;vertical-align: middle;">21</td>-->
+<!--                </tr>-->
+<!--                <tr style="text-align: center;">-->
+<!--                    <td>Galya</td>-->
+<!--                </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
 <% if (user) { %>
     <div class="player-archive" id="player-archive">
-        <div class="container">
-            <h1 class="text-center">Архив</h1>
-            <div class="col-lg-12 col-md-12 col-sm-12 desc">
-                <table id="player-archive-table" class="mx-auto w-auto table-secondary"
-                       data-editable="true"></table>
-            </div>
+        <h1 class="text-center">Архив</h1>
+        <div class="d-flex justify-content-center">
+            <table id="player-archive-table" class="table-secondary mx-auto w-auto"
+                   data-editable="true"></table>
         </div>
     </div>
 <% } %>
 
-<footer class="footer mt-auto py-3" style="background:#007df9;">
+<footer class="footer mt-auto py-3">
     <div class="container">
-        <p class="text-center text-white lead">Бадминтон и ром &copy;
-            <script type="text/javascript">
-              document.write(new Date().getFullYear());
-            </script>
-        </p>
-
+        <p class="text-center text-white lead">Бадминтон и ром<img src="/assets/images/dobrograd-badminton.png" width=100%></img>сделано с любовью</p>
     </div>
 </footer>
 

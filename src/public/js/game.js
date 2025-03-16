@@ -1,4 +1,4 @@
-const renderMatches = () => {
+const renderGames = () => {
   $.getJSON("/api/matches/unfinished", matches => {
     if (matches.length > 0) {
       $('.game-info').hide();

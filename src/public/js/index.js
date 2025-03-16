@@ -7,7 +7,9 @@ $(document).ready(function () {
   renderCourts();
   renderPlayers();
   renderSelect();
-  renderMatches();
+  renderGames();
   renderArchive();
-});
 
+  // выравнивание перелистывания страниц по центру для всех таблиц
+  $('.fixed-table-pagination').addClass('d-flex justify-content-center');
+});

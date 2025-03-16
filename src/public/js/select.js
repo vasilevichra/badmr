@@ -48,7 +48,7 @@ const renderSelect = () => {
 
             $(`#select-form-${i}`).hide();
 
-            renderMatches();
+            renderGames();
 
             showSelectButton();
           });
