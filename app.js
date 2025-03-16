@@ -1,7 +1,7 @@
 require('use-strict')
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const csrf = require('csurf');
+// const csrf = require('csurf');
 const createError = require('http-errors');
 const express = require('express');
 const LocalStrategy = require('passport-local');
@@ -30,7 +30,7 @@ app.use(session({
   saveUninitialized: false, // don't create session until something stored
   store: new SQLiteStore({ db: 'sessions.db'})
 }));
-app.use(csrf());
+// app.use(csrf({ cookie: true }));
 app.use(passport.authenticate('session'));
 app.use((req, res, next) => {
   const messages = req.session.messages || [];
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use((req, res, next) => {
-  res.locals.csrfToken = req.csrfToken();
+  res.locals.csrfToken = req.cookies._csrf;
   next();
 });
 

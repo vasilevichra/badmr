@@ -1,8 +1,14 @@
 const Express = require('express');
+// const csrf = require('csurf');
+const ensureLogIn = require('connect-ensure-login').ensureLoggedIn;
 const UserService = require('../services/user');
 
+const ensureLoggedIn = ensureLogIn();
 const router = Express.Router();
 const userService = new UserService();
+
+// const csrfProtection = csrf({ cookie: true });
+// const parseForm = Express.urlencoded({ extended: false });
 
 router.get('/archived', (req, res) => {
   res.promise(userService.getArchived());
@@ -32,19 +38,19 @@ router.get('/:id', (req, res) => {
   res.promise(userService.getById(req.params.id));
 });
 
-router.post('/register', (req, res) => {
+router.post('/register', ensureLoggedIn, (req, res) => {
   res.promise(userService.registerAll());
 });
 
-router.post('/register/:id', (req, res) => {
+router.post('/register/:id', ensureLoggedIn, (req, res) => {
   res.promise(userService.registerById(req.params.id));
 });
 
-router.post('/deregister', (req, res) => {
+router.post('/deregister', ensureLoggedIn, (req, res) => {
   res.promise(userService.deregisterAll());
 });
 
-router.post('/deregister/:id', (req, res) => {
+router.post('/deregister/:id', ensureLoggedIn, (req, res) => {
   res.promise(userService.deregisterById(req.params.id));
 });
 
