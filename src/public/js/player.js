@@ -38,7 +38,9 @@ const renderPlayers = () => {
         field: 'rating',
         title: isPhone() ? 'Р.' : 'Рейтинг',
         align: 'center',
-        sortable: true
+        sortable: true,
+        formatter: (value, row) => playerRatingGroupsFormatter(row.rating),
+        cellStyle: (value, row) => playerRatingGroupsStyle(row.rating)
       },
       {
         field: 'delta_today',

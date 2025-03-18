@@ -39,6 +39,49 @@ const playerSexStyle = (sex) => {
       {css: {"background-color": "rgba(250,218,221,0.33)"}};
 }
 
+const playerRatingGroupsFormatter = (rating) => {
+  let group;
+  if (rating <= 250) { // сделать запрос в базу с tournament_settings.H_max
+    group = 'H';
+  } else if (rating <= 320) {
+    group = 'G';
+  } else if (rating <= 380) {
+    group = 'F';
+  } else if (rating <= 480) {
+    group = 'E';
+  } else if (rating <= 600) {
+    group = 'D';
+  } else if (rating <= 750) {
+    group = 'C';
+  } else if (rating <= 900) {
+    group = 'B';
+  } else {
+    group = 'A';
+  }
+
+  return isPhone() ? rating : rating + ' <nobr style="color: rgba(128,128,128,0.3)">' + group + '</nobr>';
+};
+
+const playerRatingGroupsStyle = (rating) => {
+  if (rating <= 250) { // сделать запрос в базу с tournament_settings.H_max
+    return {css: {"background-color": "rgba(255,255,255,0.33)"}};
+  } else if (rating <= 320) {
+    return {css: {"background-color": "rgba(238,130,238,0.33)"}};
+  } else if (rating <= 380) {
+    return {css: {"background-color": "rgba(75,0,130,0.33)"}};
+  } else if (rating <= 480) {
+    return {css: {"background-color": "rgba(0,0,255,0.33)"}};
+  } else if (rating <= 600) {
+    return {css: {"background-color": "rgba(0,128,0,0.33)"}};
+  } else if (rating <= 750) {
+    return {css: {"background-color": "rgba(255,255,0,0.33)"}};
+  } else if (rating <= 900) {
+    return {css: {"background-color": "rgba(255,165,0,0.33)"}};
+  } else {
+    return {css: {"background-color": "rgba(255,0,0,0.33)"}};
+  }
+}
+
 function getJson(url) {
   return JSON.parse($.ajax({
     type: 'GET',
