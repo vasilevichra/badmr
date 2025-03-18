@@ -106,3 +106,9 @@ html, h1, h2, h3, h4, h5, h6, a {
 .page-item.active a {
   background-color: #007df9;
 }
+
+/* поля ввода с курсором по центру */
+input[type=text],
+input[type=password] {
+  text-align: center;
+}
