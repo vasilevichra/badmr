@@ -59,7 +59,7 @@ const playerRatingGroupsFormatter = (rating) => {
     group = 'A';
   }
 
-  return isPhone() ? rating : rating + ' <nobr style="color: rgba(128,128,128,0.3)">' + group + '</nobr>';
+  return isPhone() ? rating : '<div class="group-letter"><div class="group-letter-bg">' + group + '</div>' + rating + '</div>';
 };
 
 const playerRatingGroupsStyle = (rating) => {

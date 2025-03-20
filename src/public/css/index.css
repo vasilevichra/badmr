@@ -112,3 +112,14 @@ input[type=text],
 input[type=password] {
   text-align: center;
 }
+
+/* буква группы в рейтинге у игроков */
+.group-letter {
+  position: relative;
+}
+
+.group-letter-bg {
+  position: absolute;
+  z-index: -1;
+  color: rgba(128, 128, 128, 0.3);
+}
