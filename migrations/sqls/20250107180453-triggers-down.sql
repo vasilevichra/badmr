@@ -1,9 +1,9 @@
-drop trigger calculate_rating_lost_1;
-drop trigger calculate_rating_lost_2;
+DROP TRIGGER calculate_rating_lost_1;
+DROP TRIGGER calculate_rating_lost_2;
 
-drop trigger delete_rating_when_game_deleted;
+DROP TRIGGER delete_rating_when_game_deleted;
 
-drop trigger enable_resources_when_match_finished;
+DROP TRIGGER enable_resources_when_match_finished;
 
-drop trigger disable_court_and_tournament_users_by_match_created;
-drop trigger enable_court_and_tournament_users_by_match_deleted;
+DROP TRIGGER disable_court_and_tournament_users_by_match_created;
+DROP TRIGGER enable_court_and_tournament_users_by_match_deleted;

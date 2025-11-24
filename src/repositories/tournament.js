@@ -10,6 +10,14 @@ class Tournament {
     this.db = new Repository().db;
   }
 
+  add(unit_id, name, available) {
+    return this.db.run(
+        `INSERT INTO tournament (unit_id, name, available)
+         VALUES (?, ?, ?)`,
+        [unit_id, name, available]
+    );
+  }
+
   getCurrent() {
     return this.db.get(
         `SELECT *
@@ -40,14 +48,6 @@ class Tournament {
          FROM tournament
          WHERE id = ?`,
         [id]
-    );
-  }
-
-  create(name, available) {
-    return this.db.run(
-        `INSERT INTO tournament (name, available)
-         VALUES (?, ?)`,
-        [name, available]
     );
   }
 }

@@ -4,7 +4,7 @@ Description=Amateur badminton rating scoring system
 # Author: Vasilevich Roman
 
 [Service]
-ExecStart=/home/r/.nvm/versions/node/v23.7.0/bin/npm run prod
+ExecStart=/home/r/.nvm/versions/node/v25.1.0/bin/npm run prod
 ExecStop=/bin/kill $MAINPID
 PIDFile=/home/r/badmr/badmr.pid
 
@@ -17,7 +17,7 @@ StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=badmr
 
-Environment=PATH=/usr/bin:/usr/local/bin:/home/r/.nvm/versions/node/v23.7.0/bin
+Environment=PATH=/usr/bin:/usr/local/bin:/home/r/.nvm/versions/node/v25.1.0/bin
 
 User=r
 Group=r

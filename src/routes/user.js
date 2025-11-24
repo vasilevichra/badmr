@@ -10,23 +10,23 @@ const userService = new UserService();
 // const csrfProtection = csrf({ cookie: true });
 // const parseForm = Express.urlencoded({ extended: false });
 
-router.get('/archived', (req, res) => {
+router.get('/archived', ensureLoggedIn, (req, res) => {
   res.promise(userService.getArchived());
 });
 
-router.post('/archive/:id', (req, res) => {
+router.post('/archive/:id', ensureLoggedIn, (req, res) => {
   res.promise(userService.archive(req.params.id));
 });
 
-router.post('/archive', (req, res) => {
+router.post('/archive', ensureLoggedIn, (req, res) => {
   res.promise(userService.archiveAll());
 });
 
-router.post('/unarchive/:id', (req, res) => {
+router.post('/unarchive/:id', ensureLoggedIn, (req, res) => {
   res.promise(userService.unarchive(req.params.id));
 });
 
-router.post('/unarchive', (req, res) => {
+router.post('/unarchive', ensureLoggedIn, (req, res) => {
   res.promise(userService.unarchiveAll());
 });
 
@@ -52,6 +52,14 @@ router.post('/deregister', ensureLoggedIn, (req, res) => {
 
 router.post('/deregister/:id', ensureLoggedIn, (req, res) => {
   res.promise(userService.deregisterById(req.params.id));
+});
+
+router.get('/rating/:id', (req, res) => {
+  res.promise(userService.getRating(req.params.id));
+});
+
+router.post('/rating/:id', ensureLoggedIn, (req, res) => {
+  res.promise(userService.setRating(req.params.id, req.query.new));
 });
 
 module.exports = router;

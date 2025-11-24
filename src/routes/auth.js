@@ -3,6 +3,9 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const crypto = require('crypto');
 const DB = require('../repositories/common');
+const CommonService = require('../services/common');
+
+const commonService = new CommonService();
 
 passport.use(new LocalStrategy(function verify(email, password, cb) {
   new DB().db.database().get('SELECT * FROM user WHERE email = ?', [email], function (err, row) {
@@ -40,8 +43,8 @@ passport.deserializeUser(function (user, cb) {
 
 const router = Express.Router();
 
-router.get('/login', function (req, res, next) {
-  res.render('login');
+router.get('/login', function (req, res) {
+  res.render('login', {device: commonService.device(req)});
 });
 
 router.post('/login/password', passport.authenticate('local', {
@@ -50,8 +53,8 @@ router.post('/login/password', passport.authenticate('local', {
   failureMessage: true
 }));
 
-router.get('/signup', function (req, res, next) {
-  res.render('signup');
+router.get('/signup', function (req, res) {
+  res.render('signup', { kind: 'page' });
 });
 
 router.post('/signup', function (req, res, next) {

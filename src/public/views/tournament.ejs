@@ -1,0 +1,7 @@
+<select id="tournament" class="tournament form-select-sm w-auto" required>
+    <% tournaments.forEach(tournament => { %>
+        <option value="<%= tournament.id %>" <% if (tournament.current) { %>selected
+                <% } %>
+        ><%= tournament.name %></option>
+    <% }); %>
+</select>

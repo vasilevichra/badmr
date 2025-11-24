@@ -1,19 +1,19 @@
-const sqlite3 = require('sqlite3')
-const Promise = require('bluebird')
+const sqlite3 = require('sqlite3');
+const Promise = require('bluebird');
 
 class DB {
 
   constructor(dbFilePath) {
     this.db = new sqlite3.Database(
-      dbFilePath,
-      sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-      (err) => {
-        if (err) {
-          console.error("Error connecting to SQLite database:", err)
-        } else {
-          console.log("Connected to SQLite database")
+        dbFilePath,
+        sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+        (err) => {
+          if (err) {
+            console.error("Error connecting to SQLite database:", err);
+          } else {
+            console.log(`Connected to SQLite database in ${process.env.NODE_ENV} mode`);
+          }
         }
-      }
     )
   }
 
@@ -25,10 +25,10 @@ class DB {
           console.log(err)
           reject(err)
         } else {
-          resolve({ id: this.lastID })
+          resolve({id: this.lastID})
         }
       })
-    })
+    });
   }
 
   get(sql, params = []) {
@@ -42,7 +42,7 @@ class DB {
           resolve(result)
         }
       })
-    })
+    });
   }
 
   all(sql, params = []) {
@@ -56,7 +56,7 @@ class DB {
           resolve(rows)
         }
       })
-    })
+    });
   }
 
   database() {

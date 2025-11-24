@@ -1,4 +1,5 @@
 const DB = require("../db");
+const Specific = require("./specific");
 
 class Common {
   constructor() {
@@ -7,7 +8,14 @@ class Common {
     }
     Common._instance = this;
 
-    this.db = new DB('./badmr.sqlite3');
+    this.db = new DB(process.env.NODE_ENV === 'test' ? './test.db' : './badmr.sqlite3');
+    if (process.env.NODE_ENV in ['dev']) {
+      try {
+        const Specific = require("./specific");
+        new Specific();
+      } catch (e) {
+      }
+    }
   }
 
   ready(calculated_objects = []) {

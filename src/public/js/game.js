@@ -183,7 +183,7 @@ const gameFormTemplate = (counter) => `
   </div>
   <div class="row">
     <div class="text-center">
-      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-primary">Завершить</button>
+      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-outline-primary">Завершить</button>
     </div>
   </div>
 </div>`;
@@ -219,7 +219,7 @@ const gameFormPhoneTemplate = (counter) => `
   </div>
   <div class="row">
     <div class="text-center">
-      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-primary">Завершить</button>
+      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-outline-primary">Завершить</button>
     </div>
   </div>
 </div>`;

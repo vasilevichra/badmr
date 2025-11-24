@@ -13,7 +13,6 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/enable', (req, res) => {
-  console.log('тут!');
   res.promise(courtService.enableAll());
 });
 

@@ -3,6 +3,7 @@ const SettingsService = require('./settings')
 const CourtService = require('./court')
 const Promise = require('bluebird')
 const _ = require('lodash');
+const MobileDetect = require('../public/js/lib/mobile-detect.min.js');
 
 const settingsService = new SettingsService();
 const courtService = new CourtService();
@@ -17,23 +18,39 @@ class Common {
     this.repository = new Repository();
   }
 
+  device = (req) => {
+    const md = new MobileDetect(req.headers['user-agent']);
+    const isMobile = md.phone() !== null || md.mobile() === 'UnknownMobile';
+    const isTablet = md.tablet() !== null || md.mobile() === 'UnknownTablet';
+    // const isDesktop = !isMobile && !isTablet;
+
+    if (isMobile) {
+      return 'phone';
+    } else if (isTablet) {
+      return 'tablet';
+    } else {
+      return 'desktop'
+    }
+  }
+
   ready = async () => {
     let available_courts = await courtService.countAvailable();
     if (available_courts === 0) {
       return Promise.resolve([]);
     }
     const delta = await settingsService.get(settingsService.opt.DELTA).then(Number);
+    const sort = await settingsService.get(settingsService.opt.SORT);
 
     let calculated_objects = [];
     while (available_courts-- > 0) {
-      calculated_objects.push(await this.calcReadyRec(delta, calculated_objects));
+      calculated_objects.push(await this.calcReadyRec(delta, sort, calculated_objects));
     }
 
     return Promise.resolve(calculated_objects.flat(1))
     .tap((pairs) => console.log(`Selected ${pairs.length} pairs: ${JSON.stringify(pairs)}`));
   };
 
-  calcReadyRec(delta, calculated_objects) {
+  calcReadyRec(delta, sort, calculated_objects) {
     return this.repository.ready(calculated_objects)
     .then(ready => {
       const pairsRating = new Map();
@@ -42,8 +59,6 @@ class Common {
           pairsRating.set([ready[i].user_id, ready[j].user_id], ready[i].rating + ready[j].rating);
         }
       }
-
-      const usersMatches = new Map(ready.map(i => [i.user_id, i.matches]));
 
       const pairsRatingDiff = [];
       for (let [i_key, i_value] of pairsRating.entries()) {
@@ -57,20 +72,32 @@ class Common {
                   _.isEqual([p.players2[0].user_id, p.players2[1].user_id], i_key)
               )
           ) {
+
+            const readyPlayer11 = ready.find(u => u.user_id === i_key[0]);
+            const readyPlayer12 = ready.find(u => u.user_id === i_key[1]);
+            const readyPlayer21 = ready.find(u => u.user_id === j_key[0]);
+            const readyPlayer22 = ready.find(u => u.user_id === j_key[1]);
             pairsRatingDiff.push({
-              players1: [ready.find(u => u.user_id === i_key[0]), ready.find(u => u.user_id === i_key[1])],
-              players2: [ready.find(u => u.user_id === j_key[0]), ready.find(u => u.user_id === j_key[1])],
+              players1: [readyPlayer11, readyPlayer12],
+              players2: [readyPlayer21, readyPlayer22],
               diff: diff,
-              matches: usersMatches.get(i_key[0]) + usersMatches.get(i_key[1]) + usersMatches.get(j_key[0]) + usersMatches.get(j_key[1])
+              matches: readyPlayer11.matches + readyPlayer12.matches + readyPlayer21.matches + readyPlayer22.matches,
+              played: readyPlayer11.played + readyPlayer12.played + readyPlayer21.played + readyPlayer22.played,
             });
           }
         }
       }
+      return pairsRatingDiff;
+    })
+    .then(pairsRatingDiff => {
       if (pairsRatingDiff.length === 0) {
         return [];
       } else {
-        const pairsWithMinMatches = this.groupByNameAndGetMin(pairsRatingDiff, 'matches');
-        return [this.groupByNameAndGetMin(pairsWithMinMatches, 'diff')[0]];
+        let result = pairsRatingDiff;
+        sort.split(',').forEach(s => {
+          result = this.groupByNameAndGetMin(result, s);
+        })
+        return [result[0]];
       }
     });
   }

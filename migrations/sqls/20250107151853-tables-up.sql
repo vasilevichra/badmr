@@ -7,16 +7,14 @@ CREATE TABLE state
 CREATE TABLE region
 (
     id       INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    state_id INTEGER NOT NULL
-        CONSTRAINT state REFERENCES state,
+    state_id INTEGER NOT NULL CONSTRAINT state REFERENCES state,
     name     TEXT    NOT NULL UNIQUE
 );
 
 CREATE TABLE city
 (
     id        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    region_id INTEGER NOT NULL
-        CONSTRAINT region REFERENCES region,
+    region_id INTEGER NOT NULL CONSTRAINT region REFERENCES region,
     name      TEXT    NOT NULL UNIQUE
 );
 
@@ -28,9 +26,20 @@ CREATE TABLE defaults
     description TEXT    NOT NULL
 );
 
+CREATE TABLE unit
+(
+    id        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    name      TEXT    NOT NULL,
+    current   INTEGER NOT NULL DEFAULT 0,
+    available INTEGER not null default 1,
+    CHECK (current IN (0, 1)),
+    CHECK (available IN (0, 1))
+);
+
 CREATE TABLE tournament
 (
     id        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    unit_id   INTEGER NOT NULL CONSTRAINT unit REFERENCES unit,
     name      TEXT    NOT NULL,
     current   INTEGER NOT NULL DEFAULT 0,
     available INTEGER not null default 1,
@@ -41,8 +50,7 @@ CREATE TABLE tournament
 CREATE TABLE court
 (
     id            INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    tournament_id INTEGER NOT NULL
-        CONSTRAINT tournament REFERENCES tournament,
+    tournament_id INTEGER NOT NULL CONSTRAINT tournament REFERENCES tournament,
     number        INTEGER NOT NULL,
     available     BOOLEAN NOT NULL DEFAULT 1,
     CHECK (available IN (0, 1))
@@ -68,8 +76,7 @@ CREATE TABLE user
     hashed_password BLOB,
     salt            BLOB,
     sex             INTEGER NOT NULL,
-    city_id         INTEGER NOT NULL
-        CONSTRAINT city REFERENCES city,
+    city_id         INTEGER NOT NULL CONSTRAINT city REFERENCES city,
     birthday        DATE,
     CHECK (phone GLOB '+79[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
     CHECK (email LIKE '%_@_%._%' AND LENGTH(email) - LENGTH(REPLACE(email, '@', '')) = 1 AND
@@ -114,8 +121,7 @@ CREATE TABLE match
 CREATE TABLE game
 (
     id         INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    match_id   INTEGER  NOT NULL
-        CONSTRAINT match REFERENCES match,
+    match_id   INTEGER  NOT NULL CONSTRAINT match REFERENCES match,
     created_at DATETIME NOT NULL DEFAULT current_timestamp,
     lost_1_by  INTEGER,
     lost_2_by  INTEGER
@@ -124,10 +130,8 @@ CREATE TABLE game
 CREATE TABLE rating
 (
     id       INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    user_id  INTEGER NOT NULL
-        CONSTRAINT user REFERENCES user,
-    game_id  INTEGER
-        CONSTRAINT game REFERENCES game,
-    previous INTEGER NOT NULL,
+    user_id  INTEGER NOT NULL CONSTRAINT user REFERENCES user,
+    game_id  INTEGER CONSTRAINT game REFERENCES game,
+    previous INTEGER,
     delta    INTEGER
 );

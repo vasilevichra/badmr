@@ -1,0 +1,7 @@
+<select id="unit" class="unit form-select-sm w-auto" required>
+    <% units.forEach(unit => { %>
+        <option value="<%= unit.id %>" <% if (unit.current) { %>selected
+                <% } %>
+        ><%= unit.name %></option>
+    <% }); %>
+</select>

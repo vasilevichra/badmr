@@ -41,7 +41,7 @@ const playerSexStyle = (sex) => {
 
 const playerRatingGroupsFormatter = (rating) => {
   let group;
-  if (rating <= 250) { // сделать запрос в базу с tournament_settings.H_max
+  if (rating <= 250) { // todo сделать запрос в базу с tournament_settings.H_max
     group = 'H';
   } else if (rating <= 320) {
     group = 'G';
@@ -59,7 +59,7 @@ const playerRatingGroupsFormatter = (rating) => {
     group = 'A';
   }
 
-  return isPhone() ? rating : '<div class="group-letter"><div class="group-letter-bg">' + group + '</div>' + rating + '</div>';
+  return isPhone() ? rating : '<div title="' + group + ': 900+" class="group-letter"><div class="group-letter-bg">' + group + '</div>' + rating + '</div>';
 };
 
 const playerRatingGroupsStyle = (rating) => {

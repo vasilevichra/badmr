@@ -12,6 +12,14 @@ class Court {
     this.tournament = new TournamentRepository();
   }
 
+  add(tournament_id, number, available) {
+    return this.db.run(
+        `INSERT INTO court (tournament_id, number, available)
+         VALUES (?, ?, ?)`,
+        [tournament_id, number, available]
+    );
+  }
+
   getAll() {
     return this.db.all(
         `SELECT c.number AS number, c.available AS available
@@ -74,6 +82,18 @@ class Court {
            AND available = 1`
     )
     .then(result => result.count);
+  }
+
+  deleteAll() {
+    return this.db.run(
+        `DELETE
+         FROM court
+         WHERE id IN (SELECT c.id
+                      FROM court c
+                               JOIN tournament t ON t.id = c.tournament_id
+                      WHERE t.current = 1
+                        AND t.available = 1)`
+    );
   }
 }
 

@@ -5,7 +5,7 @@
   },
   "test": {
     "driver": "sqlite3",
-    "filename": ":memory:"
+    "filename": "test.db"
   },
   "prod": {
     "driver": "sqlite3",

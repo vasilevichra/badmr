@@ -28,7 +28,7 @@ class User {
     );
   }
 
-  create(lastname, firstname, patronymic, sex, city_id, birthday) {
+  add(lastname, firstname, patronymic, sex, city_id, birthday) {
     return this.db.run(
         `INSERT INTO user (lastname, firstname, patronymic, sex, city_id, birthday)
          VALUES (?, ?, ?, ?, ?, ?)`,
@@ -121,12 +121,28 @@ class User {
     return this.db.run(
         `UPDATE user
          SET hashed_password = ?,
-             salt = ?
+             salt            = ?
          WHERE id = ?`,
         [hashed_password, salt, id]
     );
   }
 
+  getRating(id) {
+    return this.db.get(
+        `SELECT round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1) AS rating
+         FROM (SELECT MAX(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) r
+         WHERE user_id = ?`,
+        [id]
+    );
+  }
+
+  setRating(id, rating) {
+    return this.db.run(
+        `INSERT INTO rating (user_id, previous)
+         VALUES (?, ?)`,
+        [id, rating]
+    );
+  }
 }
 
 module.exports = User;

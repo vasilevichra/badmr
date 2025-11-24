@@ -1,0 +1,4 @@
+/* строка поиска игроков */
+#player div.search {
+  width: calc(100% - 129px);
+}

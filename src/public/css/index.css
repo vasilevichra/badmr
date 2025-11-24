@@ -21,6 +21,10 @@ html, h1, h2, h3, h4, h5, h6, a {
   color: #007df9;
 }
 
+.social {
+  margin: 1.35em 0 0 0;
+}
+
 .tournament {
   margin: 1em 0 3em 0;
   position: relative;
@@ -39,6 +43,11 @@ html, h1, h2, h3, h4, h5, h6, a {
 .player {
   margin: 1em 0 3em 0;
   position: relative;
+}
+
+.player-selectors {
+  display: inline;
+  margin: 0 1em;
 }
 
 .select {
@@ -94,12 +103,10 @@ html, h1, h2, h3, h4, h5, h6, a {
 }
 
 /* строка поиска игроков в архиве */
-#player-archive div.search {
-  width: 100%;
-}
-
-.footer {
-  background: #007df9;
+#player-archive .fixed-table-toolbar {
+/*#player-archive div.search {*/
+  /*width: 100%;*/
+  margin:0 auto;
 }
 
 /* активная кнопка перелистывания страниц */
@@ -108,8 +115,9 @@ html, h1, h2, h3, h4, h5, h6, a {
 }
 
 /* поля ввода с курсором по центру */
-input[type=text],
-input[type=password] {
+#game input[type=text],
+#login input[type=text],
+#login input[type=password] {
   text-align: center;
 }
 
@@ -122,4 +130,46 @@ input[type=password] {
   position: absolute;
   z-index: -1;
   color: rgba(128, 128, 128, 0.3);
+}
+
+/* Отступ для дня рождения на формах регистрации*/
+#signup select[name="dd"] {
+  margin-left: 10px;
+}
+
+#signup section {
+  margin-bottom: 1em;
+}
+
+.sex form {
+  width: 200px;
+  margin: 0 auto;
+}
+
+.sex input[type="radio"] {
+  display: none;
+}
+
+.sex input[type="radio"]:checked + label {
+  color: #fffffb;
+  background-image: linear-gradient(to bottom, #61605e, #a4a4a2);
+}
+
+.sex label[id="male"],
+.sex label[id="female"] {
+  display: block;
+  float: left;
+  padding: 5px 10px;
+  background-image: linear-gradient(to bottom, #fff, #ddd);
+  border: 1px solid #9e9fa1;
+  cursor: pointer;
+}
+
+.sex label[id="female"] {
+  margin-left: -1px;
+}
+
+.sex label[id="male"]:hover,
+.sex label[id="female"]:hover {
+  background-image: linear-gradient(to bottom, #fff, #b9b9b9);
 }
