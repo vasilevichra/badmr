@@ -1,5 +1,6 @@
 const DB = require("../db");
 const Specific = require("./specific");
+const crypto = require("crypto");
 
 class Common {
   constructor() {
@@ -9,13 +10,15 @@ class Common {
     Common._instance = this;
 
     this.db = new DB(process.env.NODE_ENV === 'test' ? './test.db' : './badmr.sqlite3');
-    if (process.env.NODE_ENV in ['dev']) {
-      try {
-        const Specific = require("./specific");
-        new Specific();
-      } catch (e) {
-      }
-    }
+    // create an initial users
+    const salt = crypto.randomBytes(16);
+    (Specific.users || []).forEach(user => {
+      this.db.database().run('UPDATE user SET hashed_password = ?, salt = ? WHERE id = ?', [
+        crypto.pbkdf2Sync(user.password, salt, 310000, 32, 'sha256'),
+        salt,
+        user.id
+      ]);
+    });
   }
 
   ready(calculated_objects = []) {

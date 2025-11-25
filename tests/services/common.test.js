@@ -2,7 +2,7 @@ const assert = require('node:assert');
 const {describe, it, beforeEach} = require('node:test');
 
 const DBMigrate = require("db-migrate");
-const {faker, da} = require("@faker-js/faker");
+const {faker} = require("@faker-js/faker");
 
 const CommonService = require('../../src/services/common');
 const CortService = require('../../src/services/court');
