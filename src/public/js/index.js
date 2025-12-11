@@ -1,5 +1,6 @@
 $(document).ready(function () {
 
+  // русская локализация для всех таблиц
   $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU']);
 
   // window.onbeforeunload = () => 'Are you sure you want to leave?';
@@ -22,15 +23,7 @@ $(document).ready(function () {
   renderGames();
   renderArchive();
 
-  if (loggedInUser) {
-    $('.player .fixed-table-toolbar .columns').append(
-        // кнопки у таблицы игроков:
-        '<button type="button" id="player-actualization" class="bi bi-arrow-down-up btn btn-primary"></button>' +                             // актуализации участников
-        '<button type="button" id="player-arhive" class="bi bi-box-seam btn btn-danger"></button>' +                                          // архивирования
-        '<button type="button" class="btn bi-person-add btn-success" data-bs-toggle="modal" data-bs-target="#player-signup-window"></button>' // добавления нового пользователя
-    );
-  }
-
   // выравнивание перелистывания страниц по центру для всех таблиц
   $('.fixed-table-pagination').addClass('d-flex justify-content-center');
+
 });

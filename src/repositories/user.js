@@ -83,6 +83,19 @@ class User {
     );
   }
 
+  actualize() {
+    return this.archiveAll()
+    .then(() => {
+      return this.db.run(
+          `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
+           SELECT (SELECT id FROM tournament WHERE current = 1), user_id, 1, 0
+           FROM delta_month WHERE true
+           ON CONFLICT DO UPDATE SET available = 1,
+                                     archived  = 0`
+      )
+    });
+  }
+
   archive(id) {
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
@@ -97,7 +110,7 @@ class User {
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
          SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
-         FROM players
+         FROM players WHERE true
          ON CONFLICT DO UPDATE SET available = 0,
                                    archived  = 1`
     );
@@ -117,7 +130,7 @@ class User {
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
          SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
-         FROM players
+         FROM players WHERE true
          ON CONFLICT DO UPDATE SET available = 1,
                                    archived  = 0`
     );

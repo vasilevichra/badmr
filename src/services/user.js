@@ -18,6 +18,7 @@ class User {
   registerById = (id) => this.user.registerById(id);
   deregisterAll = () => this.user.deregisterAll();
   deregisterById = (id) => this.user.deregisterById(id);
+  actualize = () => this.user.actualize();
   archive = (id) => this.user.archive(id);
   archiveAll = () => this.user.archiveAll();
   unarchive = (id) => this.user.unarchive(id);

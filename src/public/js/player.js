@@ -98,6 +98,19 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       });
     }
   });
+
+  if (loggedInUser) {
+    $('.player .fixed-table-toolbar .columns').append(
+        // кнопки у таблицы игроков:
+        '<button type="button" id="player-actualize" class="bi bi-arrow-down-up btn btn-primary"></button>' + // актуализации участников
+        '<button type="button" id="player-arhive" class="bi bi-box-seam btn btn-danger"></button>' + // архивирования
+        '<button type="button" class="btn bi-person-add btn-success" data-bs-toggle="modal" data-bs-target="#player-signup-window"></button>' // добавления нового пользователя
+    );
+    $('#player-actualize').click(() => {
+      $.post('/api/users/actualize');
+      $('#player-table').bootstrapTable('refresh');
+    });
+  }
 }
 
 const playerDeltaCss = value => {

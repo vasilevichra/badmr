@@ -50,6 +50,10 @@ router.post('/deregister/:id', ensureLoggedIn, (req, res) => {
   res.promise(userService.deregisterById(req.params.id));
 });
 
+router.post('/actualize', ensureLoggedIn, (req, res) => {
+  res.promise(userService.actualize());
+});
+
 router.get('/rating/:id', (req, res) => {
   res.promise(userService.getRating(req.params.id));
 });
