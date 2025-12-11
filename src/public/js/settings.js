@@ -1,7 +1,8 @@
 const renderSettings = () => {
   $('#settings-table')
   .bootstrapTable({
-    url: '/api/settings/', columns: [
+    url: '/api/settings/',
+    columns: [
       {
         field: 'name',
         title: isPhone() ? 'Наз.' : 'Название',

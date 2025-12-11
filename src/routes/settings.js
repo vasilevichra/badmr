@@ -1,8 +1,5 @@
-const Express = require('express');
-const SettingsService = require('../services/settings');
-
-const router = Express.Router();
-const settingsService = new SettingsService();
+const Express = require('express'), router = Express.Router();
+const SettingsService = require('../services/settings'), settingsService = new SettingsService();
 
 router.get('/', (req, res) => {
   res.promise(() => settingsService.getAll());

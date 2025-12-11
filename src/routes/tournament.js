@@ -1,8 +1,5 @@
-const Express = require('express');
-const TournamentService = require('../services/tournament');
-
-const router = Express.Router();
-const tournamentService = new TournamentService();
+const Express = require('express'), router = Express.Router();
+const TournamentService = require('../services/tournament'), tournamentService = new TournamentService();
 
 router.get('/', (req, res) => {
   res.promise(tournamentService.getAll());

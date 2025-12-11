@@ -5,5 +5,5 @@ sudo systemctl daemon-reload
 sudo systemctl enable badmr.service
 
 sudo systemctl stop badmr.service
-rm -f /home/r/badmr/badmr.sqlite3
+rm -f /home/r/badmr/.data/badmr.sqlite3
 sudo systemctl start badmr.service

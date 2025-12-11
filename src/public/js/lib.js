@@ -9,29 +9,13 @@ const age = (date) => {
 }
 
 const isPhone = () => {
-  return new MobileDetect(window.navigator.userAgent).phone() !== null;
+  return !isNotPhone();
 }
 
 const isNotPhone = () => {
-  return !isPhone();
+  let details = new UserAgent().parse(navigator.userAgent);
+  return details.isDesktop || details.isTablet || details.isSmartTV;
 }
-
-const playerNameFormatter = (id, name, sex, pic) => {
-  let result = '';
-  if (isPhone()) {
-    let names = name.split(/\s/);
-    result = `${names[0]} ${names[1].charAt(0)}.`;
-  } else {
-    result = playerAvatarFormatter(pic, name, sex) + ' ' + name;
-  }
-  return result + ' <nobr style="color: rgba(128,128,128,0.3)">#' + id + '</nobr>';
-};
-
-const playerAvatarFormatter = (pic, name, sex) => {
-  return pic ?
-      '<img src="data:image/png;base64, ' + pic + '" alt="' + name + '" width="30" height="30"/>' :
-      (sex ? '👨🏻‍🦰' : '👩🏻');
-};
 
 const playerSexStyle = (sex) => {
   return sex ?
@@ -39,57 +23,79 @@ const playerSexStyle = (sex) => {
       {css: {"background-color": "rgba(250,218,221,0.33)"}};
 }
 
-const playerRatingGroupsFormatter = (rating) => {
+const playerRatingGroupsFormatter = (rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
   let group;
-  if (rating <= 250) { // todo сделать запрос в базу с tournament_settings.H_max
+  let rate;
+  if (rating <= H_max) {
     group = 'H';
-  } else if (rating <= 320) {
+    rate = 0 + ' - ' + H_max;
+  } else if (rating <= G_max) {
     group = 'G';
-  } else if (rating <= 380) {
+    rate = (H_max + 1) + ' - ' + G_max;
+  } else if (rating <= F_max) {
     group = 'F';
-  } else if (rating <= 480) {
+    rate = (G_max + 1) + ' - ' + F_max;
+  } else if (rating <= E_max) {
     group = 'E';
-  } else if (rating <= 600) {
+    rate = (F_max + 1) + ' - ' + E_max;
+  } else if (rating <= D_max) {
     group = 'D';
-  } else if (rating <= 750) {
+    rate = (E_max + 1) + ' - ' + D_max;
+  } else if (rating <= C_max) {
     group = 'C';
-  } else if (rating <= 900) {
+    rate = (D_max + 1) + ' - ' + C_max;
+  } else if (rating <= B_max) {
     group = 'B';
+    rate = (C_max + 1) + ' - ' + B_max;
   } else {
     group = 'A';
+    rate = (B_max + 1) + '++';
   }
 
-  return isPhone() ? rating : '<div title="' + group + ': 900+" class="group-letter"><div class="group-letter-bg">' + group + '</div>' + rating + '</div>';
+  return isPhone() ? rating : '<div title="' + group + ': ' + rate + '" class="group-letter"><div class="group-letter-bg secondary-info">'
+      + group + '</div>' + rating + '</div>';
 };
 
-const playerRatingGroupsStyle = (rating) => {
-  if (rating <= 250) { // сделать запрос в базу с tournament_settings.H_max
+const playerRatingGroupsStyle = (rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
+  if (rating <= H_max) { // сделать запрос в базу с tournament_settings.H_max
     return {css: {"background-color": "rgba(255,255,255,0.33)"}};
-  } else if (rating <= 320) {
+  } else if (rating <= G_max) {
     return {css: {"background-color": "rgba(238,130,238,0.33)"}};
-  } else if (rating <= 380) {
+  } else if (rating <= F_max) {
     return {css: {"background-color": "rgba(75,0,130,0.33)"}};
-  } else if (rating <= 480) {
+  } else if (rating <= E_max) {
     return {css: {"background-color": "rgba(0,0,255,0.33)"}};
-  } else if (rating <= 600) {
+  } else if (rating <= D_max) {
     return {css: {"background-color": "rgba(0,128,0,0.33)"}};
-  } else if (rating <= 750) {
+  } else if (rating <= C_max) {
     return {css: {"background-color": "rgba(255,255,0,0.33)"}};
-  } else if (rating <= 900) {
+  } else if (rating <= B_max) {
     return {css: {"background-color": "rgba(255,165,0,0.33)"}};
   } else {
     return {css: {"background-color": "rgba(255,0,0,0.33)"}};
   }
 }
 
-function getJson(url) {
+const getText = (url) => {
+  return $.ajax({
+    type: 'GET',
+    url: url,
+    global: false,
+    async: false,
+    success: function (data) {
+      return data;
+    }
+  }).responseText
+};
+
+const getJson = (url) => {
   return JSON.parse($.ajax({
     type: 'GET',
     url: url,
     dataType: 'json',
     global: false,
-    async:false,
-    success: function(data) {
+    async: false,
+    success: function (data) {
       return data;
     }
   }).responseText);

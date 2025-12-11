@@ -1,5 +1,4 @@
 const Repository = require('./common');
-const TournamentRepository = require('./tournament');
 
 class Court {
   constructor() {
@@ -9,7 +8,6 @@ class Court {
     Court._instance = this;
 
     this.db = new Repository().db;
-    this.tournament = new TournamentRepository();
   }
 
   add(tournament_id, number, available) {

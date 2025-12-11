@@ -22,7 +22,7 @@ const renderArchive = () => {
         field: 'name',
         title: 'Имя',
         sortable: true,
-        formatter: (value, row) => playerNameFormatter(row.id, value, row.sex, row.pic)
+        formatter: (value, row) => this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone())
       },
       {
         field: 'city',
@@ -32,4 +32,6 @@ const renderArchive = () => {
       }
     ]
   });
+
+  $('#player-archive div.fixed-table-toolbar').addClass('d-flex justify-content-center');
 }

@@ -1,8 +1,5 @@
-const Express = require('express');
-const GameService = require('../services/game');
-
-const router = Express.Router();
-const gameService = new GameService();
+const Express = require('express'), router = Express.Router();
+const GameService = require('../services/game'), gameService = new GameService();
 
 router.get('/:id', (req, res) => {
   res.promise(gameService.getById(req.params.id));

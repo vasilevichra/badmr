@@ -9,14 +9,14 @@ class Common {
     }
     Common._instance = this;
 
-    this.db = new DB(process.env.NODE_ENV === 'test' ? './test.db' : './badmr.sqlite3');
+    this.db = new DB(process.env.NODE_ENV === 'test' ? './.data/test.db' : './.data/badmr.sqlite3');
     // create an initial users
     const salt = crypto.randomBytes(16);
-    (Specific.users || []).forEach(user => {
+    (Specific.users || []).forEach(u => {
       this.db.database().run('UPDATE user SET hashed_password = ?, salt = ? WHERE id = ?', [
-        crypto.pbkdf2Sync(user.password, salt, 310000, 32, 'sha256'),
+        crypto.pbkdf2Sync(u.password, salt, 310000, 32, 'sha256'),
         salt,
-        user.id
+        u.id
       ]);
     });
   }

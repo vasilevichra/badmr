@@ -5,6 +5,10 @@
   "private": true,
   "dependencies": {
     "bluebird": "^3.7.2",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
+    "bootstrap-table": "^1.25.0",
+    "chartjs": "^0.3.24",
     "concurrently": "^9.2.1",
     "connect-ensure-login": "^0.1.1",
     "connect-sqlite3": "^0.9.16",
@@ -17,7 +21,9 @@
     "express": "^5.1.0",
     "express-promise-json-router": "^1.0.8",
     "express-session": "^1.17.2",
+    "express-useragent": "^2.0.2",
     "http-errors": "^2.0.0",
+    "jquery": "^3.7.1",
     "lodash": "^4.17.21",
     "morgan": "^1.10.1",
     "nodemon": "^3.1.11",
@@ -49,10 +55,10 @@
     "migrate": "node node_modules/db-migrate/bin/db-migrate up",
     "compile": "export NODE_ENV=dev && nodemon src/bin/start.js",
     "open": "concurrently \"npm run compile\" \"sleep 1 && open http://localhost:3000/\"",
-    "test": "(rm -f test.db || true) && node node_modules/db-migrate/bin/db-migrate up -e test -c 4 && export NODE_ENV=test && node --test",
-    "dev": "npm run test && (rm -f badmr.sqlite3 || true) && npm run migrate && export NODE_ENV=dev && npm run open",
-    "prod": "npm install && npm run migrate && npm run test && export NODE_ENV=prod && node src/bin/start.js",
-    "release": "rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Desktop/badmr/.gitignore' /Users/r/Desktop/badmr box:~/ && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'"
+    "test": "(rm -f .data/test.db .log/test.log || true) && node node_modules/db-migrate/bin/db-migrate up -e test -c 4 && export NODE_ENV=test && node --test | tee -a .log/test.log",
+    "dev": "npm run test && (rm -f .data/badmr.sqlite3 || true) && npm run migrate && export NODE_ENV=dev && npm run open | tee -a .log/dev.log",
+    "prod": "npm install && npm run migrate && export NODE_ENV=prod && node src/bin/start.js | tee -a .log/prod.log",
+    "release": "npm run test &&   rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Projects.localized/badmr/.gitignore' /Users/r/Projects.localized/badmr box:~/ && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'"
   },
   "author": {
     "name": "Vasilevich Roman",

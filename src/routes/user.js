@@ -1,11 +1,7 @@
-const Express = require('express');
+const Express = require('express'), router = Express.Router();
 // const csrf = require('csurf');
-const ensureLogIn = require('connect-ensure-login').ensureLoggedIn;
-const UserService = require('../services/user');
-
-const ensureLoggedIn = ensureLogIn();
-const router = Express.Router();
-const userService = new UserService();
+const ensureLogIn = require('connect-ensure-login').ensureLoggedIn, ensureLoggedIn = ensureLogIn();
+const UserService = require('../services/user'), userService = new UserService();
 
 // const csrfProtection = csrf({ cookie: true });
 // const parseForm = Express.urlencoded({ extended: false });

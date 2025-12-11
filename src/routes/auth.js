@@ -3,9 +3,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const crypto = require('crypto');
 const DB = require('../repositories/common');
-const CommonService = require('../services/common');
-
-const commonService = new CommonService();
+const CommonService = require('../services/common'), commonService = new CommonService();
 
 passport.use(new LocalStrategy(function verify(email, password, cb) {
   new DB().db.database().get('SELECT * FROM user WHERE email = ?', [email], function (err, row) {

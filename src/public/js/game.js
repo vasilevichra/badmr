@@ -22,7 +22,7 @@ const fillMatch = (counter, match) => {
     columns: [{
       field: 'name',
       title: 'Name',
-      formatter: (value, row) => playerNameFormatter(row.id, value, row.sex, row.pic),
+      formatter: (value, row) => this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()),
       cellStyle: (value, row) => playerSexStyle(row.sex)
     }],
     data: [{
@@ -44,7 +44,7 @@ const fillMatch = (counter, match) => {
     columns: [{
       field: 'name',
       title: 'Name',
-      formatter: (value, row) => playerNameFormatter(row.id, value, row.sex, row.pic),
+      formatter: (value, row) => this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()),
       cellStyle: (value, row) => playerSexStyle(row.sex)
     }],
     data: [{

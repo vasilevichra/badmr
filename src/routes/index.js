@@ -1,15 +1,11 @@
-const Express = require('express');
-const CommonService = require('../services/common');
-const SettingsService = require('../services/settings');
-const TournamentService = require('../services/tournament');
-const UnitService = require('../services/unit');
+const Express = require('express'), router = Express.Router();
+const CommonService = require('../services/common'), commonService = new CommonService();
+const SettingsService = require('../services/settings'), settingsService = new SettingsService();
+const TournamentService = require('../services/tournament'), tournamentService = new TournamentService();
+const UnitService = require('../services/unit'), unitService = new UnitService();
+const MatchService = require('../services/match'), matchService = new MatchService();
 const Promise = require('bluebird');
-
-const router = Express.Router();
-const commonService = new CommonService();
-const settingsService = new SettingsService();
-const tournamentService = new TournamentService();
-const unitService = new UnitService();
+const share = require('../share');
 
 router.get(
     '/',
@@ -23,11 +19,12 @@ router.get(
       res.locals.filter = null;
 
       Promise.all([
-        tournamentService.getAll(), // 0
-        unitService.getAll(),       // 1
-        settingsService.states(),   // 2
-        settingsService.regions(),  // 3
-        settingsService.cities()    // 4
+        tournamentService.getAll(),                // 0
+        unitService.getAll(),                      // 1
+        settingsService.states(),                  // 2
+        settingsService.regions(),                 // 3
+        settingsService.cities(),                  // 4
+        matchService.getAllFinishedAtLastSession() // 5
       ])
       .then((promises) => {
         res.render('index', {
@@ -37,7 +34,11 @@ router.get(
           units: promises[1],
           states: promises[2],
           regions: promises[3],
-          cities: promises[4]
+          cities: promises[4],
+          matches: promises[5],
+          playerNameFormatter: function (id, name, sex, pic) {
+            return share.playerNameFormatter(id, name, sex, pic, req.useragent?.isMobile || false)
+          }
         });
       });
 

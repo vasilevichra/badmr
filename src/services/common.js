@@ -1,12 +1,8 @@
-const Repository = require('../repositories/common')
-const SettingsService = require('./settings')
-const CourtService = require('./court')
-const Promise = require('bluebird')
+const Repository = require('../repositories/common');
+const SettingsService = require('./settings'), settingsService = new SettingsService();
+const CourtService = require('./court'), courtService = new CourtService();
+const Promise = require('bluebird');
 const _ = require('lodash');
-const MobileDetect = require('../public/js/lib/mobile-detect.min.js');
-
-const settingsService = new SettingsService();
-const courtService = new CourtService();
 
 class Common {
   constructor() {
@@ -19,15 +15,8 @@ class Common {
   }
 
   device = (req) => {
-    const md = new MobileDetect(req.headers['user-agent']);
-    const isMobile = md.phone() !== null || md.mobile() === 'UnknownMobile';
-    const isTablet = md.tablet() !== null || md.mobile() === 'UnknownTablet';
-    // const isDesktop = !isMobile && !isTablet;
-
-    if (isMobile) {
+    if (req.useragent?.isMobile) {
       return 'phone';
-    } else if (isTablet) {
-      return 'tablet';
     } else {
       return 'desktop'
     }

@@ -94,7 +94,7 @@ const selectColumns = [
   {
     field: 'name',
     title: 'Имя',
-    formatter: (value, row) => playerNameFormatter(row.user_id, value, row.sex, row.pic),
+    formatter: (value, row) => this.share.playerNameFormatter(row.user_id, value, row.sex, row.pic, isPhone()),
     cellStyle: (value, row) => playerSexStyle(row.sex)
   },
   {

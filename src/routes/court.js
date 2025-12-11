@@ -1,8 +1,5 @@
-const Express = require('express');
-const CourtService = require('../services/court');
-
-const router = Express.Router();
-const courtService = new CourtService();
+const Express = require('express'), router = Express.Router();
+const CourtService = require('../services/court'), courtService = new CourtService();
 
 router.get('/', (req, res) => {
   res.promise(courtService.getAll());

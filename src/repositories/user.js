@@ -21,9 +21,17 @@ class User {
 
   getById(id) {
     return this.db.get(
-        `SELECT *
-         FROM user
-         WHERE id = ?`,
+        `SELECT u.id,
+                u.lastname,
+                u.firstname,
+                u.patronymic,
+                u.birthday,
+                u.sex,
+                up.pic,
+                u.city_id
+         FROM user u
+                  LEFT OUTER JOIN user_pic up on u.id = up.user_id
+         WHERE u.id = ?`,
         [id]
     );
   }

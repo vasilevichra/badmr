@@ -1,10 +1,6 @@
-const Express = require('express');
-const ensureLogIn = require('connect-ensure-login').ensureLoggedIn;
-const CommonService = require('../services/common');
-
-const ensureLoggedIn = ensureLogIn();
-const router = Express.Router();
-const commonService = new CommonService();
+const Express = require('express'), router = Express.Router();
+const ensureLogIn = require('connect-ensure-login').ensureLoggedIn, ensureLoggedIn = ensureLogIn();
+const CommonService = require('../services/common'), commonService = new CommonService();
 
 router.get('/ready/', ensureLoggedIn, (req, res) => {
   res.promise(commonService.ready());

@@ -1,94 +1,76 @@
-const renderPlayers = () => {
+const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
   $('#player-table')
   .bootstrapTable({
     url: '/api/users/',
-    search: isNotPhone(),
+    search: loggedInUser && isNotPhone(),
     sortName: 'rating',
     sortOrder: 'desc',
-    showMultiSort: isNotPhone(),
-    showMultiSortButton: isNotPhone(),
     /*pagination: true, pageSize: 20, pageNumber: 1,*/
-    showRefresh: isNotPhone(),
+    showRefresh: loggedInUser && isNotPhone(),
     columns: [
       {
         title: '№',
         field: '#',
         align: 'center',
-        formatter: (value, row, index) => {
-          return index + 1;
-        },
+        formatter: (value, row, index) => index + 1,
       },
       {
         field: 'registered',
         title: 'Участвует?',
         checkbox: true,
         sortable: true,
-        cellStyle: (value, row) => {
-          return row.enabled === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}};
-        }
+        cellStyle: (value, row) => row.enabled === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}},
       },
       {
         field: 'name',
         title: 'Имя',
         sortable: true,
-        formatter: (value, row) => playerNameFormatter(row.id, value, row.sex, row.pic),
-        cellStyle: (value, row) => playerSexStyle(row.sex)
+        formatter: (value, row) => this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()),
+        cellStyle: (value, row) => playerSexStyle(row.sex),
       },
       {
         field: 'rating',
         title: isPhone() ? 'Р.' : 'Рейтинг',
         align: 'center',
         sortable: true,
-        formatter: (value, row) => playerRatingGroupsFormatter(row.rating),
-        cellStyle: (value, row) => playerRatingGroupsStyle(row.rating)
+        formatter: (value, row) => playerRatingGroupsFormatter(row.rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
+        cellStyle: (value, row) => playerRatingGroupsStyle(row.rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
       },
       {
         field: 'delta_today',
         title: 'Д',
         align: 'center',
         sortable: true,
-        formatter: (value) => {
-          return value > 0 ? '+' + value : value;
-        },
-        cellStyle: (value) => {
-          return playerDeltaCss(value);
-        }
+        formatter: value => value > 0 ? '+' + value : value,
+        cellStyle: value => playerDeltaCss(value),
       },
       {
         field: 'delta_week',
         title: 'Н',
         align: 'center',
         sortable: true,
-        formatter: (value) => {
-          return value > 0 ? '+' + value : value;
-        },
-        cellStyle: function (value) {
-          return playerDeltaCss(value);
-        }
+        formatter: value => value > 0 ? '+' + value : value,
+        cellStyle: value => playerDeltaCss(value),
       },
       {
         field: 'delta_month',
         title: 'М',
         align: 'center',
         sortable: true,
-        formatter: (value) => {
-          return value > 0 ? '+' + value : value;
-        },
-        cellStyle: function (value) {
-          return playerDeltaCss(value);
-        }
+        formatter: value => value > 0 ? '+' + value : value,
+        cellStyle: value => playerDeltaCss(value),
       },
       {
         field: 'matches',
         title: 'Сыграно',
         align: 'center',
-        sortable: true
+        sortable: true,
       },
       {
         field: 'city',
         title: 'Город',
         align: 'center',
-        sortable: true
+        sortable: true,
       }
     ]
     .filter(column => loggedInUser ? true : !['registered'].includes(column.field))
@@ -118,14 +100,14 @@ const renderPlayers = () => {
   });
 }
 
-const playerDeltaCss = (value) => {
+const playerDeltaCss = value => {
   if (value > 0) {
-    return {css: {"color": "rgb(0,153,0)"}};
+    return {classes: 'rating-plus'};
   }
   if (value < 0) {
-    return {css: {"color": "rgb(255,0,0)"}};
+    return {classes: 'rating-minus'};
   }
-  return {css: {}};
+  return {};
 }
 
 const archiveUser = (id, name) => {
@@ -220,7 +202,7 @@ const renderPlayerModal = (player) => {
   });
 }
 
-const playerModalTemplate = (player) => `
+const playerModalTemplate = player => `
 <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
   <div class="modal-content">
     <div class="modal-header">
