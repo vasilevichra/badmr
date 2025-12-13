@@ -1,4 +1,4 @@
-(function (exports) {
+(exports => {
 
   const playerNameFormatter = (id, name, sex, pic, isMobile = false) => {
     let result = '';
@@ -6,9 +6,9 @@
       let names = name.split(/\s/);
       result = `${names[0]} ${names[1].charAt(0)}.`;
     } else {
-      result = playerAvatarFormatter(pic, name, sex) + ' ' + name;
+      result = playerAvatarFormatter(pic, name, sex) + '&nbsp;' + name;
     }
-    return result + ' <nobr class="secondary-info">#' + id + '</nobr>';
+    return result + '&nbsp;<nobr class="secondary-info">#' + id + '</nobr>';
   };
 
   const playerAvatarFormatter = (pic, name, sex) => {

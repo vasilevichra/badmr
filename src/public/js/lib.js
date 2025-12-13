@@ -82,9 +82,7 @@ const getText = (url) => {
     url: url,
     global: false,
     async: false,
-    success: function (data) {
-      return data;
-    }
+    success: data => data
   }).responseText
 };
 
@@ -95,8 +93,6 @@ const getJson = (url) => {
     dataType: 'json',
     global: false,
     async: false,
-    success: function (data) {
-      return data;
-    }
+    success: data => data
   }).responseText);
 }

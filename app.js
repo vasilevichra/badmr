@@ -47,6 +47,7 @@ app.use((req, res, next) => {
 
 // pushed throw npm frontend dependencies
 app.use('/js', express.static(__dirname + '/node_modules/jquery/dist'));
+app.use('/js', express.static(__dirname + '/node_modules/jquery.cookie'));
 app.use('/js', express.static(__dirname + '/node_modules/bootstrap/dist/js'));
 app.use('/js', express.static(__dirname + '/node_modules/bootstrap-table/dist'));
 app.use('/js', express.static(__dirname + '/node_modules/express-useragent/dist/browser'));

@@ -13,6 +13,12 @@ const renderGames = () => {
       });
     }
   });
+  // сохранение значений счёта игр в печеньки
+  $(document.body).on('change keydown keypress keyup mousedown click mouseup', '.game-input', function () {
+    const id = $(this).attr('id');
+    $.cookie(id, $(this).val());
+    console.log($.cookie(id));
+  });
 }
 
 const fillMatch = (counter, match) => {
@@ -61,6 +67,16 @@ const fillMatch = (counter, match) => {
   });
 
   $(`#game-form-info-${counter}`).text(`Корт №${match.court}`);
+
+  // выставление значения счёта игр из печенек при перезагрузке страницы
+  for (let i = 1; i <= 3; i++) {
+    for (let j = 1; j <= 2; j++) {
+      const id = `game-input-${i}${j}-${counter}`;
+      if ($.cookie(id)) {
+        $(`#${id}`).val($.cookie(id));
+      }
+    }
+  }
 
   $(`#game-form-button-submit-${counter}`).click((event) => {
     event.preventDefault();
@@ -140,6 +156,15 @@ const fillMatch = (counter, match) => {
         );
       }
     }
+
+    // удаление печенек для выставления значений счёта игр
+    for (let i = 1; i <= 3; i++) {
+      for (let j = 1; j <= 2; j++) {
+        const id = `game-input-${i}${j}-${counter}`;
+        $.removeCookie(id);
+      }
+    }
+
     $(`#game-form-${counter}`).hide();
     $('#player-table').bootstrapTable('refresh');
     $('#cort-table').bootstrapTable('refresh');
@@ -158,19 +183,19 @@ const gameFormTemplate = (counter) => `
   </div>
   <div class="col-auto">
     <div>
-      <input id="game-input-11-${counter}" class="game-input-left game-input-11" type="text" required minlength="1" maxlength="2" size="2"/>
+      <input id="game-input-11-${counter}" class="game-input game-input-left game-input-11" type="text" required minlength="1" maxlength="2" size="2"/>
       <label>:</label>
-      <input id="game-input-12-${counter}" class="game-input-right game-input-12" type="text" required minlength="1" maxlength="2" size="2"/>
+      <input id="game-input-12-${counter}" class="game-input game-input-right game-input-12" type="text" required minlength="1" maxlength="2" size="2"/>
     </div>
     <div>
-      <input id="game-input-21-${counter}" class="game-input-left game-input-21" type="text" required minlength="1" maxlength="2" size="2"/>
+      <input id="game-input-21-${counter}" class="game-input game-input-left game-input-21" type="text" required minlength="1" maxlength="2" size="2"/>
       <label>:</label>
-      <input id="game-input-22-${counter}" class="game-input-right game-input-22" type="text" required minlength="1" maxlength="2" size="2"/>
+      <input id="game-input-22-${counter}" class="game-input game-input-right game-input-22" type="text" required minlength="1" maxlength="2" size="2"/>
     </div>
     <div>
-      <input id="game-input-31-${counter}" class="game-input-left game-input-31" type="text" required minlength="1" maxlength="2" size="2"/>
+      <input id="game-input-31-${counter}" class="game-input game-input-left game-input-31" type="text" required minlength="1" maxlength="2" size="2"/>
       <label>:</label>
-      <input id="game-input-32-${counter}" class="game-input-right game-input-32" type="text" required minlength="1" maxlength="2" size="2"/>
+      <input id="game-input-32-${counter}" class="game-input game-input-right game-input-32" type="text" required minlength="1" maxlength="2" size="2"/>
     </div>
   </div>
   <div class="col-auto">

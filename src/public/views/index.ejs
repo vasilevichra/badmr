@@ -40,7 +40,7 @@
             <div class="col-10 d-flex justify-content-end">
                 <% if (user) { %>
                     <form action="/api/auth/logout" method="post" class="logout">
-                        <div class=" player-selectors">
+                        <div class="player-selectors">
                             <%- include('tournament', {tournaments: tournaments}); %>
                             <%- include('unit', {units: units}); %>
                         </div>
@@ -248,6 +248,7 @@
   const loggedInUser = '<%- JSON.stringify(user) %>';
 </script>
 <script type="text/javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" src="/js/jquery.cookie.js"></script>
 <script type="text/javascript" src="/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap-table.min.js"></script>

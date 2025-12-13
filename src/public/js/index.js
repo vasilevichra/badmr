@@ -1,4 +1,4 @@
-$(document).ready(function () {
+$(document).ready(() => {
 
   // русская локализация для всех таблиц
   $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU']);
@@ -25,5 +25,4 @@ $(document).ready(function () {
 
   // выравнивание перелистывания страниц по центру для всех таблиц
   $('.fixed-table-pagination').addClass('d-flex justify-content-center');
-
 });

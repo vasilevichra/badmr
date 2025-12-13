@@ -55,7 +55,6 @@ html, h1, h2, h3, h4, h5, h6, a {
 
 .player-selectors {
   display: inline;
-  margin: 0 1em;
 }
 
 .select {
@@ -83,6 +82,9 @@ html, h1, h2, h3, h4, h5, h6, a {
 .game {
   margin: 1em 0 3em 0;
   position: relative;
+}
+
+.game-input {
 }
 
 .game-input-left {

@@ -36,9 +36,7 @@ router.get(
           regions: promises[3],
           cities: promises[4],
           matches: promises[5],
-          playerNameFormatter: function (id, name, sex, pic) {
-            return share.playerNameFormatter(id, name, sex, pic, req.useragent?.isMobile || false)
-          }
+          playerNameFormatter: (id, name, sex, pic) => share.playerNameFormatter(id, name, sex, pic, req.useragent?.isMobile || false)
         });
       });
 

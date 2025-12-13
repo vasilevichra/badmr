@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const DB = require('../repositories/common');
 const CommonService = require('../services/common'), commonService = new CommonService();
 
-passport.use(new LocalStrategy(function verify(email, password, cb) {
-  new DB().db.database().get('SELECT * FROM user WHERE email = ?', [email], function (err, row) {
+passport.use(new LocalStrategy((email, password, cb) => {
+  new DB().db.database().get('SELECT * FROM user WHERE email = ?', [email], (err, row) => {
     const message = {message: 'Bad credentials.'};
     if (err) {
       return cb(err);
@@ -15,7 +15,7 @@ passport.use(new LocalStrategy(function verify(email, password, cb) {
       return cb(null, false, message);
     }
 
-    crypto.pbkdf2(password, row.salt, 310000, 32, 'sha256', function (err, hashedPassword) {
+    crypto.pbkdf2(password, row.salt, 310000, 32, 'sha256', (err, hashedPassword) => {
       if (err) {
         return cb(err);
       }
@@ -27,21 +27,19 @@ passport.use(new LocalStrategy(function verify(email, password, cb) {
   });
 }));
 
-passport.serializeUser(function (user, cb) {
-  process.nextTick(function () {
+passport.serializeUser((user, cb) => {
+  process.nextTick(() => {
     cb(null, {id: user.id, username: user.email});
   });
 });
 
-passport.deserializeUser(function (user, cb) {
-  process.nextTick(function () {
-    return cb(null, user);
-  });
+passport.deserializeUser((user, cb) => {
+  process.nextTick(() => cb(null, user));
 });
 
 const router = Express.Router();
 
-router.get('/login', function (req, res) {
+router.get('/login', (req, res) => {
   res.render('login', {device: commonService.device(req)});
 });
 
@@ -51,13 +49,13 @@ router.post('/login/password', passport.authenticate('local', {
   failureMessage: true
 }));
 
-router.get('/signup', function (req, res) {
+router.get('/signup', (req, res) => {
   res.render('signup', { kind: 'page' });
 });
 
-router.post('/signup', function (req, res, next) {
+router.post('/signup', (req, res, next) => {
   var salt = crypto.randomBytes(16);
-  crypto.pbkdf2(req.body.password, salt, 310000, 32, 'sha256', function (err, hashedPassword) {
+  crypto.pbkdf2(req.body.password, salt, 310000, 32, 'sha256', (err, hashedPassword) => {
     if (err) {
       return next(err);
     }
@@ -70,11 +68,11 @@ router.post('/signup', function (req, res, next) {
       if (err) {
         return next(err);
       }
-      var user = {
+      const user = {
         id: this.lastID,
         username: req.body.username
       };
-      req.login(user, function (err) {
+      req.login(user, err => {
         if (err) {
           return next(err);
         }

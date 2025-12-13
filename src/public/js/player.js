@@ -3,7 +3,7 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
   .bootstrapTable({
     url: '/api/users/',
     search: loggedInUser && isNotPhone(),
-    sortName: 'rating',
+    sortName: 'delta_month',
     sortOrder: 'desc',
     /*pagination: true, pageSize: 20, pageNumber: 1,*/
     showRefresh: loggedInUser && isNotPhone(),
@@ -106,8 +106,8 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
         '<button type="button" id="player-arhive" class="bi bi-box-seam btn btn-danger"></button>' + // архивирования
         '<button type="button" class="btn bi-person-add btn-success" data-bs-toggle="modal" data-bs-target="#player-signup-window"></button>' // добавления нового пользователя
     );
-    $('#player-actualize').click(() => {
-      $.post('/api/users/actualize');
+    $('#player-actualize').click(async () => {
+      await $.post('/api/users/actualize');
       $('#player-table').bootstrapTable('refresh');
     });
   }
