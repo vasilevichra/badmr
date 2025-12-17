@@ -45,7 +45,7 @@ class Common {
       const pairsRating = new Map();
       for (let i = 0; i < ready.length; i++) {
         for (let j = i + 1; j < ready.length; j++) {
-          pairsRating.set([ready[i].user_id, ready[j].user_id], ready[i].rating + ready[j].rating);
+          pairsRating.set([ready[i].user_id, ready[j].user_id], (ready[i].rating + ready[j].rating) / 2);
         }
       }
 
