@@ -19,13 +19,14 @@ class Game {
     );
   }
 
-  create(match_id, lost_1_by, lost_2_by) {
+  create(match_id, lost_1_by, lost_2_by, created_at) {
     return this.db.run(
         `INSERT INTO game (match_id,
                            lost_1_by,
-                           lost_2_by)
-         VALUES (?, ?, ?)`,
-        [match_id, lost_1_by, lost_2_by]
+                           lost_2_by,
+                           created_at)
+         VALUES (?, ?, ?, ?)`,
+        [match_id, lost_1_by, lost_2_by, created_at]
     );
   }
 }

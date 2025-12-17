@@ -15,9 +15,18 @@ const renderGames = () => {
   });
   // сохранение значений счёта игр в печеньки
   $(document.body).on('change keydown keypress keyup mousedown click mouseup', '.game-input', function () {
-    const id = $(this).attr('id');
-    $.cookie(id, $(this).val());
-    console.log($.cookie(id));
+    const value = $(this).val();
+    if (value) {
+      $.cookie($(this).attr('id'), value);
+    }
+  });
+
+  // сохранение значений времени игр в печеньки
+  $(document.body).on('change', '.game-input', function () {
+    const date = getDateId($(this).attr('id'));
+    if (!$.cookie(date)) {
+      $.cookie(date, date2DatabaseFormat());
+    }
   });
 }
 
@@ -112,14 +121,16 @@ const fillMatch = (counter, match) => {
       $.post('/api/games/create', {
             match_id: match.id,
             lost_1_by: gamePoint11,
-            lost_2_by: null
+            lost_2_by: null,
+            created_at: $.cookie(`game-input-1-${counter}-date`)
           }
       );
     } else {
       $.post('/api/games/create', {
             match_id: match.id,
             lost_1_by: null,
-            lost_2_by: gamePoint12
+            lost_2_by: gamePoint12,
+            created_at: $.cookie(`game-input-1-${counter}-date`)
           }
       );
     }
@@ -128,14 +139,16 @@ const fillMatch = (counter, match) => {
       $.post('/api/games/create', {
             match_id: match.id,
             lost_1_by: gamePoint21,
-            lost_2_by: null
+            lost_2_by: null,
+            created_at: $.cookie(`game-input-2-${counter}-date`)
           }
       );
     } else {
       $.post('/api/games/create', {
             match_id: match.id,
             lost_1_by: null,
-            lost_2_by: gamePoint22
+            lost_2_by: gamePoint22,
+            created_at: $.cookie(`game-input-2-${counter}-date`)
           }
       );
     }
@@ -144,14 +157,16 @@ const fillMatch = (counter, match) => {
         $.post('/api/games/create', {
               match_id: match.id,
               lost_1_by: gamePoint31,
-              lost_2_by: null
+              lost_2_by: null,
+              created_at: $.cookie(`game-input-3-${counter}-date`)
             }
         );
       } else {
         $.post('/api/games/create', {
               match_id: match.id,
               lost_1_by: null,
-              lost_2_by: gamePoint32
+              lost_2_by: gamePoint32,
+              created_at: $.cookie(`game-input-3-${counter}-date`)
             }
         );
       }
@@ -160,9 +175,9 @@ const fillMatch = (counter, match) => {
     // удаление печенек для выставления значений счёта игр
     for (let i = 1; i <= 3; i++) {
       for (let j = 1; j <= 2; j++) {
-        const id = `game-input-${i}${j}-${counter}`;
-        $.removeCookie(id);
+        $.removeCookie(`game-input-${i}${j}-${counter}`);
       }
+      $.removeCookie(`game-input-${i}-${counter}-date`);
     }
 
     $(`#game-form-${counter}`).hide();
@@ -173,6 +188,12 @@ const fillMatch = (counter, match) => {
       $('.game-form').remove();
       $('.game-info').show();
     }
+  });
+
+  $(`#game-form-button-reset-${counter}`).click(event => {
+    event.preventDefault();
+
+    alert('kva!');
   });
 }
 
@@ -206,9 +227,10 @@ const gameFormTemplate = (counter) => `
       <label id="game-form-info-${counter}" class="game-form-info">Корт</label>
     </div>
   </div>
-  <div class="row">
+  <div class="game-form-buttons row">
     <div class="text-center">
-      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-outline-primary">Завершить</button>
+      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-outline-success">Завершить</button>
+      <button id="game-form-button-reset-${counter}" type="reset" class="game-form-button-reset btn btn-outline-danger">Отменить</button>         
     </div>
   </div>
 </div>`;
@@ -248,3 +270,5 @@ const gameFormPhoneTemplate = (counter) => `
     </div>
   </div>
 </div>`;
+
+const getDateId = (id) => removeCharacterAtIndex(id + '-date', 12)

@@ -96,3 +96,7 @@ const getJson = (url) => {
     success: data => data
   }).responseText);
 }
+
+const removeCharacterAtIndex = (value, index) => value.substring(0, index) + value.substring(index + 1);
+
+const date2DatabaseFormat = (date = new Date()) => date.toISOString().replace('T', ' ').substring(0, 19);

@@ -95,11 +95,19 @@ html, h1, h2, h3, h4, h5, h6, a {
   margin: 2px 0 2px 1px;
 }
 
+.game-form-buttons {
+  margin: 0 0 3em 0;
+}
+
 .game-form-info {
   margin: 0.5em;
 }
 
 .game-form-button-submit {
+  margin: 0 0 3em 0;
+}
+
+.game-form-button-reset {
   margin: 0 0 3em 0;
 }
 

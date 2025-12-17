@@ -6,8 +6,8 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/create', (req, res) => {
-  const {match_id, lost_1_by, lost_2_by} = req.body;
-  res.promise(gameService.create(match_id, lost_1_by || null, lost_2_by || null));
+  const {match_id, lost_1_by, lost_2_by, created_at} = req.body;
+  res.promise(gameService.create(match_id, lost_1_by || null, lost_2_by || null, created_at));
 });
 
 module.exports = router;

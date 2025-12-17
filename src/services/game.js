@@ -1,4 +1,4 @@
-const GameRepository = require('../repositories/game')
+const GameRepository = require('../repositories/game');
 
 class Game {
   constructor() {
@@ -11,7 +11,7 @@ class Game {
   }
 
   getById = (id) => this.game.getById(id);
-  create = (match_id, lost_1_by, lost_2_by) => this.game.create(match_id, lost_1_by, lost_2_by);
+  create = (match_id, lost_1_by, lost_2_by, created_at) => this.game.create(match_id, lost_1_by, lost_2_by, created_at);
 }
 
 module.exports = Game;
