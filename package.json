@@ -59,7 +59,7 @@
     "test": "(rm -f .data/test.db .log/test.log || true) && node node_modules/db-migrate/bin/db-migrate up -e test -c 4 && export NODE_ENV=test && node --test | tee -a .log/test.log",
     "dev": "npm run test && (rm -f .data/badmr.sqlite3 || true) && npm run migrate && export NODE_ENV=dev && npm run open | tee -a .log/dev.log",
     "prod": "npm install && npm run migrate && export NODE_ENV=prod && node src/bin/start.js | tee -a .log/prod.log",
-    "release": "npm run test &&   rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Projects.localized/badmr/.gitignore' /Users/r/Projects.localized/badmr box:~/ && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'"
+    "release": "npm run test && rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Projects.localized/badmr/.gitignore' /Users/r/Projects.localized/badmr box:~/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/{migrations,src/repositories} box:~/badmr && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'"
   },
   "author": {
     "name": "Vasilevich Roman",

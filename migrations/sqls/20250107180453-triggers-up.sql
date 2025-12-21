@@ -1,288 +1,234 @@
-CREATE TRIGGER calculate_rating_lost_1
-    AFTER INSERT
-    ON game
-    WHEN new.lost_1_by IS NOT NULL
+CREATE TRIGGER calculate_rating_lost_by_1
+    AFTER UPDATE
+    ON match
+    WHEN new.finished = 1 AND old.finished != 1 AND (SELECT count(lost_1_by)
+                                                     FROM game g
+                                                     WHERE new.id = g.match_id
+                                                     GROUP BY g.match_id) = (SELECT cast(value AS int)
+                                                                             FROM settings
+                                                                             WHERE name = 'wins')
 BEGIN
-    INSERT INTO rating (user_id, game_id, previous, delta)
-    VALUES ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_1_id
-             WHERE g.id = new.id
-             LIMIT 1),
+    INSERT INTO rating (user_id, match_id, previous, delta)
+    VALUES (new.user_1_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_1_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / (-10)), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / (-10)), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_3_id, m1.user_4_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_1_id, m2.user_2_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1)),
-           ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_2_id
-             WHERE g.id = new.id
-             LIMIT 1),
+           (new.user_2_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_2_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / (-10)), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / (-10)), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_3_id, m1.user_4_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_1_id, m2.user_2_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1)),
-           ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_3_id
-             WHERE g.id = new.id
-             LIMIT 1),
+           (new.user_3_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_3_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / 10), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / 10), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_3_id, m1.user_4_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_1_id, m2.user_2_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1)),
-           ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_4_id
-             WHERE g.id = new.id
-             LIMIT 1),
+           (new.user_4_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_4_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / 10), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / 10), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_3_id, m1.user_4_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_1_id, m2.user_2_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1));
 END;
 
-CREATE TRIGGER calculate_rating_lost_2
-    AFTER INSERT
-    ON game
-    WHEN new.lost_2_by IS NOT NULL
+CREATE TRIGGER calculate_rating_lost_by_2
+    AFTER UPDATE
+    ON match
+    WHEN new.finished = 1 AND old.finished != 1 AND (SELECT count(lost_2_by)
+                                                     FROM game g
+                                                     WHERE new.id = g.match_id
+                                                     GROUP BY g.match_id) = (SELECT cast(value AS int)
+                                                                             FROM settings
+                                                                             WHERE name = 'wins')
 BEGIN
-    INSERT INTO rating (user_id, game_id, previous, delta)
-    VALUES ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_1_id
-             WHERE g.id = new.id
-             LIMIT 1),
+    INSERT INTO rating (user_id, match_id, previous, delta)
+    VALUES (new.user_1_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_1_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / 10), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / 10), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_1_id, m1.user_2_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_3_id, m2.user_4_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1)),
-           ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_2_id
-             WHERE g.id = new.id
-             LIMIT 1),
+           (new.user_2_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_2_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / 10), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / 10), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_1_id, m1.user_2_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_3_id, m2.user_4_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1)),
-           ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_3_id
-             WHERE g.id = new.id
-             LIMIT 1),
+           (new.user_3_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_3_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / (-10)), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / (-10)), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_1_id, m1.user_2_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_3_id, m2.user_4_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1)),
-           ((SELECT u.id
-             FROM game g
-                      JOIN match m ON m.id = g.match_id
-                      JOIN user u ON u.id = m.user_4_id
-             WHERE g.id = new.id
-             LIMIT 1),
+           (new.user_4_id,
             new.id,
             (SELECT round((p + coalesce(d, 0)), 1)
              FROM (SELECT r.previous AS p, r.delta AS d, max(r.id)
-                   FROM game g
-                            JOIN match m ON m.id = g.match_id
+                   FROM match m
                             JOIN user u ON u.id = m.user_4_id
                             JOIN rating r ON u.id = r.user_id
-                   WHERE g.id = new.id
+                   WHERE m.id = new.id
                    GROUP BY u.id)),
-            (SELECT round(((100 - rating_win + rating_lose) / (-10)), 1)
+            (SELECT CASE WHEN (rating_win - rating_lose) >= 100 THEN 0 ELSE round(((100 - rating_win + rating_lose) / (-10)), 1) END
              FROM (SELECT (sum(rate1) / 2.0) AS rating_win
                    FROM (SELECT (r1.previous + coalesce(r1.delta, 0)) AS rate1, max(r1.id)
-                         FROM game g1
-                                  JOIN match m1 ON m1.id = g1.match_id
+                         FROM match m1
                                   JOIN user u1 ON u1.id IN (m1.user_1_id, m1.user_2_id)
                                   JOIN rating r1 ON r1.user_id = u1.id
-                         WHERE g1.id = new.id
+                         WHERE m1.id = new.id
                          GROUP BY u1.id)),
                   (SELECT (sum(rate2) / 2.0) AS rating_lose
                    FROM (SELECT (r2.previous + coalesce(r2.delta, 0)) AS rate2, max(r2.id)
-                         FROM game g2
-                                  JOIN match m2 ON m2.id = g2.match_id
+                         FROM match m2
                                   JOIN user u2 ON u2.id IN (m2.user_3_id, m2.user_4_id)
                                   JOIN rating r2 ON r2.user_id = u2.id
-                         WHERE g2.id = new.id
+                         WHERE m2.id = new.id
                          GROUP BY u2.id))
              LIMIT 1));
 END;
 
-CREATE TRIGGER delete_rating_when_game_deleted
+CREATE TRIGGER delete_rating_when_match_deleted
     AFTER DELETE
-    ON game
+    ON match
 BEGIN
-    DELETE FROM rating WHERE game_id = old.id;
+    DELETE FROM rating WHERE match_id = old.id;
 END;
 
 CREATE TRIGGER enable_resources_when_match_finished
@@ -291,14 +237,13 @@ CREATE TRIGGER enable_resources_when_match_finished
     WHEN ((SELECT count(g.lost_1_by)
            FROM game g
                     JOIN match m ON m.id = g.match_id
-           -- todo переписать 2 на:
-           -- (SELECT coalesce(s.value, d.value) AS value FROM defaults d
-           --  LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id
-           --  LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1
-           --  WHERE d.name = 'wins')
-           WHERE g.match_id = new.match_id) = 2 OR (SELECT count(g.lost_2_by)
-                                                    FROM game g
-                                                    WHERE g.match_id = new.match_id) = 2)
+           WHERE g.match_id = new.match_id) = (SELECT cast(value AS int)
+                                               FROM settings
+                                               WHERE name = 'wins') OR (SELECT count(g.lost_2_by)
+                                                                        FROM game g
+                                                                        WHERE g.match_id = new.match_id) = (SELECT cast(value AS int)
+                                                                                                            FROM settings
+                                                                                                            WHERE name = 'wins'))
 BEGIN
     UPDATE match SET finished = 1 WHERE id = new.match_id;
 

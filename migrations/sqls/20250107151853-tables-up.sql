@@ -131,7 +131,7 @@ CREATE TABLE rating
 (
     id       INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     user_id  INTEGER NOT NULL CONSTRAINT user REFERENCES user,
-    game_id  INTEGER CONSTRAINT game REFERENCES game,
+    match_id INTEGER CONSTRAINT game REFERENCES match,
     previous INTEGER,
     delta    INTEGER
 );

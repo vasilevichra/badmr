@@ -1,7 +1,7 @@
-DROP TRIGGER calculate_rating_lost_1;
-DROP TRIGGER calculate_rating_lost_2;
+DROP TRIGGER calculate_rating_lost_by_1;
+DROP TRIGGER calculate_rating_lost_by_2;
 
-DROP TRIGGER delete_rating_when_game_deleted;
+DROP TRIGGER delete_rating_when_match_deleted;
 
 DROP TRIGGER enable_resources_when_match_finished;
 

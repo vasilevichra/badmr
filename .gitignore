@@ -132,3 +132,6 @@ dist
 
 # IDE
 .idea/
+
+# security sensitive data
+*specific*

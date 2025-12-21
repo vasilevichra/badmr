@@ -137,62 +137,59 @@
                             <% var pics = [1, 2, 3, 4].map(i => games[0][`pic${i}`]); %>
                             <% var losses_1_by = games.map(g => Number(g?.lost_1_by || 0)); %>
                             <% var losses_2_by = games.map(g => Number(g?.lost_2_by || 0)); %>
+                            <% var total_scores_1 = Number(losses_1_by.reduce((a, b) => a + b, 0)); %>
+                            <% var total_scores_2 = Number(losses_2_by.reduce((a, b) => a + b, 0)); %>
+                            <% var total_scores = total_scores_1 + total_scores_2; %>
+
                             <% var game_dates = games.map(g => new Date(g.game_created_at + "Z")); %>
-                            <% var game_durations_min = [Math.round((game_dates[0].getTime() - match_start_date.getTime()) / 60000)]; %>
+                            <% var game_durations_minutes = [Math.round((game_dates[0].getTime() - match_start_date.getTime()) / 60000)]; %>
                             <% for (let i = 1; i < games.length; i++) {
-                                game_durations_min.push(Math.round((game_dates[i].getTime() - game_dates[i - 1].getTime()) / 60000));
+                                game_durations_minutes.push(Math.round((game_dates[i].getTime() - game_dates[i - 1].getTime()) / 60000));
                             } %>
-                            <% var duration = game_durations_min.reduce((d1, d2) => d1 + d2, 0) %>
+                            <% var duration = game_durations_minutes.reduce((d1, d2) => d1 + d2, 0) %>
+                            <% var score_duration_minutes = total_scores / duration; %>
                             <% var rating1 = Number(games[0].rating1).toFixed(1); %>
                             <% var rating2 = Number(games[0].rating2).toFixed(1); %>
-                            <% var deltas1 = games.map(g => Number(g.delta1)); %>
-                            <% var deltas2 = deltas1.map(d => d * (-1)); %>
-                            <% var delta_sum1 = deltas1.reduce((d1, d2) => d1 + d2, 0).toFixed(1); %>
-                            <% var delta_sum2 = deltas2.reduce((d1, d2) => d1 + d2, 0).toFixed(1); %>
+                            <% var delta1 = games.map(g => Number(g.delta1))[0].toFixed(1); %>
+                            <% var delta2 = delta1 * (-1); %>
 
                             <label class="form-label match-history-info">#<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %>, корт #<%= court %></nobr></label>
                             <table class="match-history-players table" style="margin-bottom: 3em;">
                                 <tbody>
-                                <tr class="match-history-delta-col">
-                                    <td class="<%- delta_sum1 < 0 ? 'rating-minus' : 'rating-plus' %>"><b><%- delta_sum1 < 0 ? delta_sum1 : `+${delta_sum1}` %></b></td>
-                                    <td>Σ<%= rating1 %></td>
-                                    <% deltas1.forEach(d1 => { %>
-                                        <td class="match-history-game-col <%- d1 < 0 ? 'rating-minus' : 'rating-plus' %>"><%- d1 < 0 ? d1 : `+${d1}` %></td>
-                                    <% }) %>
+                                <tr>
+                                    <td class="match-history-delta-col<%= delta1 < 0 ? ' rating-minus' : ' rating-plus' %>"><%= delta1 < 0 ? delta1 : `+${delta1}` %></td>
+                                    <td class="match-history-delta-col<% if( delta1 > 0) { %> win<% } %>">〈Σ〉<%= rating1 %></td>
+                                    <% for (let i = 0; i < losses_1_by.length; i++) { %>
+                                        <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
+                                    <% } %>
                                 </tr>
                                 <tr>
-                                    <td rowspan="2" class="match-history-score"><%= losses_1_by.reduce((a, b) => a + b, 0) %></td>
-                                    <td class="match-history-players-name"><%- playerNameFormatter(user_ids[0], names[0], sexes[0], pics[0]) %></td>
-                                    <% losses_1_by.forEach(l1 => { %>
-                                        <td rowspan="2" class="match-history-game-col match-history-score"><%= l1 %></td>
-                                    <% }) %>
+                                    <td rowspan="2" class="match-history-score<% if( total_scores_1 > total_scores_2) { %> win<% } %>"><%= total_scores_1 %></td>
+                                    <td class="match-history-players-name<% if( delta1 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[0], names[0], sexes[0], pics[0]) %></td>
                                 </tr>
                                 <tr>
-                                    <td class="match-history-players-name"><%- playerNameFormatter(user_ids[1], names[1], sexes[1], pics[1]) %></td>
+                                    <td class="match-history-players-name<% if( delta1 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[1], names[1], sexes[1], pics[1]) %></td>
                                 </tr>
                                 <tr class="match-history-duration">
-                                    <td><b><%= duration %>'</b></td>
-                                    <td>Δ<%= Math.abs(rating1 - rating2).toFixed(1) %></td>
-                                    <% game_durations_min.forEach(d => { %>
+                                    <td class="win"><%= duration %>'</td>
+                                    <td>〈Δ〉<%= Math.abs(rating1 - rating2).toFixed(1) %></td>
+                                    <% game_durations_minutes.forEach(d => { %>
                                         <td class="match-history-game-col"><%= d === 0 || d === duration ? Math.round(duration / games.length) : d %>'</td>
                                     <% }) %>
                                 </tr>
                                 <tr>
-                                    <td rowspan="2" class="match-history-score"><%= losses_2_by.reduce((a, b) => a + b, 0) %></td>
-                                    <td class="match-history-players-name"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
-                                    <% losses_2_by.forEach(l2 => { %>
-                                        <td rowspan="2" class="match-history-game-col match-history-score"><%= l2 %></td>
-                                    <% }) %>
+                                    <td rowspan="2" class="match-history-score<% if( total_scores_2 > total_scores_1) { %> win<% } %>"><%= total_scores_2 %></td>
+                                    <td class="match-history-players-name<% if( delta2 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
+                                    <% for (let i = 0; i < losses_1_by.length; i++) { %>
+                                        <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_2_by[i] > losses_1_by[i]) { %> win<% } %>"><%= losses_2_by[i] %></td>
+                                    <% } %>
                                 </tr>
                                 <tr>
-                                    <td class="match-history-players-name"><%- playerNameFormatter(user_ids[3], names[3], sexes[3], pics[3]) %></td>
+                                    <td class="match-history-players-name<% if( delta2 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[3], names[3], sexes[3], pics[3]) %></td>
                                 </tr>
                                 <tr class="match-history-delta-col">
-                                    <td class="<%- delta_sum2 < 0 ? 'rating-minus' : 'rating-plus' %>"><b><%- delta_sum2 < 0 ? delta_sum2 : `+${delta_sum2}` %></b></td>
-                                    <td>Σ<%= rating2 %></td>
-                                    <% deltas2.forEach(d2 => { %>
-                                        <td class="match-history-game-col <%- d2 < 0 ? 'rating-minus' : 'rating-plus' %>"><%- d2 < 0 ? d2 : `+${d2}` %></td>
-                                    <% }) %>
+                                    <td class="<%= delta2 < 0 ? 'rating-minus' : 'rating-plus' %>"><%= delta2 < 0 ? delta2 : `+${delta2}` %></td>
+                                    <td<% if( delta2 > 0) { %> class="win"<% } %>>〈Σ〉<%= rating2 %></td>
                                 </tr>
                                 </tbody>
                             </table>

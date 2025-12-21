@@ -1,8 +1,8 @@
 CREATE VIEW ready AS
-SELECT u.lastname || ' ' || u.firstname                           AS name,
-       u.id                                                       AS user_id,
-       round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1) AS rating,
-       count(DISTINCT m.id)                                       AS matches,
+SELECT u.lastname || ' ' || u.firstname                                                                                                                AS name,
+       u.id                                                                                                                                            AS user_id,
+       round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1)                                                                                      AS rating,
+       count(DISTINCT m.id)                                                                                                                            AS matches,
        u.id IN (SELECT DISTINCT u_id
                 FROM (SELECT u_id
                       FROM (SELECT user_1_id AS u_id
@@ -30,7 +30,7 @@ SELECT u.lastname || ' ' || u.firstname                           AS name,
                             FROM match
                             ORDER BY id DESC
                             LIMIT (SELECT sum(n) courts
-                                   FROM (SELECT count(id) n FROM court WHERE available = 1 UNION SELECT count(id) n FROM match WHERE finished = 0)))))  AS played
+                                   FROM (SELECT count(id) n FROM court WHERE available = 1 UNION SELECT count(id) n FROM match WHERE finished = 0))))) AS played
 FROM tournament as t
          JOIN tournament_user AS tu ON tu.tournament_id = t.id AND tu.available = 1 AND tu.archived = 0
          JOIN user AS u ON u.id = tu.user_id
@@ -88,7 +88,7 @@ WHERE tu.archived = 1;
 CREATE VIEW delta_today AS
 SELECT u.id AS user_id, u.lastname || ' ' || u.firstname AS name, round(sum(r.delta), 1) AS sum
 FROM rating r
-         JOIN game g ON g.id = r.game_id AND date(g.created_at) = date('now')
+         JOIN match m ON m.id = r.match_id AND date(m.created_at) = date('now')
          JOIN user u ON u.id = r.user_id
 GROUP BY r.user_id
 ORDER BY sum DESC;
@@ -96,7 +96,7 @@ ORDER BY sum DESC;
 CREATE VIEW delta_week AS
 SELECT u.id AS user_id, u.lastname || ' ' || u.firstname AS name, round(sum(r.delta), 1) AS sum
 FROM rating r
-         JOIN game g ON g.id = r.game_id AND date(g.created_at) BETWEEN date('now', 'weekday 0', '-6 day') AND date('now', 'weekday 0')
+         JOIN match m ON m.id = r.match_id AND date(m.created_at) BETWEEN date('now', 'weekday 0', '-6 day') AND date('now', 'weekday 0')
          JOIN user u ON u.id = r.user_id
 GROUP BY r.user_id
 ORDER BY sum DESC;
@@ -104,8 +104,13 @@ ORDER BY sum DESC;
 CREATE VIEW delta_month AS
 SELECT u.id AS user_id, u.lastname || ' ' || u.firstname AS name, round(sum(r.delta), 1) AS sum
 FROM rating r
-         JOIN game g
-              ON g.id = r.game_id AND date(g.created_at) BETWEEN date('now', 'start of month') AND date('now', 'start of month', '+1 month', '-1 day')
+         JOIN match m ON m.id = r.match_id AND date(m.created_at) BETWEEN date('now', 'start of month') AND date('now', 'start of month', '+1 month', '-1 day')
          JOIN user u ON u.id = r.user_id
 GROUP BY r.user_id
 ORDER BY sum DESC;
+
+CREATE VIEW settings AS
+SELECT d.name, coalesce(s.value, d.value) AS value
+FROM defaults d
+         LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id
+         LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1 AND t.available = 1;
