@@ -118,67 +118,103 @@ const fillMatch = (counter, match) => {
     }
 
     if (is11) {
-      $.post('/api/games/create', {
+      $.post(
+          '/api/games/create',
+          {
             match_id: match.id,
             lost_1_by: gamePoint11,
             lost_2_by: null,
             created_at: $.cookie(`game-input-1-${counter}-date`)
+          },
+          () => {
+            $.removeCookie(`game-input-11-${counter}`);
+            $.removeCookie(`game-input-1-${counter}-date`);
           }
       );
     } else {
-      $.post('/api/games/create', {
+      $.post(
+          '/api/games/create',
+          {
             match_id: match.id,
             lost_1_by: null,
             lost_2_by: gamePoint12,
             created_at: $.cookie(`game-input-1-${counter}-date`)
+          },
+          () => {
+            $.removeCookie(`game-input-12-${counter}`);
+            $.removeCookie(`game-input-1-${counter}-date`);
           }
       );
     }
 
     if (is21) {
-      $.post('/api/games/create', {
+      $.post(
+          '/api/games/create',
+          {
             match_id: match.id,
             lost_1_by: gamePoint21,
             lost_2_by: null,
             created_at: $.cookie(`game-input-2-${counter}-date`)
+          },
+          () => {
+            $.removeCookie(`game-input-21-${counter}`);
+            $.removeCookie(`game-input-2-${counter}-date`);
           }
       );
     } else {
-      $.post('/api/games/create', {
+      $.post(
+          '/api/games/create',
+          {
             match_id: match.id,
             lost_1_by: null,
             lost_2_by: gamePoint22,
             created_at: $.cookie(`game-input-2-${counter}-date`)
+          },
+          () => {
+            $.removeCookie(`game-input-22-${counter}`);
+            $.removeCookie(`game-input-2-${counter}-date`);
           }
       );
     }
     if (need3) {
       if (is31) {
-        $.post('/api/games/create', {
+        $.post(
+            '/api/games/create',
+            {
               match_id: match.id,
               lost_1_by: gamePoint31,
               lost_2_by: null,
               created_at: $.cookie(`game-input-3-${counter}-date`)
+            },
+            () => {
+              $.removeCookie(`game-input-31-${counter}`);
+              $.removeCookie(`game-input-3-${counter}-date`);
             }
         );
       } else {
-        $.post('/api/games/create', {
+        $.post(
+            '/api/games/create',
+            {
               match_id: match.id,
               lost_1_by: null,
               lost_2_by: gamePoint32,
               created_at: $.cookie(`game-input-3-${counter}-date`)
+            },
+            () => {
+              $.removeCookie(`game-input-32-${counter}`);
+              $.removeCookie(`game-input-3-${counter}-date`);
             }
         );
       }
     }
 
-    // удаление печенек для выставления значений счёта игр
-    for (let i = 1; i <= 3; i++) {
-      for (let j = 1; j <= 2; j++) {
-        $.removeCookie(`game-input-${i}${j}-${counter}`);
-      }
-      $.removeCookie(`game-input-${i}-${counter}-date`);
-    }
+    // // удаление печенек для выставления значений счёта игр
+    // for (let i = 1; i <= 3; i++) {
+    //   for (let j = 1; j <= 2; j++) {
+    //     $.removeCookie(`game-input-${i}${j}-${counter}`);
+    //   }
+    //   $.removeCookie(`game-input-${i}-${counter}-date`);
+    // }
 
     $(`#game-form-${counter}`).hide();
     $('#player-table').bootstrapTable('refresh');
