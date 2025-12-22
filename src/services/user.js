@@ -15,9 +15,9 @@ class User {
   getArchived = () => this.user.getArchived();
   getById = (id) => this.user.getById(id);
   registerAll = () => this.user.registerAll();
-  registerById = (id) => this.user.registerById(id);
+  registerByIds = (ids) => this.user.registerByIds(ids);
   deregisterAll = () => this.user.deregisterAll();
-  deregisterById = (id) => this.user.deregisterById(id);
+  deregisterByIds = (ids) => this.user.deregisterByIds(ids);
   actualize = () => this.user.actualize();
   archive = (id) => this.user.archive(id);
   archiveAll = () => this.user.archiveAll();

@@ -54,14 +54,14 @@ class User {
     );
   }
 
-  registerById(id) {
+  registerByIds(ids) {
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available)
          SELECT (SELECT id FROM tournament WHERE current = 1), u.id, 1
          FROM user u
-         WHERE u.id = ?
+         WHERE u.id IN (SELECT value FROM json_each(?))
          ON CONFLICT DO NOTHING`,
-        [id]
+        [JSON.stringify(ids)]
     );
   }
 
@@ -73,13 +73,13 @@ class User {
     );
   }
 
-  deregisterById(id) {
+  deregisterByIds(ids) {
     return this.db.run(
         `DELETE
          FROM tournament_user
          WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
-           AND user_id = ?`,
-        [id]
+           AND user_id IN (SELECT value FROM json_each(?))`,
+        [JSON.stringify(ids)]
     );
   }
 

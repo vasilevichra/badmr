@@ -34,20 +34,12 @@ router.get('/:id', (req, res) => {
   res.promise(userService.getById(req.params.id));
 });
 
-router.post('/register', ensureLoggedIn, (req, res) => {
-  res.promise(userService.registerAll());
+router.post('/register/:ids', ensureLoggedIn, (req, res) => {
+  res.promise(userService.registerByIds(req.params.ids.split(',').map(Number)));
 });
 
-router.post('/register/:id', ensureLoggedIn, (req, res) => {
-  res.promise(userService.registerById(req.params.id));
-});
-
-router.post('/deregister', ensureLoggedIn, (req, res) => {
-  res.promise(userService.deregisterAll());
-});
-
-router.post('/deregister/:id', ensureLoggedIn, (req, res) => {
-  res.promise(userService.deregisterById(req.params.id));
+router.post('/deregister/:ids', ensureLoggedIn, (req, res) => {
+  res.promise(userService.deregisterByIds(req.params.ids.split(',').map(Number)));
 });
 
 router.post('/actualize', ensureLoggedIn, (req, res) => {

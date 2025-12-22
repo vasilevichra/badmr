@@ -76,16 +76,16 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
     .filter(column => loggedInUser ? true : !['registered'].includes(column.field))
     .filter(column => isPhone() ? ['registered', 'name', 'rating'].includes(column.field) : true)
   })
-  .on('check-all.bs.table', () => {
-    $.post(`/api/users/register`);
+  .on('check-all.bs.table', (rowsAfter, rowsBefore) => {
+    $.post(`/api/users/register/${rowsBefore.map(r => r.id).join('%2C')}`);
     showSelectButton();
   })
   .on('check.bs.table', (row, element) => {
     $.post(`/api/users/register/${element.id}`);
     showSelectButton();
   })
-  .on('uncheck-all.bs.table', () => {
-    $.post(`/api/users/deregister`);
+  .on('uncheck-all.bs.table', (rowsAfter, rowsBefore) => {
+    $.post(`/api/users/deregister/${rowsAfter.sender.options.data.map(r => r.id).join('%2C')}`);
   })
   .on('uncheck.bs.table', (row, element) => {
     $.post(`/api/users/deregister/${element.id}`);
