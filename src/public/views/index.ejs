@@ -165,10 +165,10 @@
                                 </tr>
                                 <tr>
                                     <td rowspan="2" class="match-history-score<% if( total_scores_1 > total_scores_2) { %> win<% } %>"><%= total_scores_1 %></td>
-                                    <td class="match-history-players-name<% if( delta1 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[0], names[0], sexes[0], pics[0]) %></td>
+                                    <td class="match-history-players-name<% if( delta1 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>"><%- playerNameFormatter(user_ids[0], names[0], sexes[0], pics[0]) %></td>
                                 </tr>
                                 <tr>
-                                    <td class="match-history-players-name<% if( delta1 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[1], names[1], sexes[1], pics[1]) %></td>
+                                    <td class="match-history-players-name<% if( delta1 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>"><%- playerNameFormatter(user_ids[1], names[1], sexes[1], pics[1]) %></td>
                                 </tr>
                                 <tr class="match-history-duration">
                                     <td class="win"><%= duration %>'</td>
@@ -179,13 +179,13 @@
                                 </tr>
                                 <tr>
                                     <td rowspan="2" class="match-history-score<% if( total_scores_2 > total_scores_1) { %> win<% } %>"><%= total_scores_2 %></td>
-                                    <td class="match-history-players-name<% if( delta2 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
+                                    <td class="match-history-players-name<% if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
                                     <% for (let i = 0; i < losses_1_by.length; i++) { %>
                                         <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_2_by[i] > losses_1_by[i]) { %> win<% } %>"><%= losses_2_by[i] %></td>
                                     <% } %>
                                 </tr>
                                 <tr>
-                                    <td class="match-history-players-name<% if( delta2 > 0) { %> win<% } %>"><%- playerNameFormatter(user_ids[3], names[3], sexes[3], pics[3]) %></td>
+                                    <td class="match-history-players-name<% if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>"><%- playerNameFormatter(user_ids[3], names[3], sexes[3], pics[3]) %></td>
                                 </tr>
                                 <tr class="match-history-delta-col">
                                     <td class="<%= delta2 < 0 ? 'rating-minus' : 'rating-plus' %>"><%= delta2 < 0 ? delta2 : `+${delta2}` %></td>
