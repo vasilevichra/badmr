@@ -1,6 +1,6 @@
 const Express = require('express'), router = Express.Router();
 // const csrf = require('csurf');
-const ensureLogIn = require('connect-ensure-login').ensureLoggedIn, ensureLoggedIn = ensureLogIn();
+const ensureLogIn = require('connect-ensure-login').ensureLoggedIn, ensureLoggedIn = ensureLogIn({options: {redirectTo: '/api/auth/login'}});
 const UserService = require('../services/user'), userService = new UserService();
 
 // const csrfProtection = csrf({ cookie: true });

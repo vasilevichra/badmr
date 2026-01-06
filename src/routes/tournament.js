@@ -1,4 +1,5 @@
 const Express = require('express'), router = Express.Router();
+const ensureLogIn = require('connect-ensure-login').ensureLoggedIn, ensureLoggedIn = ensureLogIn({options: {redirectTo: '/api/auth/login'}});
 const TournamentService = require('../services/tournament'), tournamentService = new TournamentService();
 
 router.get('/', (req, res) => {
@@ -13,7 +14,7 @@ router.get('/current/', (req, res) => {
   res.promise(tournamentService.getCurrent());
 });
 
-router.post('/current/:id', (req, res) => {
+router.post('/current/:id', ensureLoggedIn, (req, res) => {
   res.promise(tournamentService.setCurrent(req.params.id));
 });
 

@@ -1,27 +1,28 @@
 const Express = require('express'), router = Express.Router();
+const ensureLogIn = require('connect-ensure-login').ensureLoggedIn, ensureLoggedIn = ensureLogIn({options: {redirectTo: '/api/auth/login'}});
 const CourtService = require('../services/court'), courtService = new CourtService();
 
-router.get('/', (req, res) => {
+router.get('/', ensureLoggedIn, (req, res) => {
   res.promise(courtService.getAll());
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', ensureLoggedIn, (req, res) => {
   res.promise(courtService.getById(req.params.id));
 });
 
-router.post('/enable', (req, res) => {
+router.post('/enable', ensureLoggedIn, (req, res) => {
   res.promise(courtService.enableAll());
 });
 
-router.post('/enable/:number', (req, res) => {
+router.post('/enable/:number', ensureLoggedIn, (req, res) => {
   res.promise(courtService.enable(req.params.number));
 });
 
-router.post('/disable', (req, res) => {
+router.post('/disable', ensureLoggedIn, (req, res) => {
   res.promise(courtService.disableAll());
 });
 
-router.post('/disable/:number', (req, res) => {
+router.post('/disable/:number', ensureLoggedIn, (req, res) => {
   res.promise(courtService.disable(req.params.number));
 });
 
