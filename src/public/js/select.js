@@ -34,6 +34,14 @@ const renderSelect = () => {
             data: field.players2,
             columns: selectColumns
           });
+          if(field.players1.reduce((acc, p1) => acc + p1.rating, 0) > field.players2.reduce((acc, p2) => acc + p2.rating, 0)) {
+            $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
+            $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
+          } else {
+            $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
+            $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
+          }
+
           $(`#select-form-info-${i}`).text(`Δ ${field.diff.toFixed(1)} баллов`);
           $(`#select-form-button-submit-${i}`).click((event) => {
             event.preventDefault();
@@ -69,7 +77,7 @@ const selectFormTemplate = (counter) => `
 <form id="select-form-${counter}" class="select-form">
   <div class="row justify-content-center">
     <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
-      <table id="select-form-table-1-${counter}" class="select-form-table-1 table table-responsive mx-auto w-auto"></table>
+      <table id="select-form-table-1-${counter}" class="select-form-table-1 table table-responsive mx-auto w-auto "></table>
     </div>
   </div>
   <div class="row justify-content-center">
