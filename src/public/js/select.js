@@ -1,5 +1,6 @@
 const renderSelect = () => {
-  $('#select-button').click(() => {
+  $('#select-button').click((event) => {
+    event.preventDefault();
 
     $('#select-button').hide();
 
@@ -60,7 +61,9 @@ const renderSelect = () => {
 
             showSelectButton();
           });
-          $(`#select-form-button-reset-${i}`).click(() => {
+          $(`#select-form-button-reset-${i}`).click((event) => {
+            event.preventDefault();
+
             $(`#select-form-${i}`).hide();
 
             showSelectButton();

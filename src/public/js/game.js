@@ -75,7 +75,7 @@ const fillMatch = (counter, match) => {
     }]
   });
 
-  $(`#game-form-info-${counter}`).text(`Корт №${match.court}`);
+  $(`#game-form-info-${counter}`).text(`Матч №${match.id}, корт №${match.court}`);
 
   // выставление значения счёта игр из печенек при перезагрузке страницы
   for (let i = 1; i <= 3; i++) {
@@ -208,14 +208,6 @@ const fillMatch = (counter, match) => {
       }
     }
 
-    // // удаление печенек для выставления значений счёта игр
-    // for (let i = 1; i <= 3; i++) {
-    //   for (let j = 1; j <= 2; j++) {
-    //     $.removeCookie(`game-input-${i}${j}-${counter}`);
-    //   }
-    //   $.removeCookie(`game-input-${i}-${counter}-date`);
-    // }
-
     $(`#game-form-${counter}`).hide();
     $('#player-table').bootstrapTable('refresh');
     $('#cort-table').bootstrapTable('refresh');
@@ -229,7 +221,13 @@ const fillMatch = (counter, match) => {
   $(`#game-form-button-reset-${counter}`).click(event => {
     event.preventDefault();
 
-    alert('kva!');
+    if (confirm(`Удалить матч №${match.id}?`)) {
+      $.post(`/api/matches/delete/${match.id}`);
+      $(`#game-form-${counter}`).remove();
+      if ($('#game-block > div').length === 0) {
+        $('#game').load(location.href + ' #game>*', '');
+      }
+    }
   });
 }
 

@@ -153,7 +153,7 @@
                             <% var delta1 = games.map(g => Number(g.delta1))[0].toFixed(1); %>
                             <% var delta2 = delta1 * (-1); %>
 
-                            <label class="form-label match-history-info">#<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %>, корт #<%= court %></nobr></label>
+                            <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %>, корт №<%= court %></nobr></label>
                             <table class="match-history-players table" style="margin-bottom: 3em;">
                                 <tbody>
                                 <tr>

@@ -154,6 +154,15 @@ class Match {
         [user_1_id, user_2_id, user_3_id, user_4_id]
     );
   }
+
+  deleteById(id) {
+    return this.db.run(
+        `DELETE
+         FROM match
+         WHERE id = ?`,
+        [id]
+    );
+  }
 }
 
 module.exports = Match;

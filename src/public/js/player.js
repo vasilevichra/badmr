@@ -157,13 +157,15 @@ const renderPlayerModal = (player) => {
     if (loggedInUser) {
       const archiveButton = $('.player-window-archive-button');
       archiveButton.show();
-      archiveButton.click(() => {
+      archiveButton.click((event) => {
+        event.preventDefault();
         archiveUser(player['id'], player['name']);
       });
 
       $(".player-window-change-rating-form").show();
       const changeRatingButton = $('.player-window-change-rating-button');
-      changeRatingButton.click(() => {
+      changeRatingButton.click((event) => {
+        event.preventDefault();
         const rating = $('.player-window-change-rating-input').val();
         changeRating(player['id'], player['name'], rating);
       });

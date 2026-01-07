@@ -19,4 +19,8 @@ router.post('/create', ensureLoggedIn, (req, res) => {
   res.promise(matchService.create(user_1_id, user_2_id, user_3_id, user_4_id));
 });
 
+router.post('/delete/:id', ensureLoggedIn, (req, res) => {
+  res.promise(matchService.deleteById(req.params.id));
+});
+
 module.exports = router;
