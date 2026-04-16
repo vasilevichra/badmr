@@ -10,6 +10,10 @@ router.get('/:id', ensureLoggedIn, (req, res) => {
   res.promise(courtService.getById(req.params.id));
 });
 
+router.post('/create', ensureLoggedIn, (req, res) => {
+  res.promise(courtService.create());
+});
+
 router.post('/enable', ensureLoggedIn, (req, res) => {
   res.promise(courtService.enableAll());
 });

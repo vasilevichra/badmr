@@ -10,7 +10,7 @@ class Court {
     this.court = new CourtRepository();
   }
 
-  add = (tournament_id, number, available) => this.court.add(tournament_id, number, available);
+  create = () => this.court.create();
   getAll = () => this.court.getAll();
   getById = (id) => this.court.getById(id);
   enableAll = () => this.court.enableAll();

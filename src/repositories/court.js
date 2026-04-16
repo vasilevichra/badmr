@@ -10,11 +10,10 @@ class Court {
     this.db = new Repository().db;
   }
 
-  add(tournament_id, number, available) {
+  create() {
     return this.db.run(
         `INSERT INTO court (tournament_id, number, available)
-         VALUES (?, ?, ?)`,
-        [tournament_id, number, available]
+         VALUES ((SELECT id FROM tournament WHERE current = 1), (SELECT count() + 1 FROM court c JOIN tournament t on t.id = c.tournament_id WHERE t.current = 1), 1)`
     );
   }
 
@@ -23,8 +22,7 @@ class Court {
         `SELECT c.number AS number, c.available AS available
          FROM tournament t
                   JOIN court c ON t.id = c.tournament_id
-         WHERE t.current = 1
-           AND t.available = 1`);
+         WHERE t.current = 1`);
   }
 
   getById(id) {
