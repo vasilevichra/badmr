@@ -51,6 +51,7 @@ CREATE VIEW players AS
 SELECT u.id                                                       AS id,
        u.lastname || ' ' || u.firstname                           AS name,
        round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 0) AS rating,
+       coalesce(ul.rating_2, 0)                                   AS rating_lab,
        dt.sum                                                     AS delta_today,
        dw.sum                                                     AS delta_week,
        dm.sum                                                     AS delta_month,
@@ -72,6 +73,7 @@ FROM user u
          LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
          LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id
          LEFT OUTER JOIN user_pic up ON up.user_id = u.id
+         LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
 WHERE tu.archived IS NULL
    OR tu.archived = 0
 GROUP BY u.id;

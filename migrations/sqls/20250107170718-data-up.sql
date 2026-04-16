@@ -126,11 +126,53 @@ VALUES (1, 'state', '1', 'Страна по умолчанию при добав
 INSERT INTO unit (id, name, current, available)
 VALUES (1, 'Все', 1, 1);
 
-INSERT INTO tournament (id, unit_id, name, current, available)
-VALUES (1, 1, 'Рейтинговые игры', 1, 1);
+INSERT INTO tournament_type (id, name)
+VALUES (1, 'Новая лига'),
+       (2, '110');
+
+INSERT INTO tournament (id, unit_id, tournament_type_id, name, current, available)
+VALUES (1, 1, 1, 'Рейтинг', 1, 1);
 
 INSERT INTO court (id, tournament_id, number, available)
 VALUES (1, 1, 1, 1);
 
 INSERT INTO tournament_settings (id, tournament_id, defaults_id, value)
 VALUES (1, 1, 4, 100);
+
+INSERT INTO "group" (id, name)
+VALUES (1, 'A'),
+       (2, 'AB'),
+       (3, 'B'),
+       (4, 'BC'),
+       (5, 'C'),
+       (6, 'CD'),
+       (7, 'D'),
+       (8, 'DE'),
+       (9, 'E'),
+       (10, 'EF'),
+       (11, 'F'),
+       (12, 'FG'),
+       (13, 'G'),
+       (14, 'GH'),
+       (15, 'H');
+
+INSERT INTO game_type (id, name, description)
+VALUES (1, 'МО', 'Мужская одиночка'),
+       (2, 'ЖО', 'Женская одиночка'),
+       (3, 'МП', 'Мужская пара'),
+       (4, 'ЖП', 'Женская пара'),
+       (5, 'СП', 'Смешанная пара');
+
+INSERT INTO team_color (id, hex, name)
+VALUES (1, '10100f', 'Чёрный'),
+       (2, 'ffffff', 'Белый'),
+       (3, '0017a4', 'Синий'),
+       (4, 'e3002b', 'Красный'),
+       (5, '00d7f5', 'Голубой'),
+       (6, 'f7f700', 'Жёлтый'),
+       (7, '009639', 'Зелёный'),
+       (8, '961f99', 'Фиолетовый'),
+       (9, 'ff4200', 'Оранжевый'),
+       (10, '614e25', 'Хаки'),
+       (11, '6f7372', 'Серый'),
+       (12, 'ff00ff', 'Розовый');

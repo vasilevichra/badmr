@@ -1,3 +1,4 @@
+DROP VIEW settings;
 DROP VIEW ready;
 DROP VIEW players;
 DROP VIEW delta_today;
