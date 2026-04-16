@@ -4,6 +4,7 @@
   "main": "app.js",
   "private": true,
   "dependencies": {
+    "@vk-io/authorization": "^1.4.1",
     "bluebird": "^3.7.2",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
@@ -17,27 +18,31 @@
     "csurf": "^1.2.2",
     "db-migrate": "^0.11.14",
     "db-migrate-sqlite3": "^1.0.2",
-    "ejs": "^3.1.10",
+    "ejs": "^5.0.2",
     "express": "^5.1.0",
     "express-promise-json-router": "^1.0.8",
     "express-session": "^1.17.2",
     "express-useragent": "^2.0.2",
     "http-errors": "^2.0.0",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
     "jquery.cookie": "^1.4.1",
+    "jsdom": "^29.0.2",
     "lodash": "^4.17.21",
     "morgan": "^1.10.1",
-    "nodemon": "^3.1.11",
+    "nodemon": "^3.1.14",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "sqlite3": "^5.1.7",
-    "use-strict": "^1.0.1"
+    "select2": "^4.1.0-rc.0",
+    "select2-bootstrap-5-theme": "^1.3.0",
+    "sqlite3": "^6.0.1",
+    "use-strict": "^1.0.1",
+    "vk-io": "^4.10.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.1.0",
     "copy-dir": "^1.3.0",
-    "webpack": "^5.102.1",
-    "webpack-cli": "^6.0.1"
+    "webpack": "^5.105.3",
+    "webpack-cli": "^7.0.2"
   },
   "engines": {
     "npm": ">=11.6.3",
@@ -55,8 +60,8 @@
     "update": "npm outdated -p | cut -d ':' -f 4 | xargs npm install",
     "migrate": "node node_modules/db-migrate/bin/db-migrate up",
     "compile": "export NODE_ENV=dev && nodemon src/bin/start.js",
-    "open": "concurrently \"npm run compile\" \"sleep 1 && open http://localhost:3000/\"",
-    "test": "(rm -f .data/test.db .log/test.log || true) && node node_modules/db-migrate/bin/db-migrate up -e test -c 4 && export NODE_ENV=test && node --test | tee -a .log/test.log",
+    "open": "concurrently \"npm run compile\" \"sleep 3 && open http://localhost:3000/\"",
+    "test": "(rm -f .data/test.db .log/test.log || true) && node node_modules/db-migrate/bin/db-migrate up -e test -c 4 && export NODE_ENV=test && node --test --experimental-test-coverage | tee -a .log/test.log",
     "dev": "npm run test && (rm -f .data/badmr.sqlite3 || true) && npm run migrate && export NODE_ENV=dev && npm run open | tee -a .log/dev.log",
     "prod": "npm install && npm run migrate && export NODE_ENV=prod && node src/bin/start.js | tee -a .log/prod.log",
     "release": "npm run test && rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Projects.localized/badmr/.gitignore' /Users/r/Projects.localized/badmr box:~/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/{migrations,src/repositories} box:~/badmr && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'"
