@@ -25,7 +25,7 @@ exports.up = function (db) {
       if (err) {
         return reject(err);
       }
-      console.log('received data: ' + data);
+      // console.log('received data: ' + data);
 
       resolve(data);
     });
@@ -42,7 +42,7 @@ exports.down = function (db) {
       if (err) {
         return reject(err);
       }
-      console.log('received data: ' + data);
+      // console.log('received data: ' + data);
 
       resolve(data);
     });
