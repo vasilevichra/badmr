@@ -29,111 +29,103 @@
 </head>
 
 <body>
-<div class="header">
-    <div class="container">
-        <% if (user) { %>
-            <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
-        <% } %>
-        <div id="header" class="row align-items-center no-selection <% if (user) { %> closable <% } %>">
-            <% if (device !== 'phone') { %>
-                <div class="col-2 d-flex">
-                    <div class="social">
-                        <%- include('social', {device: device}); %>
-                    </div>
-                </div>
-            <% } %>
-            <div class="col-10 d-flex justify-content-end">
-                <% if (user) { %>
-                    <form action="/api/auth/logout" method="post" class="logout">
-                        <div class="player-selectors">
-                            <%- include('tournament', {tournaments: tournaments}); %>
-                            <%- include('unit', {units: units}); %>
-                        </div>
-                        <label class="user"><%= user.username %></label>
-                        <button class="btn" type="submit"><p class="bi bi-box-arrow-right" style="display:inline"></p></button>
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    </form>
-                <% } else { %>
-                    <form action="/api/auth/login" method="get" class="login">
-                        <button class="btn" type="submit"><p class="bi bi-box-arrow-in-left"> Войти</p></button>
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    </form>
-                <% } %>
-            </div>
-        </div>
-        <% if (user) { %>
-            <hr class="hr-dashed"/>
-        <% } %>
+<div class="container">
+    <% if (user) { %>
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
-        <div id="tournament-info" class="row d-flex closable">
-            <% const current_tournament = tournaments.filter(t => t.current === 1)[0]; %>
-            <div class="col-6">
-                <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; %>
-                <% const startedAt = new Date(current_tournament.started_at + 'Z'); %>
-                <% const endedAt = new Date(current_tournament.ended_at + 'Z'); %>
-                <% const regEndedAt = new Date(current_tournament.reg_ended_at + 'Z'); %>
-                <% const regEndH = regEndedAt.getUTCHours(); %>
-                <% const regEndM = regEndedAt.getUTCMinutes(); %>
-                <% const regEndDateStr = `${regEndedAt.getUTCDate()} ${monthArray[regEndedAt.getUTCMonth()]} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM
-                <= 0 ? '0' + regEndM : regEndM}`; %>
-
-                <% const regEndUntilMillis = (regEndedAt - new Date()); %>
-                <% const regEndUntilDays = Math.floor((regEndUntilMillis) / 1000 / 60 / 60 / 24); %>
-                <% const regEndUntilHours = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24) / 1000 / 60 / 60); %>
-                <% const regEndUntilMinutes = Math.floor(
-                        (regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
-                <% const regEndUntilSecs = Math.floor(
-                        (regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60)
-                        / 1000); %>
-                <% const regEndUntilStr = (new Date() - regEndedAt) > 0 ? '(завершена' : '(осталось: '; %>
-
-                <% const durationHours = (endedAt - startedAt) / 36e5; %>
-                <% const durationMinutesWithoutHours = (endedAt - startedAt) - durationHours * 36e5; %>
-
-                <% const startedH = startedAt.getUTCHours() <= 9 ? '0' + startedAt.getUTCHours() : startedAt.getUTCHours(); %>
-                <% const startedM = startedAt.getUTCMinutes() <= 0 ? '0' + startedAt.getUTCMinutes() : startedAt.getUTCMinutes(); %>
-                <% const endedH = endedAt.getUTCHours() <= 9 ? '0' + endedAt.getUTCHours() : endedAt.getUTCHours(); %>
-                <% const endedM = endedAt.getUTCMinutes() <= 0 ? '0' + endedAt.getUTCMinutes() : endedAt.getUTCMinutes(); %>
-                <% const getDateStr = () => {
-                    if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear() && startedAt.getUTCMonth() === endedAt.getUTCMonth() && startedAt.getUTCDate()
-                            === endedAt.getUTCDate()) { // начало и окончание в один день
-                        return `${endedAt.getUTCDate()} ${monthArray[endedAt.getUTCMonth()]} ${endedAt.getUTCFullYear()} ${startedH}:${startedM}-${endedH}:${endedM}`;
-                    }
-
-                    const startMonthNum = startedAt.getUTCMonth() + 1;
-                    const startMonthNumStr = startMonthNum <= 9 ? '0' + startMonthNum : startMonthNum;
-                    const endMonthNum = endedAt.getUTCMonth() + 1;
-                    const endMonthNumStr = endMonthNum <= 9 ? '0' + endMonthNum : endMonthNum;
-                    if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear()) { // начало и окончание в одном году
-                        return `${startedAt.getUTCDate()}.${startMonthNumStr} ${startedH}:${startedM} - ${endedAt.getUTCDate()}.${endMonthNumStr}.${endedAt.getUTCFullYear()} ${endedH}:${endedM}`;
-                    }
-
-                    return `${startedAt.getUTCDate()}.${startMonthNumStr}.${startedAt.getUTCFullYear()} ${startedH}:${startedM} - ${endedAt.getUTCDate()}.${endMonthNumStr}.${endedAt.getUTCFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
-                }
-                %>
-                <% const tournamentName = `Турнир: «${current_tournament.name}»` %>
-
-                <div><%= tournamentName %>
-                    <button class="btn btn-xs bi-copy"></button>
-                </div>
-                <div>Окончание регистрации: <%= regEndDateStr %> <%= regEndUntilStr %>
-                    <% if ((new Date() - regEndedAt) <= 0) { %>
-                        <time datetime="<%= regEndUntilDays %>d <%= regEndUntilHours %>h <%= regEndUntilMinutes %>m <%= regEndUntilSecs %>s"></time>
-                    <% } %>
-                    )
-                </div>
-                <div>Дата: <%= getDateStr() %> (длительность: <%= durationHours %>ч<%= durationMinutesWithoutHours ? ` ${durationMinutesWithoutHours}м` : '' %>)
-                    <button class="btn btn-xs bi-calendar" onclick="addEventToCalendar();"></button>
+    <% } %>
+    <div id="header" class="row align-items-center no-selection <% if (user) { %> closable <% } %>">
+        <% if (device !== 'phone') { %>
+            <div class="col-2 d-flex">
+                <div class="social">
+                    <%- include('social', {device: device}); %>
                 </div>
             </div>
-            <div class="col-6 d-flex justify-content-end align-items-end">
-                <div style="text-align: end;"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
-                    <button class="btn btn-xs bi-copy"></button>
-                    <br><a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.address %></a></div>
+        <% } %>
+        <div class="col-10 d-flex justify-content-end">
+            <% if (user) { %>
+                <form action="/api/auth/logout" method="post" class="logout">
+                    <div class="player-selectors">
+                        <%- include('tournament', {tournaments: tournaments}); %>
+                        <%- include('unit', {units: units}); %>
+                    </div>
+                    <label class="user"><%= user.username %></label>
+                    <button class="btn" type="submit"><p class="bi bi-box-arrow-right" style="display:inline"></p></button>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                </form>
+            <% } else { %>
+                <form action="/api/auth/login" method="get" class="login">
+                    <button class="btn" type="submit"><p class="bi bi-box-arrow-in-left"> Войти</p></button>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                </form>
+            <% } %>
+        </div>
+    </div>
+    <% if (user) { %>
+        <hr class="hr-dashed"/>
+    <% } %>
+</div>
+
+<div class="container">
+    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
+    <div id="tournament-info" class="row d-flex closable p-3">
+        <% const current_tournament = tournaments.filter(t => t.current === 1)[0]; %>
+        <div class="col-6">
+            <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; %>
+            <% const startedAt = new Date(current_tournament.started_at + 'Z'); %>
+            <% const endedAt = new Date(current_tournament.ended_at + 'Z'); %>
+            <% const regEndedAt = new Date(current_tournament.reg_ended_at + 'Z'); %>
+            <% const regEndH = regEndedAt.getUTCHours(); %>
+            <% const regEndM = regEndedAt.getUTCMinutes(); %>
+            <% const regEndDateStr = `${regEndedAt.getUTCDate()} ${monthArray[regEndedAt.getUTCMonth()]} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM
+            <= 0 ? '0' + regEndM : regEndM}`; %>
+
+            <% const regEndUntilMillis = (regEndedAt - new Date()); %>
+            <% const regEndUntilDays = Math.floor((regEndUntilMillis) / 1000 / 60 / 60 / 24); %>
+            <% const regEndUntilHours = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24) / 1000 / 60 / 60); %>
+            <% const regEndUntilMinutes = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
+            <% const regEndUntilSecs = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
+            <% const regEndUntilStr = (new Date() - regEndedAt) > 0 ? '(завершена' : '(осталось: '; %>
+
+            <% const durationHours = (endedAt - startedAt) / 36e5; %>
+            <% const durationMinutesWithoutHours = (endedAt - startedAt) - durationHours * 36e5; %>
+
+            <% const startedH = startedAt.getUTCHours() <= 9 ? '0' + startedAt.getUTCHours() : startedAt.getUTCHours(); %>
+            <% const startedM = startedAt.getUTCMinutes() <= 0 ? '0' + startedAt.getUTCMinutes() : startedAt.getUTCMinutes(); %>
+            <% const endedH = endedAt.getUTCHours() <= 9 ? '0' + endedAt.getUTCHours() : endedAt.getUTCHours(); %>
+            <% const endedM = endedAt.getUTCMinutes() <= 0 ? '0' + endedAt.getUTCMinutes() : endedAt.getUTCMinutes(); %>
+            <% const getDateStr = () => {
+                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear() && startedAt.getUTCMonth() === endedAt.getUTCMonth() && startedAt.getUTCDate() === endedAt.getUTCDate()) { // начало и окончание в один день
+                    return `${endedAt.getUTCDate()} ${monthArray[endedAt.getUTCMonth()]} ${endedAt.getUTCFullYear()} ${startedH}:${startedM}-${endedH}:${endedM}`;
+                }
+
+                const startMonthNum = startedAt.getUTCMonth() + 1;
+                const startMonthNumStr = startMonthNum <= 9 ? '0' + startMonthNum : startMonthNum;
+                const endMonthNum = endedAt.getUTCMonth() + 1;
+                const endMonthNumStr = endMonthNum <= 9 ? '0' + endMonthNum : endMonthNum;
+                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear()) { // начало и окончание в одном году
+                    return `${startedAt.getUTCDate()}.${startMonthNumStr} ${startedH}:${startedM} - ${endedAt.getUTCDate()}.${endMonthNumStr}.${endedAt.getUTCFullYear()} ${endedH}:${endedM}`;
+                }
+
+                return `${startedAt.getUTCDate()}.${startMonthNumStr}.${startedAt.getUTCFullYear()} ${startedH}:${startedM} - ${endedAt.getUTCDate()}.${endMonthNumStr}.${endedAt.getUTCFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
+            }
+            %>
+            <% const tournamentName = `Турнир: «${current_tournament.name}»` %>
+
+            <div><%= tournamentName %>
+                <button class="btn btn-xs bi-copy"></button>
+            </div>
+            <div>Регистрация до: <%= regEndDateStr %> <%= regEndUntilStr %><% if ((new Date() - regEndedAt) <= 0) { %><time datetime="<%= regEndUntilDays %>d <%= regEndUntilHours %>h <%= regEndUntilMinutes %>m <%= regEndUntilSecs %>s"></time><% } %>)</div>
+            <div>Дата: <%= getDateStr() %> (<%= durationHours %>ч<%= durationMinutesWithoutHours ? ` ${durationMinutesWithoutHours}м` : '' %>)
+<!--                <button class="btn btn-xs bi-calendar" onclick="addEventToCalendar();"></button>-->
             </div>
         </div>
-        <hr class="hr-dashed"/>
+        <div class="col-6 d-flex justify-content-end align-items-end">
+            <div style="text-align: end;"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
+                <button class="btn btn-xs bi-copy"></button>
+                <br><a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.address %></a></div>
+        </div>
     </div>
+    <hr class="hr-dashed"/>
 </div>
 
 <div id="tournament-window">

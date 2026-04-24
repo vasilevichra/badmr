@@ -33,6 +33,7 @@ input:focus::placeholder {
 }
 
 /* убранный в bootstrap 5 класс */
+.xs,
 .btn-xs {
   padding: 0.25rem 0.4rem; /* Уменьшенные отступы */
   font-size: 0.7rem; /* Меньший размер шрифта */
