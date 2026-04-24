@@ -34,14 +34,29 @@ CREATE TABLE tournament_type
     name TEXT    NOT NULL
 );
 
+CREATE TABLE tournament_state
+(
+    id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    name TEXT    NOT NULL
+);
+
 CREATE TABLE tournament
 (
-    id                 INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    unit_id            INTEGER NOT NULL CONSTRAINT unit REFERENCES unit,
-    tournament_type_id INTEGER NOT NULL CONSTRAINT tournament_type REFERENCES tournament_type,
-    name               TEXT    NOT NULL,
-    current            INTEGER NOT NULL DEFAULT 0,
-    available          INTEGER not null default 1,
+    id                  INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    unit_id             INTEGER  NOT NULL CONSTRAINT unit REFERENCES unit,
+    tournament_type_id  INTEGER  NOT NULL CONSTRAINT tournament_type REFERENCES tournament_type,
+    tournament_state_id INTEGER  NOT NULL CONSTRAINT tournament_state REFERENCES tournament_state,
+    name                TEXT     NOT NULL,
+    current             INTEGER  NOT NULL DEFAULT 0,
+    available           INTEGER  not null default 1,
+    reg_ended_at        DATETIME NOT NULL,
+    started_at          DATETIME NOT NULL,
+    ended_at            DATETIME,
+    latitude            REAL,
+    longitude           REAL,
+    map_url             TEXT,
+    address             TEXT     NOT NULL,
+    rules               TEXT,
     CHECK (current IN (0, 1)),
     CHECK (available IN (0, 1))
 );

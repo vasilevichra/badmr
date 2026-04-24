@@ -130,8 +130,15 @@ INSERT INTO tournament_type (id, name)
 VALUES (1, 'Новая лига'),
        (2, '110');
 
-INSERT INTO tournament (id, unit_id, tournament_type_id, name, current, available)
-VALUES (1, 1, 1, 'Рейтинг', 1, 1);
+INSERT INTO tournament_state (id, name)
+VALUES (1, 'Регистрация'),
+       (2, 'Идёт'),
+       (3, 'Завершён'),
+       (4, 'Отменён');
+
+INSERT INTO tournament (id, unit_id, tournament_type_id, tournament_state_id, name, current, available, reg_ended_at, started_at, ended_at, latitude, longitude, map_url, address, rules)
+VALUES (1, 1, 1, 2, 'Рейтинг', 1, 1, '2025-12-31 23:59:59', '2026-01-01 00:00:00', '2027-12-31 23:59:59', 56.224214, 41.286221, 'https://yandex.ru/maps/-/CPCLvIKP', 'Доброград, Парковая улица, 36', null);
+
 
 INSERT INTO court (id, tournament_id, number, available)
 VALUES (1, 1, 1, 1);
