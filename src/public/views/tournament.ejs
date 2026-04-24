@@ -1,7 +1,5 @@
-<select id="tournament" class="tournament form-select-sm w-auto" required>
+<select id="tournament" class="tournament form-select-sm w-auto" onchange="$.post(`/api/tournaments/current/${this.value}`); $('#tournament-window').load(location.href + ' #tournament-window>*', ''); $.getScript('/js/index.js');" required>
     <% tournaments.forEach(tournament => { %>
-        <option value="<%= tournament.id %>" <% if (tournament.current) { %>selected
-                <% } %>
-        ><%= tournament.name %></option>
+        <option value="<%= tournament.id %>" <% if (tournament.current) { %>selected <% } %> ><%= tournament.name %></option>
     <% }); %>
 </select>

@@ -35,7 +35,7 @@ const renderSelect = () => {
             data: field.players2,
             columns: selectColumns
           });
-          if(field.players1.reduce((acc, p1) => acc + p1.rating, 0) > field.players2.reduce((acc, p2) => acc + p2.rating, 0)) {
+          if (field.players1.reduce((acc, p1) => acc + p1.rating, 0) > field.players2.reduce((acc, p2) => acc + p2.rating, 0)) {
             $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
             $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
           } else {
@@ -47,19 +47,27 @@ const renderSelect = () => {
           $(`#select-form-button-submit-${i}`).click((event) => {
             event.preventDefault();
 
-            $.post('/api/matches/create', {
-                  user_1_id: players1[0].user_id,
-                  user_2_id: players1[1].user_id,
-                  user_3_id: players2[0].user_id,
-                  user_4_id: players2[1].user_id
-                }
-            );
-
-            $(`#select-form-${i}`).hide();
-
-            renderGames();
-
-            showSelectButton();
+            $.ajax({
+              url: '/api/matches/create',
+              type: 'POST',
+              dataType: 'json',
+              contentType: 'application/json; charset=utf-8',
+              data: JSON.stringify({
+                user_1_id: players1[0].user_id,
+                user_2_id: players1[1].user_id,
+                user_3_id: players2[0].user_id,
+                user_4_id: players2[1].user_id
+              }),
+              success: function (result) {
+                $(`#select-form-${i}`).hide();
+                renderGames();
+                showSelectButton();
+              },
+              error: function (err) {
+                alert(JSON.stringify(err, null, 2));
+              }
+            });
+            refresh.table.court();
           });
           $(`#select-form-button-reset-${i}`).click((event) => {
             event.preventDefault();

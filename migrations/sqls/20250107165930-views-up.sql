@@ -32,9 +32,9 @@ SELECT u.lastname || ' ' || u.firstname                                         
                             LIMIT (SELECT sum(n) courts
                                    FROM (SELECT count(id) n FROM court WHERE available = 1 UNION SELECT count(id) n FROM match WHERE finished = 0))))) AS played
 FROM tournament as t
-         JOIN tournament_user AS tu ON tu.tournament_id = t.id AND tu.available = 1 AND tu.archived = 0
+         JOIN tournament_user AS tu ON tu.tournament_id = t.id AND tu.available = 1 AND tu.archived != 1
          JOIN user AS u ON u.id = tu.user_id
-         LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
+         LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
          JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
          JOIN defaults d ON d.name = 'matches'
          LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = t.id
@@ -56,7 +56,7 @@ SELECT u.id                                                       AS id,
        dw.sum                                                     AS delta_week,
        dm.sum                                                     AS delta_month,
        u.sex                                                      AS sex,
-       up.pic                                                     AS pic,
+       coalesce(up.pic, ul.img)                                   AS pic,
        count(DISTINCT m.id)                                       AS matches,
        c.name                                                     AS city,
        u.birthday                                                 AS birthday,
@@ -65,26 +65,26 @@ SELECT u.id                                                       AS id,
        tu.archived                                                AS archived
 FROM user u
          JOIN city c ON c.id = u.city_id
-         LEFT OUTER JOIN tournament_user tu ON u.id = tu.user_id
+         LEFT OUTER JOIN tournament_user tu ON u.id = tu.user_id AND tu.archived != 1
          LEFT OUTER JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
-         LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
+         LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
          LEFT OUTER JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
          LEFT OUTER JOIN delta_today dt ON dt.user_id = u.id
          LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
          LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id
          LEFT OUTER JOIN user_pic up ON up.user_id = u.id
          LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
-WHERE tu.archived IS NULL
-   OR tu.archived = 0
+WHERE t.current = 1
 GROUP BY u.id;
 
 CREATE VIEW archived AS
-SELECT u.id AS id, u.lastname || ' ' || u.firstname AS name, u.sex AS sex, up.pic AS pic, c.name AS city
+SELECT u.id AS id, u.lastname || ' ' || u.firstname AS name, u.sex AS sex, coalesce(up.pic, ul.img) AS pic, c.name AS city
 FROM user u
          JOIN city c ON c.id = u.city_id
          JOIN tournament_user tu ON u.id = tu.user_id
          JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
          LEFT OUTER JOIN user_pic up ON up.user_id = u.id
+         LEFT OUTER JOIN user_lab ul ON ul.user_id = u.id
 WHERE tu.archived = 1;
 
 CREATE VIEW delta_today AS

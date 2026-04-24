@@ -10,7 +10,7 @@ router.get('/:id', (req, res) => {
   res.promise(tournamentService.getById(req.params.id));
 });
 
-router.get('/current/', (req, res) => {
+router.get('/current/', ensureLoggedIn, (req, res) => {
   res.promise(tournamentService.getCurrent());
 });
 

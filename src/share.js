@@ -13,8 +13,8 @@
 
   const playerAvatarFormatter = (pic, name, sex) => {
     return pic ?
-        '<img src="data:image/png;base64, ' + pic + '" alt="' + name + '" width="30" height="30"/>' :
-        (sex ? '👨🏻‍🦰' : '👩🏻');
+        `<img src="${pic.startsWith('https://') ? pic : 'data:image/png;base64, ' + pic }" alt="${name}" width="20" height="20"/>` :
+        `<span style="font-size: 15px">${(sex ? '👨🏻‍🦰' : '👩🏻')}</span>`;
   };
 
   exports.playerNameFormatter = playerNameFormatter;

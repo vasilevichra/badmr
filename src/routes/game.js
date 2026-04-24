@@ -6,9 +6,21 @@ router.get('/:id', (req, res) => {
   res.promise(gameService.getById(req.params.id));
 });
 
+router.get('/current110', (req, res) => {
+  res.promise(gameService.getCurrentByTeamIds(req.query.team_1_id, req.query.team_2_id));
+});
+
+router.post('/current110/increase', ensureLoggedIn, (req, res) => {
+  res.promise(gameService.increaseCurrentByTeamIds(req.query.team_1_id, req.query.team_2_id, req.query.team_number));
+});
+
 router.post('/create', ensureLoggedIn, (req, res) => {
   const {match_id, lost_1_by, lost_2_by, created_at} = req.body;
   res.promise(gameService.create(match_id, lost_1_by || null, lost_2_by || null, created_at));
+});
+
+router.post('/create110/:match_110_id', ensureLoggedIn, (req, res) => {
+  res.promise(gameService.create110(req.params.match_110_id));
 });
 
 module.exports = router;

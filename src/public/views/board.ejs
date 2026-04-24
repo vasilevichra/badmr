@@ -1,0 +1,54 @@
+<div class="modal fade" id="tournament-groups-board-<%= gameId %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="container-fluid">
+                    <div class="row vh-100 text-center no-selection">
+                        <div class="col">
+                            <div class="row board-team-name"><%= teamNames[0] %></div>
+                            <div id="board-score-l" class="row board-score" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 1)"><%= startScores[0] %></div>
+                            <div class="row align-content-start" style="height: 10vh;">
+                                <div class="col text-start">
+                                    <img src="/assets/images/pepe.png" height="40vh">
+                                </div>
+                                <div class="col text-end">
+                                    <img src="/assets/images/pepe.png" height="40vh">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-auto align-content-center">
+                            <div class="row board-game-type board-game-type-current">МО</div>
+                            <div class="row board-game-type secondary-info">ЖО</div>
+                            <div class="row board-game-type">МП</div>
+                            <div class="row board-game-type">ЖП</div>
+                            <div class="row board-game-type">СП</div>
+
+                            <div class="row board-game-type">&bull;</div>
+
+                            <div class="row board-game-type">МО</div>
+                            <div class="row board-game-type">ЖО</div>
+                            <div class="row board-game-type">МП</div>
+                            <div class="row board-game-type">ЖП</div>
+                            <div class="row board-game-type">СП</div>
+                        </div>
+
+                        <div class="col">
+                            <div class="row board-team-name"><%= teamNames[1] %></div>
+                            <div id="board-score-r" class="row board-score" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 2)"><%= startScores[1] %></div>
+                            <div class="row" style="height: 10vh;">
+                                <div class="col text-start">
+                                    <img src="/assets/images/dobrograd-badminton.svg" height="40vh">
+                                </div>
+                                <div class="col text-end">
+                                    <img src="/assets/images/dobrograd-badminton.svg" height="40vh">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -36,7 +36,7 @@ class Common {
     }
 
     return Promise.resolve(calculated_objects.flat(1))
-    .tap((pairs) => console.log(`Selected ${pairs.length} pairs: ${JSON.stringify(pairs)}`));
+    .tap((pairs) => console.log(`Selected ${pairs.length} pairs:\n${JSON.stringify(pairs, null, 2)}`));
   };
 
   calcReadyRec(delta, sort, calculated_objects) {
@@ -45,7 +45,7 @@ class Common {
       const pairsRating = new Map();
       for (let i = 0; i < ready.length; i++) {
         for (let j = i + 1; j < ready.length; j++) {
-          pairsRating.set([ready[i].user_id, ready[j].user_id], (ready[i].rating + ready[j].rating) / 2);
+          pairsRating.set([ready[i].user_id, ready[j].user_id], (ready[i].rating + ready[j].rating));
         }
       }
 

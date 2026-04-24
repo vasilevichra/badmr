@@ -7,38 +7,47 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
     sortOrder: 'desc',
     /*pagination: true, pageSize: 20, pageNumber: 1,*/
     showRefresh: loggedInUser && isNotPhone(),
+    undefinedText: '<math><mo>&minus;</mo></math>',
     columns: [
       {
-        title: '№',
         field: '#',
+        title: '<span class="no-selection">№</span>',
         align: 'center',
         formatter: (value, row, index) => index + 1,
       },
       {
         field: 'registered',
-        title: 'Участвует?',
+        title: '<span class="no-selection">Участвует?</span>',
         checkbox: true,
         sortable: true,
         cellStyle: (value, row) => row.enabled === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}},
       },
       {
         field: 'name',
-        title: 'Имя',
+        title: '<span class="no-selection">Имя</span>',
         sortable: true,
         formatter: (value, row) => this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()),
         cellStyle: (value, row) => playerSexStyle(row.sex),
       },
       {
         field: 'rating',
-        title: isPhone() ? 'Р.' : 'Рейтинг',
+        title: isPhone() ? 'Р.' : '<span class="no-selection">Рейтинг</span>',
         align: 'center',
         sortable: true,
         formatter: (value, row) => playerRatingGroupsFormatter(row.rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
         cellStyle: (value, row) => playerRatingGroupsStyle(row.rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
       },
       {
+        field: 'rating_lab',
+        title: isPhone() ? 'Л.' : '<span class="no-selection">ЛАБ</span>',
+        align: 'center',
+        sortable: true,
+        formatter: (value, row) => playerRatingGroupsFormatter(row.rating_lab, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
+        cellStyle: (value, row) => playerRatingGroupsStyle(row.rating_lab, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
+      },
+      {
         field: 'delta_today',
-        title: 'Д',
+        title: '<span class="no-selection">Д</span>',
         align: 'center',
         sortable: true,
         formatter: value => value > 0 ? '+' + value : value,
@@ -46,7 +55,7 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       },
       {
         field: 'delta_week',
-        title: 'Н',
+        title: '<span class="no-selection">Н</span>',
         align: 'center',
         sortable: true,
         formatter: value => value > 0 ? '+' + value : value,
@@ -54,7 +63,7 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       },
       {
         field: 'delta_month',
-        title: 'М',
+        title: '<span class="no-selection">М</span>',
         align: 'center',
         sortable: true,
         formatter: value => value > 0 ? '+' + value : value,
@@ -62,13 +71,13 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       },
       {
         field: 'matches',
-        title: 'Сыграно',
+        title: '<span class="no-selection">Сыграно</span>',
         align: 'center',
         sortable: true,
       },
       {
         field: 'city',
-        title: 'Город',
+        title: '<span class="no-selection">Город</span>',
         align: 'center',
         sortable: true,
       }
@@ -108,7 +117,7 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
     );
     $('#player-actualize').click(async () => {
       await $.post('/api/users/actualize');
-      $('#player-table').bootstrapTable('refresh');
+      refresh.table.player();
     });
   }
 }
@@ -126,23 +135,23 @@ const playerDeltaCss = value => {
 const archiveUser = (id, name) => {
   if (confirm(`Сделать игрока ${name} неактивным?`)) {
     $.post(`/api/users/archive/${id}`);
-    $('#player-table').bootstrapTable('refresh');
-    $('#player-archive-table').bootstrapTable('refresh');
+    refresh.table.player();
+    refresh.table.archive();
   }
 }
 
 const unarchiveUser = (id, name) => {
   if (confirm(`Сделать игрока ${name} активным?`)) {
     $.post(`/api/users/unarchive/${id}`);
-    $('#player-table').bootstrapTable('refresh');
+    refresh.table.player();
   }
-  $('#player-archive-table').bootstrapTable('refresh');
+  refresh.table.archive();
 }
 
 const changeRating = (id, name, rating) => {
   if (confirm(`Изменить рейтинг игрока ${name} на ${rating}?`)) {
     $.post(`/api/users/rating/${id}?new=${rating}`);
-    $('#player-table').bootstrapTable('refresh');
+    refresh.table.player();
   }
 }
 

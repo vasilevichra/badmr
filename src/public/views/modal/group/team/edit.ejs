@@ -1,0 +1,88 @@
+<div class="modal" tabindex="-1" id="tournament-groups-team-edit-<%= team_id %>">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 50%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменение команды</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="input-group">
+                            <span class="tournament-groups-team-edit-type input-group-text bi bi-person-vcard"></span>
+                            <div>
+                                <select id="tournament-groups-team-edit-select-city-<%= team_id %>" class="select2 form-control"></select>
+                            </div>
+                            <div>
+                                <input type="text" class="form-control" minlength="1" maxlength="10" size="10" placeholder="<%= team_name %>">
+                            </div>
+                        </div>
+                    </div>
+
+                    <% for (let r = 1; r <= 2; r++) { %>
+
+                        <div class="row" style="margin-top: 1em">
+                            <div class="input-group" style="justify-content: center;">
+                                <span><%= r %> круг</span>
+                            </div>
+                        </div>
+
+                        <div class="row" style="margin-top: 1em">
+                            <div class="input-group">
+                                <span class="tournament-groups-team-edit-type input-group-text">МО</span>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon man bi bi-person-standing"></span>
+                                <select class="tournament-groups-team-edit-select-ms<%= r %> select form-control" required></select>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 1em">
+                            <div class="input-group">
+                                <span class="tournament-groups-team-edit-type input-group-text">ЖО</span>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon woman bi bi-person-standing-dress"></span>
+                                <select class="tournament-groups-team-edit-select-ws<%= r %> select form-control" required></select>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 1em">
+                            <div class="input-group">
+                                <span class="tournament-groups-team-edit-type input-group-text">МП</span>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon man bi bi-person-standing"></span>
+                                <select class="tournament-groups-team-edit-select-md<%= r %>1 select form-control" required></select>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon man bi bi-person-standing"></span>
+                                <select class="tournament-groups-team-edit-select-md<%= r %>2 select form-control" required></select>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 1em">
+                            <div class="input-group">
+                                <span class="tournament-groups-team-edit-type input-group-text">ЖП</span>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon woman bi bi-person-standing-dress"></span>
+                                <select class="tournament-groups-team-edit-select-wd<%= r %>1 select form-control" required></select>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon woman bi bi-person-standing-dress"></span>
+                                <select class="tournament-groups-team-edit-select-wd<%= r %>2 select form-control" required></select>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 1em">
+                            <div class="input-group">
+                                <span class="tournament-groups-team-edit-type input-group-text">СП</span>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon man bi bi-person-standing"></span>
+                                <select class="tournament-groups-team-edit-select-xd<%= r %>1 select form-control" required></select>
+                                <span class="input-group-text tournament-groups-team-edit-order-icon woman bi bi-person-standing-dress"></span>
+                                <select class="tournament-groups-team-edit-select-xd<%= r %>2 select form-control" required></select>
+                            </div>
+                        </div>
+
+                        <% if (r === 1) { %>
+                            <div class="row" style="margin-top: 1em">
+                                <div class="input-group" style="justify-content: center;">
+                                    <button class="button btn btn-outline-primary" onclick="copyRound(<%= team_id %>)">Повторить</button>
+                                </div>
+                            </div>
+                        <% } %>
+
+                    <% } %>
+                </div>
+                <div class="modal-footer">
+                    <button id="tournament-groups-team-edit-submit" type="submit" class="btn btn-success">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

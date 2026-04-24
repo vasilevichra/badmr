@@ -1,0 +1,39 @@
+<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">${player['name']} ${player['patronymic']}</h5>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close">
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="avatar">
+                <img class="avatar-img" src="data:image/png;base64, ${player['pic']}" alt="user@email.com" width="200">
+            </div>
+            <label id="player-window-label-birthday">${player['birthday']} (${player['age']})</label>
+            <button class="player-window-archive-button bi bi-box-seam btn btn-outline-danger" type="button" style="display:none;"> Архивировать</button>
+            <form class="player-window-change-rating-form" style="display:none;">
+                <input class="player-window-change-rating-input" type="number" placeholder="рейтинг" maxlength="5" size="5" value="${player['rating']}"
+                       required>
+                <button class="player-window-change-rating-button bi bi-box-seam btn btn-outline-warning" type="button"> Изменить рейтинг</button>
+            </form>
+            <div class="container">
+                <div class="row justify-content-center mx-auto">
+                    <button id="btn">Alert</button>
+                    <script>
+                      var btn = document.getElementById('btn')
+
+                      btn.addEventListener('click', function () {
+                        alert('hello');
+                      });
+                    </script>
+                </div>
+            </div>
+            <canvas id="line-chart" width="800" height="450"></canvas>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>

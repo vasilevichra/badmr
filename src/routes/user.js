@@ -30,8 +30,16 @@ router.get('/', (req, res) => {
   res.promise(userService.getAll());
 });
 
+router.get('/select/:city_id', ensureLoggedIn, (req, res) => {
+  res.promise(userService.select(req.params.city_id).then(g => ({results: g})));
+});
+
 router.get('/:id', (req, res) => {
   res.promise(userService.getById(req.params.id));
+});
+
+router.get('/:id/winrate', ensureLoggedIn, (req, res) => {
+  res.promise(userService.getWinRateById(req.params.id));
 });
 
 router.post('/register/:ids', ensureLoggedIn, (req, res) => {
@@ -52,6 +60,10 @@ router.get('/rating/:id', (req, res) => {
 
 router.post('/rating/:id', ensureLoggedIn, (req, res) => {
   res.promise(userService.setRating(req.params.id, req.query.new));
+});
+
+router.post('/lab', (req, res) => {
+  res.promise(userService.labCrawl());
 });
 
 module.exports = router;

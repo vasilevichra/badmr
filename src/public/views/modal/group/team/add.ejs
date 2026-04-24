@@ -1,0 +1,31 @@
+<div class="modal" tabindex="-1" id="tournament-groups-team-add">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content mx-auto">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавление команды</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="col-auto">
+                        <div class="row">
+                            <select id="tournament-groups-team-add-select-group" class="select2 form-control" required></select>
+                            <select id="tournament-groups-team-add-select-city" class="select2 form-control" required></select>
+                            <select id="tournament-groups-team-add-select-color" class="select2 form-control" required></select>
+                        </div>
+                        <div class="row mx-auto" style="margin-top: 1em">
+                            <input id="tournament-groups-team-add-add-name" class="form-control" type="text" placeholder="Название" minlength="1" size="8"
+                                   required/>
+                        </div>
+                        <div class="row" style="margin-top: 1em">
+                            <select id="tournament-groups-team-add-select-users" class="select form-control" multiple="multiple" required></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="tournament-groups-team-add-submit" type="submit" class="btn btn-success">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

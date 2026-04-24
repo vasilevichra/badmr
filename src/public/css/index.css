@@ -11,6 +11,35 @@ html, h1, h2, h3, h4, h5, h6, a {
   color: #007df9;
 }
 
+/* убирает подсказку ввода при наборе текста */
+input:focus::placeholder {
+  opacity: 0;
+}
+
+/* скрыватель блоков */
+.toggler {
+  position: absolute;
+  right: 0;
+}
+
+/* пунктирная линия, которая появляется при скрытии блока */
+.hr-dashed {
+  margin: 20px 0;
+  padding: 0;
+  height: 0;
+  border: none;
+  border-top: 2px dashed #61605e;
+  display: none;
+}
+
+/* убранный в bootstrap 5 класс */
+.btn-xs {
+  padding: 0.25rem 0.4rem; /* Уменьшенные отступы */
+  font-size: 0.7rem; /* Меньший размер шрифта */
+  line-height: 1.0; /* Корректировка межстрочного интервала */
+  border-radius: 0.1rem; /* Скругление углов */
+}
+
 /* строка поиска игроков */
 #player div.search {
   width: calc(100% - 166px) !important;
@@ -30,7 +59,7 @@ html, h1, h2, h3, h4, h5, h6, a {
 }
 
 .social {
-  margin: 2.2em 0 0 0;
+  /*margin: 2.2em 0 0 0;*/
 }
 
 .tournament {
@@ -253,4 +282,125 @@ html, h1, h2, h3, h4, h5, h6, a {
 
 .win {
   font-weight: 567;
+}
+
+#select2-tournament-groups-team-add-select-color-results span,
+#select2-tournament-groups-team-add-select-color-container span {
+  width: 14px;
+  height: 14px;
+  display: block;
+  float: left;
+  margin: 6px 6px 0 0;
+  border: 1px solid black;
+}
+
+#tournament-groups-team-add-add-name {
+  height: 28px;
+}
+
+.tournament-groups-table-games {
+  margin-bottom: 3em;
+  vertical-align: middle;
+}
+
+.tournament-groups-table-game {
+  width: 85px;
+  height: 85px;
+}
+
+td.diagonal-cross {
+  position: relative;
+  background: linear-gradient(to right top, #ffffff 0%, #ffffff 49.99%, #000000 50%, #000000 50.1%, #ffffff 50.2%, #ffffff 100%) !important;
+  background-color: transparent;
+  background-image: none !important;
+}
+
+/* The real diagonal line */
+td.diagonal-cross:after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: linear-gradient(to right bottom, white, white 49.8%, black 49.9%, black 50.1%, white 50.2%, white) !important;
+  background: linear-gradient(to right top, white, white 49.8%, black 49.9%, black 50.1%, white 50.2%, white) !important;
+}
+
+.vertical-text {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+}
+
+#tournament-groups-board .modal-body {
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding: 0 0 0 0 !important;
+  margin: 0 0 0 0 !important;
+}
+
+.board-team-name {
+  height: 6vh;
+  font-size: 6vh;
+  font-weight: 500;
+  justify-content: center;
+}
+
+.board-score {
+  height: 73vh;
+  font-size: 37vw;
+  font-weight: 700;
+  font-stretch: 50%;
+  padding: 0 0 0 0 !important;
+  margin: 0 0 0 0 !important;
+  align-content: center;
+  justify-content: center;
+}
+
+.no-selection {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+}
+
+.board-game-type {
+  font-size: 1.6vw;
+  justify-content: center;
+}
+
+.board-game-type-current {
+  font-size: 2.2vw;
+  font-weight: 700;
+}
+
+/*.select2-dropdown .select2-results__option[aria-selected=true] {*/
+/*  display: none;*/
+/*}*/
+
+.team-group-name {
+  align-content: center;
+  text-align: center;
+}
+
+.tournament-groups-team-edit-order-icon {
+  /*height: 1em;*/
+  /*width: 1em;*/
+  font-size: 1.3em;
+}
+
+.tournament-groups-team-edit-type {
+  width: 3.5em;
+}
+
+.man {
+  color: royalblue;
+}
+
+.woman {
+  color: deeppink;
 }

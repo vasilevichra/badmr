@@ -170,7 +170,7 @@
                                     </select>
                                     <select name="yyyy" class="form-control w-auto" required>
                                         <option value="0">Год</option>
-                                        <% for(var i = 1950; i < new Date().getFullYear() - 4; i++) { %>
+                                        <% for(var i = 1950; i < new Date().getUTCFullYear() - 4; i++) { %>
                                             <option value="<%= i %>"><%= i %></option>
                                         <% } %>
                                     </select>

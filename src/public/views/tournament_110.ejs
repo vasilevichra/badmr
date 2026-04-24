@@ -1,0 +1,28 @@
+<div id="tournament-groups" class="tournament-groups">
+    <div class="container">
+        <% if (user) { %>
+            <div class="row">
+                <h1 class="text-center">Группы</h1>
+            </div>
+        <% } %>
+        <div class="row">
+            <% if (user) { %>
+                <div class="col d-flex">
+                    <button type="button" class="btn btn-outline-primary mx-auto" data-bs-toggle="modal" data-bs-target="#tournament-groups-team-add">
+                        + команда
+                    </button>
+                </div>
+            <% } %>
+            <%- include('modal/group/team/add', {}); %>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 desc">
+                <div id="tournament-groups-block">
+                    <% groups.forEach((g, i) => { %>
+                        <%- include('group', {index: i, group: g, user: user}); %>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

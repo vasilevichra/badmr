@@ -10,7 +10,7 @@ class Tournament {
     this.db = new Repository().db;
   }
 
-  add(unit_id, name, available) {
+  create(unit_id, name, available) {
     return this.db.run(
         `INSERT INTO tournament (unit_id, name, available)
          VALUES (?, ?, ?)`,

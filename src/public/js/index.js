@@ -3,6 +3,21 @@ $(document).ready(() => {
   // русская локализация для всех таблиц
   $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU']);
 
+  // скрытие блоков после перезагрузки страницы или логина
+  $('.closable').each((i, el) => {
+    if ($.cookie($(el).attr('id')) === 'false') {
+      toggler.hide($(el));
+    }
+  });
+
+  // настройка обратного отсчёта для информации о турнире
+  $('time').countDown({label_dd: 'д', label_hh: 'ч', label_mm: 'м', separator_days: ' ', with_hh_leading_zero: false, with_seconds: false});
+
+  // настройки для select2
+  $.fn.select2.defaults.set("theme", "bootstrap-5");
+  $.fn.select2.defaults.set("dropdownAutoWidth", true);
+  $.fn.select2.defaults.set("ajax--cache", true);
+
   // window.onbeforeunload = () => 'Are you sure you want to leave?';
 
   const settings = {
@@ -22,7 +37,22 @@ $(document).ready(() => {
   renderSelect();
   renderGames();
   renderArchive();
+  renderGroups();
 
   // выравнивание перелистывания страниц по центру для всех таблиц
   $('.fixed-table-pagination').addClass('d-flex justify-content-center');
+
+  // обработчики событий для табло
+  ["board-score-l", "board-score-r"].map(id => document.getElementById(id)).map(el => addScoreBoardHandlers(el));
+
+  // обновить рейтинг ЛАБ в фоне
+  $.ajax({
+    url: '/api/users/lab',
+    type: 'POST',
+    cache: false,
+    async: true,
+    success: () => refresh.table.player(),
+    error: () => {
+    },
+  });
 });

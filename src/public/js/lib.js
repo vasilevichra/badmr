@@ -52,8 +52,9 @@ const playerRatingGroupsFormatter = (rating, B_max, C_max, D_max, E_max, F_max, 
     rate = (B_max + 1) + '++';
   }
 
-  return isPhone() ? rating : '<div title="' + group + ': ' + rate + '" class="group-letter"><div class="group-letter-bg secondary-info">'
-      + group + '</div>' + rating + '</div>';
+  return isPhone() ? (rating || `<math><mo>&minus;</mo></math>`) : '<div title="' + group + ': ' + rate
+      + '" class="group-letter"><div class="group-letter-bg secondary-info">'
+      + group + '</div>' + (rating || '<math><mo>&minus;</mo></math>') + '</div>';
 };
 
 const playerRatingGroupsStyle = (rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
@@ -80,6 +81,7 @@ const getText = (url) => {
   return $.ajax({
     type: 'GET',
     url: url,
+    crossDomain: true,
     global: false,
     async: false,
     success: data => data
@@ -97,6 +99,97 @@ const getJson = (url) => {
   }).responseText);
 }
 
-const removeCharacterAtIndex = (value, index) => value.substring(0, index) + value.substring(index + 1);
-
 const date2DatabaseFormat = (date = new Date()) => date.toISOString().replace('T', ' ').substring(0, 19);
+
+const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
+  let increasedValue = parseInt(el.textContent) + 1;
+  el.textContent = increasedValue;
+  $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
+  if (increasedValue % 11 === 0) {
+    alert('kva!');
+    // перевернуть табло
+    // создать новую игру
+    // убрать статус текущей у предыдущей
+  }
+};
+const decreaseBoardScore = (el, team_1_id, team_2_id) => el.textContent = parseInt(el.textContent) - 1;
+
+function handleScoreBoardGesture(el) {
+  // if (touchendX < touchstartX) {
+  //   console.log('Swiped Left');
+  // }
+  //
+  // if (touchendX > touchstartX) {
+  //   console.log('Swiped Right');
+  // }
+
+  if (touchendY < touchstartY) {
+    console.log('Swiped Up');
+    increaseBoardScore(el);
+  }
+
+  if (touchendY > touchstartY) {
+    console.log('Swiped Down');
+    decreaseBoardScore(el);
+  }
+
+  // if (touchendY === touchstartY) {
+  //   console.log('Tap');
+  // }
+}
+
+const addScoreBoardHandlers = (el) => {
+  document.addEventListener('DOMContentLoaded', function () {
+    el.addEventListener('touchstart', function (event) {
+      touchstartX = event.changedTouches[0].screenX;
+      touchstartY = event.changedTouches[0].screenY;
+    }, false);
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    el.addEventListener('touchend', function (event) {
+      touchendX = event.changedTouches[0].screenX;
+      touchendY = event.changedTouches[0].screenY;
+      handleScoreBoardGesture(el);
+    }, false);
+  });
+}
+
+const winValue = (lostValue) => lostValue <= 19 ? 21 : lostValue + 2;
+
+const refresh = {
+  block: {
+    by: {
+      id: (id) => $(`#${id}`).load(location.href + ` #${id}>*`, ''),
+    }
+  },
+  table: {
+    player: () => $('#player-table').bootstrapTable('refresh'),
+    archive: () => $('#player-archive-table').bootstrapTable('refresh'),
+    court: () => $('#cort-table').bootstrapTable('refresh'),
+  }
+}
+
+const toggler = {
+  toggle: (el) => {
+    const closable = $(el).closest('div').nextAll('div.closable').first();
+    if (closable.hasClass('d-none')) {
+      toggler.show(closable);
+    } else {
+      toggler.hide(closable);
+    }
+  },
+  hide: (closable) => {
+    closable.addClass('d-none');
+    closable.prev('div.row').find('.toggler').removeClass('bi-chevron-down').addClass('bi-chevron-up').css(
+        {'color': 'blue', '-webkit-text-stroke': '1px'});
+    closable.next('hr').show();
+    $.cookie(closable.attr('id'), false);
+  },
+  show: (closable) => {
+    closable.removeClass('d-none');
+    closable.prev('div.row').find('.toggler').removeClass('bi-chevron-up').addClass('bi-chevron-down').css({'color': '', '-webkit-text-stroke': ''});
+    closable.next('hr').hide();
+    $.cookie(closable.attr('id'), true);
+  },
+};

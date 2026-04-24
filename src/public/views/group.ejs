@@ -1,0 +1,120 @@
+<% var group_index = index + 1; %>
+<% var group_name = Object.values(Object.values(group)[0])[0][0]['group_name']; %>
+<% var teams_in_group = Object.values(Object.values(group)[0]); %>
+
+<div class="row text-center pt-4">
+    <h3><%= group_name %></h3>
+</div>
+
+<div class="row justify-content-sm-center">
+    <% teams_in_group.forEach(tg => { %>
+        <div class="col-auto">
+            <div class="text-center">
+                <% var team_id = tg[0].team_id; %>
+                <% var team_name = tg[0].team_name; %>
+                <%- include('modal/group/team/edit', {team_id: team_id, team_name: team_name }); %>
+                <label><%= tg[0].team_city %> - <%= tg[0].team_name %></label>
+                <% if (user) { %>
+                    <i class="bi bi-gear" onclick="editTeam(<%= team_id %>, '<%= team_name %>')"></i>
+                <% } %>
+            </div>
+            <div class="d-flex">
+                <div class="vr" style="width: 10px; color: #<%= tg[0].team_color %> !important; margin-bottom: 1em !important; opacity: 0.7 !important;"></div>
+                <table class="table tournament-groups-team">
+                    <tbody>
+                    <% tg.forEach(t => { %>
+                        <tr>
+                            <td><%- playerNameFormatter(t.user_id, `${t.user_lastname} ${t.user_firstname}`, t.user_sex, t.user_pic) %></td>
+                            <td style="text-align: center; align-content: center">
+                                <math class="secondary-info">
+                                    <% if (t.user_lab_rating_1 || t.user_lab_rating_2) { %>
+                                        <% if (t.user_lab_rating_1) { %>
+                                            <msub>
+                                                <mi><%= t.user_lab_rating_1 %></mi>
+                                                <mi>1</mi>
+                                            </msub>
+                                        <% } %>
+                                        <% if (t.user_lab_rating_1 && t.user_lab_rating_2) { %>
+                                            <mspace width="3px"/>
+                                        <% } %>
+                                        <% if (t.user_lab_rating_2) { %>
+                                            <msub>
+                                                <mi><%= t.user_lab_rating_2 %></mi>
+                                                <mi>2</mi>
+                                            </msub>
+                                        <% } %>
+                                    <% } else  { %>
+                                        <mrow>
+                                            <mo>-</mo>
+                                        </mrow>
+                                    <% } %>
+                                </math>
+                            </td>
+                            <td class="team-group-name"
+                            <% if (user) { %>
+                                onclick="editGroupUser(this, <%= t.team_id %>, <%= t.user_id %>, <%= t.user_group_id %>, '<%= t.user_group_name %>')"
+                                    <% } %>
+                            ><%= t.user_group_name %></td>
+                        </tr>
+                    <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <% }) %>
+</div>
+
+<div class="row justify-content-sm-center">
+    <div class="col-auto">
+        <div class="d-flex">
+            <table class="table tournament-groups-table-games">
+                <tbody>
+                <tr>
+                    <td style="background-color: rgba(0, 0, 0, 0.0) !important;"></td>
+                    <% teams_in_group.forEach(tig => { %>
+                        <% var team_name = `${tig[0].team_city} - ${tig[0].team_name}`; %>
+                        <td class="vertical-text"><%= team_name %></td>
+                    <% }) %>
+                </tr>
+                <% teams_in_group.forEach((gig, i) => { %>
+                    <% var team_name = `${gig[0].team_city} - ${gig[0].team_name}`; %>
+                    <tr>
+                        <td style="text-align: right;"><%= team_name %></td>
+                        <% for (let j = 0; j < teams_in_group.length; j++) { %>
+                            <% if (i === j) { %>
+                                <td class="tournament-groups-table-game diagonal-cross"></td>
+                            <% } else { %>
+                                <% if (i < j) { %>
+                                    <td class="tournament-groups-table-game vertical-text" style="text-align: center;">•</td>
+                                <% } else { %>
+                                    <% var team_name_1 = `${teams_in_group[i][0].team_city} - ${teams_in_group[i][0].team_name}`; %>
+                                    <% var team_name_2 = `${teams_in_group[j][0].team_city} - ${teams_in_group[j][0].team_name}`; %>
+                                    <% var team_1_id = teams_in_group[i][0].team_id; %>
+                                    <% var team_2_id = teams_in_group[j][0].team_id; %>
+                                    <% var game_id = `${team_1_id}-${team_2_id}`; %>
+                                    <%# var game = getJson(`/api/games/current110?team_1_id=${team_1_id}&team_2_id=${team_2_id}`); %>
+                                    <%- include('board', {gameId: game_id, teamIds: [team_1_id, team_2_id], teamNames: [team_name_1, team_name_2], startScores: [0, 0]}); %>
+
+                                    <td class="tournament-groups-table-game" style="text-align: center;">
+                                        <% if (user) { %>
+                                            <button class="btn btn-outline-success"
+                                                    type="button"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#tournament-groups-board-<%= game_id %>"
+                                                    onclick="playMatch110(<%= team_1_id %>, <%= team_2_id %>)">
+                                                <i class="bi bi-play fs-3"></i>
+                                            </button>
+                                        <% } else { %>
+                                            <span>⏱️</span>
+                                        <% } %>
+                                    </td>
+                                <% } %>
+                            <% } %>
+                        <% } %>
+                    </tr>
+                <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
