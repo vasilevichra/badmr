@@ -29,6 +29,27 @@ class User {
   unarchiveAll = () => this.user.unarchiveAll();
   getRating = (id) => this.user.getRating(id);
   setRating = (id, rating) => this.user.setRating(id, rating);
+  getDaysUntilBirthday = (id) => this.user.getDaysUntilBirthday(id);
+  getMatchesCount = (id) => this.user.getMatchesCount(id);
+  getGamesCount = (id) => this.user.getGamesCount(id);
+  getCoWinnersById = (id) => this.user.getCoWinnersById(id);
+  getCoLosersById = (id) => this.user.getCoLosersById(id);
+  getBuddiesById = (id) => {
+    return Promise.all([
+      this.user.getCoWinnersById(id), // 0
+      this.user.getCoLosersById(id),  // 1
+
+    ])
+    .then(promises => {
+      return promises[0].map(w => {
+        const loser = promises[1].find(o => o.user_id === w.user_id);
+        const lose_count = loser ? loser.lose_count : 0;
+        return {user_id: w.user_id, user_name: w.user_name, win_rate: (w.win_count / (w.win_count + lose_count)).toFixed(4) * 100};
+      });
+    })
+    .then(w => w.sort((a, b) => b.win_rate - a.win_rate).filter(w => w.win_rate > 0));
+  }
+
   labCrawl = () => {
     return this.getAll()
     // .then(users => users.slice(18, 19))

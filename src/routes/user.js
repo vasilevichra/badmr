@@ -38,10 +38,6 @@ router.get('/:id', (req, res) => {
   res.promise(userService.getById(req.params.id));
 });
 
-router.get('/:id/winrate', ensureLoggedIn, (req, res) => {
-  res.promise(userService.getWinRateById(req.params.id));
-});
-
 router.post('/register/:ids', ensureLoggedIn, (req, res) => {
   res.promise(userService.registerByIds(req.params.ids.split(',').map(Number)));
 });

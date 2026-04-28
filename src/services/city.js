@@ -12,6 +12,7 @@ class City {
 
   select = () => this.city.select();
   getByTeamId = (team_id) => this.city.getByTeamId(team_id);
+  getByUserId = (team_id) => this.city.getByUserId(team_id);
 }
 
 module.exports = City;

@@ -101,10 +101,15 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
   })
   .on('click-cell.bs.table', (field, value, row, element) => {
     if (value === 'name') {
-      $.getJSON(`/api/users/rating/${element['id']}`, result => {
-        element['rating'] = result.rating;
-        renderPlayerModal(element);
-      });
+      $.ajax({
+            url: `/web/players/${element['id']}`,
+            type: 'GET',
+            cache: false,
+            async: false,
+            success: html => $("#player-window").html(html),
+          }
+      );
+      new bootstrap.Modal('#player-window').show();
     }
   });
 
@@ -154,102 +159,3 @@ const changeRating = (id, name, rating) => {
     refresh.table.player();
   }
 }
-
-const renderPlayerModal = (player) => {
-  $.getJSON(`/api/users/${player['id']}`, user => {
-    player['patronymic'] = user.patronymic;
-    player['birthday'] = user.birthday;
-    player['age'] = age(user.birthday);
-
-    $("#player-window").html($(playerModalTemplate(player)));
-
-    if (loggedInUser) {
-      const archiveButton = $('.player-window-archive-button');
-      archiveButton.show();
-      archiveButton.click((event) => {
-        event.preventDefault();
-        archiveUser(player['id'], player['name']);
-      });
-
-      $(".player-window-change-rating-form").show();
-      const changeRatingButton = $('.player-window-change-rating-button');
-      changeRatingButton.click((event) => {
-        event.preventDefault();
-        const rating = $('.player-window-change-rating-input').val();
-        changeRating(player['id'], player['name'], rating);
-      });
-    }
-
-    let modal = new bootstrap.Modal(document.getElementById('player-window'));
-
-    // new Chart(document.getElementById("line-chart"), {
-    //   type: 'line',
-    //   data: {
-    //     labels: [1500, 1600, 1700, 1750, 1800, 1850, 1900, 1950, 1999, 2050],
-    //     datasets: [{
-    //       data: [86, 114, 106, 106, 107, 111, 133, 221, 783, 2478],
-    //       label: "Africa",
-    //       borderColor: "#3e95cd",
-    //       fill: false
-    //     }, {
-    //       data: [282, 350, 411, 502, 635, 809, 947, 1402, 3700, 5267],
-    //       label: "Asia",
-    //       borderColor: "#8e5ea2",
-    //       fill: false
-    //     }, {
-    //       data: [168, 170, 178, 190, 203, 276, 408, 547, 675, 734],
-    //       label: "Europe",
-    //       borderColor: "#3cba9f",
-    //       fill: false
-    //     }, {
-    //       data: [40, 20, 10, 16, 24, 38, 74, 167, 508, 784],
-    //       label: "Latin America",
-    //       borderColor: "#e8c3b9",
-    //       fill: false
-    //     }, {
-    //       data: [6, 3, 2, 2, 7, 26, 82, 172, 312, 433],
-    //       label: "North America",
-    //       borderColor: "#c45850",
-    //       fill: false
-    //     }
-    //     ]
-    //   },
-    //   options: {
-    //     title: {
-    //       display: true,
-    //       text: 'World population per region (in millions)'
-    //     }
-    //   }
-    // });
-
-    modal.show();
-  });
-}
-
-const playerModalTemplate = player => `
-<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title">${player['name']} ${player['patronymic']}</h5>
-      <button type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close">
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="avatar">
-        <img class="avatar-img" src="data:image/png;base64, ${player['pic']}" alt="user@email.com" width="200">
-      </div>
-      <label id="player-window-label-birthday">${player['birthday']} (${player['age']})</label>
-      <button class="player-window-archive-button bi bi-box-seam btn btn-outline-danger" type="button" style="display:none;">  Архивировать</button>
-      <form class="player-window-change-rating-form" style="display:none;">
-        <input class="player-window-change-rating-input" type="number" placeholder="рейтинг" maxlength="5" size="5" value="${player['rating']}" required>
-        <button class="player-window-change-rating-button bi bi-box-seam btn btn-outline-warning" type="button">  Изменить рейтинг</button>
-      </form>
-    </div>
-    <canvas id="line-chart" width="800" height="450"></canvas>
-    <div class="modal-footer">
-    </div>
-  </div>
-</div>`;

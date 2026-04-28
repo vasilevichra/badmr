@@ -79,9 +79,12 @@ app.use('/api/teams', require('./src/routes/team'));
 app.use('/api/auth', require('./src/routes/auth'));
 app.use('/api/vk', require('./src/routes/vk'));
 
+app.use('/web/players', require('./src/routes/web/player'));
+
 app.use((req, res, next) => {
   res.promise(Promise.reject(createError(404)));
 });
+
 app.use((err, req, res, next) => {
   // set locals, only providing error in dev mode
   res.locals.message = err.message;

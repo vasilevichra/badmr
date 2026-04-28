@@ -39,9 +39,15 @@ class User {
                 u.firstname,
                 u.patronymic,
                 u.birthday,
+                cast(strftime('%Y.%m%d', 'now') - strftime('%Y.%m%d', u.birthday) AS INT) AS age,
                 u.sex,
-                coalesce(up.pic, ul.img),
-                u.city_id
+                coalesce(up.pic, ul.img)                                                  AS pic,
+                u.city_id,
+                ul.rating_1,
+                ul.rating_2,
+                ul.site_login,
+                ul.site_id,
+                ul.club
          FROM user u
                   LEFT OUTER JOIN user_pic up ON u.id = up.user_id
                   LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
@@ -50,57 +56,56 @@ class User {
     );
   }
 
-  getWinRates() {
-    return this.db.all(
-        `SELECT *
-         FROM (SELECT m.user_1_id AS id1, m.user_2_id AS id2, iif(g.lost_2_by, 1, 0) AS w, iif(g.lost_1_by, 1, 0) AS l
-               FROM match m
-                        LEFT JOIN game g ON m.id = g.match_id
-               UNION ALL
-               SELECT m.user_3_id AS id1, m.user_4_id AS id2, iif(g.lost_1_by, 1, 0) AS w, iif(g.lost_2_by, 1, 0) AS l
-               FROM match m
-                        LEFT JOIN game g ON m.id = g.match_id)`
-    ).then(result => {
-      const rates = {};
-      for (const rate of result) {
-        let id1 = rate['id1'];
-        let id2 = rate['id2'];
-        let w = rate['w'];
-        let l = rate['l'];
-
-        if (!rates[id1]) { // новая запись, где первый ключ id1
-          const arr = {};
-          arr[id2] = {w: w, l: l};
-          rates[id1] = arr;
-        } else {
-          if (!rates[id1][id2]) { // есть id1, но нет id2
-            rates[id1][id2] = {w: w, l: l};
-          } else { // всё есть - добавляем
-            rates[id1][id2]['w'] += w;
-            rates[id1][id2]['l'] += l;
-          }
+  getCoWinnersById(id) {
+    return this.db.all(`
+        SELECT user_id, (SELECT lastname || ' ' || firstname FROM user WHERE id = user_id) AS user_name, count(match_id) AS win_count
+        FROM (SELECT m.id AS match_id, CASE WHEN m.user_1_id = $user_id THEN m.user_2_id ELSE m.user_1_id END AS user_id
+              FROM user u
+                       JOIN match m ON u.id IN (m.user_1_id, m.user_2_id)
+                       JOIN game g ON m.id = g.match_id
+              WHERE u.id = $user_id
+              GROUP BY m.id
+              HAVING count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
+              UNION ALL
+              SELECT m.id AS match_id, CASE WHEN m.user_3_id = $user_id THEN m.user_4_id ELSE m.user_3_id END AS user_id
+              FROM user u
+                       JOIN match m ON u.id IN (m.user_3_id, m.user_4_id)
+                       JOIN game g ON m.id = g.match_id
+              WHERE u.id = $user_id
+              GROUP BY m.id
+              HAVING count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins'))
+        GROUP BY user_id
+        ORDER BY win_count DESC`,
+        {
+          $user_id: id,
         }
-
-        if (!rates[id2]) { // новая запись, где первый ключ id2
-          const arr = {};
-          arr[id1] = {w: w, l: l};
-          rates[id2] = arr;
-        } else {
-          if (!rates[id2][id1]) { // есть id2, но нет id1
-            rates[id2][id1] = {w: w, l: l};
-          } else { // всё есть - добавляем
-            rates[id2][id1]['w'] += w;
-            rates[id2][id1]['l'] += l;
-          }
-        }
-      }
-      return rates;
-    });
+    );
   }
 
-  getWinRateById(id) {
-    return this.getWinRates()
-    .then(r => r[`${id}`]);
+  getCoLosersById(id) {
+    return this.db.all(`
+        SELECT user_id, (SELECT lastname || ' ' || firstname FROM user WHERE id = user_id) AS user_name, count(match_id) AS lose_count
+        FROM (SELECT m.id AS match_id, CASE WHEN m.user_1_id = $user_id THEN m.user_2_id ELSE m.user_1_id END AS user_id
+              FROM user u
+                       JOIN match m ON u.id IN (m.user_1_id, m.user_2_id)
+                       JOIN game g ON m.id = g.match_id
+              WHERE u.id = $user_id
+              GROUP BY m.id
+              HAVING count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
+              UNION ALL
+              SELECT m.id AS match_id, CASE WHEN m.user_3_id = $user_id THEN m.user_4_id ELSE m.user_3_id END AS user_id
+              FROM user u
+                       JOIN match m ON u.id IN (m.user_3_id, m.user_4_id)
+                       JOIN game g ON m.id = g.match_id
+              WHERE u.id = $user_id
+              GROUP BY m.id
+              HAVING count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins'))
+        GROUP BY user_id
+        ORDER BY lose_count DESC`,
+        {
+          $user_id: id,
+        }
+    );
   }
 
   create(lastname, firstname, patronymic, sex, city_id, birthday) {
@@ -262,6 +267,40 @@ class User {
           $club: club,
           $year: year
         }
+    );
+  }
+
+  getDaysUntilBirthday(id) {
+    return this.db.get(
+        `SELECT CAST(CASE
+                         WHEN strftime('%m-%d', birthday) >= strftime('%m-%d', 'now')
+                             THEN julianday(strftime('%Y', 'now') || '-' || strftime('%m-%d', birthday)) - julianday('now')
+                         ELSE julianday((strftime('%Y', 'now') + 1) || '-' || strftime('%m-%d', birthday)) - julianday('now') END AS int) AS days
+         FROM user
+         WHERE id = ?
+         ORDER BY days`,
+        [id]
+    );
+  }
+
+  getMatchesCount(id) {
+    return this.db.get(
+        `SELECT count() AS count
+         FROM user u
+                  JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
+         WHERE u.id = ?`,
+        [id]
+    );
+  }
+
+  getGamesCount(id) {
+    return this.db.get(
+        `SELECT count() AS count
+         FROM user u
+                  JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
+                  JOIN game g on m.id = g.match_id
+         WHERE u.id = ?`,
+        [id]
     );
   }
 }

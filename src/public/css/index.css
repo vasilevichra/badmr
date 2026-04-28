@@ -87,6 +87,13 @@ input:focus::placeholder {
   display: inline;
 }
 
+.player-window-link {
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  font-weight: var(--bs-body-font-weight);
+  --bs-link-underline-opacity: 75%;
+}
+
 .select {
   margin: 1em 0 3em 0;
   position: relative;

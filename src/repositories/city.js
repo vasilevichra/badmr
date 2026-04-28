@@ -25,6 +25,17 @@ class City {
         [team_id]
     );
   }
+
+  getByUserId(user_id) {
+    return this.db.get(
+        `SELECT c.id, c.name
+         FROM city c
+                  JOIN user u ON c.id = u.city_id
+         WHERE u.id = ?`,
+        [user_id]
+    );
+  }
+
 }
 
 module.exports = City;
