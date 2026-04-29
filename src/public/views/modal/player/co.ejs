@@ -1,0 +1,10 @@
+<tr>
+    <% if (typeof win_count !== 'undefined') { %>
+        <th style="width: 2em;" scope="row"><span class="no-selection rating-plus"><%= win_count %></span></th>
+    <% } else if (typeof lose_count !== 'undefined') { %>
+        <th style="width: 2em;" scope="row"><span class="no-selection rating-minus"><%= lose_count %></span></th>
+    <% } else if (typeof rate !== 'undefined') { %>
+        <th style="width: 4em;" scope="row"><span class="no-selection rating-<%= rate > 50 ? 'plus' : 'minus' %>"><%= rate %>%</span></th>
+    <% } %>
+    <td><%- playerNameFormatter(user_id, user_name, user_sex, user_pic); %>
+</tr>

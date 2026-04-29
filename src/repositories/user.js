@@ -1,5 +1,6 @@
 const Repository = require('./common');
 const crypto = require('crypto');
+const Promise = require("bluebird");
 
 class User {
   constructor() {
@@ -58,54 +59,58 @@ class User {
 
   getCoWinnersById(id) {
     return this.db.all(`
-        SELECT user_id, (SELECT lastname || ' ' || firstname FROM user WHERE id = user_id) AS user_name, count(match_id) AS win_count
-        FROM (SELECT m.id AS match_id, CASE WHEN m.user_1_id = $user_id THEN m.user_2_id ELSE m.user_1_id END AS user_id
-              FROM user u
-                       JOIN match m ON u.id IN (m.user_1_id, m.user_2_id)
-                       JOIN game g ON m.id = g.match_id
-              WHERE u.id = $user_id
-              GROUP BY m.id
-              HAVING count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
-              UNION ALL
-              SELECT m.id AS match_id, CASE WHEN m.user_3_id = $user_id THEN m.user_4_id ELSE m.user_3_id END AS user_id
-              FROM user u
-                       JOIN match m ON u.id IN (m.user_3_id, m.user_4_id)
-                       JOIN game g ON m.id = g.match_id
-              WHERE u.id = $user_id
-              GROUP BY m.id
-              HAVING count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins'))
-        GROUP BY user_id
-        ORDER BY win_count DESC`,
+                SELECT user_id, count(match_id) AS win_count
+                FROM (SELECT m.id AS match_id, CASE WHEN m.user_1_id = $user_id THEN m.user_2_id ELSE m.user_1_id END AS user_id
+                      FROM user u
+                               JOIN match m ON u.id IN (m.user_1_id, m.user_2_id)
+                               JOIN game g ON m.id = g.match_id
+                      WHERE u.id = $user_id
+                      GROUP BY m.id
+                      HAVING count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
+                      UNION ALL
+                      SELECT m.id AS match_id, CASE WHEN m.user_3_id = $user_id THEN m.user_4_id ELSE m.user_3_id END AS user_id
+                      FROM user u
+                               JOIN match m ON u.id IN (m.user_3_id, m.user_4_id)
+                               JOIN game g ON m.id = g.match_id
+                      WHERE u.id = $user_id
+                      GROUP BY m.id
+                      HAVING count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins'))
+                GROUP BY user_id
+                ORDER BY win_count DESC`,
         {
           $user_id: id,
         }
-    );
+    ).then(winners => winners.map(w => this.getById(w.user_id).then(u => {
+      return {user_id: w.user_id, win_count: w.win_count, user_name: `${u.lastname} ${u.firstname}`, user_sex: u.sex, user_pic: u.pic}
+    }))).then(responses => Promise.all(responses));
   }
 
   getCoLosersById(id) {
     return this.db.all(`
-        SELECT user_id, (SELECT lastname || ' ' || firstname FROM user WHERE id = user_id) AS user_name, count(match_id) AS lose_count
-        FROM (SELECT m.id AS match_id, CASE WHEN m.user_1_id = $user_id THEN m.user_2_id ELSE m.user_1_id END AS user_id
-              FROM user u
-                       JOIN match m ON u.id IN (m.user_1_id, m.user_2_id)
-                       JOIN game g ON m.id = g.match_id
-              WHERE u.id = $user_id
-              GROUP BY m.id
-              HAVING count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
-              UNION ALL
-              SELECT m.id AS match_id, CASE WHEN m.user_3_id = $user_id THEN m.user_4_id ELSE m.user_3_id END AS user_id
-              FROM user u
-                       JOIN match m ON u.id IN (m.user_3_id, m.user_4_id)
-                       JOIN game g ON m.id = g.match_id
-              WHERE u.id = $user_id
-              GROUP BY m.id
-              HAVING count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins'))
-        GROUP BY user_id
-        ORDER BY lose_count DESC`,
+                SELECT user_id, count(match_id) AS lose_count
+                FROM (SELECT m.id AS match_id, CASE WHEN m.user_1_id = $user_id THEN m.user_2_id ELSE m.user_1_id END AS user_id
+                      FROM user u
+                               JOIN match m ON u.id IN (m.user_1_id, m.user_2_id)
+                               JOIN game g ON m.id = g.match_id
+                      WHERE u.id = $user_id
+                      GROUP BY m.id
+                      HAVING count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
+                      UNION ALL
+                      SELECT m.id AS match_id, CASE WHEN m.user_3_id = $user_id THEN m.user_4_id ELSE m.user_3_id END AS user_id
+                      FROM user u
+                               JOIN match m ON u.id IN (m.user_3_id, m.user_4_id)
+                               JOIN game g ON m.id = g.match_id
+                      WHERE u.id = $user_id
+                      GROUP BY m.id
+                      HAVING count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins'))
+                GROUP BY user_id
+                ORDER BY lose_count DESC`,
         {
           $user_id: id,
         }
-    );
+    ).then(losers => losers.map(l => this.getById(l.user_id).then(u => {
+      return {user_id: l.user_id, lose_count: l.lose_count, user_name: `${u.lastname} ${u.firstname}`, user_sex: u.sex, user_pic: u.pic}
+    }))).then(responses => Promise.all(responses));
   }
 
   create(lastname, firstname, patronymic, sex, city_id, birthday) {

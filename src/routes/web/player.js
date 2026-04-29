@@ -4,6 +4,7 @@ const CityService = require('../../services/city'), cityService = new CityServic
 const RegionService = require('../../services/region'), regionService = new RegionService();
 const StateService = require('../../services/state'), stateService = new StateService();
 const Promise = require('bluebird');
+const share = require('../../share');
 
 router.get('/:id', (req, res) => {
   const userId = req.params.id;
@@ -34,6 +35,7 @@ router.get('/:id', (req, res) => {
       co_winners: promises[8],
       co_losers: promises[9],
       buddies: promises[10],
+      playerNameFormatter: (id, name, sex, pic) => share.playerNameFormatter(id, name, sex, pic, req.useragent?.isMobile || false)
     });
   });
 

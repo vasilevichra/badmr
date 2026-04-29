@@ -44,7 +44,7 @@ class User {
       return promises[0].map(w => {
         const loser = promises[1].find(o => o.user_id === w.user_id);
         const lose_count = loser ? loser.lose_count : 0;
-        return {user_id: w.user_id, user_name: w.user_name, win_rate: (w.win_count / (w.win_count + lose_count)).toFixed(4) * 100};
+        return {user_id: w.user_id, user_name: w.user_name, user_sex: w.user_sex, user_pic: w.user_pic, win_rate: (w.win_count / (w.win_count + lose_count)).toFixed(4) * 100};
       });
     })
     .then(w => w.sort((a, b) => b.win_rate - a.win_rate).filter(w => w.win_rate > 0));

@@ -8,13 +8,13 @@
     } else {
       result = playerAvatarFormatter(pic, name, sex) + '&nbsp;' + name;
     }
-    return result + '&nbsp;<nobr class="secondary-info">#' + id + '</nobr>';
+    return `<span class="no-selection">${result}&nbsp;</span><nobr class="secondary-info no-selection">#${id}</nobr>`;
   };
 
   const playerAvatarFormatter = (pic, name, sex) => {
     return pic ?
-        `<img src="${pic.startsWith('https://') ? pic : 'data:image/png;base64, ' + pic }" alt="${name}" width="20" height="20"/>` :
-        `<span style="font-size: 15px">${(sex ? '👨🏻‍🦰' : '👩🏻')}</span>`;
+        `<img class="no-selection" src="${pic.startsWith('https://') ? pic : 'data:image/png;base64, ' + pic }" alt="${name}" width="20" height="20"/>` :
+        `<span class="no-selection" style="font-size: 15px">${(sex ? '👨🏻‍🦰' : '👩🏻')}</span>`;
   };
 
   exports.playerNameFormatter = playerNameFormatter;
