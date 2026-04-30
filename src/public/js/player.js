@@ -110,6 +110,38 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
           }
       );
       new bootstrap.Modal('#player-window').show();
+
+      $.ajax({
+        type: 'GET',
+        url: `/api/ratings/${element['id']}`,
+        async: true,
+        success: data => new Chart(document.getElementById('player-window-rating').getContext('2d'), {
+          type: 'scatter',
+          data: {
+            datasets: [{
+              label: 'Рейтинг',
+              data: data,
+              showLine: true,
+              lineTension: 0.3,
+              borderColor: 'rgb(13, 110, 253)'
+            }],
+          },
+          options: {
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'month',
+                  displayFormats: {
+                    month: 'MMM yyyy'
+                  }
+                }
+              },
+              y: {}
+            }
+          }
+        }),
+      });
     }
   });
 
