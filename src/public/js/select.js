@@ -67,6 +67,7 @@ const renderSelect = () => {
                 alert(JSON.stringify(err, null, 2));
               }
             });
+            refresh.table.player();
             refresh.table.court();
           });
           $(`#select-form-button-reset-${i}`).click((event) => {

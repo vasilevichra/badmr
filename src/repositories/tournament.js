@@ -10,12 +10,22 @@ class Tournament {
     this.db = new Repository().db;
   }
 
-  create(unit_id, name, available) {
-    return this.db.run(
-        `INSERT INTO tournament (unit_id, name, available)
-         VALUES (?, ?, ?)`,
-        [unit_id, name, available]
-    );
+  create(type, name, registration, start, end, latitude, longitude, address, mapUrl, rules, current, unit_id) {
+    const createTournamentStatements = [[
+      `INSERT INTO tournament (unit_id, tournament_type_id, tournament_state_id, name, current, available, reg_ended_at, started_at, ended_at,
+                               latitude, longitude, map_url, address, rules)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+      unit_id || 1, type, 1, name, current, 1, registration, start, end, latitude, longitude, mapUrl, address, rules]];
+
+    if (current === 1) {
+      createTournamentStatements.unshift(
+          `UPDATE tournament
+           SET current = 0
+           WHERE true;`
+      );
+    }
+
+    return this.db.runStatementsWithTransaction(createTournamentStatements);
   }
 
   getCurrent() {

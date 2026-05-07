@@ -1,4 +1,4 @@
-const TournamentRepository = require('../repositories/tournament')
+const TournamentRepository = require('../repositories/tournament');
 
 class Tournament {
   constructor() {
@@ -14,6 +14,8 @@ class Tournament {
   setCurrent = (id) => this.tournament.setCurrent(id);
   getAll = () => this.tournament.getAll();
   getById = (id) => this.tournament.getById(id);
+  create = (type, name, registration, start, end, latitude, longitude, address, mapUrl, rules, current) =>
+      this.tournament.create(type, name, registration, start, end, latitude, longitude, address, mapUrl, rules, current);
 }
 
 module.exports = Tournament;

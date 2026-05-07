@@ -8,7 +8,7 @@
     } else {
       result = playerAvatarFormatter(pic, name, sex) + '&nbsp;' + name;
     }
-    return `<span class="no-selection">${result}&nbsp;</span><nobr class="secondary-info no-selection">#${id}</nobr>`;
+    return `<span class="no-selection">${result}&nbsp;</span><nobr class="secondary-info no-selection">#<span class="user-id">${id}</span></nobr>`;
   };
 
   const playerAvatarFormatter = (pic, name, sex) => {

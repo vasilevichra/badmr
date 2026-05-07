@@ -1,4 +1,4 @@
-const SettingsRepository = require('../repositories/settings')
+const SettingsRepository = require('../repositories/settings');
 
 class Settings {
   constructor() {

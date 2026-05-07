@@ -90,7 +90,13 @@
             <table id="tournament-table" class="mx-auto w-auto"></table>
             <div class="row">
                 <div class="text-center">
-                    <button id="tournament-add" type="button" class="btn btn-lg btn-success mx-auto w-auto m-3">Добавить</button>
+                    <%- include('modal/tournament/add', {}); %>
+                    <button class="btn btn-lg btn-success mx-auto w-auto m-3"
+                            type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#tournament-add">
+                        Добавить
+                    </button>
                 </div>
             </div>
         </div>
@@ -114,6 +120,7 @@
         </div>
         <hr class="hr-dashed"/>
     </div>
+    <div class="pb-5"></div> <!-- Пустое пространство для корректного отображения последнего блока -->
 <% } %>
 <% if (device === 'phone') { %>
     <div class="col text-center">

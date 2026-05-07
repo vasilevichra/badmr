@@ -82,8 +82,10 @@
             <% const regEndUntilMillis = (regEndedAt - new Date()); %>
             <% const regEndUntilDays = Math.floor((regEndUntilMillis) / 1000 / 60 / 60 / 24); %>
             <% const regEndUntilHours = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24) / 1000 / 60 / 60); %>
-            <% const regEndUntilMinutes = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
-            <% const regEndUntilSecs = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
+            <% const regEndUntilMinutes = Math.floor(
+                    (regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
+            <% const regEndUntilSecs = Math.floor(
+                    (regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
             <% const regEndUntilStr = (new Date() - regEndedAt) > 0 ? '(завершена' : '(осталось: '; %>
 
             <% const durationHours = (endedAt - startedAt) / 36e5; %>
@@ -94,7 +96,11 @@
             <% const endedH = endedAt.getUTCHours() <= 9 ? '0' + endedAt.getUTCHours() : endedAt.getUTCHours(); %>
             <% const endedM = endedAt.getUTCMinutes() <= 0 ? '0' + endedAt.getUTCMinutes() : endedAt.getUTCMinutes(); %>
             <% const getDateStr = () => {
-                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear() && startedAt.getUTCMonth() === endedAt.getUTCMonth() && startedAt.getUTCDate() === endedAt.getUTCDate()) { // начало и окончание в один день
+                if (!current_tournament.ended_at) { // окончание турнира не задано
+                    return `${startedAt.getUTCDate()} ${monthArray[startedAt.getUTCMonth()]} ${startedAt.getUTCFullYear()} ${startedH}:${startedM}`;
+                }
+                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear() && startedAt.getUTCMonth() === endedAt.getUTCMonth() && startedAt.getUTCDate()
+                        === endedAt.getUTCDate()) { // начало и окончание в один день
                     return `${endedAt.getUTCDate()} ${monthArray[endedAt.getUTCMonth()]} ${endedAt.getUTCFullYear()} ${startedH}:${startedM}-${endedH}:${endedM}`;
                 }
 
@@ -115,14 +121,25 @@
                 <button class="btn btn-xs bi-copy"></button>
             </div>
             <div>Регистрация до: <%= regEndDateStr %> <%= regEndUntilStr %><% if ((new Date() - regEndedAt) <= 0) { %><time datetime="<%= regEndUntilDays %>d <%= regEndUntilHours %>h <%= regEndUntilMinutes %>m <%= regEndUntilSecs %>s"></time><% } %>)</div>
-            <div>Дата: <%= getDateStr() %> (<%= durationHours %>ч<%= durationMinutesWithoutHours ? ` ${durationMinutesWithoutHours}м` : '' %>)
-<!--                <button class="btn btn-xs bi-calendar" onclick="addEventToCalendar();"></button>-->
+            <div>Дата: <%= getDateStr() %><% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
+                <!--                <button class="btn btn-xs bi-calendar" onclick="addEventToCalendar();"></button>-->
             </div>
         </div>
-        <div class="col-6 d-flex justify-content-end align-items-end">
-            <div style="text-align: end;"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
-                <button class="btn btn-xs bi-copy"></button>
-                <br><a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.address %></a></div>
+        <div class="col-6 justify-content-end align-items-end">
+            <div class="row text-start">
+                <% if (current_tournament.latitude && current_tournament.longitude) { %>
+                    <div style="text-align: end;"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
+                        <button class="btn btn-xs bi-copy"></button>
+                    </div>
+                <% } %>
+            </div>
+            <div class="row text-start">
+                <% if (current_tournament.map_url) { %>
+                    <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.address %></a>
+                <% } else { %>
+                    <span><%= current_tournament.address %></span>
+                <% } %>
+            </div>
         </div>
     </div>
     <hr class="hr-dashed"/>

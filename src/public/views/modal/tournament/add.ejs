@@ -1,0 +1,114 @@
+<div id="tournament-add" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Добавить турнир</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" action="/api/tournaments/create" method="POST">
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Тип <span class="text-danger">*</span></label>
+                            <div class="col">
+                                <div class="input-group">
+                                    <select id="tournament-add-select-type" name="type" class="select2 form-control" required></select>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Название <span class="text-danger">*</span></label>
+                            <div class="col">
+                                <div class="input-group">
+                                    <input name="name" class="form-control" type="text" placeholder="Самый захватывающий турнир" required/>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Окончание регистрации <span class="text-danger">*</span></label>
+                            <div class="col">
+                                <div class="input-group">
+                                    <input name="regd" class="form-control w-75" type="date" placeholder="Дата окончания регистрации" required/>
+                                    <input name="regt" class="form-control" type="time" placeholder="Время окончания регистрации" required/>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Начало <span class="text-danger">*</span></label>
+                            <div class="col">
+                                <div class="input-group">
+                                    <input name="startd" class="form-control w-75" type="date" placeholder="Дата начала турнира" required/>
+                                    <input name="startt" class="form-control" type="time" placeholder="Время начала турнира" required/>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Окончание</label>
+                            <div class="col">
+                                <div class="input-group">
+                                    <input name="endd" class="form-control w-75" type="date" placeholder="Дата окончания турнира"/>
+                                    <input name="endt" class="form-control" type="time" placeholder="Время окончания турнира"/>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Широта и долгота места проведения</label>
+                            <div class="input-group">
+                                <input name="lat" class="form-control" type="number" placeholder="Широта" min="0" max="90" value="56.224214" step="0.000001"/>
+                                <input name="lon" class="form-control" type="number" placeholder="Долгота" min="0" max="180" value="41.286221" step="0.000001"/>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Адрес <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input name="addr" class="form-control" type="text" placeholder="Доброград, Парковая улица, 36" required/>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Ссылка на карту</label>
+                            <div class="col">
+                                <div class="input-group">
+                                    <input name="map" class="form-control" type="url" placeholder="https://yandex.ru/maps/-/CPCLvIKP"/>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <label class="control-label">Ссылка на положение</label>
+                            <div class="col">
+                                <div class="input-group">
+                                    <input name="rules" class="form-control" type="url" placeholder="https://vk.cc/cTsuXj"/>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div class="form-group form-check form-switch">
+                            <label class="control-label form-check-label" for="cur">Сделать турнир текущим</label>
+                            <input class="form-control form-check-input" type="checkbox" id="cur" name="cur" checked>
+                        </div>
+                    </section>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
