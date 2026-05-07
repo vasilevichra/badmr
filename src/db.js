@@ -31,6 +31,25 @@ class DB {
     });
   }
 
+  runStatementsWithTransaction(statements) {
+    const runStatement = (sql, ...params) => new Promise((resolve, reject) => {
+      this.db.run(sql, params, function (err) {
+        if (err) {
+          return reject(err);
+        }
+        resolve(this);
+      });
+    });
+    const results = [];
+    const batch = ['BEGIN', ...statements, 'COMMIT'];
+    return batch.reduce((chain, statement) => chain.then(result => {
+      results.push(result);
+      return runStatement(...[].concat(statement));
+    }), Promise.resolve())
+    .catch(err => runStatement('ROLLBACK').then(() => Promise.reject(err + ' in statement #' + results.length)))
+    .then(() => results.slice(2));
+  };
+
   get(sql, params = []) {
     return new Promise((resolve, reject) => {
       this.db.get(sql, params, (err, result) => {
