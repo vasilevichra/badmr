@@ -57,6 +57,26 @@ class User {
     );
   }
 
+  enable(ids) {
+    return this.db.run(
+        `UPDATE tournament_user
+         SET available = 1
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND user_id IN (SELECT value FROM json_each(?))`,
+        [JSON.stringify(ids)]
+    );
+  }
+
+  disable(ids) {
+    return this.db.run(
+        `UPDATE tournament_user
+         SET available = 0
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND user_id IN (SELECT value FROM json_each(?))`,
+        [JSON.stringify(ids)]
+    );
+  }
+
   getCoWinnersById(id) {
     return this.db.all(`
                 SELECT user_id, count(match_id) AS win_count

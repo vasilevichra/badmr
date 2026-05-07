@@ -6,6 +6,13 @@ const UserService = require('../services/user'), userService = new UserService()
 // const csrfProtection = csrf({ cookie: true });
 // const parseForm = Express.urlencoded({ extended: false });
 
+router.post('/enable/:ids', ensureLoggedIn, (req, res) => {
+  res.promise(userService.enable(req.params.ids.split(',').map(Number)));
+});
+router.post('/disable/:ids', ensureLoggedIn, (req, res) => {
+  res.promise(userService.disable(req.params.ids.split(',').map(Number)));
+});
+
 router.get('/archived', ensureLoggedIn, (req, res) => {
   res.promise(userService.getArchived());
 });

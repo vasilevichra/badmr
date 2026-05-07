@@ -16,11 +16,12 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
         formatter: (value, row, index) => index + 1,
       },
       {
-        field: 'registered',
-        title: '<span class="no-selection">Участвует?</span>',
+        field: 'enabled',
+        title: '<span class="no-selection">Доступен?</span>',
         checkbox: true,
         sortable: true,
-        cellStyle: (value, row) => row.enabled === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}},
+        // formatter: (value, row) => row.occupied === 0 || `<div class="group-letter"><div class="group-letter-bg secondary-info">${row.court}</div></div>`,
+        cellStyle: (value, row) => row.occupied === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}},
       },
       {
         field: 'name',
@@ -82,22 +83,43 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
         sortable: true,
       }
     ]
-    .filter(column => loggedInUser ? true : !['registered'].includes(column.field))
-    .filter(column => isPhone() ? ['registered', 'name', 'rating'].includes(column.field) : true)
+    .filter(column => loggedInUser ? true : !['enabled'].includes(column.field))
+    .filter(column => isPhone() ? ['enabled', 'name', 'rating'].includes(column.field) : true)
   })
   .on('check-all.bs.table', (rowsAfter, rowsBefore) => {
-    $.post(`/api/users/register/${rowsBefore.map(r => r.id).join('%2C')}`);
+    $.post(`/api/users/enable/${rowsBefore.map(r => r.id).join('%2C')}`);
+    refresh.table.player();
     showSelectButton();
   })
   .on('check.bs.table', (row, element) => {
-    $.post(`/api/users/register/${element.id}`);
+    // const getCircularReplacer = () => {
+    //   const seen = new WeakSet();
+    //   return (key, value) => {
+    //     if (typeof value === "object" && value !== null) {
+    //       if (seen.has(value)) {
+    //         return '[Circular]'; // Замена на placeholder
+    //       }
+    //       seen.add(value);
+    //     }
+    //     return value;
+    //   };
+    // };
+    //
+    // alert(JSON.stringify($(this), getCircularReplacer()));
+
+    $.post(`/api/users/enable/${element.id}`);
+    $(element).prop('disabled', true);
+    refresh.table.player();
     showSelectButton();
   })
   .on('uncheck-all.bs.table', (rowsAfter, rowsBefore) => {
-    $.post(`/api/users/deregister/${rowsAfter.sender.options.data.map(r => r.id).join('%2C')}`);
+    const ids = $('#player-table .user-id').map(function (i, e) { return $(this).text(); }).get().join('%2C');
+    $.post(`/api/users/disable/${ids}`);
+    refresh.table.player();
   })
   .on('uncheck.bs.table', (row, element) => {
-    $.post(`/api/users/deregister/${element.id}`);
+    $.post(`/api/users/disable/${element.id}`);
+    refresh.table.player();
   })
   .on('click-cell.bs.table', (field, value, row, element) => {
     if (value === 'name') {

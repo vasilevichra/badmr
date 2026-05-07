@@ -141,8 +141,8 @@ CREATE TABLE tournament_user
     id            INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     tournament_id INTEGER NOT NULL CONSTRAINT tournament REFERENCES tournament,
     user_id       INTEGER NOT NULL CONSTRAINT user REFERENCES user,
-    available     BOOLEAN NOT NULL DEFAULT 1,
-    archived      BOOLEAN NOT NULL DEFAULT 0,
+    available     BOOLEAN NOT NULL DEFAULT 1, -- Доступен ли игрок для взаимодействия: подбор пар и пр.
+    archived      BOOLEAN NOT NULL DEFAULT 0, -- Игрок не отображается в основном списке участников турнира
     CHECK (available IN (0, 1)),
     CHECK (archived IN (0, 1)),
     UNIQUE (tournament_id, user_id)

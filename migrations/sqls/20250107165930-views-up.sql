@@ -48,34 +48,51 @@ HAVING CASE -- сыгранных матчей меньше, чем в огра�
 ORDER BY played, matches DESC;
 
 CREATE VIEW players AS
-SELECT u.id                                                       AS id,
-       u.lastname || ' ' || u.firstname                           AS name,
-       round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 0) AS rating,
-       coalesce(ul.rating_2, 0)                                   AS rating_lab,
-       dt.sum                                                     AS delta_today,
-       dw.sum                                                     AS delta_week,
-       dm.sum                                                     AS delta_month,
-       u.sex                                                      AS sex,
-       coalesce(up.pic, ul.img)                                   AS pic,
-       count(DISTINCT m.id)                                       AS matches,
-       c.name                                                     AS city,
-       u.birthday                                                 AS birthday,
-       CASE WHEN tu.id IS NULL THEN 0 ELSE 1 END                  AS registered,
-       coalesce(tu.available, 0)                                  AS enabled,
-       tu.archived                                                AS archived
-FROM user u
-         JOIN city c ON c.id = u.city_id
-         LEFT OUTER JOIN tournament_user tu ON u.id = tu.user_id AND tu.archived != 1
-         LEFT OUTER JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
-         LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
-         LEFT OUTER JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
-         LEFT OUTER JOIN delta_today dt ON dt.user_id = u.id
-         LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
-         LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id
-         LEFT OUTER JOIN user_pic up ON up.user_id = u.id
-         LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
-WHERE t.current = 1
-GROUP BY u.id;
+SELECT id,
+       name,
+       rating,
+       rating_lab,
+       delta_today,
+       delta_week,
+       delta_month,
+       sex,
+       pic,
+       matches,
+       city,
+       birthday,
+       enabled,
+       CASE WHEN (SELECT finished FROM match WHERE id = last_match_id) = 0 THEN 1 ELSE 0 END AS occupied,
+       (SELECT _c.number
+        FROM match _m
+                 JOIN court _c ON _m.court_id = _c.id
+        WHERE _m.id = last_match_id)                                                         AS court
+FROM (SELECT u.id                                                       AS id,
+             u.lastname || ' ' || u.firstname                           AS name,
+             round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 0) AS rating,
+             coalesce(ul.rating_2, 0)                                   AS rating_lab,
+             dt.sum                                                     AS delta_today,
+             dw.sum                                                     AS delta_week,
+             dm.sum                                                     AS delta_month,
+             u.sex                                                      AS sex,
+             coalesce(up.pic, ul.img)                                   AS pic,
+             count(DISTINCT m.id)                                       AS matches,
+             c.name                                                     AS city,
+             u.birthday                                                 AS birthday,
+             coalesce(tu.available, 0)                                  AS enabled,
+             max(m.id)                                                  AS last_match_id
+      FROM user u
+               JOIN city c ON c.id = u.city_id
+               LEFT OUTER JOIN tournament_user tu ON u.id = tu.user_id AND tu.archived != 1
+               LEFT OUTER JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
+               LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
+               LEFT OUTER JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
+               LEFT OUTER JOIN delta_today dt ON dt.user_id = u.id
+               LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
+               LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id
+               LEFT OUTER JOIN user_pic up ON up.user_id = u.id
+               LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
+      WHERE t.current = 1
+      GROUP BY u.id);
 
 CREATE VIEW archived AS
 SELECT u.id AS id, u.lastname || ' ' || u.firstname AS name, u.sex AS sex, coalesce(up.pic, ul.img) AS pic, c.name AS city

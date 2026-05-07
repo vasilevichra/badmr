@@ -19,6 +19,8 @@ class User {
   getArchived = () => this.user.getArchived();
   getById = (id) => this.user.getById(id);
   registerAll = () => this.user.registerAll();
+  enable = (ids) => this.user.enable(ids);
+  disable = (ids) => this.user.disable(ids);
   registerByIds = (ids) => this.user.registerByIds(ids);
   deregisterAll = () => this.user.deregisterAll();
   deregisterByIds = (ids) => this.user.deregisterByIds(ids);

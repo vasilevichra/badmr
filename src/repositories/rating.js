@@ -17,7 +17,8 @@ class Rating {
                   JOIN user u ON r.user_id = u.id
                   JOIN match m ON r.match_id = m.id
                   JOIN (SELECT match_id, created_at, max(id) AS mid FROM game GROUP BY match_id) g ON m.id = g.match_id
-         WHERE u.id = ?`,
+         WHERE u.id = ?
+         ORDER BY g.created_at`,
         [user_id]
     );
   }
