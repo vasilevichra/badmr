@@ -46,13 +46,15 @@ $(document).ready(() => {
   ["board-score-l", "board-score-r"].map(id => document.getElementById(id)).map(el => addScoreBoardHandlers(el));
 
   // обновить рейтинг ЛАБ в фоне
-  $.ajax({
-    url: '/api/users/lab',
-    type: 'POST',
-    cache: false,
-    async: true,
-    success: () => refresh.table.player(),
-    error: () => {
-    },
-  });
+  if (window.navigator.onLine) {
+    $.ajax({
+      url: '/api/users/lab',
+      type: 'POST',
+      cache: false,
+      async: true,
+      success: () => refresh.table.player(),
+      error: () => {
+      },
+    });
+  }
 });
