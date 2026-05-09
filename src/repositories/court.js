@@ -19,7 +19,7 @@ class Court {
 
   getAll() {
     return this.db.all(
-        `SELECT c.number AS number, c.available AS available
+        `SELECT c.id, c.number, c.available
          FROM tournament t
                   JOIN court c ON t.id = c.tournament_id
          WHERE t.current = 1`);
@@ -78,6 +78,15 @@ class Court {
            AND available = 1`
     )
     .then(result => result.count);
+  }
+
+  delete(id) {
+    return this.db.run(
+        `DELETE
+         FROM court
+         WHERE id = ?`,
+        [id]
+    );
   }
 
   deleteAll() {

@@ -20,7 +20,14 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
         title: '<span class="no-selection">Доступен?</span>',
         checkbox: true,
         sortable: true,
-        // formatter: (value, row) => row.occupied === 0 || `<div class="group-letter"><div class="group-letter-bg secondary-info">${row.court}</div></div>`,
+        formatter: (value, row) => {
+          if (row.occupied === 1) {
+            return {
+              disabled: true,
+            };
+          }
+          return value;
+        },
         cellStyle: (value, row) => row.occupied === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}},
       },
       {
@@ -91,29 +98,13 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
     refresh.table.player();
     showSelectButton();
   })
-  .on('check.bs.table', (row, element) => {
-    // const getCircularReplacer = () => {
-    //   const seen = new WeakSet();
-    //   return (key, value) => {
-    //     if (typeof value === "object" && value !== null) {
-    //       if (seen.has(value)) {
-    //         return '[Circular]'; // Замена на placeholder
-    //       }
-    //       seen.add(value);
-    //     }
-    //     return value;
-    //   };
-    // };
-    //
-    // alert(JSON.stringify($(this), getCircularReplacer()));
-
-    $.post(`/api/users/enable/${element.id}`);
-    $(element).prop('disabled', true);
+  .on('check.bs.table', (e, row) => {
+    $.post(`/api/users/enable/${row.id}`);
     refresh.table.player();
     showSelectButton();
   })
-  .on('uncheck-all.bs.table', (rowsAfter, rowsBefore) => {
-    const ids = $('#player-table .user-id').map(function (i, e) { return $(this).text(); }).get().join('%2C');
+  .on('uncheck-all.bs.table', () => {
+    const ids = $.map($('#player-table').bootstrapTable('getSelections'), row => row.id).join('%2C');
     $.post(`/api/users/disable/${ids}`);
     refresh.table.player();
   })

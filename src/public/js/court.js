@@ -11,6 +11,15 @@ const renderCourts = () => {
         field: 'available',
         title: 'Доступен?',
         checkbox: true
+      },
+      {
+        title: 'Удалить?',
+        align: 'center',
+        formatter: (value, row) => {
+          return row.available ?
+              `<div class="btn bi bi-trash3" onclick="if (confirm('Удалить корт №${row.number}?')){ $.post('/api/courts/delete/${row.id}'); refresh.table.court(); }"></div>` :
+              '<div class="bi bi-ban secondary-info no-selection"></div>';
+        }
       }
     ]
   })

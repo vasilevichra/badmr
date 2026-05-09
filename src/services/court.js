@@ -18,6 +18,7 @@ class Court {
   disableAll = () => this.court.disableAll();
   disable = (number) => this.court.disable(number);
   countAvailable = () => this.court.countAvailable();
+  delete = (id) => this.court.delete(id);
   deleteAll = () => this.court.deleteAll();
 }
 

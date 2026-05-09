@@ -30,4 +30,8 @@ router.post('/disable/:number', ensureLoggedIn, (req, res) => {
   res.promise(courtService.disable(req.params.number));
 });
 
+router.post('/delete/:id', ensureLoggedIn, (req, res) => {
+  res.promise(courtService.delete(req.params.id));
+});
+
 module.exports = router;
