@@ -76,16 +76,13 @@
             <% const regEndedAt = new Date(current_tournament.reg_ended_at + 'Z'); %>
             <% const regEndH = regEndedAt.getUTCHours(); %>
             <% const regEndM = regEndedAt.getUTCMinutes(); %>
-            <% const regEndDateStr = `${regEndedAt.getUTCDate()} ${monthArray[regEndedAt.getUTCMonth()]} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM
-            <= 0 ? '0' + regEndM : regEndM}`; %>
+            <% const regEndDateStr = `${regEndedAt.getUTCDate()} ${monthArray[regEndedAt.getUTCMonth()]} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM <= 0 ? '0' + regEndM : regEndM}`; %>
 
             <% const regEndUntilMillis = (regEndedAt - new Date()); %>
             <% const regEndUntilDays = Math.floor((regEndUntilMillis) / 1000 / 60 / 60 / 24); %>
             <% const regEndUntilHours = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24) / 1000 / 60 / 60); %>
-            <% const regEndUntilMinutes = Math.floor(
-                    (regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
-            <% const regEndUntilSecs = Math.floor(
-                    (regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
+            <% const regEndUntilMinutes = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
+            <% const regEndUntilSecs = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
             <% const regEndUntilStr = (new Date() - regEndedAt) > 0 ? '(завершена' : '(осталось: '; %>
 
             <% const durationHours = (endedAt - startedAt) / 36e5; %>
@@ -99,8 +96,7 @@
                 if (!current_tournament.ended_at) { // окончание турнира не задано
                     return `${startedAt.getUTCDate()} ${monthArray[startedAt.getUTCMonth()]} ${startedAt.getUTCFullYear()} ${startedH}:${startedM}`;
                 }
-                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear() && startedAt.getUTCMonth() === endedAt.getUTCMonth() && startedAt.getUTCDate()
-                        === endedAt.getUTCDate()) { // начало и окончание в один день
+                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear() && startedAt.getUTCMonth() === endedAt.getUTCMonth() && startedAt.getUTCDate() === endedAt.getUTCDate()) { // начало и окончание в один день
                     return `${endedAt.getUTCDate()} ${monthArray[endedAt.getUTCMonth()]} ${endedAt.getUTCFullYear()} ${startedH}:${startedM}-${endedH}:${endedM}`;
                 }
 
@@ -120,8 +116,8 @@
             <div><%= tournamentName %>
                 <button class="btn btn-xs bi-copy"></button>
             </div>
-            <div>Регистрация до: <%= regEndDateStr %> <%= regEndUntilStr %><% if ((new Date() - regEndedAt) <= 0) { %><time datetime="<%= regEndUntilDays %>d <%= regEndUntilHours %>h <%= regEndUntilMinutes %>m <%= regEndUntilSecs %>s"></time><% } %>)</div>
-            <div>Дата: <%= getDateStr() %><% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
+            <div>Регистрация до: <%= regEndDateStr %> <%= regEndUntilStr %><% if ((new Date() - regEndedAt) <= 0) { %><time datetime="<%= regEndUntilDays %>d <%= regEndUntilHours %>h <%= regEndUntilMinutes %>m <%= regEndUntilSecs %>s"></time><% } %>)</div><div>Дата: <%= getDateStr() %>
+                <% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
                 <!--                <button class="btn btn-xs bi-calendar" onclick="addEventToCalendar();"></button>-->
             </div>
         </div>
@@ -135,7 +131,7 @@
             </div>
             <div class="row text-start">
                 <% if (current_tournament.map_url) { %>
-                    <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.address %></a>
+                    <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a>
                 <% } else { %>
                     <span><%= current_tournament.address %></span>
                 <% } %>
@@ -147,13 +143,42 @@
 
 <div id="tournament-window">
     <% if (tournament_type === 1) { %> <%# Рейтинг %>
-    <%- include('tournament_rating', {user: user}); %>
+    <%- include('tournament/new/index', {user: user, settings: settings}); %>
     <% } else if (tournament_type === 2) { %> <%# 110 %>
-    <%- include('tournament_110', {user: user}); %>
+    <%- include('tournament/110/index', {user: user}); %>
     <% } else { %>
         <h1 class="text-center">Неизвестный турнир</h1>
     <% } %>
 </div>
+
+<script type="text/javascript">
+  (function (m, e, t, r, i, k, a) {
+    m[i] = m[i] || function () {
+      (m[i].a = m[i].a || []).push(arguments)
+    };
+    m[i].l = 1 * new Date();
+    for (var j = 0; j < document.scripts.length; j++) {
+      if (document.scripts[j].src === r) {
+        return;
+      }
+    }
+    k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
+  })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=109146783', 'ym');
+
+  ym(109146783, 'init', {
+    ssr: true,
+    webvisor: true,
+    clickmap: true,
+    ecommerce: "dataLayer",
+    referrer: document.referrer,
+    url: location.href,
+    accurateTrackBounce: true,
+    trackLinks: true
+  });
+</script>
+<noscript>
+    <div><img src="https://mc.yandex.ru/watch/109146783" style="position:absolute; left:-9999px;" alt=""/></div>
+</noscript>
 
 <%- include('footer', {device: device}); %>
 
@@ -199,16 +224,31 @@
   }
 </script>
 <script type="text/javascript" src="/js/select2.min.js"></script>
+<script>
+  // настройки для select2
+  $.fn.select2.defaults.set('theme', 'bootstrap-5'); // Установка темы
+  $.fn.select2.defaults.set('width', '100%'); // Установка ширины по умолчанию
+  $.fn.select2.defaults.set('dropdownAutoWidth', true);
+  $.fn.select2.defaults.set('minimumResultsForSearch', - 1);
+  $.fn.select2.defaults.set('ajax--cache', true);
+  $.fn.select2.defaults.set('ajax--dataType', 'json');
+</script>
 <script type="text/javascript" src="/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap-table.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap-table-locale-all.min.js"></script>
 <script type="text/javascript" src="/js/extensions/editable/bootstrap-table-editable.min.js"></script>
+<script>
+  // русская локализация для всех таблиц
+  $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU']);
+</script>
 <script type="text/javascript" src="/js/ejs.js"></script>
 <script type="text/javascript" src="/js/chart.umd.min.js"></script>
 <script type="text/javascript" src="/js/moment.min.js"></script>
+<script type="text/javascript" src="/js/lodash.min.js"></script>
 <script type="text/javascript" src="/js/chartjs-adapter-moment.min.js"></script>
 <script type="text/javascript" src="/js/express-useragent.global.min.js"></script>
+<script type="text/javascript" src="/js/sex.js"></script>
 <script type="text/javascript" src="/js/lib.js"></script>
 <script type="text/javascript" src="/js/share.js"></script>
 <script type="text/javascript" src="/js/tournament.js"></script>

@@ -6,6 +6,7 @@
   src: url('../fonts/raleway-cyrillic-ext.woff') format('woff');
   unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
 }
+
 /* cyrillic */
 @font-face {
   font-family: 'Raleway';
@@ -14,6 +15,7 @@
   src: url('../fonts/raleway-cyrillic.woff') format('woff');
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
+
 /* latin-ext */
 @font-face {
   font-family: 'Raleway';
@@ -22,6 +24,7 @@
   src: url('../fonts/raleway-latin-ext.woff') format('woff');
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
+
 /* latin */
 @font-face {
   font-family: 'Raleway';
@@ -40,6 +43,31 @@ body {
 html, h1, h2, h3, h4, h5, h6, button {
   font-family: "Raleway", sans-serif;
   color: #007df9;
+}
+
+.link {
+  cursor: pointer;
+  color: rgba(var(--bs-link-color-rgb),var(--bs-link-opacity,1));
+  text-decoration: underline;
+  text-decoration-color: currentcolor;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-thickness: auto;
+}
+
+.link:hover {
+  --bs-link-color-rgb: var(--bs-link-hover-color-rgb);
+}
+
+/* хак для select2 и form-floating */
+.form-floating .select2-container--bootstrap-5 .select2-selection {
+  height: calc(3.5rem + 2px);
+  padding: 1rem 0.75rem;
+}
+
+.form-floating .select2-container--bootstrap-5 .select2-selection > .select2-selection__rendered {
+  margin-top: 0.6rem;
+  margin-left: 0.25rem;
 }
 
 /* убирает подсказку ввода при наборе текста */
@@ -76,6 +104,17 @@ input:focus::placeholder {
   color: rgb(222, 226, 230);
 }
 
+.form-floating > input {
+  font-size: 20px;
+}
+
+.form-floating > label {
+  position: absolute;
+  left: 0.3rem;
+  font-size: 16px;
+  transform-origin: 0 0;
+}
+
 /* строка поиска игроков */
 #player div.search {
   width: calc(100% - 166px) !important;
@@ -101,6 +140,23 @@ input:focus::placeholder {
 .tournament {
   margin: 1em 0 3em 0;
   position: relative;
+}
+
+.tournament-new-registration-input {
+  border-color: #007df9;
+}
+
+#tournament-new-registration-hint label.control-label {
+  padding-left: 0.75rem;
+}
+
+#tournament-new-registration-hint-sex {
+  background-color: deeppink;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+#tournament-new-registration-hint-sex:checked {
+  background-color: royalblue;
 }
 
 .settings {

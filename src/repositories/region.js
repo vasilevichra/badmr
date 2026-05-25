@@ -10,6 +10,30 @@ class Region {
     this.db = new Repository().db;
   }
 
+  select(state_id) {
+    return state_id ?
+        this.db.all(
+            `SELECT r.id, r.name AS text
+             FROM region r
+                      JOIN state s on s.id = r.state_id
+             WHERE s.id = ?`,
+            [state_id]
+        ) :
+        this.db.all(
+            `SELECT id, name AS text
+             FROM region`
+        );
+  }
+
+  getById(id) {
+    return this.db.get(
+        `SELECT id, name
+         FROM region
+         WHERE id = ?`,
+        [id]
+    );
+  }
+
   getByUserId(user_id) {
     return this.db.get(
         `SELECT r.id, r.name
@@ -20,7 +44,6 @@ class Region {
         [user_id]
     );
   }
-
 }
 
 module.exports = Region;

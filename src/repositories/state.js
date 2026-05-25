@@ -10,6 +10,21 @@ class State {
     this.db = new Repository().db;
   }
 
+  select() {
+    return this.db.all(
+        `SELECT id, name AS text
+         FROM state`);
+  }
+
+  getById(id) {
+    return this.db.get(
+        `SELECT id, name
+         FROM state
+         WHERE id = ?`,
+        [id]
+    );
+  }
+
   getByUserId(user_id) {
     return this.db.get(
         `SELECT s.id, s.name

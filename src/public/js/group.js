@@ -7,8 +7,6 @@ renderGroups = () => {
     placeholder: 'Группа',
     ajax: {
       url: '/api/groups/select',
-      dataType: 'json',
-      cache: true
     },
     dropdownParent: groupsAddModal,
   });
@@ -19,8 +17,6 @@ renderGroups = () => {
     placeholder: 'Город',
     ajax: {
       url: '/api/cities/select',
-      dataType: 'json',
-      cache: true
     },
     dropdownParent: groupsAddModal,
   })
@@ -33,7 +29,6 @@ renderGroups = () => {
     placeholder: 'Цвет',
     ajax: {
       url: '/api/teams/colors/select',
-      dataType: 'json',
     },
     templateResult: d => $(`<nobr><span style="background:#${d.hex}"></span>${d.text}</nobr>`),
     templateSelection: d => $(`<nobr><span style="background:#${d.hex}"></span>${d.text}</nobr>`),
@@ -54,14 +49,13 @@ renderGroups = () => {
     placeholder: 'Игроки',
     ajax: {
       url: `/api/users/select/${getSelectedCityId() || 1}`,
-      dataType: 'json',
     },
     dropdownParent: groupsAddModal,
   });
 
   selectUsersByCity();
 
-  $('#tournament-groups-team-add-submit').click((event) => {
+  $('#tournament-groups-team-add-submit').off('click').click((event) => {
     event.preventDefault();
 
     const groupId = getSelectedId('tournament-groups-team-add-select-group');
@@ -99,7 +93,7 @@ renderGroups = () => {
           );
         });
 
-        $('#tournament-groups-team-add .btn-close').click();
+        $('#tournament-groups-team-add .btn-close').off('click').click();
         refresh.block.by.id('tournament-groups');
       },
       error: function (jqXHR, exception) {
@@ -134,12 +128,8 @@ const editTeam = (id, teamName) => {
     placeholder: 'Город',
     ajax: {
       url: '/api/cities/select',
-      dataType: 'json',
-      cache: true
     },
     dropdownParent: groupsEditModal,
-    dropdownAutoWidth: true,
-    theme: "bootstrap-5"
   });
 
   $.ajax({url: `/api/cities/team/${id}`})
@@ -165,7 +155,6 @@ const editTeam = (id, teamName) => {
       ajax: {
         type: 'GET',
         url: `/api/teams/${id}/order/${i}`,
-        dataType: 'json',
         cache: false,
         processResults: function (data) {
           return {
@@ -183,7 +172,6 @@ const editTeam = (id, teamName) => {
       dropdownParent: groupsEditModal,
       dropdownAutoWidth: false,
       width: '10%',
-      theme: 'bootstrap-5',
     });
 
     // установка выбранного ранее значения
@@ -247,12 +235,8 @@ const editGroupUser = (element, team_id, user_id, user_group_id, user_group_name
   groupSelector.select2({
     ajax: {
       url: '/api/groups/select',
-      dataType: 'json',
     },
     dropdownParent: $('.team-group-name'),
-    dropdownAutoWidth: true,
-    width: '100%',
-    theme: "bootstrap-5",
   });
 
   groupSelector.append(new Option(user_group_name, user_group_id, true, true)).trigger('change');

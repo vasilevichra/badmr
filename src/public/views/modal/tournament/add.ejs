@@ -9,90 +9,68 @@
                 <form class="form-horizontal" action="/api/tournaments/create" method="POST">
                     <section class="mb-2">
                         <div class="form-group text-end">
-                            <label class="control-label">Тип <span class="text-danger">*</span></label>
                             <div class="col">
                                 <div class="input-group">
-                                    <select id="tournament-add-select-type" name="type" class="select2 form-control" required></select>
+                                    <div class="form-floating">
+                                        <select id="tournament-add-select-type" name="type" class="select2 form-control" required></select>
+                                        <label class="control-label">Тип <span class="text-danger">*</span></label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </section>
                     <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Название <span class="text-danger">*</span></label>
+                        <div class="form-group">
                             <div class="col">
                                 <div class="input-group">
-                                    <input name="name" class="form-control" type="text" placeholder="Самый захватывающий турнир" required/>
+                                    <div class="form-floating">
+                                        <input name="name" class="form-control" type="text" placeholder="Самый захватывающий турнир" required/>
+                                        <label class="control-label">Название <span class="text-danger">*</span></label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </section>
                     <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Окончание регистрации <span class="text-danger">*</span></label>
+                        <div class="form-group">
                             <div class="col">
                                 <div class="input-group">
-                                    <input name="regd" class="form-control w-75" type="date" placeholder="Дата окончания регистрации" required/>
-                                    <input name="regt" class="form-control" type="time" placeholder="Время окончания регистрации" required/>
+                                    <div class="form-floating">
+                                        <input name="reg" class="form-control" type="datetime-local" placeholder="Окончание регистрации" required/>
+                                        <label class="control-label">Окончание регистрации <span class="text-danger">*</span></label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </section>
                     <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Начало <span class="text-danger">*</span></label>
+                        <div class="form-group">
                             <div class="col">
                                 <div class="input-group">
-                                    <input name="startd" class="form-control w-75" type="date" placeholder="Дата начала турнира" required/>
-                                    <input name="startt" class="form-control" type="time" placeholder="Время начала турнира" required/>
+                                    <div class="form-floating">
+                                        <input name="start" class="form-control" type="datetime-local" placeholder="Начало" required/>
+                                        <label class="control-label">Начало <span class="text-danger">*</span></label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input name="end" class="form-control" type="datetime-local" placeholder="Окончание"/>
+                                        <label class="control-label">Окончание</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </section>
                     <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Окончание</label>
+                        <div class="form-group">
                             <div class="col">
                                 <div class="input-group">
-                                    <input name="endd" class="form-control w-75" type="date" placeholder="Дата окончания турнира"/>
-                                    <input name="endt" class="form-control" type="time" placeholder="Время окончания турнира"/>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Широта и долгота места проведения</label>
-                            <div class="input-group">
-                                <input name="lat" class="form-control" type="number" placeholder="Широта" min="0" max="90" value="56.224214" step="0.000001"/>
-                                <input name="lon" class="form-control" type="number" placeholder="Долгота" min="0" max="180" value="41.286221" step="0.000001"/>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Адрес <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input name="addr" class="form-control" type="text" placeholder="Доброград, Парковая улица, 36" required/>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Ссылка на карту</label>
-                            <div class="col">
-                                <div class="input-group">
-                                    <input name="map" class="form-control" type="url" placeholder="https://yandex.ru/maps/-/CPCLvIKP"/>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="mb-2">
-                        <div class="form-group text-end">
-                            <label class="control-label">Ссылка на положение</label>
-                            <div class="col">
-                                <div class="input-group">
-                                    <input name="rules" class="form-control" type="url" placeholder="https://vk.cc/cTsuXj"/>
+                                    <div class="form-floating">
+                                        <input type="number" name="capacity" class="form-control" value="<%= settings.capacity %>" placeholder="20" required/>
+                                        <label>Участников <span class="text-danger">*</span></label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="courts" class="form-control" value="3" required/>
+                                        <label>Кортов <span class="text-danger">*</span></label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

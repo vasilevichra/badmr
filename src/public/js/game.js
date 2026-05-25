@@ -167,7 +167,7 @@ const fillMatch = (counter, match) => {
     }
   }
 
-  $(`#game-form-button-submit-${counter}`).click((event) => {
+  $(`#game-form-button-submit-${counter}`).off('click').click((event) => {
     event.preventDefault();
 
     const gamePoint11 = $(`#game-input-11-${counter}:not(:disabled)`).val() || '';
@@ -348,7 +348,7 @@ const fillMatch = (counter, match) => {
     refresh.block.by.id('match-history-block'); // обновление блока истории матчей
   });
 
-  $(`#game-form-button-reset-${counter}`).click(event => {
+  $(`#game-form-button-reset-${counter}`).off('click').click(event => {
     event.preventDefault();
 
     if (confirm(`Удалить матч №${match.id}?`)) {

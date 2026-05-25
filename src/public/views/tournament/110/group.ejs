@@ -12,7 +12,7 @@
             <div class="text-center">
                 <% var team_id = tg[0].team_id; %>
                 <% var team_name = tg[0].team_name; %>
-                <%- include('modal/group/team/edit', {team_id: team_id, team_name: team_name }); %>
+                <%- include('../../modal/group/team/edit', {team_id: team_id, team_name: team_name }); %>
                 <label><%= tg[0].team_city %> - <%= tg[0].team_name %></label>
                 <% if (user) { %>
                     <i class="bi bi-gear" onclick="editTeam(<%= team_id %>, '<%= team_name %>')"></i>

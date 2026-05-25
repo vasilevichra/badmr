@@ -156,7 +156,7 @@
                                                 </div>
                                                 <% const matches3 = Number(games.count) - 2 * Number(matches.count) %>
                                                 <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
-                                                    <div class="p-2"><%= matches3 %> (<%= matches.count ? (matches3 / matches.count).toFixed(4) * 100 : 0; %>%)</div>
+                                                    <div class="p-2"><%= matches3 %> (<%= matches.count ? (matches3 / matches.count * 100).toFixed(2) : 0; %>%)</div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
                                                     <div class="p-2">Побед / Поражений / %</div>
@@ -164,7 +164,7 @@
                                                 <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
                                                     <% const wins = co_winners.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0); %>
                                                     <% const loses = co_losers.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0); %>
-                                                    <% const win_rate = matches.count ? (wins / matches.count).toFixed(4) * 100 : 0; %>
+                                                    <% const win_rate = matches.count ? (wins / matches.count * 100).toFixed(2) : 0; %>
                                                     <div class="p-2"><span class="rating-plus"><%= wins %></span> / <span class="rating-minus"><%= loses %></span> / <span class="rating-<%= win_rate > 50 ? 'plus' : 'minus' %>"><%= win_rate %>%</span></div>
                                                 </div>
                                             </div>

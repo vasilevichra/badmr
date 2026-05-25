@@ -10,9 +10,11 @@ class City {
     this.city = new CityRepository();
   }
 
-  select = () => this.city.select();
+  select = (region_id) => this.city.select(region_id);
+  getById = (id) => this.city.getById(id);
   getByTeamId = (team_id) => this.city.getByTeamId(team_id);
   getByUserId = (team_id) => this.city.getByUserId(team_id);
+  findByName = (name) => this.city.findByName(name);
 }
 
 module.exports = City;

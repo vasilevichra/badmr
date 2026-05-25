@@ -57,6 +57,45 @@ class User {
     );
   }
 
+  findBy(lastname, firstname, patronymic) {
+    if (patronymic) {
+      return this.db.all(
+          `SELECT u.id, u.lastname, u.firstname, u.patronymic, u.sex, coalesce(up.pic, ul.img) AS pic, c.name AS city
+           FROM user u
+                    JOIN city c on c.id = u.city_id
+                    LEFT OUTER JOIN user_pic up ON u.id = up.user_id
+                    LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
+           WHERE u.lastname = ?
+             AND u.firstname = ?
+             AND u.patronymic LIKE ?`,
+          [lastname, firstname, patronymic + '%']
+      );
+    }
+
+    if (firstname) {
+      return this.db.all(
+          `SELECT u.id, u.lastname, u.firstname, u.patronymic, u.sex, coalesce(up.pic, ul.img) AS pic, c.name AS city
+           FROM user u
+                    JOIN city c on c.id = u.city_id
+                    LEFT OUTER JOIN user_pic up ON u.id = up.user_id
+                    LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
+           WHERE u.lastname = ?
+             AND u.firstname LIKE ?`,
+          [lastname, firstname + '%']
+      );
+    }
+
+    return this.db.all(
+        `SELECT u.id, u.lastname, u.firstname, u.patronymic, u.sex, coalesce(up.pic, ul.img) AS pic, c.name AS city
+         FROM user u
+                  JOIN city c on c.id = u.city_id
+                  LEFT OUTER JOIN user_pic up ON u.id = up.user_id
+                  LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
+         WHERE u.lastname LIKE ?`,
+        [lastname + '%']
+    );
+  }
+
   enable(ids) {
     return this.db.run(
         `UPDATE tournament_user
@@ -133,12 +172,19 @@ class User {
     }))).then(responses => Promise.all(responses));
   }
 
-  create(lastname, firstname, patronymic, sex, city_id, birthday) {
-    return this.db.run(
+  create(lastname, firstname, patronymic, rating, sex, city_id, birthday) {
+    return this.db.get(
         `INSERT INTO user (lastname, firstname, patronymic, sex, city_id, birthday)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?)
+         RETURNING id`,
         [lastname, firstname, patronymic, sex, city_id, birthday]
-    );
+    )
+    .then(user => {
+      return this.setRating(user.id, Number(rating))
+      .then(() => {
+        return {id: user.id}
+      })
+    });
   }
 
   registerAll() {
@@ -178,6 +224,15 @@ class User {
          WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
            AND user_id IN (SELECT value FROM json_each(?))`,
         [JSON.stringify(ids)]
+    );
+  }
+
+  isRegistered(id) {
+    return this.db.get(
+        `SELECT count(tu.id) == 1 AS registered FROM tournament_user tu
+         JOIN tournament t on t.id = tu.tournament_id
+         WHERE tu.user_id = ? AND t.current = 1`,
+        [id]
     );
   }
 

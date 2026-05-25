@@ -1,8 +1,5 @@
 $(document).ready(() => {
 
-  // русская локализация для всех таблиц
-  $.extend($.fn.bootstrapTable.defaults, $.fn.bootstrapTable.locales['ru-RU']);
-
   // скрытие блоков после перезагрузки страницы или логина
   $('.closable').each((i, el) => {
     if ($.cookie($(el).attr('id')) === 'false') {
@@ -10,13 +7,8 @@ $(document).ready(() => {
     }
   });
 
-  // настройка обратного отсчёта для информации о турнире
-  $('time').countDown({label_dd: 'д', label_hh: 'ч', label_mm: 'м', separator_days: ' ', with_hh_leading_zero: false, with_seconds: false});
-
-  // настройки для select2
-  $.fn.select2.defaults.set("theme", "bootstrap-5");
-  $.fn.select2.defaults.set("dropdownAutoWidth", true);
-  $.fn.select2.defaults.set("ajax--cache", true);
+  // подстановка значения в строку поиска для регистрации
+  $('.tournament-new-registration-input').val($.cookie('registration-input')).trigger('input');
 
   // window.onbeforeunload = () => 'Are you sure you want to leave?';
 

@@ -10,6 +10,8 @@ class State {
     this.state = new StateRepository();
   }
 
+  getById = (id) => this.state.getById(id);
+  select = () => this.state.select();
   getByUserId = (user_id) => this.state.getByUserId(user_id);
 }
 

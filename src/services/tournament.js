@@ -14,8 +14,8 @@ class Tournament {
   setCurrent = (id) => this.tournament.setCurrent(id);
   getAll = () => this.tournament.getAll();
   getById = (id) => this.tournament.getById(id);
-  create = (type, name, registration, start, end, latitude, longitude, address, mapUrl, rules, current) =>
-      this.tournament.create(type, name, registration, start, end, latitude, longitude, address, mapUrl, rules, current);
+  create = (type, name, registration, start, end, latitude, longitude, address, mapUrl, rules, current, courts) =>
+      this.tournament.create(type, name, registration, start, end, latitude, longitude, address, mapUrl, rules, current, courts);
 }
 
 module.exports = Tournament;

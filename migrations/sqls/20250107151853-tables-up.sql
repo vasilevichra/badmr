@@ -8,14 +8,16 @@ CREATE TABLE region
 (
     id       INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     state_id INTEGER NOT NULL CONSTRAINT state REFERENCES state,
-    name     TEXT    NOT NULL UNIQUE
+    name     TEXT    NOT NULL,
+    UNIQUE (state_id, name)
 );
 
 CREATE TABLE city
 (
     id        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     region_id INTEGER NOT NULL CONSTRAINT region REFERENCES region,
-    name      TEXT    NOT NULL UNIQUE
+    name      TEXT    NOT NULL,
+    UNIQUE (region_id, name)
 );
 
 CREATE TABLE unit
@@ -31,18 +33,21 @@ CREATE TABLE unit
 CREATE TABLE tournament_type
 (
     id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    name TEXT    NOT NULL
+    name TEXT    NOT NULL UNIQUE
 );
 
 CREATE TABLE tournament_state
 (
     id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    name TEXT    NOT NULL
+    name TEXT    NOT NULL UNIQUE
 );
 
 CREATE TABLE tournament
 (
     id                  INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    user_id             INTEGER  NOT NULL CONSTRAINT creator REFERENCES user,
+    user_club_id        INTEGER  NOT NULL CONSTRAINT user_club REFERENCES user_club,
+    gym_id              INTEGER  NOT NULL CONSTRAINT gym REFERENCES gym,
     unit_id             INTEGER  NOT NULL CONSTRAINT unit REFERENCES unit,
     tournament_type_id  INTEGER  NOT NULL CONSTRAINT tournament_type REFERENCES tournament_type,
     tournament_state_id INTEGER  NOT NULL CONSTRAINT tournament_state REFERENCES tournament_state,
@@ -52,10 +57,6 @@ CREATE TABLE tournament
     reg_ended_at        DATETIME NOT NULL,
     started_at          DATETIME NOT NULL,
     ended_at            DATETIME,
-    latitude            REAL,
-    longitude           REAL,
-    map_url             TEXT,
-    address             TEXT     NOT NULL,
     rules               TEXT,
     CHECK (current IN (0, 1)),
     CHECK (available IN (0, 1))
@@ -75,7 +76,26 @@ CREATE TABLE tournament_settings
     defaults_id   INTEGER NOT NULL CONSTRAINT defaults REFERENCES defaults,
     tournament_id INTEGER NOT NULL CONSTRAINT tournament REFERENCES tournament,
     value         TEXT    NOT NULL,
-    CONSTRAINT tournament_settings_uq UNIQUE (defaults_id, tournament_id)
+    UNIQUE (defaults_id, tournament_id)
+);
+
+CREATE TABLE gym
+(
+    id        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    name      TEXT    NOT NULL,
+    city_id   INTEGER NOT NULL CONSTRAINT city REFERENCES city,
+    address   TEXT    NOT NULL UNIQUE,
+    latitude  REAL UNIQUE,
+    longitude REAL UNIQUE,
+    map_url   TEXT UNIQUE
+);
+
+CREATE TABLE user_club_gym
+(
+    id           INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    user_club_id INTEGER NOT NULL CONSTRAINT user_club REFERENCES user_club,
+    gym_id       INTEGER NOT NULL CONSTRAINT gym REFERENCES gym,
+    UNIQUE (user_club_id, gym_id)
 );
 
 CREATE TABLE court
@@ -84,13 +104,14 @@ CREATE TABLE court
     tournament_id INTEGER NOT NULL CONSTRAINT tournament REFERENCES tournament,
     number        INTEGER NOT NULL,
     available     BOOLEAN NOT NULL DEFAULT 1,
-    CHECK (available IN (0, 1))
+    CHECK (available IN (0, 1)),
+    UNIQUE (tournament_id, number)
 );
 
 CREATE TABLE "group"
 (
-    id   INTEGER     NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    name TEXT UNIQUE NOT NULL
+    id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    name TEXT    NOT NULL UNIQUE
 );
 
 CREATE TABLE user
@@ -120,6 +141,14 @@ CREATE TABLE user_pic
     pic     TEXT    NOT NULL
 );
 
+CREATE TABLE user_club
+(
+    id      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    name    TEXT UNIQUE NOT NULL,
+    city_id INTEGER NOT NULL CONSTRAINT city REFERENCES city,
+    UNIQUE (name, city_id)
+);
+
 CREATE TABLE user_lab
 (
     id         INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -143,8 +172,12 @@ CREATE TABLE tournament_user
     user_id       INTEGER NOT NULL CONSTRAINT user REFERENCES user,
     available     BOOLEAN NOT NULL DEFAULT 1, -- Доступен ли игрок для взаимодействия: подбор пар и пр.
     archived      BOOLEAN NOT NULL DEFAULT 0, -- Игрок не отображается в основном списке участников турнира
+    confirmed      BOOLEAN NOT NULL DEFAULT 0, -- Подтверждена ли предварительная регистрация
+    paid          BOOLEAN NOT NULL DEFAULT 0, -- Оплата турнирного взноса
     CHECK (available IN (0, 1)),
     CHECK (archived IN (0, 1)),
+    CHECK (confirmed IN (0, 1)),
+    CHECK (paid IN (0, 1)),
     UNIQUE (tournament_id, user_id)
 );
 
@@ -212,14 +245,15 @@ CREATE TABLE rating
     user_id  INTEGER NOT NULL CONSTRAINT user REFERENCES user,
     match_id INTEGER CONSTRAINT match REFERENCES match,
     previous INTEGER,
-    delta    INTEGER
+    delta    INTEGER,
+    UNIQUE (user_id, match_id)
 );
 
 CREATE TABLE team_color
 (
     id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    hex  TEXT    NOT NULL,
-    name TEXT    NOT NULL
+    hex  TEXT    NOT NULL UNIQUE,
+    name TEXT    NOT NULL UNIQUE
 );
 
 CREATE TABLE team
@@ -239,7 +273,8 @@ CREATE TABLE team_user
     id       INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     team_id  INTEGER NOT NULL CONSTRAINT team REFERENCES team,
     user_id  INTEGER NOT NULL CONSTRAINT user REFERENCES user,
-    group_id INTEGER NOT NULL CONSTRAINT "group" REFERENCES "group"
+    group_id INTEGER NOT NULL CONSTRAINT "group" REFERENCES "group",
+    UNIQUE (team_id, user_id)
 );
 
 CREATE TABLE team_order_110

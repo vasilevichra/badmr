@@ -1,0 +1,91 @@
+<div class="container">
+    <% if (user) { %>
+        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
+    <% } %>
+    <div id="registration" class="registration closable">
+        <div class="container">
+            <h1 class="text-center no-selection">Регистрация</h1>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 desc">
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <input type="search" class="tournament-new-registration-input form-control rounded" placeholder="Фамилия имя отчество" oninput="tournamentNewRegistrationHandler(this.value)">
+                            <label class="control-label">Фамилия Имя Отчество</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 desc">
+                    <section id="tournament-new-registration-hint" class="my-3">
+                        <div class="row">
+                            <div id="tournament-new-existed-user" class="col-auto text-end d-none">
+                                <span id="tournament-new-add-existed-username"></span>
+                                <button id="tournament-new-add-existed-user" class="btn btn-sm btn-success d-none">Добавить</button>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Фамилия <span class="text-danger">*</span></label>
+                                <input type="text" name="ln" class="form-control fw-bold required" style="border: none; background-color: transparent;" size="0" value="" required disabled>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Имя <span class="text-danger">*</span></label>
+                                <input type="text" name="fn" class="form-control fw-bold required" style="border: none; background-color: transparent;" size="0" value=""
+                                       required disabled>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Отчество <span class="text-danger">*</span></label>
+                                <input type="text" name="pn" class="form-control fw-bold required" style="border: none; background-color: transparent;" size="0" value="" autocomplete="off" required disabled>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Аккаунт</label>
+                                <input type="text" class="form-control link no-selection" name="account" style="border: none; background-color: transparent; " readonly>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Рейтинг <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control fw-bold required" name="rate" style="border: none; background-color: transparent;" required disabled>
+                            </div>
+                            <div class="col-auto d-flex align-items-center pt-4 d-none">
+                                <label for="tournament-new-registration-hint-sex" class="form-label man m-0">М</label>
+                                <div class="form-check form-switch m-0 p-1">
+                                    <input class="form-control form-check-input m-0" type="checkbox" name="sex" id="tournament-new-registration-hint-sex">
+                                </div>
+                                <label for="tournament-new-registration-hint-sex" class="form-label woman m-0">Ж</label>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">ДР <span class="text-danger">*</span></label>
+                                <input type="date" name="bd" class="form-control required" required>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Страна <span class="text-danger">*</span></label>
+                                <select id="tournament-new-registration-hint-state" class="form-control required" required></select>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Регион <span class="text-danger">*</span></label>
+                                <select id="tournament-new-registration-hint-region" class="form-control required" required></select>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Город <span class="text-danger">*</span></label>
+                                <select id="tournament-new-registration-hint-city" name="city" class="form-control required" required></select>
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Телефон</label>
+                                <input type="tel" class="form-control" name="tel" placeholder="+79876543210" size="12">
+                            </div>
+                            <div class="col-auto text-end d-none">
+                                <label class="control-label secondary-info no-selection">Почта</label>
+                                <input type="email" class="form-control" name="mail" placeholder="you@mail.ru">
+                            </div>
+                            <div class="col-auto align-content-end d-none">
+                                <button id="tournament-new-registration-hint-reg-btn" type="submit" class="btn btn-sm btn-success rounded mb-2"><i class="bi bi-plus-lg"></i> добавить</button>
+                                <button id="tournament-new-registration-hint-reset-btn" type="reset" class="btn btn-sm btn-danger rounded mb-1 d-none"><i class="bi bi-x-lg"></i></button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% if (user) { %>
+        <hr class="hr-dashed"/>
+    <% } %>
+</div>

@@ -17,6 +17,7 @@ class Settings {
 
   get = (name) => this.settings.get(name).then((result) => result.value);
   getAll = () => this.settings.getAll();
+  getDefaults = () => this.settings.getDefaults();
   states = () => this.settings.states();
   regions = () => this.settings.regions();
   cities = () => this.settings.cities();

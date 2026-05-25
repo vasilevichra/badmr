@@ -165,7 +165,7 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
         '<button type="button" id="player-arhive" class="bi bi-box-seam btn btn-danger"></button>' + // архивирования
         '<button type="button" class="btn bi-person-add btn-success" data-bs-toggle="modal" data-bs-target="#player-signup-window"></button>' // добавления нового пользователя
     );
-    $('#player-actualize').click(async () => {
+    $('#player-actualize').off('click').click(async () => {
       await $.post('/api/users/actualize');
       refresh.table.player();
     });

@@ -10,10 +10,28 @@ class City {
     this.db = new Repository().db;
   }
 
-  select() {
-    return this.db.all(
-        `SELECT id, name AS text
-         FROM city`);
+  select(region_id) {
+    return region_id ?
+        this.db.all(
+            `SELECT c.id, c.name AS text
+             FROM city c
+                      JOIN region r ON c.region_id = r.id
+             WHERE r.id = ?`,
+            [region_id]
+        ) :
+        this.db.all(
+            `SELECT id, name AS text
+             FROM city`
+        );
+  }
+
+  getById(id) {
+    return this.db.get(
+        `SELECT id, name
+         FROM city c
+         WHERE id = ?`,
+        [id]
+    );
   }
 
   getByTeamId(team_id) {
@@ -36,6 +54,15 @@ class City {
     );
   }
 
+  findByName(name) {
+    return this.db.get(
+        `SELECT c.id, c.name, c.region_id, r.state_id
+         FROM city c
+         JOIN region r ON c.region_id = r.id
+         WHERE c.name = ?`,
+        [name]
+    );
+  }
 }
 
 module.exports = City;

@@ -22,14 +22,15 @@ router.get(
       tournamentService.getCurrent()
       .then(t => {
         switch(t.tournament_type_id) {
-          case 1:
+          case 1: // new
             Promise.all([
               tournamentService.getAll(),                // 0
               unitService.getAll(),                      // 1
-              settingsService.states(),                  // 2
-              settingsService.regions(),                 // 3
-              settingsService.cities(),                  // 4
-              matchService.getAllFinishedAtLastSession() // 5
+              settingsService.getDefaults(),             // 2
+              settingsService.states(),                  // 3
+              settingsService.regions(),                 // 4
+              settingsService.cities(),                  // 5
+              matchService.getAllFinishedAtLastSession() // 6
             ])
             .then((promises) => {
               res.render('index', {
@@ -38,16 +39,17 @@ router.get(
                 tournaments: promises[0],
                 tournament_type: 1,
                 units: promises[1],
-                states: promises[2],
-                regions: promises[3],
-                cities: promises[4],
-                matches: promises[5],
+                settings: promises[2],
+                states: promises[3],
+                regions: promises[4],
+                cities: promises[5],
+                matches: promises[6],
                 playerNameFormatter: (id, name, sex, pic) => share.playerNameFormatter(id, name, sex, pic, req.useragent?.isMobile || false)
               });
             });
             break;
 
-          case 2:
+          case 2: // 110
             Promise.all([
               tournamentService.getAll(), // 0
               unitService.getAll(),       // 1

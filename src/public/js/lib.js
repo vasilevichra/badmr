@@ -170,6 +170,71 @@ const refresh = {
   }
 }
 
+const hide = {
+  register: {
+    __base: $('#tournament-new-registration-hint'),
+    __func: (name) => hide.register.__base.find(`[name=${name}]`).closest('div').addClass('d-none').find('input[type=text]').val('').trigger('input'),
+    all: () => hide.register.__base.find('.row div').each((i, e) => $(e).addClass('d-none').find('input[type=text]').val('')).trigger('input'),
+    search: () => $('.tournament-new-registration-input').val('').closest('div.row').addClass('d-none'),
+    user: {
+      existed: {
+        section: () => hide.register.__base.find('#tournament-new-existed-user').addClass('d-none'),
+      },
+    },
+    lastname: () => hide.register.__func('ln'),
+    firstname: () => hide.register.__func('fn'),
+    patronymic: () => hide.register.__func('pn'),
+    account: () => hide.register.__func('account'),
+    rate: () => hide.register.__func('rate'),
+  }
+}
+
+const show = {
+  register: {
+    __base: $('#tournament-new-registration-hint'),
+    __func: (name, value) =>
+        show.register.__base
+        .find(`[name=${name}]`)
+        .prop('size', value ? value.toString().length : 15)
+        .prop('value', value)
+        .closest('div.d-none')
+        .removeClass('d-none'),
+    user: {
+      existed: {
+        section: () => show.register.__base.find('#tournament-new-existed-user').removeClass('d-none'),
+        addButton: () => show.register.__base.find('#tournament-new-add-existed-user').removeClass('d-none'),
+      },
+      new: {
+        all: () => {
+          show.register.all();
+          show.register.user.new.regRstButton();
+          hide.register.user.existed.section();
+        },
+        regAddButton: () => $('#tournament-new-registration-hint-reg-btn').closest('div.d-none').removeClass('d-none'),
+        regRstButton: () => $('#tournament-new-registration-hint-reset-btn').removeClass('d-none'),
+        regButtons: () => {
+          show.register.user.new.regAddButton();
+          show.register.user.new.regRstButton();
+        },
+      }
+    },
+    search: () => $('.tournament-new-registration-input').closest('div.row').removeClass('d-none'),
+    all: () => show.register.__base.find('.row div.d-none').each((i, e) => $(e).removeClass('d-none')),
+    lastname: (value) => show.register.__func('ln', value),
+    firstname: (value) => show.register.__func('fn', value),
+    patronymic: (value) => show.register.__func('pn', value),
+    account: (value) => show.register.__func('account', value),
+    rate: (value) => show.register.__func('rate', value),
+    sex: (lastname, firstname, patronymic) => _.times(2, () => // костыль - иначе не работает
+        $('#tournament-new-registration-hint-sex')
+        .closest('div.d-none')
+        .removeClass('d-none')
+        .find('input')
+        .prop('checked', new SexByRussianName(lastname, firstname, patronymic || '').get_gender())
+    ),
+  }
+}
+
 const toggler = {
   toggle: (el) => {
     const closable = $(el).closest('div').nextAll('div.closable').first();
@@ -181,8 +246,7 @@ const toggler = {
   },
   hide: (closable) => {
     closable.addClass('d-none');
-    closable.prev('div.row').find('.toggler').removeClass('bi-chevron-down').addClass('bi-chevron-up').css(
-        {'color': 'blue', '-webkit-text-stroke': '1px'});
+    closable.prev('div.row').find('.toggler').removeClass('bi-chevron-down').addClass('bi-chevron-up').css({'color': 'blue', '-webkit-text-stroke': '1px'});
     closable.next('hr').show();
     $.cookie(closable.attr('id'), false);
   },
@@ -193,3 +257,12 @@ const toggler = {
     $.cookie(closable.attr('id'), true);
   },
 };
+
+const capitalizeFirstLetter = (string) => {
+  if (!string) {
+    return '';
+  }
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+const parseName = (name) => name.match(/(?<lastname>[а-яА-Я]+)?(\s+)?(?<firstname>[а-яА-Я]+)?(\s+)?(?<patronymic>[а-яА-Я]+)?/).groups;

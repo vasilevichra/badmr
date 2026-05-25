@@ -1,5 +1,5 @@
 const renderSelect = () => {
-  $('#select-button').click((event) => {
+  $('#select-button').off('click').click((event) => {
     event.preventDefault();
 
     $('#select-button').hide();
@@ -44,7 +44,7 @@ const renderSelect = () => {
           }
 
           $(`#select-form-info-${i}`).text(`Δ ${field.diff.toFixed(1)} баллов`);
-          $(`#select-form-button-submit-${i}`).click((event) => {
+          $(`#select-form-button-submit-${i}`).off('click').click((event) => {
             event.preventDefault();
 
             $.ajax({
@@ -70,7 +70,7 @@ const renderSelect = () => {
             refresh.table.player();
             refresh.table.court();
           });
-          $(`#select-form-button-reset-${i}`).click((event) => {
+          $(`#select-form-button-reset-${i}`).off('click').click((event) => {
             event.preventDefault();
 
             $(`#select-form-${i}`).hide();

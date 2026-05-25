@@ -30,6 +30,13 @@ class Settings {
     );
   }
 
+  getDefaults() {
+    return this.db.all(
+        `SELECT name, value, description
+         FROM defaults`
+    );
+  }
+
   states() {
     return this.db.all(
         `WITH default_state (id) AS (SELECT coalesce(s.value, d.value)

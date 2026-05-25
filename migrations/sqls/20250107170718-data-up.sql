@@ -121,7 +121,10 @@ VALUES (1, 'state', '1', 'Страна по умолчанию при добав
        (15, 'E_max', '480', 'Максимальный рейтинг группы E'),
        (16, 'F_max', '380', 'Максимальный рейтинг группы F'),
        (17, 'G_max', '320', 'Максимальный рейтинг группы G'),
-       (18, 'H_max', '250', 'Максимальный рейтинг группы H');
+       (18, 'H_max', '250', 'Максимальный рейтинг группы H'),
+       (19, 'capacity', '20', 'Максимальное количество участников турнира'),
+       (20, 'r_min', '100', 'Минимальный рейтинг для участия в турнире'),
+       (21, 'r_max', '600', 'Максимальный рейтинг для участия в турнире');
 
 INSERT INTO unit (id, name, current, available)
 VALUES (1, 'Все', 1, 1);
@@ -136,9 +139,17 @@ VALUES (1, 'Регистрация'),
        (3, 'Завершён'),
        (4, 'Отменён');
 
-INSERT INTO tournament (id, unit_id, tournament_type_id, tournament_state_id, name, current, available, reg_ended_at, started_at, ended_at, latitude, longitude, map_url, address, rules)
-VALUES (1, 1, 1, 2, 'Рейтинг', 1, 1, '2025-12-31 23:59:59', '2026-01-01 00:00:00', '2027-12-31 23:59:59', 56.224214, 41.286221, 'https://yandex.ru/maps/-/CPCLvIKP', 'Доброград, Парковая улица, 36', null);
+INSERT INTO user_club (id, name, city_id)
+VALUES (1, 'БК Доброград', 1);
 
+INSERT INTO gym (id, name, city_id, address, latitude, longitude, map_url)
+VALUES (1, 'Гранд Арена', 1, 'Парковая улица, 36', 56.224214, 41.286221, 'https://yandex.ru/maps/-/CPCLvIKP');
+
+INSERT INTO user_club_gym (user_club_id, gym_id)
+VALUES (1, 1);
+
+INSERT INTO tournament (id, user_id, user_club_id, gym_id, unit_id, tournament_type_id, tournament_state_id, name, current, available, reg_ended_at, started_at, ended_at, rules)
+VALUES (1, 1, 1, 1, 1, 1, 2, 'Рейтинг', 1, 1, '2025-12-31 23:59:59', '2026-01-01 00:00:00', '2027-12-31 23:59:59', null);
 
 INSERT INTO court (id, tournament_id, number, available)
 VALUES (1, 1, 1, 1);

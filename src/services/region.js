@@ -10,6 +10,8 @@ class Region {
     this.region = new RegionRepository();
   }
 
+  select = (state_id) => this.region.select(state_id);
+  getById = (id) => this.region.getById(id);
   getByUserId = (user_id) => this.region.getByUserId(user_id);
 }
 
