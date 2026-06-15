@@ -84,6 +84,7 @@ const getText = (url) => {
     crossDomain: true,
     global: false,
     async: false,
+    cache: true,
     success: data => data
   }).responseText
 };
@@ -155,18 +156,20 @@ const addScoreBoardHandlers = (el) => {
   });
 }
 
-const winValue = (lostValue) => lostValue <= 19 ? 21 : lostValue + 2;
+const winValue = (lostValue) => lostValue <= 19 ? 21 : (lostValue + 2);
 
 const refresh = {
   block: {
     by: {
       id: (id) => $(`#${id}`).load(location.href + ` #${id}>*`, ''),
-    }
+    },
+    player: () => refresh.block.by.id('player'),
+    select: () => refresh.block.by.id('select-block'),
   },
   table: {
-    player: () => $('#player-table').bootstrapTable('refresh'),
-    archive: () => $('#player-archive-table').bootstrapTable('refresh'),
-    court: () => $('#cort-table').bootstrapTable('refresh'),
+    player: () => $('#player-table').bootstrapTable('refresh', {silent: true}),
+    archive: () => $('#player-archive-table').bootstrapTable('refresh', {silent: true}),
+    court: () => $('#cort-table').bootstrapTable('refresh', {silent: true}),
   }
 }
 
@@ -186,6 +189,11 @@ const hide = {
     patronymic: () => hide.register.__func('pn'),
     account: () => hide.register.__func('account'),
     rate: () => hide.register.__func('rate'),
+  },
+  player: {
+    column: {
+      paid: () => $('#player-table').bootstrapTable('hideColumn', 'paid'),
+    }
   }
 }
 
@@ -232,6 +240,11 @@ const show = {
         .find('input')
         .prop('checked', new SexByRussianName(lastname, firstname, patronymic || '').get_gender())
     ),
+  },
+  player: {
+    column: {
+      delta_today: () => $('#player-table').bootstrapTable('showColumn', 'delta_today'),
+    }
   }
 }
 

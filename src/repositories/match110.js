@@ -1,6 +1,5 @@
 const Repository = require('./common');
 const SettingsService = require('../services/settings'), settingsService = new SettingsService();
-const Promise = require('bluebird');
 
 class Match {
   constructor() {

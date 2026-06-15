@@ -1,4 +1,4 @@
-<%- include('registration', {} ); %>
+<%- include('registration', {tournament: tournament} ); %>
 
 <div class="container">
     <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
@@ -8,7 +8,7 @@
                 <h1 class="text-center no-selection">Игроки</h1>
             <% } %>
             <div class="col-lg-12 col-md-12 col-sm-12 desc">
-                <table id="player-table" data-editable="true"></table>
+                <table id="player-table" data-editable="true" class="table table-responsive"></table>
             </div>
         </div>
     </div>
@@ -58,6 +58,7 @@
     </div>
 <% } %>
 
+<% if (matches.length > 0) { %>
 <div class="container">
     <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
     <div id="match-history" class="match-history closable">
@@ -74,6 +75,7 @@
     </div>
     <hr class="hr-dashed"/>
 </div>
+<% } %>
 
 <% if (user) { %>
     <div class="container">
@@ -83,7 +85,7 @@
             <table id="cort-table" class="mx-auto w-auto"></table>
             <div class="row">
                 <div class="text-center">
-                    <button class="btn btn-lg btn-success mx-auto w-auto m-3" type="button" onclick="$.post('/api/courts/create'); refresh.table.court()">
+                    <button class="btn btn-lg btn-success mx-auto w-auto m-3" type="button" onclick="$.post('/api/courts/create', {}, () => { refresh.table.court(); refresh.block.select(); });">
                         Добавить
                     </button>
                 </div>
@@ -99,7 +101,7 @@
             <table id="tournament-table" class="mx-auto w-auto"></table>
             <div class="row">
                 <div class="text-center">
-                    <%- include('../../modal/tournament/add', {settings: settings}); %>
+                    <%- include('../../modal/tournament/add', {defaults: defaults}); %>
                     <button class="btn btn-lg btn-success mx-auto w-auto m-3"
                             type="button"
                             data-bs-toggle="modal"

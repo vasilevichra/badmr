@@ -36,7 +36,7 @@ CREATE TABLE tournament_type
     name TEXT    NOT NULL UNIQUE
 );
 
-CREATE TABLE tournament_state
+CREATE TABLE tournament_status
 (
     id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     name TEXT    NOT NULL UNIQUE
@@ -44,22 +44,24 @@ CREATE TABLE tournament_state
 
 CREATE TABLE tournament
 (
-    id                  INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    user_id             INTEGER  NOT NULL CONSTRAINT creator REFERENCES user,
-    user_club_id        INTEGER  NOT NULL CONSTRAINT user_club REFERENCES user_club,
-    gym_id              INTEGER  NOT NULL CONSTRAINT gym REFERENCES gym,
-    unit_id             INTEGER  NOT NULL CONSTRAINT unit REFERENCES unit,
-    tournament_type_id  INTEGER  NOT NULL CONSTRAINT tournament_type REFERENCES tournament_type,
-    tournament_state_id INTEGER  NOT NULL CONSTRAINT tournament_state REFERENCES tournament_state,
-    name                TEXT     NOT NULL,
-    current             INTEGER  NOT NULL DEFAULT 0,
-    available           INTEGER  not null default 1,
-    reg_ended_at        DATETIME NOT NULL,
-    started_at          DATETIME NOT NULL,
-    ended_at            DATETIME,
-    rules               TEXT,
+    id                   INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    user_id              INTEGER  NOT NULL CONSTRAINT creator REFERENCES user,
+    user_club_id         INTEGER  NOT NULL CONSTRAINT user_club REFERENCES user_club,
+    gym_id               INTEGER  NOT NULL CONSTRAINT gym REFERENCES gym,
+    unit_id              INTEGER  NOT NULL CONSTRAINT unit REFERENCES unit,
+    tournament_type_id   INTEGER  NOT NULL CONSTRAINT tournament_type REFERENCES tournament_type,
+    tournament_status_id INTEGER  NOT NULL CONSTRAINT tournament_status REFERENCES tournament_status,
+    name                 TEXT     NOT NULL,
+    current              INTEGER  NOT NULL DEFAULT 0,
+    available            INTEGER  not null default 1,
+    reg_ended_at         DATETIME NOT NULL,
+    started_at           DATETIME NOT NULL,
+    ended_at             DATETIME,
+    rules                TEXT,
     CHECK (current IN (0, 1)),
-    CHECK (available IN (0, 1))
+    CHECK (available IN (0, 1)),
+    CHECK (reg_ended_at <= started_at),
+    CHECK (started_at < ended_at)
 );
 
 CREATE TABLE defaults

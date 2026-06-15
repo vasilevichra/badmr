@@ -2,11 +2,11 @@ const Express = require('express'), router = Express.Router();
 const CityService = require('../services/city'), cityService = new CityService();
 
 router.get('/select/:region_id', (req, res) => {
-  res.promise(cityService.select(req.params.region_id).then(g => ({results: g})));
+  res.promise(cityService.select(req.params.region_id).then(c => ({results: c})));
 });
 
 router.get('/select', (req, res) => {
-  res.promise(cityService.select().then(g => ({results: g})));
+  res.promise(cityService.select().then(c => ({results: c})));
 });
 
 router.get('/find', (req, res) => {

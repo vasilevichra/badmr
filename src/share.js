@@ -1,14 +1,12 @@
 (exports => {
 
   const playerNameFormatter = (id, name, sex, pic, isMobile = false) => {
-    let result = '';
     if (isMobile) {
-      let names = name.split(/\s/);
-      result = `${names[0]} ${names[1].charAt(0)}.`;
-    } else {
-      result = playerAvatarFormatter(pic, name, sex) + '&nbsp;' + name;
+      const names = name.split(/\s/);
+      name = `${names[0]} ${names[1].charAt(0)}.`;
     }
-    return `<span class="no-selection">${result}&nbsp;</span><nobr class="secondary-info no-selection">#<span class="user-id">${id}</span></nobr>`;
+
+    return `<span class="no-selection text-nowrap">${playerAvatarFormatter(pic, name, sex)}&nbsp;${name}` + (isMobile ? '</span>' : `<span class="secondary-info">&nbsp;#<span class="user-id">${id}</span></span></span>`);
   };
 
   const playerAvatarFormatter = (pic, name, sex) => {

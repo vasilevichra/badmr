@@ -7,7 +7,7 @@
         <option name="TAB_SIZE" value="2" />
       </value>
     </option>
-    <option name="RIGHT_MARGIN" value="160" />
+    <option name="RIGHT_MARGIN" value="175" />
     <option name="KEEP_CONTROL_STATEMENT_IN_ONE_LINE" value="false" />
     <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="0" />
     <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
@@ -168,7 +168,7 @@
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="JAVA">
-      <option name="RIGHT_MARGIN" value="150" />
+      <option name="RIGHT_MARGIN" value="175" />
       <option name="KEEP_CONTROL_STATEMENT_IN_ONE_LINE" value="false" />
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
       <option name="BLANK_LINES_AFTER_CLASS_HEADER" value="1" />
@@ -208,7 +208,7 @@
       </indentOptions>
     </codeStyleSettings>
     <codeStyleSettings language="JavaScript">
-      <option name="RIGHT_MARGIN" value="150" />
+      <option name="RIGHT_MARGIN" value="175" />
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
       <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
       <option name="ALIGN_MULTILINE_FOR" value="false" />

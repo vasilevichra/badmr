@@ -43,8 +43,8 @@
                                             <form class="player-window-change-rating-form">
                                                 <div class="input-group">
                                                     <div class="text-center text-secondary form-control border-0"><i class="bi bi-activity"></i> Рейтинг</div>
-                                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="рейтинг" maxlength="5" size="5" value="<%= rating.rating %>" required<% if (!login) { %> disabled<% } %>>
-                                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0" type="button"></button><% } %>
+                                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="рейтинг" maxlength="4" size="3" value="<%= rating.rating %>" required<% if (!login) { %> disabled<% } %>>
+                                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0 mx-2" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
                                                 </div>
                                             </form>
                                             <div class="progress mt-2">

@@ -45,6 +45,14 @@ html, h1, h2, h3, h4, h5, h6, button {
   color: #007df9;
 }
 
+.bg-badmr {
+  background-color: #007df9;
+}
+
+.bg-badmr-subtle {
+  background-color: rgba(0, 125, 249, 0.5);
+}
+
 .link {
   cursor: pointer;
   color: rgba(var(--bs-link-color-rgb),var(--bs-link-opacity,1));
@@ -63,6 +71,7 @@ html, h1, h2, h3, h4, h5, h6, button {
 .form-floating .select2-container--bootstrap-5 .select2-selection {
   height: calc(3.5rem + 2px);
   padding: 1rem 0.75rem;
+  font-size: 1.1rem;
 }
 
 .form-floating .select2-container--bootstrap-5 .select2-selection > .select2-selection__rendered {
@@ -95,7 +104,7 @@ input:focus::placeholder {
 .xs,
 .btn-xs {
   padding: 0.25rem 0.4rem; /* Уменьшенные отступы */
-  font-size: 0.7rem; /* Меньший размер шрифта */
+  font-size: 0.8rem; /* Меньший размер шрифта */
   line-height: 1.0; /* Корректировка межстрочного интервала */
   border-radius: 0.1rem; /* Скругление углов */
 }
@@ -105,7 +114,7 @@ input:focus::placeholder {
 }
 
 .form-floating > input {
-  font-size: 20px;
+  font-size: 1.1rem;
 }
 
 .form-floating > label {
@@ -117,7 +126,17 @@ input:focus::placeholder {
 
 /* строка поиска игроков */
 #player div.search {
-  width: calc(100% - 166px) !important;
+  width: calc(100% - 127px) !important;
+}
+
+.player-settings {
+  float: right;
+}
+
+[data-field=paid] .th-inner,
+[data-field=enabled] .th-inner {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
 }
 
 .login {

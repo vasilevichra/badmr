@@ -7,6 +7,9 @@ $(document).ready(() => {
     }
   });
 
+  // настройка обратного отсчёта для информации о турнире
+  $('time').countDown({label_dd: 'д', label_hh: 'ч', label_mm: 'м', separator_days: ' ', with_hh_leading_zero: false, with_seconds: false});
+
   // подстановка значения в строку поиска для регистрации
   $('.tournament-new-registration-input').val($.cookie('registration-input')).trigger('input');
 
@@ -22,12 +25,12 @@ $(document).ready(() => {
     H_max: () => Number(getText('/api/settings/H_max')),
   }
 
-  renderTournaments();
-  renderSettings();
-  renderCourts();
   renderPlayers(settings.B_max(), settings.C_max(), settings.D_max(), settings.E_max(), settings.F_max(), settings.G_max(), settings.H_max());
   renderSelect();
   renderGames();
+  renderCourts();
+  renderTournaments();
+  renderSettings();
   renderArchive();
   renderGroups();
 

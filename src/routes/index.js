@@ -19,32 +19,38 @@ router.get(
     (req, res) => {
       res.locals.filter = null;
 
+      const isPhone = () => !(req.useragent.isDesktop || req.useragent.isTablet || req.useragent.isSmartTV) || false;
+
       tournamentService.getCurrent()
       .then(t => {
         switch(t.tournament_type_id) {
           case 1: // new
             Promise.all([
               tournamentService.getAll(),                // 0
-              unitService.getAll(),                      // 1
-              settingsService.getDefaults(),             // 2
-              settingsService.states(),                  // 3
-              settingsService.regions(),                 // 4
-              settingsService.cities(),                  // 5
-              matchService.getAllFinishedAtLastSession() // 6
+              tournamentService.registeredCount(),       // 1
+              unitService.getAll(),                      // 2
+              settingsService.getDefaults(),             // 3
+              settingsService.getSettings(),             // 4
+              settingsService.states(),                  // 5
+              settingsService.regions(),                 // 6
+              settingsService.cities(),                  // 7
+              matchService.getAllFinishedAtLastSession() // 8
             ])
             .then((promises) => {
               res.render('index', {
-                user: req.user,
                 device: commonService.device(req),
+                user: req.user,
                 tournaments: promises[0],
                 tournament_type: 1,
-                units: promises[1],
-                settings: promises[2],
-                states: promises[3],
-                regions: promises[4],
-                cities: promises[5],
-                matches: promises[6],
-                playerNameFormatter: (id, name, sex, pic) => share.playerNameFormatter(id, name, sex, pic, req.useragent?.isMobile || false)
+                registered_count: promises[1],
+                units: promises[2],
+                defaults: promises[3],
+                settings: promises[4],
+                states: promises[5],
+                regions: promises[6],
+                cities: promises[7],
+                matches: promises[8],
+                playerNameFormatter: (id, name, sex, pic) => share.playerNameFormatter(id, name, sex, pic, isPhone())
               });
             });
             break;
@@ -60,8 +66,8 @@ router.get(
             ])
             .then((promises) => {
               res.render('index', {
-                user: req.user,
                 device: commonService.device(req),
+                user: req.user,
                 tournaments: promises[0],
                 units: promises[1],
                 tournament_type: 2,
@@ -69,7 +75,7 @@ router.get(
                 regions: promises[3],
                 cities: promises[4],
                 groups: promises[5],
-                playerNameFormatter: (id, name, sex, pic) => share.playerNameFormatter(id, name, sex, pic, req.useragent?.isMobile || false)
+                playerNameFormatter: (id, name, sex, pic) => share.playerNameFormatter(id, name, sex, pic, isPhone())
               });
             });
             break;

@@ -6,7 +6,23 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form class="form-horizontal" action="/api/tournaments/create" method="POST">
+                <form class="form-horizontal">
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <div class="col">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <select id="tournament-add-select-club" name="club" class="select2 form-control" required></select>
+                                        <label class="control-label">Клуб <span class="text-danger">*</span></label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <select id="tournament-add-select-gym" name="gym" class="select2 form-control" disabled required></select>
+                                        <label class="control-label">Зал <span class="text-danger">*</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                     <section class="mb-2">
                         <div class="form-group text-end">
                             <div class="col">
@@ -64,12 +80,40 @@
                             <div class="col">
                                 <div class="input-group">
                                     <div class="form-floating">
-                                        <input type="number" name="capacity" class="form-control" value="<%= settings.capacity %>" placeholder="20" required/>
+                                        <input type="number" name="cap" class="form-control" value="20" placeholder="<%= defaults.capacity %>" required/>
                                         <label>Участников <span class="text-danger">*</span></label>
                                     </div>
                                     <div class="form-floating">
-                                        <input type="number" name="courts" class="form-control" value="3" required/>
+                                        <input type="number" name="courts" class="form-control" value="<%= defaults.courts %>" required/>
                                         <label>Кортов <span class="text-danger">*</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <div class="col">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <input type="number" name="rmin" class="form-control" value="<%= defaults.r_min %>">
+                                        <label class="control-label">Мин. рейтинг</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="rmax" class="form-control" value="<%= defaults.r_max %>">
+                                        <label class="control-label">Макс. рейтинг</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group">
+                            <div class="col">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <input name="rules" class="form-control" type="url" placeholder="https://..."/>
+                                        <label class="control-label">Ссылка на положение</label>
                                     </div>
                                 </div>
                             </div>
@@ -77,12 +121,13 @@
                     </section>
                     <section>
                         <div class="form-group form-check form-switch">
+                            <input type="hidden" name="user" value="">
                             <label class="control-label form-check-label" for="cur">Сделать турнир текущим</label>
                             <input class="form-control form-check-input" type="checkbox" id="cur" name="cur" checked>
                         </div>
                     </section>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                         <button type="submit" class="btn btn-primary">Добавить</button>
                     </div>
                 </form>

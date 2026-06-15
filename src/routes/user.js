@@ -6,6 +6,12 @@ const UserService = require('../services/user'), userService = new UserService()
 // const csrfProtection = csrf({ cookie: true });
 // const parseForm = Express.urlencoded({ extended: false });
 
+router.post('/create', (req, res) => {
+  const {ln, fn, pn, account, rate, sex, city, bd, tel, mail} = req.body;
+  const userSex = sex === 'on' ? 1 : 0;
+  res.promise(userService.create(ln, fn, pn, account ? 1.4 * Number(rate) : rate, userSex, city, bd, tel, mail));
+});
+
 router.get('/find', (req, res) => {
   res.promise(userService.findBy(req.query.lastname, req.query.firstname, req.query.patronymic));
 });
@@ -41,14 +47,8 @@ router.get('/', (req, res) => {
   res.promise(userService.getAll());
 });
 
-router.post('/create', (req, res) => {
-  const {ln, fn, pn, rate, sex, city, bd, tel, mail} = req.body;
-  const userSex = sex === 'on' ? 1 : 0;
-  res.promise(userService.create(ln, fn, pn, rate, userSex, city, bd, tel, mail));
-});
-
 router.get('/select/:city_id', ensureLoggedIn, (req, res) => {
-  res.promise(userService.select(req.params.city_id).then(g => ({results: g})));
+  res.promise(userService.select(req.params.city_id).then(u => ({results: u})));
 });
 
 router.get('/:id', (req, res) => {
