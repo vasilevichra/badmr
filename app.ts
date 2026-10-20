@@ -27,7 +27,15 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(promiseMiddleware());
-app.use(express.static('./src/public'));
+
+// раздача статики с no-cache: без Cache-Control браузер кэширует эвристически
+// и может не ревалидировать вовсе — обновлённые js/css «не подхватывались»
+// без Cmd+Shift+R. no-cache разрешает кэш, но требует ревалидацию (ETag, 304).
+const assets = (dir: string) => express.static(dir, {
+  setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache')
+});
+
+app.use(assets('./src/public'));
 app.use(logger('dev'));
 app.use(useragent.express());
 app.use(session({
@@ -53,28 +61,28 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 });
 
 // pushed throw npm frontend dependencies
-app.use('/js', express.static(path.join(__dirname, '/node_modules/jquery/dist')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/jquery.cookie')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/jquery.countdown')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/bootstrap/dist/js')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/bootstrap-table/dist')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/express-useragent/dist/browser')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/select2/dist/js')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/moment/min')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/lodash')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/chart.js/dist')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/chartjs-adapter-moment/dist')));
-app.use('/js', express.static(path.join(__dirname, '/node_modules/sex-by-russian-name/dist')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/jquery/dist')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/jquery.cookie')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/jquery.countdown')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/bootstrap/dist/js')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/bootstrap-table/dist')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/express-useragent/dist/browser')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/select2/dist/js')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/moment/min')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/lodash')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/chart.js/dist')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/chartjs-adapter-moment/dist')));
+app.use('/js', assets(path.join(__dirname, '/node_modules/sex-by-russian-name/dist')));
 app.get('/js/ejs.js', (req, res) => res.sendFile(path.join(__dirname, '/node_modules/ejs/ejs.min.js')));
 app.get('/js/share.js', (req, res) => res.sendFile(path.join(__dirname, '/src/share.cjs')));
 app.get('/js/index.js', (req, res) => res.sendFile(path.join(__dirname, '/src/public/js/index.js')));
-app.use('/css', express.static(path.join(__dirname, '/node_modules/bootstrap/dist/css')));
-app.use('/css', express.static(path.join(__dirname, '/node_modules/bootstrap-table/dist')));
-app.use('/css', express.static(path.join(__dirname, '/node_modules/select2/dist/css')));
-app.use('/css', express.static(path.join(__dirname, '/node_modules/select2-bootstrap-5-theme/dist')));
-app.use('/assets', express.static(path.join(__dirname, '/src/public/assets')));
-app.use('/assets', express.static(path.join(__dirname, '/node_modules/bootstrap-icons')));
-app.use('/views', express.static(path.join(__dirname, '/src/public/views')));
+app.use('/css', assets(path.join(__dirname, '/node_modules/bootstrap/dist/css')));
+app.use('/css', assets(path.join(__dirname, '/node_modules/bootstrap-table/dist')));
+app.use('/css', assets(path.join(__dirname, '/node_modules/select2/dist/css')));
+app.use('/css', assets(path.join(__dirname, '/node_modules/select2-bootstrap-5-theme/dist')));
+app.use('/assets', assets(path.join(__dirname, '/src/public/assets')));
+app.use('/assets', assets(path.join(__dirname, '/node_modules/bootstrap-icons')));
+app.use('/views', assets(path.join(__dirname, '/src/public/views')));
 
 app.use('/', await import('./src/routes/index.ts').then(m => m.default));
 
