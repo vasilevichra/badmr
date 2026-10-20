@@ -61,6 +61,7 @@ SELECT id,
        city,
        birthday,
        enabled,
+       paid,
        CASE WHEN (SELECT finished FROM match WHERE id = last_match_id) = 0 THEN 1 ELSE 0 END AS occupied,
        (SELECT _c.number
         FROM match _m
@@ -79,6 +80,7 @@ FROM (SELECT u.id                                                       AS id,
              c.name                                                     AS city,
              u.birthday                                                 AS birthday,
              coalesce(tu.available, 0)                                  AS enabled,
+             coalesce(tu.paid, 0)                                       AS paid,
              max(m.id)                                                  AS last_match_id
       FROM user u
                JOIN city c ON c.id = u.city_id
@@ -129,7 +131,7 @@ GROUP BY r.user_id
 ORDER BY sum DESC;
 
 CREATE VIEW settings AS
-SELECT d.name, coalesce(s.value, d.value) AS value
+SELECT distinct d.name, coalesce(s.value, d.value) AS value
 FROM defaults d
          LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id
          LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1 AND t.available = 1;

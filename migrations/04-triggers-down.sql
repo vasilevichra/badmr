@@ -1,5 +1,6 @@
-DROP TRIGGER calculate_rating_lost_by_1;
-DROP TRIGGER calculate_rating_lost_by_2;
+DROP TRIGGER calculate_rating_when_match_finished;
+
+DROP INDEX rating_user_id;
 
 DROP TRIGGER delete_rating_when_match_deleted;
 

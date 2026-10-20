@@ -1,0 +1,7 @@
+{
+  "watch": ["src", "app.js"],
+  "ext": "ts,js,ejs",
+  "execMap": {
+    "ts": "node --experimental-strip-types"
+  }
+}

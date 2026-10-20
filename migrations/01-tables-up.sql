@@ -12,6 +12,18 @@ CREATE TABLE region
     UNIQUE (state_id, name)
 );
 
+CREATE TABLE timezone
+(
+    id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    name TEXT    NOT NULL UNIQUE
+);
+
+CREATE TABLE region_timezone
+(
+    region_id   INTEGER NOT NULL PRIMARY KEY CONSTRAINT region REFERENCES region,
+    timezone_id INTEGER NOT NULL CONSTRAINT timezone REFERENCES timezone
+);
+
 CREATE TABLE city
 (
     id        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -36,38 +48,58 @@ CREATE TABLE tournament_type
     name TEXT    NOT NULL UNIQUE
 );
 
-CREATE TABLE tournament_state
+CREATE TABLE tournament_status
 (
     id   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     name TEXT    NOT NULL UNIQUE
 );
 
+CREATE TABLE ready_priority
+(
+    id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    name        TEXT    NOT NULL UNIQUE,
+    description TEXT    NOT NULL
+);
+
 CREATE TABLE tournament
 (
-    id                  INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    user_id             INTEGER  NOT NULL CONSTRAINT creator REFERENCES user,
-    user_club_id        INTEGER  NOT NULL CONSTRAINT user_club REFERENCES user_club,
-    gym_id              INTEGER  NOT NULL CONSTRAINT gym REFERENCES gym,
-    unit_id             INTEGER  NOT NULL CONSTRAINT unit REFERENCES unit,
-    tournament_type_id  INTEGER  NOT NULL CONSTRAINT tournament_type REFERENCES tournament_type,
-    tournament_state_id INTEGER  NOT NULL CONSTRAINT tournament_state REFERENCES tournament_state,
-    name                TEXT     NOT NULL,
-    current             INTEGER  NOT NULL DEFAULT 0,
-    available           INTEGER  not null default 1,
-    reg_ended_at        DATETIME NOT NULL,
-    started_at          DATETIME NOT NULL,
-    ended_at            DATETIME,
-    rules               TEXT,
+    id                   INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    user_id              INTEGER  NOT NULL CONSTRAINT creator REFERENCES user,
+    user_club_id         INTEGER  NOT NULL CONSTRAINT user_club REFERENCES user_club,
+    gym_id               INTEGER  NOT NULL CONSTRAINT gym REFERENCES gym,
+    unit_id              INTEGER  NOT NULL CONSTRAINT unit REFERENCES unit,
+    tournament_type_id   INTEGER  NOT NULL CONSTRAINT tournament_type REFERENCES tournament_type,
+    tournament_status_id INTEGER  NOT NULL CONSTRAINT tournament_status REFERENCES tournament_status,
+    name                 TEXT     NOT NULL,
+    current              INTEGER  NOT NULL DEFAULT 0,
+    available            INTEGER  not null default 1,
+    reg_ended_at         DATETIME NOT NULL,
+    started_at           DATETIME NOT NULL,
+    ended_at             DATETIME,
+    rules                TEXT,
     CHECK (current IN (0, 1)),
-    CHECK (available IN (0, 1))
+    CHECK (available IN (0, 1)),
+    CHECK (reg_ended_at <= started_at),
+    CHECK (started_at < ended_at)
 );
 
 CREATE TABLE defaults
 (
     id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    name        TEXT    NOT NULL UNIQUE,
+    name        TEXT    NOT NULL UNIQUE
+                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'priority', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee')),
     value       TEXT    NOT NULL,
-    description TEXT    NOT NULL
+    description TEXT    NOT NULL,
+    -- все настройки, кроме priority, хранят неотрицательные целые;
+    -- sort — непустой список id из ready_priority, разделённых запятой
+    CHECK (name = 'priority' OR (value <> '' AND value NOT GLOB '*[^0-9]*')),
+    CHECK (name <> 'priority' OR (value <> '' AND value NOT GLOB '*[^0-9,]*')),
+    -- нижние границы значений (перекрёстные — триггерами ниже)
+    CHECK (name NOT IN ('delta', 'proc', 'matches') OR CAST(value AS INTEGER) >= 0),
+    CHECK (name NOT IN ('wins', 'game_point', 'max_point', 'capacity', 'courts') OR CAST(value AS INTEGER) >= 1),
+    CHECK (name <> 'fee' OR CAST(value AS INTEGER) > 0),
+    CHECK (name <> 'H_max' OR CAST(value AS INTEGER) > 0),
+    CHECK (name <> 'r_min' OR CAST(value AS INTEGER) > 0)
 );
 
 CREATE TABLE tournament_settings
@@ -305,3 +337,80 @@ CREATE TABLE team_order_110
     CHECK (ms1 != ms2),
     CHECK (ws1 != ws2)
 );
+
+-- перекрёстные ограничения значений defaults (CHECK не видит другие строки):
+-- max_point > game_point, B_max > C_max > D_max > E_max > F_max > G_max > H_max, r_max >= r_min;
+-- пока одной из строк нет, сравнение с NULL просто не срабатывает
+CREATE TRIGGER defaults_cross_value_insert
+    AFTER INSERT ON defaults
+BEGIN
+    SELECT RAISE(ABORT, 'defaults.value: max_point должен быть больше game_point')
+    WHERE NEW.name IN ('max_point', 'game_point')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'max_point')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'game_point');
+    SELECT RAISE(ABORT, 'defaults.value: B_max должен быть больше C_max')
+    WHERE NEW.name IN ('B_max', 'C_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'B_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'C_max');
+    SELECT RAISE(ABORT, 'defaults.value: C_max должен быть больше D_max')
+    WHERE NEW.name IN ('C_max', 'D_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'C_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'D_max');
+    SELECT RAISE(ABORT, 'defaults.value: D_max должен быть больше E_max')
+    WHERE NEW.name IN ('D_max', 'E_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'D_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'E_max');
+    SELECT RAISE(ABORT, 'defaults.value: E_max должен быть больше F_max')
+    WHERE NEW.name IN ('E_max', 'F_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'E_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'F_max');
+    SELECT RAISE(ABORT, 'defaults.value: F_max должен быть больше G_max')
+    WHERE NEW.name IN ('F_max', 'G_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'F_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'G_max');
+    SELECT RAISE(ABORT, 'defaults.value: G_max должен быть больше H_max')
+    WHERE NEW.name IN ('G_max', 'H_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'G_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'H_max');
+    SELECT RAISE(ABORT, 'defaults.value: r_max должен быть не меньше r_min')
+    WHERE NEW.name IN ('r_max', 'r_min')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'r_max')
+        < (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'r_min');
+END;
+
+CREATE TRIGGER defaults_cross_value_update
+    AFTER UPDATE OF value ON defaults
+BEGIN
+    SELECT RAISE(ABORT, 'defaults.value: max_point должен быть больше game_point')
+    WHERE NEW.name IN ('max_point', 'game_point')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'max_point')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'game_point');
+    SELECT RAISE(ABORT, 'defaults.value: B_max должен быть больше C_max')
+    WHERE NEW.name IN ('B_max', 'C_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'B_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'C_max');
+    SELECT RAISE(ABORT, 'defaults.value: C_max должен быть больше D_max')
+    WHERE NEW.name IN ('C_max', 'D_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'C_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'D_max');
+    SELECT RAISE(ABORT, 'defaults.value: D_max должен быть больше E_max')
+    WHERE NEW.name IN ('D_max', 'E_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'D_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'E_max');
+    SELECT RAISE(ABORT, 'defaults.value: E_max должен быть больше F_max')
+    WHERE NEW.name IN ('E_max', 'F_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'E_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'F_max');
+    SELECT RAISE(ABORT, 'defaults.value: F_max должен быть больше G_max')
+    WHERE NEW.name IN ('F_max', 'G_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'F_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'G_max');
+    SELECT RAISE(ABORT, 'defaults.value: G_max должен быть больше H_max')
+    WHERE NEW.name IN ('G_max', 'H_max')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'G_max')
+        <= (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'H_max');
+    SELECT RAISE(ABORT, 'defaults.value: r_max должен быть не меньше r_min')
+    WHERE NEW.name IN ('r_max', 'r_min')
+      AND (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'r_max')
+        < (SELECT CAST(value AS INTEGER) FROM defaults WHERE name = 'r_min');
+END;
