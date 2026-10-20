@@ -130,8 +130,12 @@ dist
 *.sqlite3
 *.db
 
+# Application data
+.data/
+
 # IDE
 .idea/
 
 # security sensitive data
 *specific*
+.proxyai/

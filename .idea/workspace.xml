@@ -1,0 +1,1006 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7fcbda41-1436-4905-973a-6a7a3b93c845" name="Changes" comment="Fix #30">
+      <change afterPath="$PROJECT_DIR$/app.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/01-tables-down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/01-tables-up.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/02-views-down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/02-views-up.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/03-data-down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/03-data-up.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/04-triggers-down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/04-triggers-up.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/06-indexes-down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/06-indexes-up.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/migrations/reset-sequences-for-tests.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nodemon.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/bin/migrate.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/bin/run-tests.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/bin/start.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/db.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/middleware/promise.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/assets/icons/apple-touch-favicon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/assets/icons/favicon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/assets/icons/telegram.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/assets/icons/vk.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/views/modal/gym/add.ejs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/views/tournament/new/game-form.ejs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/views/tournament/new/player-toolbar.ejs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/views/tournament/new/rules.ejs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/public/views/tournament/new/select-form.ejs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/repositories/gym.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/repositories/ready-priority.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/repositories/tournament.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/repositories/user-club.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/auth.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/city.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/common.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/court.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/game.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/group.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/gym.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/index.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/match.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/rating.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/ready-priority.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/region.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/settings.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/state.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/team.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/tournament-type.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/tournament.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/unit.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/user-club.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/user.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/vk.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/routes/web/tournaments/new/rules.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/city.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/common.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/court.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/game.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/group.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/gym.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/match.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/rating.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/ready-priority.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/region.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/settings.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/state.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/team-color.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/team-order.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/team-user.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/team.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/tournament-type.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/tournament.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/unit.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/user-club.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/user.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/vk.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/share.cjs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/types/connect-sqlite3.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/types/express-promise.d.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/db.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/helpers/migration.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/middleware/promise.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/common.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/court.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/game.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/index.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/match.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/player.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/ready-priority.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/settings.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/routes/user.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/city.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/common.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/court.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/game.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/geo.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/gym.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/match.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/rating.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/settings.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/team.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/tournament.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/services/user.test.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/badmr.ci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/badmr.ci.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/database.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20250107151853-tables.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20250107165930-views.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20250107170718-data.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20250107180453-triggers.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/20260521064320-indexes.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107151853-tables-down.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107151853-tables-up.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107165930-views-down.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107165930-views-up.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107170718-data-down.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107170718-data-up.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107180453-triggers-down.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20250107180453-triggers-up.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20260521064320-indexes-down.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/sqls/20260521064320-indexes-up.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/bin/start.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/middleware/promise.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/assets/images/dobrograd-badminton.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/assets/images/dobrograd-badminton.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/assets/images/dobrograd-badminton.svg" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/assets/images/dobrograd-badminton.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/assets/images/soon.jpeg" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/assets/images/soon.jpeg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/css/auth.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/css/auth.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/css/bootstrap-icons.min.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/css/bootstrap-icons.min.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/css/loggedin.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/css/loggedin.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/archive.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/archive.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/court.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/court.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/game.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/group.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/group.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/lib.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/lib.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/player.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/player.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/select.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/select.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/settings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/tournament.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/tournament.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/error.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/error.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/footer.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/footer.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/index.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/index.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/login.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/login.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/modal/group/team/add.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/group/team/add.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/modal/group/team/edit.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/group/team/edit.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/modal/player/add.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/player/add.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/modal/player/co.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/player/co.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/modal/player/id.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/player/id.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/modal/tournament/add.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/tournament/add.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/player.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/player.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/signup.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/signup.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/social.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/social.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/tournament.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/index.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/index.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/registration.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/registration.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/city.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/city.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/common.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/common.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/court.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/court.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/game.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/game110.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/game110.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/group.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/group.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/match.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/match.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/match110.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/match110.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/rating.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/rating.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/region.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/region.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/settings.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/state.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/state.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/team-color.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/team-color.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/team-order.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/team-order.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/team-user.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/team-user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/team.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/team.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/tournament-type.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/tournament-type.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/tournament.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/unit.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/unit.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/user.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/auth.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/city.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/common.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/court.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/game.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/group.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/match.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/rating.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/region.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/settings.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/state.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/team.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/tournament-type.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/tournament.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/unit.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/user.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/web/player.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/web/player.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/city.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/common.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/court.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/game.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/group.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/match.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/rating.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/region.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/settings.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/state.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/team-color.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/team-order.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/team-user.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/team.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/tournament-type.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/tournament.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/unit.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/user.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/share.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/services/common.test.js" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeStyleSettingsInfer">
+    <option name="done" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="afea0a2ba6cbd7f88242b13299884ca35f8e0def" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="true" />
+  </component>
+  <component name="GradleModuleStateConfig" initialized="true" />
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="OpenIdeProjectLocalState">
+    <option name="firstOpen" value="false" />
+  </component>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="2" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2rJjpE1U7sVZpDSqD8vCboc2oKq" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Node.js.scratch.js.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;SQL Inserts&quot;,
+    &quot;database.data.extractors.current.id&quot;: &quot;SQL Inserts&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;javascript.nodejs.core.library.configured.version&quot;: &quot;25.2.1&quot;,
+    &quot;javascript.nodejs.core.library.typings.version&quot;: &quot;24.10.1&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/r/Projects.localized/badmr/src/repositories&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs.mocha.mocha_node_package_dir&quot;: &quot;/Users/r/Desktop/badmr/node_modules/mocha&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.dev.executor&quot;: &quot;Run&quot;,
+    &quot;npm.release.executor&quot;: &quot;Run&quot;,
+    &quot;npm.start.executor&quot;: &quot;Run&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;settings.codegpt.services.custom&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Applications/IntelliJ IDEA.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;sqlite&quot;
+    ],
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
+      &quot;JavaScript&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/repositories" />
+      <recent name="$PROJECT_DIR$/src/public/views" />
+      <recent name="$PROJECT_DIR$/src/public/js" />
+      <recent name="$PROJECT_DIR$/1" />
+      <recent name="$PROJECT_DIR$/src/public/js/lib" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/src/public/assets/icons" />
+      <recent name="$PROJECT_DIR$/1" />
+      <recent name="$PROJECT_DIR$/test" />
+      <recent name="$PROJECT_DIR$/src/public" />
+    </key>
+  </component>
+  <component name="RunManager" selected="NPM Scripts.debug">
+    <configuration name="debug" type="haulmont.webtools.run.configurations.npm" packageJsonPath="$PROJECT_DIR$/package.json" nodeRuntime="" packageManagerPath="" nodeOptions="" passParentEnvs="true" command="run" scriptName="compile" startBrowserAfterLaunch="false" browserUrl="" startBrowserWithDebugger="false">
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="haulmont.webtools.run.configurations.npm" packageJsonPath="$PROJECT_DIR$/package.json" nodeRuntime="" packageManagerPath="" nodeOptions="" passParentEnvs="true" command="run" scriptName="dev" startBrowserAfterLaunch="false" browserUrl="" startBrowserWithDebugger="false">
+      <method v="2" />
+    </configuration>
+    <configuration name="prod" type="haulmont.webtools.run.configurations.npm" packageJsonPath="$PROJECT_DIR$/package.json" nodeRuntime="" packageManagerPath="" nodeOptions="" passParentEnvs="true" command="run" scriptName="prod" startBrowserAfterLaunch="false" browserUrl="" startBrowserWithDebugger="false">
+      <method v="2" />
+    </configuration>
+    <configuration name="release" type="haulmont.webtools.run.configurations.npm" packageJsonPath="$PROJECT_DIR$/package.json" nodeRuntime="" packageManagerPath="" nodeOptions="" passParentEnvs="true" command="run" scriptName="release" startBrowserAfterLaunch="false" browserUrl="" startBrowserWithDebugger="false">
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="haulmont.webtools.run.configurations.npm" packageJsonPath="$PROJECT_DIR$/package.json" nodeRuntime="" packageManagerPath="" nodeOptions="" passParentEnvs="true" command="run" scriptName="test" startBrowserAfterLaunch="false" browserUrl="" startBrowserWithDebugger="false">
+      <method v="2" />
+    </configuration>
+    <configuration name="debug" type="js.build_tools.npm">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="compile" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="prod" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="prod" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="release" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="release" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="js.build_tools.npm">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="test" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="CommonService.ready" type="mocha-javascript-test-runner" temporary="true" nameIsGenerated="true">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <envs>
+        <env name="NODE_ENV" value="test" />
+      </envs>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>SUITE</test-kind>
+      <test-file>$PROJECT_DIR$/src/tests/services/common.test.js</test-file>
+      <test-names>
+        <name value="CommonService" />
+        <name value="ready" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="formatFileSize function" type="mocha-javascript-test-runner" temporary="true" nameIsGenerated="true">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>TEST</test-kind>
+      <test-file>$PROJECT_DIR$/tests/services/common.test.js</test-file>
+      <test-names>
+        <name value="formatFileSize function" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="NPM Scripts.debug" />
+      <item itemvalue="NPM Scripts.dev" />
+      <item itemvalue="NPM Scripts.prod" />
+      <item itemvalue="NPM Scripts.release" />
+      <item itemvalue="NPM Scripts.test" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7fcbda41-1436-4905-973a-6a7a3b93c845" name="Changes" comment="" />
+      <created>1736284252452</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1736284252452</updated>
+      <workItem from="1736284253457" duration="1194000" />
+      <workItem from="1736285454677" duration="2444000" />
+      <workItem from="1736287911949" duration="34000" />
+      <workItem from="1736287952534" duration="105000" />
+      <workItem from="1736288065361" duration="717000" />
+      <workItem from="1736288792116" duration="4998000" />
+      <workItem from="1736324655621" duration="229000" />
+      <workItem from="1736324893664" duration="18226000" />
+      <workItem from="1736412621152" duration="18000" />
+      <workItem from="1736662463460" duration="16941000" />
+      <workItem from="1736760175304" duration="4821000" />
+      <workItem from="1736781690267" duration="3331000" />
+      <workItem from="1736851272758" duration="2226000" />
+      <workItem from="1736858382163" duration="1784000" />
+      <workItem from="1736861704693" duration="71000" />
+      <workItem from="1736868108584" duration="8134000" />
+      <workItem from="1736931132680" duration="3027000" />
+      <workItem from="1736934299593" duration="2393000" />
+      <workItem from="1736945053947" duration="481000" />
+      <workItem from="1737232849190" duration="22413000" />
+      <workItem from="1737362262507" duration="1679000" />
+      <workItem from="1737364068073" duration="198000" />
+      <workItem from="1737464342155" duration="623000" />
+      <workItem from="1737619347891" duration="3889000" />
+      <workItem from="1737656797020" duration="706000" />
+      <workItem from="1737667860345" duration="110000" />
+      <workItem from="1737745928069" duration="30838000" />
+      <workItem from="1738183617516" duration="3690000" />
+      <workItem from="1738221007613" duration="588000" />
+      <workItem from="1738233315376" duration="1527000" />
+      <workItem from="1738235076229" duration="142000" />
+      <workItem from="1738396545056" duration="40131000" />
+      <workItem from="1738579665802" duration="177000" />
+      <workItem from="1738590460800" duration="841000" />
+      <workItem from="1738605647904" duration="1373000" />
+      <workItem from="1738662382614" duration="6253000" />
+      <workItem from="1738678942844" duration="8283000" />
+      <workItem from="1738751765964" duration="12000" />
+      <workItem from="1738824455995" duration="2567000" />
+      <workItem from="1738835769723" duration="1874000" />
+      <workItem from="1738846777248" duration="1071000" />
+      <workItem from="1738847974993" duration="1920000" />
+      <workItem from="1738858076706" duration="1829000" />
+      <workItem from="1738873570653" duration="788000" />
+      <workItem from="1738878230897" duration="897000" />
+      <workItem from="1738910751177" duration="445000" />
+      <workItem from="1738911247916" duration="604000" />
+      <workItem from="1738913498886" duration="151000" />
+      <workItem from="1738914096151" duration="482000" />
+      <workItem from="1738935214377" duration="1976000" />
+      <workItem from="1738942995888" duration="2020000" />
+      <workItem from="1739018000919" duration="6369000" />
+      <workItem from="1739038345670" duration="30525000" />
+      <workItem from="1739265066611" duration="4002000" />
+      <workItem from="1739278162145" duration="1687000" />
+      <workItem from="1739290022946" duration="3997000" />
+      <workItem from="1739348588573" duration="3551000" />
+      <workItem from="1739355435581" duration="234000" />
+      <workItem from="1739370598199" duration="3808000" />
+      <workItem from="1739374448218" duration="266000" />
+      <workItem from="1739378170175" duration="2360000" />
+      <workItem from="1739433837131" duration="7177000" />
+      <workItem from="1739442571138" duration="2181000" />
+      <workItem from="1739450946287" duration="413000" />
+      <workItem from="1739454661151" duration="1020000" />
+      <workItem from="1739462774785" duration="3821000" />
+      <workItem from="1739476341380" duration="622000" />
+      <workItem from="1739509152274" duration="1231000" />
+      <workItem from="1739524824247" duration="75000" />
+      <workItem from="1739540274465" duration="1443000" />
+      <workItem from="1739558958097" duration="132000" />
+      <workItem from="1739562007546" duration="50389000" />
+      <workItem from="1739715089272" duration="591000" />
+      <workItem from="1739878857728" duration="1298000" />
+      <workItem from="1739895082444" duration="1836000" />
+      <workItem from="1739949442261" duration="1077000" />
+      <workItem from="1739984238513" duration="2331000" />
+      <workItem from="1740050026337" duration="1857000" />
+      <workItem from="1740052337810" duration="608000" />
+      <workItem from="1740066507346" duration="3074000" />
+      <workItem from="1740085544755" duration="362000" />
+      <workItem from="1740148130776" duration="34228000" />
+      <workItem from="1740252659530" duration="660000" />
+      <workItem from="1740256882515" duration="26000" />
+      <workItem from="1740498355482" duration="5250000" />
+      <workItem from="1740572405689" duration="4000" />
+      <workItem from="1740572777942" duration="203000" />
+      <workItem from="1740588353781" duration="721000" />
+      <workItem from="1740671888825" duration="635000" />
+      <workItem from="1740806824333" duration="58761000" />
+      <workItem from="1740988900886" duration="3905000" />
+      <workItem from="1741008334853" duration="1198000" />
+      <workItem from="1741010867375" duration="2894000" />
+      <workItem from="1741076851353" duration="1894000" />
+      <workItem from="1741094050268" duration="4782000" />
+      <workItem from="1741165579038" duration="424000" />
+      <workItem from="1741166083845" duration="975000" />
+      <workItem from="1741194732097" duration="3483000" />
+      <workItem from="1741250957987" duration="3081000" />
+      <workItem from="1741258385766" duration="5779000" />
+      <workItem from="1741637002757" duration="3339000" />
+      <workItem from="1741682943328" duration="1091000" />
+      <workItem from="1741707441613" duration="1532000" />
+      <workItem from="1741772509574" duration="875000" />
+      <workItem from="1741848777930" duration="2917000" />
+      <workItem from="1741854809611" duration="3355000" />
+      <workItem from="1741876736236" duration="4874000" />
+      <workItem from="1741975631064" duration="12640000" />
+      <workItem from="1742240362193" duration="524000" />
+      <workItem from="1742328703611" duration="5723000" />
+      <workItem from="1742457734007" duration="14550000" />
+      <workItem from="1742498583479" duration="14334000" />
+      <workItem from="1742542217777" duration="14610000" />
+      <workItem from="1742664878569" duration="14589000" />
+      <workItem from="1742715771881" duration="7060000" />
+      <workItem from="1742791878161" duration="694000" />
+      <workItem from="1742814804223" duration="15881000" />
+      <workItem from="1742887020063" duration="37107000" />
+      <workItem from="1743411449290" duration="6000" />
+      <workItem from="1743602978755" duration="23000" />
+      <workItem from="1744119223178" duration="489000" />
+      <workItem from="1744203194736" duration="296000" />
+      <workItem from="1752160709868" duration="826000" />
+      <workItem from="1753687895238" duration="8000" />
+      <workItem from="1753972195837" duration="1854000" />
+      <workItem from="1754634513544" duration="126000" />
+      <workItem from="1755942289120" duration="2497000" />
+      <workItem from="1755945949349" duration="158000" />
+      <workItem from="1755946134758" duration="7435000" />
+      <workItem from="1756209316455" duration="8000" />
+      <workItem from="1760546021635" duration="2364000" />
+      <workItem from="1761056434007" duration="5000" />
+    </task>
+    <task id="LOCAL-00001" summary="MVP">
+      <option name="closed" value="true" />
+      <created>1738943848724</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1738943848724</updated>
+    </task>
+    <task id="LOCAL-00002" summary="MVP">
+      <option name="closed" value="true" />
+      <created>1738943979117</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1738943979117</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Выбор по количеству свободных кортов на стороне бэка.">
+      <option name="closed" value="true" />
+      <created>1739136313371</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1739136313371</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Декомпозиция frontend-скриптов.">
+      <option name="closed" value="true" />
+      <created>1739270720741</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1739270720741</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Добавил шаблон формы выбора игроков.">
+      <option name="closed" value="true" />
+      <created>1739279838507</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1739279838507</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Поправил остановку подбора, когда кортов было большое, чем возможных пар, удовлетворяющих условиям.">
+      <option name="closed" value="true" />
+      <created>1739306324569</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1739306324569</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Поправил неправильное отображение дельты в выборе.">
+      <option name="closed" value="true" />
+      <created>1739352448903</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1739352448904</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Множественный выбор.">
+      <option name="closed" value="true" />
+      <created>1739374394106</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1739374394106</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Устранил множество небольших ошибок отображения элементов.">
+      <option name="closed" value="true" />
+      <created>1739380472959</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1739380472959</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Обработал кнопку отмены в выборе.">
+      <option name="closed" value="true" />
+      <created>1739434558079</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1739434558079</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Простое модальное окно.">
+      <option name="closed" value="true" />
+      <created>1739441323776</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1739441323776</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Убрал возраст и дни рождения в модальное окно.">
+      <option name="closed" value="true" />
+      <created>1739444331879</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1739444331879</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Устранил ошибку, которая возникала при завершении игр и невозможности сделать подбор без перезагрузки страницы.">
+      <option name="closed" value="true" />
+      <created>1739510376988</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1739510376988</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Добавил множественную сортировку графики.">
+      <option name="closed" value="true" />
+      <created>1739609102995</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1739609102995</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Добавил множественную сортировку графики.">
+      <option name="closed" value="true" />
+      <created>1739609128921</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1739609128921</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Добавил возможность скрывать временно непосещающих тренировки игроков в архив.">
+      <option name="closed" value="true" />
+      <created>1739609237254</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1739609237254</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Добавил файлы IDE в игнорируемые.">
+      <option name="closed" value="true" />
+      <created>1739609432299</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1739609432299</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Увеличил допустимую версию nodejs и npm.">
+      <option name="closed" value="true" />
+      <created>1739610777229</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1739610777229</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Перенёс библиотеки в папку lib и добавил обнаружение телефона.">
+      <option name="closed" value="true" />
+      <created>1739620622781</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1739620622781</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Перенёс библиотеки в папку lib и добавил обнаружение телефона.">
+      <option name="closed" value="true" />
+      <created>1739620734131</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1739620734131</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Вёрстка для мобильного телефона.">
+      <option name="closed" value="true" />
+      <created>1739660504634</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1739660504634</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Добавил systemd-сервис.">
+      <option name="closed" value="true" />
+      <created>1739686635602</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1739686635602</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Удалил навигационный бар.">
+      <option name="closed" value="true" />
+      <created>1740148977358</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1740148977358</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Добавил архив.">
+      <option name="closed" value="true" />
+      <created>1740240826802</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1740240826802</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Команда для разворачивания релиза.">
+      <option name="closed" value="true" />
+      <created>1740252677983</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1740252677983</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Починил #1.">
+      <option name="closed" value="true" />
+      <created>1740835189967</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1740835189967</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Починил #1.">
+      <option name="closed" value="true" />
+      <created>1740837577915</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1740837577915</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Сделал #5.">
+      <option name="closed" value="true" />
+      <created>1740952303792</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1740952303792</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Сделал #5.">
+      <option name="closed" value="true" />
+      <created>1740952563783</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1740952563783</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Сделал #11">
+      <option name="closed" value="true" />
+      <created>1742113914991</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1742113914991</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Небольшие косметические правки">
+      <option name="closed" value="true" />
+      <created>1742115109101</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1742115109101</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Закрыл некоторые методы API авторизацией и отключил CSRF">
+      <option name="closed" value="true" />
+      <created>1742115185366</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1742115185366</updated>
+    </task>
+    <task id="LOCAL-00033" summary="Обновли .gitignore">
+      <option name="closed" value="true" />
+      <created>1742115241888</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1742115241888</updated>
+    </task>
+    <task id="LOCAL-00034" summary="Добавил страны, города и области">
+      <option name="closed" value="true" />
+      <created>1742115396898</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1742115396898</updated>
+    </task>
+    <task id="LOCAL-00035" summary="Closes #15">
+      <option name="closed" value="true" />
+      <created>1742330754657</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1742330754657</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Closes #17">
+      <option name="closed" value="true" />
+      <created>1742333863013</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1742333863013</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Fix #18">
+      <option name="closed" value="true" />
+      <created>1742463479210</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1742463479210</updated>
+    </task>
+    <task id="LOCAL-00038" summary="Большие косметические и не только правки">
+      <created>1763990975586</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1763990975586</updated>
+    </task>
+    <task id="LOCAL-00039" summary="Исправил установку паролей администраторов при старте">
+      <created>1764060623898</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1764060623898</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Сделал #16 #20 #21">
+      <created>1765441576399</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1765441576399</updated>
+    </task>
+    <task id="LOCAL-00041" summary="Fix #16 #20 #21">
+      <created>1765441633402</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1765441633402</updated>
+    </task>
+    <task id="LOCAL-00042" summary="Fix #16 #20 #21">
+      <created>1765441651238</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1765441651238</updated>
+    </task>
+    <task id="LOCAL-00043" summary="Fix #16 #20 #21">
+      <created>1765441654586</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1765441654586</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Сделал #25">
+      <created>1765462121363</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1765462121363</updated>
+    </task>
+    <task id="LOCAL-00045" summary="Fix #6">
+      <created>1765661154546</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1765661154546</updated>
+    </task>
+    <task id="LOCAL-00046" summary="Fix #24">
+      <created>1766007654629</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1766007654629</updated>
+    </task>
+    <task id="LOCAL-00047" summary="Fix #30">
+      <created>1766007751313</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1766007751313</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <MESSAGE value="Увеличил допустимую версию nodejs и npm." />
+    <MESSAGE value="Перенёс библиотеки в папку lib и добавил обнаружение телефона." />
+    <MESSAGE value="Вёрстка для мобильного телефона." />
+    <MESSAGE value="Добавил systemd-сервис." />
+    <MESSAGE value="Удалил навигационный бар." />
+    <MESSAGE value="Добавил архив." />
+    <MESSAGE value="Команда для разворачивания релиза." />
+    <MESSAGE value="Починил #1." />
+    <MESSAGE value="Сделал #5." />
+    <MESSAGE value="Сделал #11" />
+    <MESSAGE value="Небольшие косметические правки" />
+    <MESSAGE value="Закрыл некоторые методы API авторизацией и отключил CSRF" />
+    <MESSAGE value="Обновли .gitignore" />
+    <MESSAGE value="Добавил страны, города и области" />
+    <MESSAGE value="Closes #15" />
+    <MESSAGE value="Closes #17" />
+    <MESSAGE value="Fix #18" />
+    <MESSAGE value="Большие косметические и не только правки" />
+    <MESSAGE value="Исправил установку паролей администраторов при старте" />
+    <MESSAGE value="Сделал #16 #20 #21" />
+    <MESSAGE value="Fix #16 #20 #21" />
+    <MESSAGE value="Сделал #25" />
+    <MESSAGE value="Fix #6" />
+    <MESSAGE value="Fix #24" />
+    <MESSAGE value="Fix #30" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix #30" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>false</integration-enabled>
+    <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
