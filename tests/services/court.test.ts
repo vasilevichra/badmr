@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, beforeEach, it } from "node:test";
 import CourtService from "../../src/services/court.ts";
+import MatchService from "../../src/services/match.ts";
+import UserService from "../../src/services/user.ts";
 import { clean } from "../helpers/migration.ts";
 
 interface CourtRow {
@@ -14,6 +16,20 @@ interface CourtFullRow extends CourtRow {
 }
 
 const courtService = new CourtService();
+const matchService = new MatchService();
+
+// создаёт 4 пользователей и регистрирует их на текущий турнир,
+// после чего создаёт матч (он встаёт на корт 11, номер 1)
+const seedMatch = async (): Promise<void> => {
+  const userService = new UserService();
+  const ids: number[] = [];
+  for (const u of ["Тестов", "Смирнов", "Кузнецова", "Попов"]) {
+    const { id } = await userService.create(u, "Имя", "Отчество", 500, 1, 1, "1990-01-01");
+    ids.push(id);
+  }
+  await userService.registerByIds(ids);
+  await matchService.create(...(ids as [number, number, number, number]));
+};
 
 // в тестовой БД текущий турнир id=4 ('Новая Лига') с кортами id 11-13 (номера 1-3)
 describe("Court", () => {
@@ -104,6 +120,44 @@ describe("Court", () => {
 
       assert.deepStrictEqual<CourtRow[]>(await courtService.getAll(), [
         { id: 11, number: 1, available: 1 },
+        { id: 12, number: 2, available: 1 },
+        { id: 13, number: 3, available: 1 },
+        { id: 14, number: 4, available: 1 },
+      ]);
+    });
+  });
+
+  describe("enable с идущей игрой (issue #13)", () => {
+    it("должен отклонить активацию корта с незавершённым матчем", async () => {
+      await seedMatch();
+      // триггер создания матча пометил корт 11 (номер 1) недоступным
+      assert.strictEqual((await courtService.getById(11))!.available, 0);
+
+      await assert.rejects(courtService.enable(1), /На корте №1 идёт игра/);
+      assert.strictEqual((await courtService.getById(11))!.available, 0);
+    });
+
+    it("должен разрешить активацию после удаления матча", async () => {
+      await seedMatch();
+      const created = (await matchService.getAll() as { id: number }[])[0];
+
+      await matchService.deleteById(created.id);
+      await courtService.enable(1);
+
+      assert.strictEqual((await courtService.getById(11))!.available, 1);
+    });
+  });
+
+  describe("enableAll с идущей игрой (issue #13)", () => {
+    it("должен включить свободные корты и не тронуть корт с игрой", async () => {
+      await courtService.create();
+      await seedMatch();
+      // корт 11 занят матчем (available=0), корты 12-14 свободны
+
+      await courtService.enableAll();
+
+      assert.deepStrictEqual<CourtRow[]>(await courtService.getAll(), [
+        { id: 11, number: 1, available: 0 },
         { id: 12, number: 2, available: 1 },
         { id: 13, number: 3, available: 1 },
         { id: 14, number: 4, available: 1 },

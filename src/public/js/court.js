@@ -25,17 +25,20 @@ const renderCourts = () => {
       }
     ]
   })
+  // после активации сервер может отказать (на корте идёт игра, issue #13)
+  // или включить только свободные корты — состояние чекбоксов сверяем
+  // с ответом/таблицей, а не оставляем как кликнул пользователь
   .on('check-all.bs.table', () => {
-    $.post(`/api/courts/enable`);
+    $.post(`/api/courts/enable`, {}, () => refresh.table.court());
   })
   .on('check.bs.table', (row, element) => {
-    $.post(`/api/courts/enable/${element.number}`);
+    $.post(`/api/courts/enable/${element.number}`).fail(() => refresh.table.court());
   })
   .on('uncheck-all.bs.table', () => {
-    $.post(`/api/courts/disable`);
+    $.post(`/api/courts/disable`, {}, () => refresh.table.court());
   })
   .on('uncheck.bs.table', (row, element) => {
-    $.post(`/api/courts/disable/${element.number}`);
+    $.post(`/api/courts/disable/${element.number}`).fail(() => refresh.table.court());
   });
 
   // делегирование: строки таблицы перестраиваются при каждом refresh,

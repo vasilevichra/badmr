@@ -17,7 +17,14 @@ class Court {
   getAll = () => this.court.getAll();
   getById = (id: number) => this.court.getById(id);
   enableAll = () => this.court.enableAll();
-  enable = (number: number) => this.court.enable(number);
+  // async: отклонённый промис превращается promise-мидлварой в {error: message}
+  // (sync throw в роуте дал бы HTML-страницу ошибки)
+  enable = async (number: number) => {
+    if (this.court.countBusy(number) > 0) {
+      throw new Error(`На корте №${number} идёт игра`);
+    }
+    return this.court.enable(number);
+  };
   disableAll = () => this.court.disableAll();
   disable = (number: number) => this.court.disable(number);
   countAvailable = () => this.court.countAvailable();

@@ -3,8 +3,22 @@ import { describe, beforeEach, after, it } from "node:test";
 import Express, { type Express as App } from "express";
 import CourtRouter from "../../src/routes/court.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
+import MatchService from "../../src/services/match.ts";
+import UserService from "../../src/services/user.ts";
 import { clean } from "../helpers/migration.ts";
 import type { AddressInfo } from "node:net";
+
+// создаёт 4 пользователей с матчем на корте 11 (номер 1)
+const seedMatch = async (): Promise<void> => {
+  const userService = new UserService();
+  const ids: number[] = [];
+  for (const u of ["Тестов", "Смирнов", "Кузнецова", "Попов"]) {
+    const { id } = await userService.create(u, "Имя", "Отчество", 500, 1, 1, "1990-01-01");
+    ids.push(id);
+  }
+  await userService.registerByIds(ids);
+  await new MatchService().create(...(ids as [number, number, number, number]));
+};
 
 interface CourtRow {
   id: number;
@@ -99,6 +113,20 @@ describe("Court routes", () => {
         { id: 13, number: 3, available: 1 },
       ]);
     });
+
+    it("должен пропустить корт с игрой при массовом включении (issue #13)", async () => {
+      await seedMatch();
+
+      const res = await fetch(`${base}/enable`, { method: "POST" });
+      assert.strictEqual(res.status, 200);
+
+      const all: CourtRow[] = await (await fetch(base)).json();
+      assert.deepStrictEqual<CourtRow[]>(all, [
+        { id: 11, number: 1, available: 0 },
+        { id: 12, number: 2, available: 1 },
+        { id: 13, number: 3, available: 1 },
+      ]);
+    });
   });
 
   describe("POST /enable/:number", () => {
@@ -110,6 +138,17 @@ describe("Court routes", () => {
 
       const court: CourtFullRow = await (await fetch(`${base}/11`)).json();
       assert.strictEqual(court.available, 1);
+    });
+
+    it("должен отклонить активацию корта с игрой телом {error} (issue #13)", async () => {
+      await seedMatch();
+
+      const res = await fetch(`${base}/enable/1`, { method: "POST" });
+      assert.strictEqual(res.status, 500);
+      assert.deepStrictEqual(await res.json(), { error: "На корте №1 идёт игра" });
+
+      const court: CourtFullRow = await (await fetch(`${base}/11`)).json();
+      assert.strictEqual(court.available, 0);
     });
   });
 

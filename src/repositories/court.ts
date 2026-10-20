@@ -48,7 +48,9 @@ class Court {
     return this.db.run(
         `UPDATE court
          SET available = 1
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)`,
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND id NOT IN (SELECT court_id FROM match WHERE finished = 0)
+           AND id NOT IN (SELECT court_id FROM match_110 WHERE finished = 0)`,
     );
   }
 
@@ -60,6 +62,27 @@ class Court {
            AND number = ?`,
         [number]
     );
+  }
+
+  /** Корт занят, пока на нём идёт незавершённый матч (обычный или 110). */
+  countBusy(number: number) {
+    const result = this.db.get<{ count: number }>(
+        `SELECT (SELECT count(*)
+                 FROM match m
+                          JOIN court c ON m.court_id = c.id
+                 WHERE c.tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                   AND c.number = ?
+                   AND m.finished = 0)
+                      +
+                 (SELECT count(*)
+                  FROM match_110 m
+                           JOIN court c ON m.court_id = c.id
+                  WHERE c.tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                    AND c.number = ?
+                    AND m.finished = 0) AS count`,
+        [number, number]
+    );
+    return result!.count;
   }
 
   disableAll() {
