@@ -9,9 +9,9 @@ const userService = new UserService();
 // const parseForm = Express.urlencoded({ extended: false });
 
 router.post('/create', (req, res) => {
-  const {ln, fn, pn, rate, sex, city, bd, tel, mail} = req.body;
+  const {ln, fn, pn, account, rate, sex, city, bd, tel, mail} = req.body;
   const userSex = sex === 'on' ? 1 : 0;
-  res.promise(userService.create(ln, fn, pn, rate, userSex, city, bd));
+  res.promise(userService.create(ln, fn, pn, account ? 1.4 * Number(rate) : rate, userSex, city, bd));
 });
 
 router.get('/find', (req, res) => {
