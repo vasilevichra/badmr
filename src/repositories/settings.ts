@@ -42,6 +42,18 @@ class Settings {
     return settings.reduce((obj: Record<string, unknown>, s) => Object.assign(obj, {[s.name]: s.value}), {});
   }
 
+  /** IANA-имя пояса турнира: в settings хранится id из справочника
+   *  timezone, а клиенту (календарю) нужно имя вида 'Europe/Moscow'. */
+  getTimezone() {
+    const result = this.db.get<{ name: string }>(
+        `SELECT t.name
+         FROM settings s
+                  JOIN timezone t ON t.id = CAST(s.value AS INTEGER)
+         WHERE s.name = 'timezone'`
+    );
+    return result?.name;
+  }
+
   getDefaults() {
     const settings = this.db.all<{ name: string; value: unknown }>(
         `SELECT name, value

@@ -423,7 +423,14 @@ const addEventToCalendar = (button) => {
   const timeZone = $button.data('tz');
   // '2026-01-01 21:00:00' + 'Europe/Moscow' → '20260101T180000Z'
   const icsUtc = (value) => zonedToUtcDate(value, timeZone).toISOString().replaceAll(/[-:]/g, '').slice(0, 15) + 'Z';
-  const eventDate = timeZone ? icsUtc : icsDate; // без data-tz — плавающее время, как раньше
+  // невалидная/отсутствующая зона — плавающее время, иначе Intl бросит RangeError
+  let eventDate = icsDate;
+  try {
+    new Intl.DateTimeFormat('en-US', {timeZone});
+    eventDate = icsUtc;
+  } catch {
+    // оставляем плавающее время
+  }
   const escapeIcs = (text) => String(text).replaceAll(/([,;\\])/g, '\\$1').replaceAll('\n', '\\n');
 
   const lines = [

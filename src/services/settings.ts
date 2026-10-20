@@ -99,6 +99,7 @@ class Settings {
     return this.settings.set(name, value);
   };
   getSettings = () => this.settings.getSettings();
+  getTimezone = () => this.settings.getTimezone();
   getDefaults = () => this.settings.getDefaults();
   states = () => this.settings.states();
   regions = () => this.settings.regions();

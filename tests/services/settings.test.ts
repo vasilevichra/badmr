@@ -71,6 +71,13 @@ describe("Settings", () => {
     });
   });
 
+  describe("getTimezone", () => {
+    it("должен вернуть IANA-имя пояса по id из справочника timezone", async () => {
+      // в тестовой БД settings.timezone = '1' — id, а не имя зоны
+      assert.strictEqual(await settingsService.getTimezone(), "Europe/Moscow");
+    });
+  });
+
   describe("getDefaults", () => {
     it("должен вернуть объект значений по умолчанию без переопределений", async () => {
       const defaults = await settingsService.getDefaults() as Record<string, string>;

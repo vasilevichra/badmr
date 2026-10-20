@@ -30,6 +30,7 @@ const renderTournamentPage = (
       units: unitService.getAll(),
       registered_count: tournamentService.registeredCount(),
       settings: settingsService.getSettings(),
+      timezone: settingsService.getTimezone(),
       tournament_type: 0
     });
   }
@@ -59,6 +60,7 @@ const renderTournamentPage = (
         units: promises[2],
         defaults: promises[3],
         settings: promises[4],
+        timezone: settingsService.getTimezone(),
         states: promises[5],
         regions: promises[6],
         cities: promises[7],
@@ -94,6 +96,7 @@ const renderTournamentPage = (
         groups: promises[5],
         registered_count: promises[6],
         settings: promises[7],
+        timezone: settingsService.getTimezone(),
         playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
       });
       break;
