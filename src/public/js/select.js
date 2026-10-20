@@ -6,76 +6,136 @@ const renderSelect = () => {
 
     $.getJSON("/api/common/ready/", ready => {
       if (ready.join("").length) {
-        $.each(ready, i => {
-          $(selectFormTemplate(i)).appendTo($('#select-block'));
+        // шанс пары: винрейт совместных матчей напарников. getBuddiesById
+        // любого из двух напарников содержит их общую статистику — один
+        // запрос на пару (rowspan-ячейка, как у «Превышения»)
+        const buddyRequests = [];
+        ready.forEach((field) => {
+          buddyRequests.push($.getJSON(`/api/users/buddies/${field.players1[0].user_id}`));
+          buddyRequests.push($.getJSON(`/api/users/buddies/${field.players2[0].user_id}`));
         });
 
-        $.each(ready, (i, field) => {
-          let players1 = field.players1;
-          let players2 = field.players2;
-
-          $.each(players1, (i, player) => {
-            const user = getJson(`/api/users/${player.user_id}`);
-            players1[i]['pic'] = user.pic;
-            players1[i]['sex'] = user.sex;
-          });
-          $.each(players2, (i, player) => {
-            const user = getJson(`/api/users/${player.user_id}`);
-            players2[i]['pic'] = user.pic;
-            players2[i]['sex'] = user.sex;
+        Promise.all(buddyRequests).then((buddyLists) => {
+          ready.forEach((field, k) => {
+            const pairChance = (buddies, partnerId) =>
+              buddies.find((b) => b.user_id === partnerId)?.win_rate;
+            field.chance1 = pairChance(buddyLists[2 * k], field.players1[1].user_id);
+            field.chance2 = pairChance(buddyLists[2 * k + 1], field.players2[1].user_id);
           });
 
-          $(`#select-form-table-1-${i}`)
-          .bootstrapTable({
-            data: field.players1,
-            columns: selectColumns
+          $.each(ready, i => {
+            $(selectFormTemplate(i)).appendTo($('#select-block'));
           });
-          $(`#select-form-table-2-${i}`)
-          .bootstrapTable({
-            data: field.players2,
-            columns: selectColumns
-          });
-          if (field.players1.reduce((acc, p1) => acc + p1.rating, 0) > field.players2.reduce((acc, p2) => acc + p2.rating, 0)) {
-            $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
-            $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
-          } else {
-            $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
-            $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
-          }
 
-          $(`#select-form-info-${i}`).text(`Δ ${field.diff.toFixed(1)} баллов`);
-          $(`#select-form-button-submit-${i}`).off('click').click((event) => {
-            event.preventDefault();
+          $.each(ready, (i, field) => {
+            let players1 = field.players1;
+            let players2 = field.players2;
 
-            $.ajax({
-              url: '/api/matches/create',
-              type: 'POST',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify({
-                user_1_id: players1[0].user_id,
-                user_2_id: players1[1].user_id,
-                user_3_id: players2[0].user_id,
-                user_4_id: players2[1].user_id
-              }),
-              success: function (result) {
-                $(`#select-form-${i}`).hide();
-                renderGames();
-                showSelectButton();
-              },
-              error: function (err) {
-                alert(JSON.stringify(err, null, 2));
+            // процент превышения среднего рейтинга пары одним из игроков
+            const pairExcess = (players) => {
+              const avg = (players[0].rating + players[1].rating) / 2;
+              return (Math.max(players[0].rating, players[1].rating) / avg - 1) * 100;
+            };
+            players1.forEach((player) => {
+              player.excess = pairExcess(players1);
+            });
+            players2.forEach((player) => {
+              player.excess = pairExcess(players2);
+            });
+
+            // пол и аватар приходят прямо в ready() — отдельные запросы
+            // за пользователем не нужны
+
+            const table1 = $(`#select-form-table-1-${i}`);
+            table1.bootstrapTable({
+              data: field.players1,
+              columns: selectColumns
+            });
+            // скрытия до mergeCells: hideColumn перерисовывает тело таблицы
+            // и сбросил бы уже проставленные rowspan-ячейки
+            // «Сыграно» скрываем, пока пара ещё не сыграла ни одного матча,
+            // «Шанс» — пока у пары нет совместных матчей
+            if (players1.every((player) => !player.matches)) {
+              table1.bootstrapTable('hideColumn', 'matches');
+            }
+            if (field.chance1 == null) {
+              table1.bootstrapTable('hideColumn', 'chance');
+            }
+            table1.bootstrapTable('mergeCells', {index: 0, field: 'chance', rowspan: 2});
+            table1.bootstrapTable('mergeCells', {index: 0, field: 'excess', rowspan: 2});
+            bindMergedCellHover(table1);
+            table1.on('click-cell.bs.table', (e, field, row, element) => {
+              if (field === 'name') {
+                openPlayerWindow(element.user_id);
               }
             });
-            refresh.table.player();
-            refresh.table.court();
-          });
-          $(`#select-form-button-reset-${i}`).off('click').click((event) => {
-            event.preventDefault();
 
-            $(`#select-form-${i}`).hide();
+            const table2 = $(`#select-form-table-2-${i}`);
+            table2.bootstrapTable({
+              data: field.players2,
+              columns: selectColumns
+            });
+            if (players2.every((player) => !player.matches)) {
+              table2.bootstrapTable('hideColumn', 'matches');
+            }
+            if (field.chance2 == null) {
+              table2.bootstrapTable('hideColumn', 'chance');
+            }
+            table2.bootstrapTable('mergeCells', {index: 0, field: 'chance', rowspan: 2});
+            table2.bootstrapTable('mergeCells', {index: 0, field: 'excess', rowspan: 2});
+            bindMergedCellHover(table2);
+            table2.on('click-cell.bs.table', (e, field, row, element) => {
+              if (field === 'name') {
+                openPlayerWindow(element.user_id);
+              }
+            });
+            if (field.players1.reduce((acc, p1) => acc + p1.rating, 0) > field.players2.reduce((acc, p2) => acc + p2.rating, 0)) {
+              $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
+              $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
+            } else {
+              $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
+              $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
+            }
 
-            showSelectButton();
+            $(`#select-form-info-${i}`).text(`Δ ${field.diff.toFixed(1)} баллов`);
+            $(`#select-form-button-submit-${i}`).off('click').click((event) => {
+              event.preventDefault();
+
+              // защита от двойной отправки: кнопка неактивна до ответа сервера
+              const submitButton = $(`#select-form-button-submit-${i}`).prop('disabled', true);
+
+              $.ajax({
+                url: '/api/matches/create',
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json; charset=utf-8',
+                data: JSON.stringify({
+                  user_1_id: players1[0].user_id,
+                  user_2_id: players1[1].user_id,
+                  user_3_id: players2[0].user_id,
+                  user_4_id: players2[1].user_id
+                }),
+                success: function (result) {
+                  $(`#select-form-${i}`).hide();
+                  renderGames();
+                  showSelectButton();
+                },
+                complete: function () {
+                  // при ошибке форма остаётся, кнопка снова активна
+                  // (текст ошибки показывает глобальный обработчик ajaxError)
+                  submitButton.prop('disabled', false);
+                }
+              });
+              refresh.table.player();
+              refresh.table.court();
+            });
+            $(`#select-form-button-reset-${i}`).off('click').click((event) => {
+              event.preventDefault();
+
+              $(`#select-form-${i}`).hide();
+
+              showSelectButton();
+            });
           });
         });
       } else {
@@ -85,36 +145,27 @@ const renderSelect = () => {
   });
 }
 
-const selectFormTemplate = (counter) => `
-<form id="select-form-${counter}" class="select-form">
-  <div class="row justify-content-center">
-    <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
-      <table id="select-form-table-1-${counter}" class="select-form-table-1 table table-responsive mx-auto w-auto "></table>
-    </div>
-  </div>
-  <div class="row justify-content-center">
-    <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
-      <table id="select-form-table-2-${counter}" class="select-form-table-2 table table-responsive mx-auto w-auto"></table>
-    </div>
-  </div>
-  <div class="row">
-    <div class="text-center">
-      <label id="select-form-info-${counter}" class="select-form-info"></label>
-    </div>
-  </div>
-  <div class="select-form-buttons row">
-    <div class="text-center">
-      <button id="select-form-button-submit-${counter}" type="submit" class="select-form-button-submit btn btn-primary">Начать</button>
-      <button id="select-form-button-reset-${counter}" type="reset" class="select-form-button-reset btn btn-danger">Отменить</button>
-    </div>
-  </div>
-</form>`;
+// разметка формы подбора берётся из <template id="select-form-template"> (select-form.ejs),
+// __i__ заменяется на номер формы
+const selectFormTemplate = (counter) => $('#select-form-template').html().replaceAll('__i__', counter);
+
+// наведение на смёрженную ячейку («Шанс»/«Разница»): гасим штатную
+// подсветку строки первого игрока — rowspan-ячейка принадлежит его tr,
+// и .table-hover красил бы всю строку, пока курсор над ячейкой
+const bindMergedCellHover = (table) => {
+  table.find('td[rowspan]')
+  .on('mouseenter', () => table.addClass('cell-hover-only'))
+  .on('mouseleave', () => table.removeClass('cell-hover-only'));
+};
 
 const selectColumns = [
   {
     field: 'name',
     title: 'Имя',
-    formatter: (value, row) => this.share.playerNameFormatter(row.user_id, value, row.sex, row.pic, isPhone()),
+    // признак «Играл» — точка у аватара: зелёная — не играл, красная — играл
+    formatter: (value, row) =>
+        `<span class="played-dot ${row.played ? 'played-dot-yes' : 'played-dot-no'}" title="${row.played ? 'Играл' : 'Не играл'}"></span>` +
+        this.share.playerNameFormatter(row.user_id, value, row.sex, row.pic, isPhone()),
     cellStyle: (value, row) => playerSexStyle(row.sex)
   },
   {
@@ -126,6 +177,20 @@ const selectColumns = [
     field: 'matches',
     title: isPhone() ? 'И.' : 'Сыграно',
     align: 'center'
+  },
+  {
+    field: 'chance',
+    title: isPhone() ? 'Ш.' : 'Шанс',
+    align: 'center',
+    // винрейт совместных матчей пары в процентах; напарники ни разу
+    // не игравшие вместе в списке getBuddiesById отсутствуют
+    formatter: (value) => value != null ? `${value}%` : '—'
+  },
+  {
+    field: 'excess',
+    title: isPhone() ? 'Разн.' : 'Разница',
+    align: 'center',
+    formatter: (value) => `${value.toFixed(1)}%`
   }
 ];
 

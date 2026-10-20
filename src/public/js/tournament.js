@@ -26,11 +26,33 @@ const renderTournaments = () => {
   });
 }
 
-$('#tournament-add-select-type').select2({
+$('#tournament-add-select-club')
+.select2({
+  ajax: {
+    url: '/api/user-clubs/select',
+  },
+})
+.on('select2:selecting', s => {
+  $('#tournament-add-select-gym')
+  .prop('disabled', false)
+  .select2({
+    ajax: {
+      url: `/api/gyms/select/${s.params.args.data.id}`,
+    },
+    dropdownParent: $('#tournament-add'),
+  }).empty();
+});
+
+$('#tournament-add-select-type')
+.select2({
   ajax: {
     url: '/api/tournament-types/select',
   },
 });
+
+if (loggedInUser) {
+  $('#tournament-add input[name=user]').attr('value', loggedInUser.id);
+}
 
 const tournamentNewRegistrationHandler = _.debounce(function(input) {
   const cookieName = 'registration-input';
@@ -46,8 +68,6 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
       const ln = capitalizeFirstLetter(names.lastname);
       const fn = names.firstname ? capitalizeFirstLetter(names.firstname) : '';
       const pn = names.patronymic ? capitalizeFirstLetter(names.patronymic) : '';
-      const users = getJson(`/api/users/find?lastname=${ln}&firstname=${fn}&patronymic=${pn}`);
-
       show.register.lastname(ln);
       hide.register.firstname();
       hide.register.patronymic();
@@ -64,6 +84,9 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
         hide.register.account();
       }
 
+      // поиск зарегистрированных — асинхронно (sync-запрос блокировал ввод)
+      const self = this;
+      $.getJSON(`/api/users/find?lastname=${ln}&firstname=${fn}&patronymic=${pn}`, (users) => {
       if (users.length >= 1) {
         if (users.length === 1) {
           const u = users[0];
@@ -73,7 +96,7 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
           hide.register.firstname();
           hide.register.patronymic();
 
-          const playerNameWithCity = this.share.playerNameFormatter(u.id, `${u.lastname} ${u.firstname}`, u.sex, u.pic, isPhone()) + `<span class="mx-2 no-selection">(${u.city})</span>`;
+          const playerNameWithCity = self.share.playerNameFormatter(u.id, `${u.lastname} ${u.firstname}`, u.sex, u.pic, isPhone()) + `<span class="mx-2 no-selection">(${u.city})</span>`;
           $.ajax({
             url: `/api/users/registered/${u.id}`,
             success: (data) => {
@@ -92,6 +115,7 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
                         $.removeCookie(cookieName);
                       },
                     })
+                    .then(() => closeRegistrationIfNeed())
                 )
               }
             },
@@ -135,6 +159,7 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
           });
         }
       }
+      });
     }
   }
 }, 750, {leading: false});
@@ -147,6 +172,9 @@ const tournamentNewRegistrationAddHandler = (city) => {
   );
 
   show.register.user.new.all();
+  if ($('#tournament-new-registration-hint input[name=account]').val() === '') {
+    hide.register.account();
+  }
   hide.register.search();
 
   const selectLocation = (obj, placeholder, default_id, default_parent_id) => {
@@ -194,7 +222,7 @@ const tournamentNewRegistrationAddHandler = (city) => {
     $('#tournament-new-registration-hint-state').on('select2:selecting', s => {
       $('#tournament-new-registration-hint-region').select2({
         ajax: {
-          url: `/api/region/select/${s.params.args.data.id}`,
+          url: `/api/regions/select/${s.params.args.data.id}`,
         },
         dropdownParent: $('#tournament-new-registration-hint'),
       }).empty();
@@ -239,9 +267,31 @@ const tournamentNewRegistrationAddHandler = (city) => {
             show.register.search();
             $('.tournament-new-registration-input').val('').trigger('input');
             $.removeCookie('registration-input');
+            closeRegistrationIfNeed();
           }
         });
       }
     });
+  });
+}
+
+$('#tournament-add form').submit(() => {
+  $.ajax({
+    url: '/api/tournaments/create',
+    method: 'POST',
+    async: false,
+    data: $('#tournament-add form').serialize(),
+  });
+});
+
+// статус проверяем асинхронно: зарегистрировано меньше, чем capacity —
+// закрываем регистрацию (без блокирующих запросов)
+const closeRegistrationIfNeed = () => {
+  $.when($.getJSON('/api/tournaments/registered/count'), $.getJSON('/api/settings/'))
+  .done((count, settings) => {
+    const capacity = Number(settings[0].find((row) => row.name === 'capacity')?.value ?? 0);
+    if (count[0] < capacity) {
+      $.post('/api/tournaments/status/2');
+    }
   });
 }

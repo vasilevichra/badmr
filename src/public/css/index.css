@@ -45,6 +45,14 @@ html, h1, h2, h3, h4, h5, h6, button {
   color: #007df9;
 }
 
+.bg-badmr {
+  background-color: #007df9;
+}
+
+.bg-badmr-subtle {
+  background-color: rgba(0, 125, 249, 0.5);
+}
+
 .link {
   cursor: pointer;
   color: rgba(var(--bs-link-color-rgb),var(--bs-link-opacity,1));
@@ -63,6 +71,7 @@ html, h1, h2, h3, h4, h5, h6, button {
 .form-floating .select2-container--bootstrap-5 .select2-selection {
   height: calc(3.5rem + 2px);
   padding: 1rem 0.75rem;
+  font-size: 1.1rem;
 }
 
 .form-floating .select2-container--bootstrap-5 .select2-selection > .select2-selection__rendered {
@@ -95,7 +104,7 @@ input:focus::placeholder {
 .xs,
 .btn-xs {
   padding: 0.25rem 0.4rem; /* Уменьшенные отступы */
-  font-size: 0.7rem; /* Меньший размер шрифта */
+  font-size: 0.8rem; /* Меньший размер шрифта */
   line-height: 1.0; /* Корректировка межстрочного интервала */
   border-radius: 0.1rem; /* Скругление углов */
 }
@@ -105,7 +114,7 @@ input:focus::placeholder {
 }
 
 .form-floating > input {
-  font-size: 20px;
+  font-size: 1.1rem;
 }
 
 .form-floating > label {
@@ -115,9 +124,43 @@ input:focus::placeholder {
   transform-origin: 0 0;
 }
 
-/* строка поиска игроков */
-#player div.search {
-  width: calc(100% - 166px) !important;
+/* строка поиска и кнопки у таблицы «Игроки» — в один ряд на всю ширину */
+#player .fixed-table-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  column-gap: 0.5rem;
+}
+
+#player .fixed-table-toolbar .search {
+  order: -1; /* поиск слева, кнопки справа */
+  flex: 1 1 auto;
+  width: auto !important;
+}
+
+#player .fixed-table-toolbar .columns {
+  flex: 0 0 auto;
+}
+
+/* кнопки вплотную: на стыке не удваивать рамку */
+#player .fixed-table-toolbar .columns .btn + .btn {
+  margin-left: -1px;
+}
+
+/* кнопки «Удалить»/«Архив» у таблицы «Игроки»: контейнер нулевой ширины —
+   при показе по кнопке «Настройки» они не меняют ширину колонки «Имя»,
+   а рисуются поверх соседней колонки */
+.player-settings-buttons {
+  display: inline-block;
+  width: 0;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+[data-field=paid] .th-inner,
+[data-field=enabled] .th-inner {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
 }
 
 .login {
@@ -178,6 +221,11 @@ input:focus::placeholder {
   display: inline;
 }
 
+/* небольшой зазор после селекта подразделения в шапке */
+#header #unit {
+  margin-right: 0.5rem;
+}
+
 .player-window-link {
   font-family: var(--bs-body-font-family);
   font-size: var(--bs-body-font-size);
@@ -192,6 +240,26 @@ input:focus::placeholder {
 
 .select-form-table-2 {
   margin: 1em;
+}
+
+/* смёрженная ячейка колонки превышения среднего рейтинга */
+.select-form-table-1 td[rowspan],
+.select-form-table-2 td[rowspan] {
+  vertical-align: middle;
+}
+
+/* при наведении на смёрженную ячейку («Шанс»/«Разница») подсвечивается
+   только сама ячейка: rowspan-ячейка принадлежит строке первого игрока,
+   и штатный .table-hover красил бы всю его строку. Класс cell-hover-only
+   ставится из select.js на mouseenter/mouseleave смёрженной ячейки */
+.select-form-table-1.table-hover.cell-hover-only > tbody > tr > td:not(td[rowspan]),
+.select-form-table-2.table-hover.cell-hover-only > tbody > tr > td:not(td[rowspan]) {
+  background-color: var(--bs-table-bg);
+}
+
+.select-form-table-1.table-hover > tbody > tr > td[rowspan]:hover,
+.select-form-table-2.table-hover > tbody > tr > td[rowspan]:hover {
+  background-color: var(--bs-table-hover-bg);
 }
 
 .select-form-info {
@@ -456,6 +524,35 @@ td.diagonal-cross:after {
   margin: 0 0 0 0 !important;
   align-content: center;
   justify-content: center;
+}
+
+/* окончание партии на табло: вспышка вместо alert('kva!') */
+@keyframes board-score-flash {
+  0%, 100% { background-color: transparent; }
+  25%, 75% { background-color: rgba(220, 53, 69, 0.55); }
+  50% { background-color: rgba(255, 193, 7, 0.55); }
+}
+
+.board-score.kva {
+  animation: board-score-flash 0.75s ease-in-out 2;
+}
+
+/* признак «Играл» в подборе: точка у аватара игрока */
+.played-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.played-dot-yes {
+  background-color: #dc3545; /* играл */
+}
+
+.played-dot-no {
+  background-color: #198754; /* не играл */
 }
 
 .no-selection {

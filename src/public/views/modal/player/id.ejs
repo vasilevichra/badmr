@@ -41,10 +41,11 @@
                                             <% if (user.club) { %><p class="text-center text-secondary"><%= user.club %></p><% } %>
                                             <p>
                                             <form class="player-window-change-rating-form">
+                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                                                 <div class="input-group">
                                                     <div class="text-center text-secondary form-control border-0"><i class="bi bi-activity"></i> Рейтинг</div>
-                                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="рейтинг" maxlength="5" size="5" value="<%= rating.rating %>" required<% if (!login) { %> disabled<% } %>>
-                                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0" type="button"></button><% } %>
+                                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="рейтинг" maxlength="4" size="3" value="<%= rating.rating %>" required<% if (!login) { %> disabled<% } %>>
+                                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0 mx-2" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
                                                 </div>
                                             </form>
                                             <div class="progress mt-2">
@@ -92,21 +93,34 @@
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Обзор</button>
                                         </li>
+                                        <% if (co_winners.length) { %>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="win-tab" data-bs-toggle="tab" data-bs-target="#win-tab-pane" type="button"
                                                     role="tab" aria-controls="win-tab-pane" aria-selected="false">Выигрывает
                                             </button>
                                         </li>
+                                        <% } %>
+                                        <% if (co_losers.length) { %>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="lose-tab" data-bs-toggle="tab" data-bs-target="#lose-tab-pane" type="button"
                                                     role="tab" aria-controls="lose-tab-pane" aria-selected="false">Проигрывает
                                             </button>
                                         </li>
+                                        <% } %>
+                                        <% if (buddies.length) { %>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="chance-tab" data-bs-toggle="tab" data-bs-target="#chance-tab-pane" type="button"
                                                     role="tab" aria-controls="chance-tab-pane" aria-selected="false">Шанс
                                             </button>
                                         </li>
+                                        <% } %>
+                                        <% if (worst_opponents.length) { %>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="worst-tab" data-bs-toggle="tab" data-bs-target="#worst-tab-pane" type="button"
+                                                    role="tab" aria-controls="worst-tab-pane" aria-selected="false">Неудобные
+                                            </button>
+                                        </li>
+                                        <% } %>
 <!--                                        <li class="nav-item" role="presentation">-->
 <!--                                            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button"-->
 <!--                                                    role="tab" aria-controls="profile-tab-pane" aria-selected="false">Profile-->
@@ -203,8 +217,20 @@
                                                 </table>
                                             </div>
                                         </div>
+                                        <div class="tab-pane fade" id="worst-tab-pane" role="tabpanel" aria-labelledby="worst-tab" tabindex="0">
+                                            <div class="p-2">
+                                                <table class="table no-selection">
+                                                    <tbody>
+                                                    <% worst_opponents.forEach((o) => { %>
+                                                        <%- include('co', {lose_rate: o.lose_rate, user_id: o.user_id, user_name: o.user_name, user_sex: o.user_sex, user_pic: o.user_pic}); %>
+                                                    <% }); %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                         <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                                             <form action="#!" class="row gy-3 gy-xxl-4">
+                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                                                 <div class="col-12">
                                                     <div class="row gy-2">
                                                         <label class="col-12 form-label m-0">Profile Image</label>
@@ -291,6 +317,7 @@
                                         </div>
                                         <div class="tab-pane fade" id="email-tab-pane" role="tabpanel" aria-labelledby="email-tab" tabindex="0">
                                             <form action="#!">
+                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                                                 <fieldset class="row gy-3 gy-md-0">
                                                     <legend class="col-form-label col-12 col-md-3 col-xl-2">Email Alerts</legend>
                                                     <div class="col-12 col-md-9 col-xl-10">
@@ -329,6 +356,7 @@
                                         </div>
                                         <div class="tab-pane fade" id="password-tab-pane" role="tabpanel" aria-labelledby="password-tab" tabindex="0">
                                             <form action="#!">
+                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                                                 <div class="row gy-3 gy-xxl-4">
                                                     <div class="col-12">
                                                         <label for="currentPassword" class="form-label">Current Password</label>

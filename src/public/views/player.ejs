@@ -15,6 +15,7 @@
             <label id="player-window-label-birthday">${player['birthday']} (${player['age']})</label>
             <button class="player-window-archive-button bi bi-box-seam btn btn-outline-danger" type="button" style="display:none;"> Архивировать</button>
             <form class="player-window-change-rating-form" style="display:none;">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                 <input class="player-window-change-rating-input" type="number" placeholder="рейтинг" maxlength="5" size="5" value="${player['rating']}"
                        required>
                 <button class="player-window-change-rating-button bi bi-box-seam btn btn-outline-warning" type="button"> Изменить рейтинг</button>

@@ -14,8 +14,12 @@ const renderGames = () => {
     }
   });
   // сохранение значений счёта игр в печеньки и блокировка/разблокировка input-полей
+  // делегированный обработчик вешается один раз: renderGames вызывается
+  // и при создании матча, и при периодическом обновлении зала
+  if (!$(document.body).data('game-input-bound')) {
+    $(document.body).data('game-input-bound', true);
   $(document.body).on('change keydown keypress keyup mousedown click mouseup', '.game-input', function () {
-    const value = $(this).val();
+    const value = Number($(this).val());
     const id = $(this).attr('id');
     const cookieId = $(this).attr('ids');
     const counter = Number(id.slice(-1));
@@ -107,6 +111,7 @@ const renderGames = () => {
       $.cookie(cookieDateId, date2DatabaseFormat());
     }
   });
+  }
 }
 
 const fillMatch = (counter, match) => {
@@ -337,6 +342,7 @@ const fillMatch = (counter, match) => {
     }
 
     $(`#game-form-${counter}`).hide();
+    show.player.column.delta_today();
     refresh.table.player();
     refresh.table.court();
 
@@ -359,90 +365,23 @@ const fillMatch = (counter, match) => {
           $.removeCookie(cookieId2cookieDateId(cookieId));
         }
       }
-      $.post(`/api/matches/delete/${match.id}`);
-      $(`#game-form-${counter}`).remove();
-      if ($('#game-block > div').length === 0) {
-        refresh.block.by.id('game'); // обновление блока игры
-      }
+      $.post(`/api/matches/delete/${match.id}`, {}, () => {
+        $(`#game-form-${counter}`).remove();
+        if ($('#game-block > div').length === 0) {
+          refresh.block.by.id('game'); // обновление блока игры
+        }
 
-      refresh.table.court();
+        refresh.table.court();
+      });
     }
   });
 }
 
-const gameFormTemplate = (counter) => `
-<div id="game-form-${counter}" class="game-form row justify-content-center align-items-center">
-  <div class="col-auto">
-    <table id="game-table-1-${counter}" class="game-table-1 table table-responsive mx-auto w-auto"></table>
-  </div>
-  <div class="col-auto">
-    <div>
-      <input id="game-input-11-${counter}" class="game-input game-input-left game-input-11" type="text" required minlength="1" maxlength="2" size="2" placeholder="1"/>
-      <label>:</label>
-      <input id="game-input-12-${counter}" class="game-input game-input-right game-input-12" type="text" required minlength="1" maxlength="2" size="2" placeholder="2"/>
-    </div>
-    <div>
-      <input id="game-input-21-${counter}" class="game-input game-input-left game-input-21" type="text" required disabled minlength="1" maxlength="2" size="2" />
-      <label>:</label>
-      <input id="game-input-22-${counter}" class="game-input game-input-right game-input-22" type="text" required disabled minlength="1" maxlength="2" size="2"/>
-    </div>
-    <div>
-      <input id="game-input-31-${counter}" class="game-input game-input-left game-input-31" type="text" required disabled minlength="1" maxlength="2" size="2"/>
-      <label>:</label>
-      <input id="game-input-32-${counter}" class="game-input game-input-right game-input-32" type="text" required disabled minlength="1" maxlength="2" size="2"/>
-    </div>
-  </div>
-  <div class="col-auto">
-    <table id="game-table-2-${counter}" class="game-table-2 table table-responsive mx-auto w-auto"></table>
-  </div>
-  <div class="row">
-    <div class="text-center">
-      <label id="game-form-info-${counter}" class="game-form-info">Корт</label>
-    </div>
-  </div>
-  <div class="game-form-buttons row">
-    <div class="text-center">
-      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-outline-success" disabled>Завершить</button>
-      <button id="game-form-button-reset-${counter}" type="reset" class="game-form-button-reset btn btn-outline-danger">Отменить</button>         
-    </div>
-  </div>
-</div>`;
+// разметка форм игр берётся из <template id="game-form-template"> и
+// <template id="game-form-phone-template"> (game-form.ejs), __i__ заменяется на номер формы
+const gameFormTemplate = (counter) => $('#game-form-template').html().replaceAll('__i__', counter);
 
-const gameFormPhoneTemplate = (counter) => `
-<div id="game-form-${counter}" class="game-form row justify-content-center align-items-center">
-  <div class="col col-auto justify-content-center">
-    <div class="row">
-      <table id="game-table-1-${counter}" class="game-table-1-p table table-responsive mx-auto w-auto"></table>
-    </div>
-    <div class="row input-group justify-content-center game-form-horizontal-inputs">
-      <div class="col col-2">
-        <input id="game-input-11-${counter}" class="game-input-left-p game-input-11-p" type="text" required minlength="1" maxlength="2" size="2" placeholder="1¹"/>
-        <input id="game-input-12-${counter}" class="game-input-right-p game-input-12-p" type="text" required minlength="1" maxlength="2" size="2" placeholder="2¹"/>
-      </div>
-      <div class="col col-2">
-        <input id="game-input-21-${counter}" class="game-input-left-p game-input-21" type="text" required disabled minlength="1" maxlength="2" size="2" placeholder="1²"/>
-        <input id="game-input-22-${counter}" class="game-input-right-p game-input-22" type="text" required disabled minlength="1" maxlength="2" size="2" placeholder="2²"/>
-      </div>
-      <div class="col col-2">
-        <input id="game-input-31-${counter}" class="game-input-left-p game-input-31-p" type="text" required disabled minlength="1" maxlength="2" size="2" placeholder="1³"/>
-        <input id="game-input-32-${counter}" class="game-input-right-p game-input-32-p" type="text" required disabled minlength="1" maxlength="2" size="2" placeholder="1³"/>
-      </div>
-    </div>
-    <div class="row">
-      <table id="game-table-2-${counter}" class="game-table-2-p table table-responsive mx-auto w-auto"></table>
-    </div>
-  </div>
-  <div class="row">
-    <div class="text-center">
-      <label id="game-form-info-${counter}" class="game-form-info">Корт</label>
-    </div>
-  </div>
-  <div class="row">
-    <div class="text-center">
-      <button id="game-form-button-submit-${counter}" type="submit" class="game-form-button-submit btn btn-outline-primary" disabled>Завершить</button>
-    </div>
-  </div>
-</div>`;
+const gameFormPhoneTemplate = (counter) => $('#game-form-phone-template').html().replaceAll('__i__', counter);
 
 const cookieId2cookieDateId = (cookieId) => cookieId.slice(0, -2).concat('-date');
 const getGameRowNum = (id) => Number(id.charAt(11));

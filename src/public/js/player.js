@@ -1,9 +1,11 @@
-const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
+// контекст приходит из index.js асинхронно: лимиты групп рейтинга из
+// настройки и флаги состояния турнира — синхронные запросы здесь запрещены
+const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, hasGames, everybodyPaid}) => {
   $('#player-table')
   .bootstrapTable({
     url: '/api/users/',
     search: loggedInUser && isNotPhone(),
-    sortName: 'delta_month',
+    sortName: hasGames ? 'delta_today' : 'rating',
     sortOrder: 'desc',
     /*pagination: true, pageSize: 20, pageNumber: 1,*/
     showRefresh: loggedInUser && isNotPhone(),
@@ -18,8 +20,9 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       {
         field: 'enabled',
         title: '<span class="no-selection">Доступен?</span>',
+        visible: loggedInUser,
         checkbox: true,
-        sortable: true,
+        sortable: isNotPhone(),
         formatter: (value, row) => {
           if (row.occupied === 1) {
             return {
@@ -29,13 +32,28 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
           return value;
         },
         cellStyle: (value, row) => row.occupied === 0 || {css: {"background-color": "rgba(143,237,100,0.13)"}},
+        class: isPhone() ? 'p-0' : '',
       },
       {
         field: 'name',
         title: '<span class="no-selection">Имя</span>',
         sortable: true,
-        formatter: (value, row) => this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()),
+        formatter: (value, row) =>
+            this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()) +
+            // кнопки в контейнере нулевой ширины: не влияют на ширину колонки «Имя»,
+            // поверх неё рисуются по нажатию «Настройки»
+            '<span class="player-settings-buttons">' +
+            '<button class="player-settings btn btn-outline-danger btn-xs mx-1' + (isPlayerSettingsOn() ? '' : ' d-none') + '" onclick="$.post(`/api/users/deregister/` + $(this).closest(`td`).find(`.user-id`).text()); event.stopPropagation(); refresh.table.player();"><i class="bi bi-trash3"></i> Удалить</button>' +
+            '<button class="player-settings btn btn-outline-warning btn-xs' + (isPlayerSettingsOn() ? '' : ' d-none') + '" onclick="$.post(`/api/users/archive/` + $(this).closest(`td`).find(`.user-id`).text()); event.stopPropagation(); refresh.table.player(); refresh.table.archive();"><i class="bi bi-archive"></i> Архив</button>' +
+            '</span>',
         cellStyle: (value, row) => playerSexStyle(row.sex),
+      },
+      {
+        field: 'paid',
+        title: '<span class="no-selection">₽</span>',
+        visible: loggedInUser && !everybodyPaid,
+        formatter: (value, row) => row.paid ? `<i class="bi bi-check2"></i>` : `<i class="bi bi-dash-lg"></i>`,
+        class: 'text-center',
       },
       {
         field: 'rating',
@@ -55,13 +73,16 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       },
       {
         field: 'delta_today',
-        title: '<span class="no-selection">Д</span>',
+        title: '<span class="no-selection">∆</span>',
+        // title: '<span class="no-selection">Д</span>',
+        visible: hasGames,
         align: 'center',
         sortable: true,
         formatter: value => value > 0 ? '+' + value : value,
         cellStyle: value => playerDeltaCss(value),
       },
       {
+        visible: false,
         field: 'delta_week',
         title: '<span class="no-selection">Н</span>',
         align: 'center',
@@ -70,6 +91,7 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
         cellStyle: value => playerDeltaCss(value),
       },
       {
+        visible: false,
         field: 'delta_month',
         title: '<span class="no-selection">М</span>',
         align: 'center',
@@ -80,6 +102,7 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       {
         field: 'matches',
         title: '<span class="no-selection">Сыграно</span>',
+        visible: hasGames,
         align: 'center',
         sortable: true,
       },
@@ -91,83 +114,54 @@ const renderPlayers = (B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
       }
     ]
     .filter(column => loggedInUser ? true : !['enabled'].includes(column.field))
-    .filter(column => isPhone() ? ['enabled', 'name', 'rating'].includes(column.field) : true)
+    .filter(column => isPhone() ? ['enabled', 'name', 'paid', 'rating', 'delta_today'].includes(column.field) : true)
   })
   .on('check-all.bs.table', (rowsAfter, rowsBefore) => {
-    $.post(`/api/users/enable/${rowsBefore.map(r => r.id).join('%2C')}`);
-    refresh.table.player();
-    showSelectButton();
+    $.post(`/api/users/enable/${rowsBefore.map(r => r.id).join('%2C')}`, {}, () => {
+      refresh.table.player();
+      showSelectButton();
+    });
   })
-  .on('check.bs.table', (e, row) => {
-    $.post(`/api/users/enable/${row.id}`);
-    refresh.table.player();
-    showSelectButton();
+  .on('check.bs.table', (e, row, a) => {
+    console.log(e);
+    $.post(`/api/users/enable/${row.id}`, {}, () => {
+      refresh.table.player();
+      showSelectButton();
+    });
   })
   .on('uncheck-all.bs.table', () => {
     const ids = $.map($('#player-table').bootstrapTable('getSelections'), row => row.id).join('%2C');
-    $.post(`/api/users/disable/${ids}`);
-    refresh.table.player();
+    $.post(`/api/users/disable/${ids}`, {}, () => refresh.table.player());
+
   })
   .on('uncheck.bs.table', (row, element) => {
-    $.post(`/api/users/disable/${element.id}`);
-    refresh.table.player();
+    $.post(`/api/users/disable/${element.id}`, {}, () => refresh.table.player());
   })
-  .on('click-cell.bs.table', (field, value, row, element) => {
-    if (value === 'name') {
-      $.ajax({
-            url: `/web/players/${element['id']}`,
-            type: 'GET',
-            cache: false,
-            async: false,
-            success: html => $("#player-window").html(html),
+  .on('click-cell.bs.table', (e, field, row, element) => {
+    if (field === 'paid') {
+      $.post(`/api/tournaments/pay/${element.id}?paid=${element.paid ? 0 : 1}`, {}, () => {
+        refresh.table.player();
+        // статус оплат перепроверяем асинхронно
+        $.getJSON('/api/tournaments/paid/', (paid) => {
+          if (paid) {
+            new Promise(resolve => setTimeout(resolve, 3000)).then(() => hide.player.column.paid());
           }
-      );
-      new bootstrap.Modal('#player-window').show();
-
-      $.ajax({
-        type: 'GET',
-        url: `/api/ratings/${element['id']}`,
-        async: true,
-        success: data => new Chart(document.getElementById('player-window-rating').getContext('2d'), {
-          type: 'scatter',
-          data: {
-            datasets: [{
-              label: 'Рейтинг',
-              data: data,
-              showLine: true,
-              lineTension: 0.3,
-              borderColor: 'rgb(13, 110, 253)'
-            }],
-          },
-          options: {
-            scales: {
-              x: {
-                type: 'time',
-                time: {
-                  unit: 'month',
-                  displayFormats: {
-                    month: 'MMM yyyy'
-                  }
-                }
-              },
-              y: {}
-            }
-          }
-        }),
+        });
       });
+    }
+    if (field === 'name') {
+      openPlayerWindow(element.id);
     }
   });
 
   if (loggedInUser) {
-    $('.player .fixed-table-toolbar .columns').append(
-        // кнопки у таблицы игроков:
-        '<button type="button" id="player-actualize" class="bi bi-arrow-down-up btn btn-primary"></button>' + // актуализации участников
-        '<button type="button" id="player-arhive" class="bi bi-box-seam btn btn-danger"></button>' + // архивирования
-        '<button type="button" class="btn bi-person-add btn-success" data-bs-toggle="modal" data-bs-target="#player-signup-window"></button>' // добавления нового пользователя
-    );
-    $('#player-actualize').off('click').click(async () => {
-      await $.post('/api/users/actualize');
-      refresh.table.player();
+    // кнопки у таблицы игроков — разметка из <template id="player-toolbar-template"> (player-toolbar.ejs):
+    $('.player .fixed-table-toolbar .columns').append($('#player-toolbar-template').html());
+    $('#player-actualize').off('click').click(() => {
+      $.post('/api/users/actualize', {}, () => refresh.table.player());
+    });
+    $('#player-settings').off('click').click(() => {
+      turnPlayerSettings(!isPlayerSettingsOn());
     });
   }
 }
@@ -184,23 +178,34 @@ const playerDeltaCss = value => {
 
 const archiveUser = (id, name) => {
   if (confirm(`Сделать игрока ${name} неактивным?`)) {
-    $.post(`/api/users/archive/${id}`);
-    refresh.table.player();
-    refresh.table.archive();
+    $.post(`/api/users/archive/${id}`, {}, () => {
+      refresh.table.player();
+      refresh.table.archive();
+    });
   }
 }
 
 const unarchiveUser = (id, name) => {
   if (confirm(`Сделать игрока ${name} активным?`)) {
-    $.post(`/api/users/unarchive/${id}`);
-    refresh.table.player();
+    $.post(`/api/users/unarchive/${id}`, {}, () => refresh.table.player());
   }
   refresh.table.archive();
 }
 
 const changeRating = (id, name, rating) => {
   if (confirm(`Изменить рейтинг игрока ${name} на ${rating}?`)) {
-    $.post(`/api/users/rating/${id}?new=${rating}`);
-    refresh.table.player();
+    $.post(`/api/users/rating/${id}?new=${rating}`, {}, () => refresh.table.player());
   }
+}
+
+const turnPlayerSettings = (state) => {
+  $.cookie('player-settings', state);
+  if (state) {
+    $('.player-settings').each((i, el) => $(el).removeClass('d-none'));
+  } else {
+    $('.player-settings').each((i, el) => $(el).addClass('d-none'));
+  }
+}
+const isPlayerSettingsOn = () => {
+  return $.cookie('player-settings') === 'true';
 }

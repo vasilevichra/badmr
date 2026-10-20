@@ -1,3 +1,9 @@
+const csrfToken = () => $('meta[name="csrf-token"]').attr('content');
+
+$.ajaxSetup({
+  beforeSend: (xhr) => xhr.setRequestHeader('CSRF-Token', csrfToken())
+});
+
 const scrollToId = (id) => {
   $('html,body').animate({scrollTop: $("#" + id).offset().top}, 'slow');
 }
@@ -21,6 +27,64 @@ const playerSexStyle = (sex) => {
   return sex ?
       {css: {"white-space": "nowrap", "background-color": "rgba(100,149,237,0.13)"}} :
       {css: {"background-color": "rgba(250,218,221,0.33)"}};
+}
+
+/** Открывает модальное окно игрока: загружает карточку /web/players/<id>
+ *  в #player-window и рисует график рейтинга из /api/ratings/<id>.
+ *  Адрес синхронизируется: в URL добавляется ?player=<id>, чтобы ссылкой
+ *  можно было поделиться. */
+const openPlayerWindow = (id) => {
+  // привязка модалки к адресу (кнопки назад/вперёд тоже работают)
+  const url = new URL(location.href);
+  if (url.searchParams.get('player') !== String(id)) {
+    url.searchParams.set('player', id);
+    history.pushState({}, '', url);
+  }
+
+  $.ajax({
+        url: `/web/players/${id}`,
+        type: 'GET',
+        cache: false,
+        success: html => {
+          $("#player-window").html(html);
+          // модалка показывается после загрузки карточки — sync-запрос
+          // здесь замораживал интерфейс на время загрузки
+          new bootstrap.Modal('#player-window').show();
+        },
+      }
+  );
+
+  $.ajax({
+    type: 'GET',
+    url: `/api/ratings/${id}`,
+    async: true,
+    success: data => new Chart(document.getElementById('player-window-rating').getContext('2d'), {
+      type: 'scatter',
+      data: {
+        datasets: [{
+          label: 'Рейтинг',
+          data: data,
+          showLine: true,
+          lineTension: 0.3,
+          borderColor: 'rgb(13, 110, 253)'
+        }],
+      },
+      options: {
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'month',
+              displayFormats: {
+                month: 'MMM yyyy'
+              }
+            }
+          },
+          y: {}
+        }
+      }
+    }),
+  });
 }
 
 const playerRatingGroupsFormatter = (rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max) => {
@@ -77,28 +141,6 @@ const playerRatingGroupsStyle = (rating, B_max, C_max, D_max, E_max, F_max, G_ma
   }
 }
 
-const getText = (url) => {
-  return $.ajax({
-    type: 'GET',
-    url: url,
-    crossDomain: true,
-    global: false,
-    async: false,
-    success: data => data
-  }).responseText
-};
-
-const getJson = (url) => {
-  return JSON.parse($.ajax({
-    type: 'GET',
-    url: url,
-    dataType: 'json',
-    global: false,
-    async: false,
-    success: data => data
-  }).responseText);
-}
-
 const date2DatabaseFormat = (date = new Date()) => date.toISOString().replace('T', ' ').substring(0, 19);
 
 const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
@@ -106,10 +148,33 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   el.textContent = increasedValue;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
   if (increasedValue % 11 === 0) {
-    alert('kva!');
+    kva(el);
     // перевернуть табло
     // создать новую игру
     // убрать статус текущей у предыдущей
+  }
+};
+
+// окончание партии на табло: вспышка счёта + короткий сигнал
+// (alert() требовал подтверждения и останавливал взаимодействие)
+const kva = (el) => {
+  $(el).addClass('kva');
+  setTimeout(() => $(el).removeClass('kva'), 1500);
+
+  try {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = 660;
+    gain.gain.setValueAtTime(0.15, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.5);
+    oscillator.onended = () => context.close();
+  } catch {
+    // звук не критичен: без поддержки AudioContext остаётся вспышка
   }
 };
 const decreaseBoardScore = (el, team_1_id, team_2_id) => el.textContent = parseInt(el.textContent) - 1;
@@ -155,18 +220,21 @@ const addScoreBoardHandlers = (el) => {
   });
 }
 
-const winValue = (lostValue) => lostValue <= 19 ? 21 : lostValue + 2;
+const winValue = (lostValue) => lostValue <= 19 ? 21 : (lostValue + 2);
 
 const refresh = {
   block: {
     by: {
       id: (id) => $(`#${id}`).load(location.href + ` #${id}>*`, ''),
-    }
+    },
+    player: () => refresh.block.by.id('player'),
+    select: () => refresh.block.by.id('select-block'),
   },
   table: {
-    player: () => $('#player-table').bootstrapTable('refresh'),
-    archive: () => $('#player-archive-table').bootstrapTable('refresh'),
-    court: () => $('#cort-table').bootstrapTable('refresh'),
+    player: () => $('#player-table').bootstrapTable('refresh', {silent: true}),
+    archive: () => $('#player-archive-table').bootstrapTable('refresh', {silent: true}),
+    court: () => $('#cort-table').bootstrapTable('refresh', {silent: true}),
+    settings: () => $('#settings-table').bootstrapTable('refresh', {silent: true}),
   }
 }
 
@@ -186,6 +254,11 @@ const hide = {
     patronymic: () => hide.register.__func('pn'),
     account: () => hide.register.__func('account'),
     rate: () => hide.register.__func('rate'),
+  },
+  player: {
+    column: {
+      paid: () => $('#player-table').bootstrapTable('hideColumn', 'paid'),
+    }
   }
 }
 
@@ -232,6 +305,11 @@ const show = {
         .find('input')
         .prop('checked', new SexByRussianName(lastname, firstname, patronymic || '').get_gender())
     ),
+  },
+  player: {
+    column: {
+      delta_today: () => $('#player-table').bootstrapTable('showColumn', 'delta_today'),
+    }
   }
 }
 
@@ -266,3 +344,122 @@ const capitalizeFirstLetter = (string) => {
 }
 
 const parseName = (name) => name.match(/(?<lastname>[а-яА-Я]+)?(\s+)?(?<firstname>[а-яА-Я]+)?(\s+)?(?<patronymic>[а-яА-Я]+)?/).groups;
+
+/** Показывает всплывающее уведомление (Bootstrap-тост) в правом нижнем углу.
+ *  Используется глобальным обработчиком ajaxError для сообщений об ошибках. */
+const showToast = (message, variant = 'danger') => {
+  const toast = $(`
+      <div class="toast align-items-center text-bg-${variant} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">${$('<div>').text(message).html()}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрыть"></button>
+        </div>
+      </div>`);
+
+  $('#toast-container').append(toast);
+  new bootstrap.Toast(toast, {delay: 6000}).show();
+  toast.on('hidden.bs.toast', () => toast.remove());
+};
+
+/** Копирует текст в буфер обмена. navigator.clipboard доступен только в
+ *  secure context, для остального — скрытая textarea с execCommand. */
+const copyToClipboard = (text, onDone) => {
+  const fallback = () => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      onDone();
+    } finally {
+      textarea.remove();
+    }
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(onDone, fallback);
+  } else {
+    fallback();
+  }
+};
+
+$(document).on('click', '.tournament-name-copy', function () {
+  copyToClipboard(String($(this).data('name')), () => showToast('Название скопировано', 'success'));
+});
+
+$(document).on('click', '.coords-copy', function () {
+  copyToClipboard(String($(this).data('coords')), () => showToast('Координаты скопированы', 'success'));
+});
+
+// одна точка обработки ошибок AJAX: сервер отдаёт тело вида {error: message}
+// (promise-мидлвара), при статусе 0 соединения не было вовсе
+$(document).ajaxError((event, xhr) => {
+  if (xhr.status === 0) {
+    showToast('Нет связи с сервером');
+    return;
+  }
+  let message;
+  try {
+    message = JSON.parse(xhr.responseText).error;
+  } catch {
+    // тело не JSON — покажем статус
+  }
+  showToast(message || `Ошибка ${xhr.status}`);
+});
+
+/** Диалог подтверждения вместо window.confirm: bootstrap-модалка
+ *  создаётся динамически, onConfirm вызывается только после «Удалить». */
+const confirmAction = (message, onConfirm) => {
+  $('#confirm-action-modal').remove();
+  $('body').append(`
+      <div class="modal fade" id="confirm-action-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+          <div class="modal-content">
+            <div class="modal-body">${$('<div>').text(message).html()}</div>
+            <div class="modal-footer py-2">
+              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Отмена</button>
+              <button type="button" class="btn btn-danger btn-sm" id="confirm-action-ok">Удалить</button>
+            </div>
+          </div>
+        </div>
+      </div>`);
+
+  const modal = new bootstrap.Modal('#confirm-action-modal');
+  $('#confirm-action-ok').on('click', () => {
+    modal.hide();
+    onConfirm();
+  });
+  $('#confirm-action-modal').on('hidden.bs.modal', () => $('#confirm-action-modal').remove());
+  modal.show();
+};
+
+/** «N г. N мес. N д. назад» для дат в прошлом — та же логика заимствований
+ *  календарных единиц, что была в EJS, но на клиенте: строка всегда свежая. */
+const calendarPartsSince = (datetime) => {
+  const end = new Date(datetime);
+  if (isNaN(end.getTime())) {
+    return [];
+  }
+  const now = new Date();
+
+  let secs = now.getSeconds() - end.getSeconds();
+  let mins = now.getMinutes() - end.getMinutes();
+  let hours = now.getHours() - end.getHours();
+  let days = now.getDate() - end.getDate();
+  let months = now.getMonth() - end.getMonth();
+  let years = now.getFullYear() - end.getFullYear();
+  if (secs < 0) { mins--; secs += 60; }
+  if (mins < 0) { hours--; mins += 60; }
+  if (hours < 0) { days--; hours += 24; }
+  if (days < 0) { months--; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+  if (months < 0) { years--; months += 12; }
+
+  const parts = [];
+  if (years > 0) { parts.push(`${years} г.`); }
+  if (months > 0) { parts.push(`${months} мес.`); }
+  if (days > 0) { parts.push(`${days} д.`); }
+  return parts;
+};

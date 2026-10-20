@@ -7,19 +7,16 @@
                  initial-scale=1,
                  shrink-to-fit=no">
     <title>Бадминтон и ром</title>
+    <meta name="csrf-token" content="<%= csrfToken %>">
 
     <link rel="icon" type="image/png" href="/assets/icons/favicon.png"/>
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-favicon.png"/>
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap.rtl.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/bootstrap-grid.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap-grid.rtl.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/bootstrap-icons.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/bootstrap-reboot.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap-reboot.rtl.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/bootstrap-table.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/bootstrap-utilities.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap-utilities.rtl.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/select2.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/select2-bootstrap-5-theme.css"/>
     <link rel="stylesheet" type="text/css" href="/css/index.css"/>
@@ -31,7 +28,7 @@
 <body>
 <div class="container">
     <% if (user) { %>
-        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
+        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
     <% } %>
     <div id="header" class="row align-items-center no-selection <% if (user) { %> closable <% } %>">
         <% if (device !== 'phone') { %>
@@ -41,20 +38,22 @@
                 </div>
             </div>
         <% } %>
-        <div class="col-10 d-flex justify-content-end">
+        <div class="<% if (device !== 'phone') { %>col-10<% } else { %>col-12<% } %> d-flex justify-content-end">
             <% if (user) { %>
                 <form action="/api/auth/logout" method="post" class="logout">
-                    <div class="player-selectors">
-                        <%- include('tournament', {tournaments: tournaments}); %>
-                        <%- include('unit', {units: units}); %>
-                    </div>
+                    <% if (device !== 'phone') { %>
+                        <div class="player-selectors">
+                            <%- include('tournament', {tournaments: tournaments}); %>
+                            <%- include('unit', {units: units}); %>
+                        </div>
+                    <% } %>
                     <label class="user"><%= user.username %></label>
-                    <button class="btn" type="submit"><p class="bi bi-box-arrow-right" style="display:inline"></p></button>
+                    <button class="btn<% if (device === 'phone') { %> me-2<% } %>" type="submit"><p class="bi bi-box-arrow-right" style="display:inline"></p></button>
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 </form>
             <% } else { %>
                 <form action="/api/auth/login" method="get" class="login">
-                    <button class="btn" type="submit"><p class="bi bi-box-arrow-in-left"> Войти</p></button>
+                    <button class="btn<% if (device === 'phone') { %> mx-2<% } %>" type="submit"><p class="bi bi-box-arrow-in-left"> Войти</p></button>
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 </form>
             <% } %>
@@ -65,85 +64,159 @@
     <% } %>
 </div>
 
+<%# просматриваемый турнир приходит из роута (/tournament/:id), иначе — текущий %>
+<% const current_tournament = typeof tournament !== 'undefined' ? tournament : tournaments.filter(t => t.current === 1)[0]; %>
+
 <div class="container">
-    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"></i></div>
+    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
     <div id="tournament-info" class="row d-flex closable p-3">
-        <% const current_tournament = tournaments.filter(t => t.current === 1)[0]; %>
-        <div class="col-6">
-            <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; %>
-            <% const startedAt = new Date(current_tournament.started_at + 'Z'); %>
-            <% const endedAt = new Date(current_tournament.ended_at + 'Z'); %>
-            <% const regEndedAt = new Date(current_tournament.reg_ended_at + 'Z'); %>
-            <% const regEndH = regEndedAt.getUTCHours(); %>
-            <% const regEndM = regEndedAt.getUTCMinutes(); %>
-            <% const regEndDateStr = `${regEndedAt.getUTCDate()} ${monthArray[regEndedAt.getUTCMonth()]} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM <= 0 ? '0' + regEndM : regEndM}`; %>
+        <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; %>
+        <% const startedAt = new Date(current_tournament.started_at + 'Z'); %>
+        <% const endedAt = new Date(current_tournament.ended_at + 'Z'); %>
+        <% const regEndedAt = new Date(current_tournament.reg_ended_at + 'Z'); %>
+        <% const regEndH = regEndedAt.getHours(); %>
+        <% const regEndM = regEndedAt.getMinutes(); %>
+        <% const regEndDateStr = `${regEndedAt.getDate()} ${monthArray[regEndedAt.getMonth()]} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM <= 0 ? '0' + regEndM : regEndM}`; %>
+        <% const getSingleDateStrPhone = (d) => `${d.getDate()} ${monthArray[d.getMonth()].length > 4 ? monthArray[d.getMonth()].slice(0, 3) + '.' : monthArray[d.getMonth()]} ${d.getHours() <= 9 ? '0' + d.getHours() : d.getHours()}:${d.getMinutes() <= 0 ? '0' + d.getMinutes() : d.getMinutes()}`; %>
+        <% const regEndUntilMillis = (regEndedAt - new Date()); %>
+        <% const regEndUntilDays = Math.floor((regEndUntilMillis) / 1000 / 60 / 60 / 24); %>
+        <% const regEndUntilHours = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24) / 1000 / 60 / 60); %>
+        <% const regEndUntilMinutes = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
+        <% const regEndUntilSecs = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
+        <%# сколько прошло с окончания регистрации — считает клиент (calendarPartsSince из lib.js) %>
+        <% let regEndUntilStr = '';
+        if (current_tournament.tournament_status_id === 1) {
+            regEndUntilStr = ` (осталось: <time datetime="${regEndUntilDays}d ${regEndUntilHours}h ${regEndUntilMinutes}m ${regEndUntilSecs}s"></time>)`;
+        } else {
+            // «закончилась N назад» досчитывает клиент (calendarPartsSince из lib.js):
+            // серверная строка устаревает сразу после рендера
+            regEndUntilStr = ` (закончилась: <time class="reg-end-since" datetime="${regEndedAt.toISOString()}">сегодня</time>)`;
+        }
 
-            <% const regEndUntilMillis = (regEndedAt - new Date()); %>
-            <% const regEndUntilDays = Math.floor((regEndUntilMillis) / 1000 / 60 / 60 / 24); %>
-            <% const regEndUntilHours = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24) / 1000 / 60 / 60); %>
-            <% const regEndUntilMinutes = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60) / 1000 / 60); %>
-            <% const regEndUntilSecs = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
-            <% const regEndUntilStr = (new Date() - regEndedAt) > 0 ? '(завершена' : '(осталось: '; %>
-
-            <% const durationHours = (endedAt - startedAt) / 36e5; %>
-            <% const durationMinutesWithoutHours = (endedAt - startedAt) - durationHours * 36e5; %>
-
-            <% const startedH = startedAt.getUTCHours() <= 9 ? '0' + startedAt.getUTCHours() : startedAt.getUTCHours(); %>
-            <% const startedM = startedAt.getUTCMinutes() <= 0 ? '0' + startedAt.getUTCMinutes() : startedAt.getUTCMinutes(); %>
-            <% const endedH = endedAt.getUTCHours() <= 9 ? '0' + endedAt.getUTCHours() : endedAt.getUTCHours(); %>
-            <% const endedM = endedAt.getUTCMinutes() <= 0 ? '0' + endedAt.getUTCMinutes() : endedAt.getUTCMinutes(); %>
-            <% const getDateStr = () => {
-                if (!current_tournament.ended_at) { // окончание турнира не задано
-                    return `${startedAt.getUTCDate()} ${monthArray[startedAt.getUTCMonth()]} ${startedAt.getUTCFullYear()} ${startedH}:${startedM}`;
-                }
-                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear() && startedAt.getUTCMonth() === endedAt.getUTCMonth() && startedAt.getUTCDate() === endedAt.getUTCDate()) { // начало и окончание в один день
-                    return `${endedAt.getUTCDate()} ${monthArray[endedAt.getUTCMonth()]} ${endedAt.getUTCFullYear()} ${startedH}:${startedM}-${endedH}:${endedM}`;
-                }
-
-                const startMonthNum = startedAt.getUTCMonth() + 1;
-                const startMonthNumStr = startMonthNum <= 9 ? '0' + startMonthNum : startMonthNum;
-                const endMonthNum = endedAt.getUTCMonth() + 1;
-                const endMonthNumStr = endMonthNum <= 9 ? '0' + endMonthNum : endMonthNum;
-                if (startedAt.getUTCFullYear() === endedAt.getUTCFullYear()) { // начало и окончание в одном году
-                    return `${startedAt.getUTCDate()}.${startMonthNumStr} ${startedH}:${startedM} - ${endedAt.getUTCDate()}.${endMonthNumStr}.${endedAt.getUTCFullYear()} ${endedH}:${endedM}`;
-                }
-
-                return `${startedAt.getUTCDate()}.${startMonthNumStr}.${startedAt.getUTCFullYear()} ${startedH}:${startedM} - ${endedAt.getUTCDate()}.${endMonthNumStr}.${endedAt.getUTCFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
+        const getRegEndPhoneStr = () => {
+            if (current_tournament.tournament_status_id !== 1) {
+                // компактный бейдж (только старшая единица) тоже заполняет клиент
+                return `<time class="reg-end-since-badge" datetime="${regEndedAt.toISOString()}">сегодня</time>`;
             }
-            %>
-            <% const tournamentName = `Турнир: «${current_tournament.name}»` %>
+            if (regEndUntilDays > 0) {
+              return `${regEndUntilDays}д`;
+            }
+            if (regEndUntilHours > 0) {
+                return `${regEndUntilHours}ч`;
+            }
+            if (regEndUntilMinutes > 0) {
+                return `${regEndUntilMinutes}м`;
+            }
+            if (regEndUntilSecs > 0) {
+                return `${regEndUntilSecs}с`;
+            }
+            return '';
+        }
+        %>
+        <% const durationHours = Math.trunc((endedAt - startedAt) / 36e5); %>
+        <% const durationMinutesWithoutHours = Math.trunc(((endedAt - startedAt) - durationHours * 36e5) / 6e4); %>
 
-            <div><%= tournamentName %>
-                <button class="btn btn-xs bi-copy"></button>
+        <% const startedH = startedAt.getHours() <= 9 ? '0' + startedAt.getHours() : startedAt.getHours(); %>
+        <% const startedM = startedAt.getMinutes() <= 0 ? '0' + startedAt.getMinutes() : startedAt.getMinutes(); %>
+        <% const endedH = endedAt.getHours() <= 9 ? '0' + endedAt.getHours() : endedAt.getHours(); %>
+        <% const endedM = endedAt.getMinutes() <= 0 ? '0' + endedAt.getMinutes() : endedAt.getMinutes(); %>
+        <% const getDateStr = () => {
+            if (!current_tournament.ended_at) { // окончание турнира не задано
+                return `${startedAt.getDate()} ${monthArray[startedAt.getMonth()]} ${startedAt.getFullYear()} ${startedH}:${startedM}`;
+            }
+            if (startedAt.getFullYear() === endedAt.getFullYear() && startedAt.getMonth() === endedAt.getMonth() && startedAt.getDate() === endedAt.getDate()) { // начало и окончание в один день
+                return `${endedAt.getDate()} ${monthArray[endedAt.getMonth()]} ${endedAt.getFullYear()} ${startedH}:${startedM}-${endedH}:${endedM}`;
+            }
+
+            const startMonthNum = startedAt.getMonth() + 1;
+            const startMonthNumStr = startMonthNum <= 9 ? '0' + startMonthNum : startMonthNum;
+            const endMonthNum = endedAt.getMonth() + 1;
+            const endMonthNumStr = endMonthNum <= 9 ? '0' + endMonthNum : endMonthNum;
+            if (startedAt.getFullYear() === endedAt.getFullYear()) { // начало и окончание в одном году
+                return `${startedAt.getDate()}.${startMonthNumStr} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr}.${endedAt.getFullYear()} ${endedH}:${endedM}`;
+            }
+
+            return `${startedAt.getDate()}.${startMonthNumStr}.${startedAt.getFullYear()} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr}.${endedAt.getFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
+        }
+        const getDateStrPhone = () => {
+            if (!current_tournament.ended_at) { // окончание турнира не задано
+                return `${startedAt.getDate()} ${monthArray[startedAt.getMonth()]} ${startedH}:${startedM}`;
+            }
+            if (startedAt.getFullYear() === endedAt.getFullYear() && startedAt.getMonth() === endedAt.getMonth() && startedAt.getDate() === endedAt.getDate()) { // начало и окончание в один день
+                return `${endedAt.getDate()} ${monthArray[endedAt.getMonth()]} ${startedH}:${startedM}-${endedH}:${endedM}`;
+            }
+
+            const startMonthNum = startedAt.getMonth() + 1;
+            const startMonthNumStr = startMonthNum <= 9 ? '0' + startMonthNum : startMonthNum;
+            const endMonthNum = endedAt.getMonth() + 1;
+            const endMonthNumStr = endMonthNum <= 9 ? '0' + endMonthNum : endMonthNum;
+            if (startedAt.getFullYear() === endedAt.getFullYear()) { // начало и окончание в одном году
+                return `${startedAt.getDate()}.${startMonthNumStr} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr} ${endedH}:${endedM}`;
+            }
+
+            return `${startedAt.getDate()}.${startMonthNumStr}.${startedAt.getFullYear()} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr}.${endedAt.getFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
+        }
+        %>
+        <% const tournamentName = `Турнир: «${current_tournament.name}»` %>
+
+        <% if (device === 'phone') { %>
+            <div class="panel panel-default" style="font-size: 0.8rem;">
+                <div class="panel-heading text-center"><%= tournamentName %></div>
+                <div class="list-group">
+                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge bg-badmr float-start"><%- getRegEndPhoneStr() %></span></span>
+                    <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge bg-badmr float-start"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
+                    <% if (current_tournament.map_url) { %>
+                        <span class="list-group-item text-center"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>
+                    <% } else { %>
+                        <span class="list-group-item text-center"><%= current_tournament.address %></span>
+                    <% } %>
+                    <span class="list-group-item text-center"><i class="bi bi-people"></i> <%= registered_count %>/<%= settings.capacity %> | <i class="bi bi-journal-text"></i> <%- current_tournament.rules %> | <i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
+                </div>
             </div>
-            <div>Регистрация до: <%= regEndDateStr %> <%= regEndUntilStr %><% if ((new Date() - regEndedAt) <= 0) { %><time datetime="<%= regEndUntilDays %>d <%= regEndUntilHours %>h <%= regEndUntilMinutes %>m <%= regEndUntilSecs %>s"></time><% } %>)</div><div>Дата: <%= getDateStr() %>
-                <% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
-                <!--                <button class="btn btn-xs bi-calendar" onclick="addEventToCalendar();"></button>-->
+        <% } else { %>
+            <div class="col-6">
+                <div><%= tournamentName %>
+                    <button class="btn btn-xs bi-copy tournament-name-copy" data-name="<%= current_tournament.name %>" title="Скопировать название" aria-label="Скопировать название турнира"></button>
+                </div>
+                <div>Регистрация до: <%= regEndDateStr %><%- regEndUntilStr %></div>
+                <div>Дата: <%= getDateStr() %>
+                    <% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
+                    <!--                <button class="btn btn-xs bi-calendar" onclick="addEventToCalendar();"></button>-->
+                </div>
             </div>
-        </div>
-        <div class="col-6 justify-content-end align-items-end">
-            <div class="row text-start">
-                <% if (current_tournament.latitude && current_tournament.longitude) { %>
-                    <div style="text-align: end;"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
-                        <button class="btn btn-xs bi-copy"></button>
+            <div class="col-6 justify-content-end align-items-end">
+                <div class="row text-start">
+                    <% if (current_tournament.latitude && current_tournament.longitude) { %>
+                        <div class="text-end"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
+                            <button class="btn btn-xs bi-copy coords-copy" data-coords="<%= current_tournament.latitude %>, <%= current_tournament.longitude %>" title="Скопировать координаты" aria-label="Скопировать координаты"></button>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="row text-start">
+                    <% if (current_tournament.map_url) { %>
+                        <a class="text-end" href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a>
+                    <% } else { %>
+                        <span><%= current_tournament.address %></span>
+                    <% } %>
+                </div>
+                <% if (current_tournament.rules) { %>
+                    <div class="row text-start">
+                        <div class="col text-end">
+                            <span class="me-1"><i class="bi bi-people"></i> <%= registered_count %>/<%= settings.capacity %></span>
+                            <span class="me-1"><i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
+                            <%- current_tournament.rules %>
+                        </div>
                     </div>
                 <% } %>
             </div>
-            <div class="row text-start">
-                <% if (current_tournament.map_url) { %>
-                    <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a>
-                <% } else { %>
-                    <span><%= current_tournament.address %></span>
-                <% } %>
-            </div>
-        </div>
+        <% } %>
     </div>
     <hr class="hr-dashed"/>
 </div>
 
 <div id="tournament-window">
     <% if (tournament_type === 1) { %> <%# Рейтинг %>
-    <%- include('tournament/new/index', {user: user, settings: settings}); %>
+    <%- include('tournament/new/index', {user: user, defaults: defaults, tournament: current_tournament}); %>
     <% } else if (tournament_type === 2) { %> <%# 110 %>
     <%- include('tournament/110/index', {user: user}); %>
     <% } else { %>
@@ -151,39 +224,25 @@
     <% } %>
 </div>
 
+<!-- Yandex.Metrika counter -->
 <script type="text/javascript">
-  (function (m, e, t, r, i, k, a) {
-    m[i] = m[i] || function () {
-      (m[i].a = m[i].a || []).push(arguments)
-    };
-    m[i].l = 1 * new Date();
-    for (var j = 0; j < document.scripts.length; j++) {
-      if (document.scripts[j].src === r) {
-        return;
-      }
-    }
-    k = e.createElement(t), a = e.getElementsByTagName(t)[0], k.async = 1, k.src = r, a.parentNode.insertBefore(k, a)
-  })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js?id=109146783', 'ym');
+  (function(m,e,t,r,i,k,a){
+    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+    m[i].l=1*new Date();
+    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+  })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=109146783', 'ym');
 
-  ym(109146783, 'init', {
-    ssr: true,
-    webvisor: true,
-    clickmap: true,
-    ecommerce: "dataLayer",
-    referrer: document.referrer,
-    url: location.href,
-    accurateTrackBounce: true,
-    trackLinks: true
-  });
+  ym(109146783, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
 </script>
-<noscript>
-    <div><img src="https://mc.yandex.ru/watch/109146783" style="position:absolute; left:-9999px;" alt=""/></div>
-</noscript>
+<noscript><div><img src="https://mc.yandex.ru/watch/109146783" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
 
 <%- include('footer', {device: device}); %>
 
+
 <script>
-  const loggedInUser = '<%- JSON.stringify(user) %>';
+  const loggedInUser = '<%- JSON.stringify(user) %>' ? JSON.parse('<%- JSON.stringify(user) %>') : false;
 </script>
 <script type="text/javascript" src="/js/jquery.min.js"></script>
 <script type="text/javascript" src="/js/jquery.cookie.js"></script>
@@ -247,6 +306,7 @@
 <script type="text/javascript" src="/js/moment.min.js"></script>
 <script type="text/javascript" src="/js/lodash.min.js"></script>
 <script type="text/javascript" src="/js/chartjs-adapter-moment.min.js"></script>
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;"></div>
 <script type="text/javascript" src="/js/express-useragent.global.min.js"></script>
 <script type="text/javascript" src="/js/sex.js"></script>
 <script type="text/javascript" src="/js/lib.js"></script>

@@ -79,6 +79,7 @@
 
                     <% } %>
                 </div>
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                 <div class="modal-footer">
                     <button id="tournament-groups-team-edit-submit" type="submit" class="btn btn-success">Сохранить</button>
                 </div>

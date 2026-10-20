@@ -276,8 +276,7 @@ const playMatch110 = (teamId1, teamId2) => {
   .then(c => {
     if (c === undefined || c.length === 0) {
       if (confirm('Нет свободных кортов. Создадим новый?')) {
-        $.post('/api/courts/create');
-        createMatch();
+        $.post('/api/courts/create', {}, () => createMatch());
       }
     } else {
       createMatch()
