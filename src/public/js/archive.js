@@ -1,4 +1,9 @@
 const renderArchive = () => {
+  // раздел скрывается целиком — вместе с тогглером и разделителем, —
+  // пока в архиве никого нет; видимость пересматривается при каждой
+  // загрузке данных (в т.ч. silent-обновлении после архивирования)
+  const archiveContainer = $('#player-archive').closest('.container').addClass('d-none');
+
   $('#player-archive-table')
   .bootstrapTable({
     url: '/api/users/archived',
@@ -31,6 +36,9 @@ const renderArchive = () => {
         sortable: true
       }
     ]
+  })
+  .on('load-success.bs.table', (event, data) => {
+    archiveContainer.toggleClass('d-none', data.length === 0);
   });
 
   $('#player-archive div.fixed-table-toolbar').addClass('d-flex justify-content-center');

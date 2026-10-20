@@ -371,6 +371,7 @@ const fillMatch = (counter, match) => {
           refresh.block.by.id('game'); // обновление блока игры
         }
 
+        refresh.table.player(); // игроки снова доступны — триггер удаления матча вернул их в подбор
         refresh.table.court();
       });
     }
