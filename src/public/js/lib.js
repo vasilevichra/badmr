@@ -394,6 +394,49 @@ $(document).on('click', '.coords-copy', function () {
   copyToClipboard(String($(this).data('coords')), () => showToast('Координаты скопированы', 'success'));
 });
 
+/** Скачивает .ics (RFC 5545) с событием турнира: клик по кнопке в шапке
+ *  открывает/сохраняет файл, календарное приложение импортирует событие.
+ *  Время плавающее (без зоны и без VTIMEZONE) — событие попадает в
+ *  локальный часовой пояс участника; DTSTAMP обязан быть в UTC. */
+const addEventToCalendar = (button) => {
+  const $button = $(button);
+  // '2026-01-01 21:00:00' → '20260101T210000'
+  const icsDate = (value) => String(value).replace(' ', 'T').replaceAll(/[-:]/g, '');
+  const escapeIcs = (text) => String(text).replaceAll(/([,;\\])/g, '\\$1').replaceAll('\n', '\\n');
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//badmr//Tournament//RU',
+    'BEGIN:VEVENT',
+    `UID:${Date.now()}@badmr`,
+    // '2026-10-21T12:15:30.123Z' → '20261021T121530Z'
+    `DTSTAMP:${new Date().toISOString().replaceAll(/[-:]/g, '').slice(0, 15)}Z`,
+    `DTSTART:${icsDate($button.data('start'))}`,
+  ];
+  const end = $button.data('end') ? icsDate($button.data('end')) : null;
+  if (end) {
+    lines.push(`DTEND:${end}`); // у незавершённого турнира длительность не задана — DTEND опускается
+  }
+  lines.push(
+      `SUMMARY:${escapeIcs($button.data('name'))}`,
+      `LOCATION:${escapeIcs($button.data('location'))}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+  );
+
+  const blob = new Blob([lines.join('\r\n')], {type: 'text/calendar;charset=utf-8'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${String($button.data('name')).replaceAll(/[/\\:*?"<>|]/g, '_')}.ics`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
+
+$(document).on('click', '.tournament-calendar', function () {
+  addEventToCalendar(this);
+});
+
 // одна точка обработки ошибок AJAX: сервер отдаёт тело вида {error: message}
 // (promise-мидлвара), при статусе 0 соединения не было вовсе
 $(document).ajaxError((event, xhr) => {
