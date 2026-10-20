@@ -1,0 +1,115 @@
+import Repository from './common.ts';
+import DB, { type RunResult } from "../db.ts";
+
+class Court {
+  declare static _instance: Court | undefined;
+  db!: DB;
+
+  constructor() {
+    if (Court._instance) {
+      return Court._instance;
+    }
+    Court._instance = this;
+
+    this.db = new Repository().db;
+  }
+
+  create(tournament_id?: number) {
+    return tournament_id ?
+        this.db.run(
+            `INSERT INTO court (tournament_id, number)
+             VALUES (?, (SELECT count() + 1 FROM court c JOIN tournament t on t.id = c.tournament_id WHERE t.id = ?))`,
+            [tournament_id, tournament_id]
+        ) :
+        this.db.run(
+        `INSERT INTO court (tournament_id, number)
+         VALUES ((SELECT id FROM tournament WHERE current = 1), (SELECT count() + 1 FROM court c JOIN tournament t on t.id = c.tournament_id WHERE t.current = 1))`
+    );
+  }
+
+  getAll() {
+    return this.db.all(
+        `SELECT c.id, c.number, c.available
+         FROM tournament t
+                  JOIN court c ON t.id = c.tournament_id
+         WHERE t.current = 1`);
+  }
+
+  getById(id: number) {
+    return this.db.get(
+        `SELECT *
+         FROM court
+         WHERE id = ?`,
+        [id]
+    );
+  }
+
+  enableAll() {
+    return this.db.run(
+        `UPDATE court
+         SET available = 1
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)`,
+    );
+  }
+
+  enable(number: number) {
+    return this.db.run(
+        `UPDATE court
+         SET available = 1
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND number = ?`,
+        [number]
+    );
+  }
+
+  disableAll() {
+    return this.db.run(
+        `UPDATE court
+         SET available = 0
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)`
+    );
+  }
+
+  disable(number: number) {
+    return this.db.run(
+        `UPDATE court
+         SET available = 0
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND number = ?`,
+        [number]
+    );
+  }
+
+  countAvailable() {
+    const result = this.db.get<{ count: number }>(
+        `SELECT count(id) AS count
+         FROM court
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+           AND available = 1`
+    );
+    return result!.count;
+  }
+
+  delete(id: number) {
+    return this.db.run(
+        `DELETE
+         FROM court
+         WHERE id = ?`,
+        [id]
+    );
+  }
+
+  deleteAll() {
+    return this.db.run(
+        `DELETE
+         FROM court
+         WHERE id IN (SELECT c.id
+                      FROM court c
+                               JOIN tournament t ON t.id = c.tournament_id
+                      WHERE t.current = 1
+                        AND t.available = 1)`
+    );
+  }
+}
+
+export default Court;
