@@ -394,14 +394,36 @@ $(document).on('click', '.coords-copy', function () {
   copyToClipboard(String($(this).data('coords')), () => showToast('Координаты скопированы', 'success'));
 });
 
+/** Наивное время в поясе турнира → Date в UTC. Смещение пояса на момент
+ *  события вычисляется через Intl (честно учитывает DST и историю зон);
+ *  две итерации — на случай попадания на DST-границу. */
+const zonedToUtcDate = (naive, timeZone) => {
+  const asUtc = new Date(String(naive).replace(' ', 'T') + 'Z');
+  const offsetMs = (date) => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone, hourCycle: 'h23',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    }).formatToParts(date);
+    const get = (type) => Number(parts.find((part) => part.type === type).value);
+    return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second')) - date.getTime();
+  };
+  return new Date(asUtc.getTime() - offsetMs(new Date(asUtc.getTime() - offsetMs(asUtc))));
+};
+
 /** Скачивает .ics (RFC 5545) с событием турнира: клик по кнопке в шапке
  *  открывает/сохраняет файл, календарное приложение импортирует событие.
- *  Время плавающее (без зоны и без VTIMEZONE) — событие попадает в
- *  локальный часовой пояс участника; DTSTAMP обязан быть в UTC. */
+ *  Наивное время турнира переводится в UTC по его таймзоне (data-tz) —
+ *  иначе плавающее время трактовалось бы поясом участника и «уезжало» бы.
+ *  DTSTAMP обязан быть в UTC. */
 const addEventToCalendar = (button) => {
   const $button = $(button);
   // '2026-01-01 21:00:00' → '20260101T210000'
   const icsDate = (value) => String(value).replace(' ', 'T').replaceAll(/[-:]/g, '');
+  const timeZone = $button.data('tz');
+  // '2026-01-01 21:00:00' + 'Europe/Moscow' → '20260101T180000Z'
+  const icsUtc = (value) => zonedToUtcDate(value, timeZone).toISOString().replaceAll(/[-:]/g, '').slice(0, 15) + 'Z';
+  const eventDate = timeZone ? icsUtc : icsDate; // без data-tz — плавающее время, как раньше
   const escapeIcs = (text) => String(text).replaceAll(/([,;\\])/g, '\\$1').replaceAll('\n', '\\n');
 
   const lines = [
@@ -412,9 +434,9 @@ const addEventToCalendar = (button) => {
     `UID:${Date.now()}@badmr`,
     // '2026-10-21T12:15:30.123Z' → '20261021T121530Z'
     `DTSTAMP:${new Date().toISOString().replaceAll(/[-:]/g, '').slice(0, 15)}Z`,
-    `DTSTART:${icsDate($button.data('start'))}`,
+    `DTSTART:${eventDate($button.data('start'))}`,
   ];
-  const end = $button.data('end') ? icsDate($button.data('end')) : null;
+  const end = $button.data('end') ? eventDate($button.data('end')) : null;
   if (end) {
     lines.push(`DTEND:${end}`); // у незавершённого турнира длительность не задана — DTEND опускается
   }

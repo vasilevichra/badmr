@@ -181,7 +181,7 @@
                 <div>Регистрация до: <%= regEndDateStr %><%- regEndUntilStr %></div>
                 <div>Дата: <%= getDateStr() %>
                     <% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
-                    <button class="btn btn-xs bi-calendar tournament-calendar" data-name="<%= current_tournament.name %>" data-start="<%= current_tournament.started_at %>" data-end="<%= current_tournament.ended_at %>" data-location="<%= current_tournament.city %>, <%= current_tournament.address %>" title="Добавить событие в календарь" aria-label="Добавить событие турнира в календарь"></button>
+                    <button class="btn btn-xs bi-calendar tournament-calendar" data-name="<%= current_tournament.name %>" data-start="<%= current_tournament.started_at %>" data-end="<%= current_tournament.ended_at %>" data-location="<%= current_tournament.city %>, <%= current_tournament.address %>" data-tz="<%= settings.timezone %>" title="Добавить событие в календарь" aria-label="Добавить событие турнира в календарь"></button>
                 </div>
             </div>
             <div class="col-6 justify-content-end align-items-end">
