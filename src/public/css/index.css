@@ -633,3 +633,10 @@ td.diagonal-cross:after {
   font-size: 85%;
   color: #6c757d;
 }
+
+.achievement-description {
+  font-size: 75%;
+  color: #6c757d;
+  max-width: 14rem;
+  margin-top: 0.25rem;
+}

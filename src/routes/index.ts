@@ -69,7 +69,7 @@ const renderTournamentPage = (
         cities: promises[7],
         matches: promises[8],
         achievements: promises[9],
-        achievementTitles: AchievementService.TITLES,
+        achievementMeta: AchievementService.META,
         playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, isPhone())
       });
       break;

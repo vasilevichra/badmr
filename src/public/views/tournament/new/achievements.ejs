@@ -4,8 +4,24 @@
         winner: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
         machine_gunner: (v) => `${v} ${plural(v, ['волан', 'волана', 'воланов'])}`,
         trier: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
+        unrestrainable: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])} подряд`,
+        fast_start: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
+        finisher: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
+        comeback: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
+        perfect: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
+        endurance: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
         iron_nerves: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
+        almost: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
+        rout: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
+        duo: (v) => `${v} ${plural(v, ['победа', 'победы', 'побед'])}`,
+        nightmare: (v) => `${v} ${plural(v, ['пара', 'пары', 'пар'])}`,
+        universal: (v) => `${v} ${plural(v, ['партнёр', 'партнёра', 'партнёров'])}`,
+        workhorse: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
         turtle: (v) => `${v}'`,
+        lightning: (v) => `${v}' в среднем`,
+        rising_star: (v) => `${v > 0 ? '+' : ''}${v}`,
+        consistent: (v) => `${v > 0 ? '+' : ''}${v} за матч`,
+        deadline: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
         medalist: (v) => `${v} ${plural(v, ['достижение', 'достижения', 'достижений'])}`
     }; %>
     <div class="container">
@@ -18,11 +34,12 @@
                 <div id="achievement-block" class="row justify-content-center mx-auto">
                     <% for (const [key, nomination] of Object.entries(achievements)) { %>
                         <div class="col-auto text-center achievement-card p-3">
-                            <label class="form-label achievement-title"><%= achievementTitles[key] %></label>
+                            <label class="form-label achievement-title"><%= achievementMeta[key].title %></label>
                             <% nomination.users.forEach((u) => { %>
                                 <div class="achievement-player no-selection" data-user-id="<%= u.user_id %>" role="button"><%- playerNameFormatter(u.user_id, u.name, u.sex, u.pic) %></div>
                             <% }) %>
                             <label class="form-label achievement-value"><%= units[key](nomination.value) %></label>
+                            <div class="achievement-description"><%= achievementMeta[key].description %></div>
                         </div>
                     <% } %>
                 </div>
