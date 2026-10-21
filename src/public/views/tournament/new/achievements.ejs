@@ -35,11 +35,11 @@
                     <% for (const [key, nomination] of Object.entries(achievements)) { %>
                         <div class="col-auto text-center achievement-card p-3">
                             <label class="form-label achievement-title"><%= achievementMeta[key].title %></label>
+                            <div class="achievement-description"><%= achievementMeta[key].description %></div>
                             <% nomination.users.forEach((u) => { %>
                                 <div class="achievement-player no-selection" data-user-id="<%= u.user_id %>" role="button"><%- playerNameFormatter(u.user_id, u.name, u.sex, u.pic) %></div>
                             <% }) %>
                             <label class="form-label achievement-value"><%= units[key](nomination.value) %></label>
-                            <div class="achievement-description"><%= achievementMeta[key].description %></div>
                         </div>
                     <% } %>
                 </div>
