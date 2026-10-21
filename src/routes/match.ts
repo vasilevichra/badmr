@@ -4,7 +4,7 @@ import { ensureLoggedIn } from 'connect-ensure-login';
 import MatchService from '../services/match.ts';
 const matchService = new MatchService();
 
-router.get('/unfinished', ensureLoggedIn(), (req, res) => {
+router.get('/unfinished', (req, res) => {
   res.promise(matchService.getAllUnfinished());
 });
 

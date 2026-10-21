@@ -48,6 +48,27 @@ describe("Match routes", () => {
     await clean();
   });
 
+  describe("неавторизованный доступ", () => {
+    const anonApp: App = Express();
+    anonApp.use(promiseMiddleware());
+    anonApp.use("/api/matches", MatchRouter);
+    const anonServer = anonApp.listen(0);
+    const anonBase = `http://127.0.0.1:${(anonServer.address() as AddressInfo).port}/api/matches`;
+
+    after(async () => {
+      await new Promise<void>((resolve) => anonServer.close(() => resolve()));
+    });
+
+    it("должен отдать unfinished неавторизованному без редиректа на вход", async () => {
+      // /unfinished запрашивается JS со страницы текущего турнира —
+      // ensureLoggedIn здесь давал 302 → 404 в консоли браузера
+      const res = await fetch(`${anonBase}/unfinished`, {redirect: "manual"});
+
+      assert.strictEqual(res.status, 200);
+      assert.deepStrictEqual(await res.json(), []);
+    });
+  });
+
   describe("POST /create, GET /unfinished", () => {
     it("должен создать матч и показать его в незавершённых", async () => {
       const ids = await seedUsers();
