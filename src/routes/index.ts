@@ -16,6 +16,29 @@ import GroupService from '../services/group.ts';
 const groupService = new GroupService();
 import share from '../share.cjs';
 
+/** «95.3» → «1м 35с», «51.2» → «51с», без данных → «—». */
+const formatSeconds = (value: number | null): string => {
+  if (value === null) return '—';
+  const total = Math.round(value);
+  const minutes = Math.floor(total / 60);
+  return minutes > 0 ? `${minutes}м ${total % 60}с` : `${total}с`;
+};
+
+/** «2.33» → «2,3», «2» → «2», без данных → «—». */
+const formatAvg = (value: number | null): string =>
+  value === null ? '—' : String(Math.round(value * 10) / 10).replace('.', ',');
+
+const stats = () => ({
+  seconds_per_point_current: formatSeconds(matchService.getMedianSecondsPerPointCurrent()),
+  seconds_per_point_all: formatSeconds(matchService.getMedianSecondsPerPoint()),
+  game_seconds_current: formatSeconds(matchService.getMedianGameSecondsCurrent()),
+  game_seconds_all: formatSeconds(matchService.getMedianGameSeconds()),
+  match_seconds_current: formatSeconds(matchService.getMedianMatchSecondsCurrent()),
+  match_seconds_all: formatSeconds(matchService.getMedianMatchSeconds()),
+  games_per_match_current: formatAvg(matchService.getAverageGamesPerMatchCurrent()),
+  games_per_match_all: formatAvg(matchService.getAverageGamesPerMatch()),
+});
+
 const renderTournamentPage = (
     req: Express.Request,
     res: Express.Response,
@@ -28,6 +51,7 @@ const renderTournamentPage = (
     return res.status(404).render('index', {
       device: commonService.device(req),
       user: req.user,
+      ...stats(),
       tournaments: tournamentService.getAll(),
       units: unitService.getAll(),
       registered_count: tournamentService.registeredCount(),
@@ -55,6 +79,7 @@ const renderTournamentPage = (
       res.render('index', {
         device: commonService.device(req),
         user: req.user,
+        ...stats(),
         tournaments: promises[0],
         tournament: t,
         tournament_id: t.id,
@@ -90,6 +115,7 @@ const renderTournamentPage = (
       res.render('index', {
         device: commonService.device(req),
         user: req.user,
+        ...stats(),
         tournaments: promises[0],
         tournament: t,
         tournament_id: t.id,

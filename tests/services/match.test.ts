@@ -5,8 +5,13 @@ import MatchService from "../../src/services/match.ts";
 import UserService from "../../src/services/user.ts";
 import CourtService from "../../src/services/court.ts";
 import GameService from "../../src/services/game.ts";
+import SettingsService from "../../src/services/settings.ts";
 import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
+
+// точные дельты в тестах посчитаны при фиксированном K —
+// калибровка здесь не тестируется, отключаем её
+const settingsService = new SettingsService();
 
 interface TestUser {
   lastname: string;
@@ -51,6 +56,7 @@ const seedMatchUsers = async (): Promise<number[]> => {
 describe("Match", () => {
   beforeEach(async () => {
     await clean();
+    await settingsService.set("calibration_matches", "0");
   });
 
   describe("getAll, hasUnfinished, getAllUnfinished", () => {
@@ -270,12 +276,11 @@ describe("Match", () => {
       await finishMatch(second, [["15", null], ["15", null]]);
 
       const all = await matchService.getAllByUser(ids[0]) as unknown as Protocol;
-      // каждый элемент массива — объект с одним ключом match_id;
-      // строки приходят ORDER BY m.id DESC — от новых к старым
+      // каждый элемент массива — объект с одним ключом match_id
       const idsOf = (list: Protocol) => list.map((m) => Number(Object.keys(m)[0]));
-      // порядок групп не гарантирован (числоподобные ключи итерируются
-      // по возрастанию) — сравниваем отсортированным от новых к старым
-      assert.deepStrictEqual(idsOf(all).sort((a, b) => b - a), [second, first]);
+      // матчи идут от новых к старым (ORDER BY m.id DESC): группа с большим
+      // id — первой; группировка getInfo не должна терять порядок запроса
+      assert.deepStrictEqual(idsOf(all), [second, first]);
 
       const own = await matchService.getAllByUser(ids[3]) as unknown as Protocol;
       assert.deepStrictEqual(idsOf(own), [first]);
@@ -324,6 +329,103 @@ describe("Match", () => {
         { user_id: ids[2], previous: 400, delta: -5 },
         { user_id: ids[3], previous: 400, delta: -5 },
       ]);
+    });
+  });
+
+  describe("медианное время на очко", () => {
+    it("должен считать медиану времени на очко по всем турнирам и по текущему", async () => {
+      const ids = await seedMatchUsers();
+      const createMatch = async () => {
+        await matchService.create(...(ids as [number, number, number, number]));
+        return (await matchService.getAll() as MatchRow[]).at(-1)!.id;
+      };
+
+      // матч A (текущий турнир): игры в 10:02 и 10:05 → длительность
+      // с начала матча (10:00) 300 с; очки: 21:10 (31) + 22:20 (42) = 73
+      const a = await createMatch();
+      await gameService.create(a, null, "10", "2026-01-01 10:02:00");
+      await gameService.create(a, null, "20", "2026-01-01 10:05:00");
+      // матч B (текущий турнир): 40 с от начала матча — короче минуты, исключается
+      const b = await createMatch();
+      await gameService.create(b, null, "10", "2026-01-01 11:00:20");
+      await gameService.create(b, null, "10", "2026-01-01 11:00:40");
+      // матч C (другой турнир): игры в 12:05 и 12:10 → 600 с, очки 31 + 31 = 62
+      const c = await createMatch();
+      await gameService.create(c, null, "10", "2026-01-01 12:05:00");
+      await gameService.create(c, null, "10", "2026-01-01 12:10:00");
+      // матч D: незавершённый — в историю не попадает
+      const d = await createMatch();
+      await gameService.create(d, null, "10", "2026-01-01 13:30:00");
+
+      db.exec(`UPDATE match SET created_at = '2026-01-01 10:00:00' WHERE id = ${a}`);
+      db.exec(`UPDATE match SET created_at = '2026-01-01 11:00:00' WHERE id = ${b}`);
+      db.exec(`UPDATE match SET created_at = '2026-01-01 12:00:00', tournament_id = 1 WHERE id = ${c}`);
+      db.exec(`UPDATE match SET created_at = '2026-01-01 13:00:00' WHERE id = ${d}`);
+
+      // медиана секунд на очко по матчам: {300/73, 600/62} → среднее двух средних
+      assert.ok(Math.abs(matchService.getMedianSecondsPerPoint()! - (300 / 73 + 600 / 62) / 2) < 1e-3);
+      // текущий турнир: один матч → 300 / 73 с/очко
+      assert.ok(Math.abs(matchService.getMedianSecondsPerPointCurrent()! - 300 / 73) < 1e-3);
+    });
+
+    it("должен вернуть null без подходящих матчей", async () => {
+      assert.strictEqual(matchService.getMedianSecondsPerPoint(), null);
+      assert.strictEqual(matchService.getMedianSecondsPerPointCurrent(), null);
+    });
+  });
+
+  describe("медианные длительности игры и матча, игр в матче", () => {
+    it("должен считать медианную длительность игры, матча и число игр по всем турнирам и по текущему", async () => {
+      const ids = await seedMatchUsers();
+      const createMatch = async () => {
+        await matchService.create(...(ids as [number, number, number, number]));
+        return (await matchService.getAll() as MatchRow[]).at(-1)!.id;
+      };
+
+      // матч A (текущий турнир): создан 10:00, игры в 10:02 и 10:05 →
+      // матч 300 с; игры 120 и 180 с
+      const a = await createMatch();
+      await gameService.create(a, null, "10", "2026-01-01 10:02:00");
+      await gameService.create(a, null, "20", "2026-01-01 10:05:00");
+      // матч B (текущий турнир): 40 с от начала матча — короче минуты, исключается
+      const b = await createMatch();
+      await gameService.create(b, null, "10", "2026-01-01 11:00:20");
+      await gameService.create(b, null, "10", "2026-01-01 11:00:40");
+      // матч C (другой турнир): создан 12:00, игры в 12:05 и 12:10 →
+      // матч 600 с; игры 300 и 300 с
+      const c = await createMatch();
+      await gameService.create(c, null, "10", "2026-01-01 12:05:00");
+      await gameService.create(c, null, "10", "2026-01-01 12:10:00");
+      // матч E (текущий турнир): создан 14:00, игры в 14:02, 14:04, 14:07 →
+      // матч 420 с; игры 120, 120 и 180 с
+      const e = await createMatch();
+      await gameService.create(e, null, "10", "2026-01-01 14:02:00");
+      await gameService.create(e, null, "10", "2026-01-01 14:04:00");
+      await gameService.create(e, null, "10", "2026-01-01 14:07:00");
+
+      db.exec(`UPDATE match SET created_at = '2026-01-01 10:00:00' WHERE id = ${a}`);
+      db.exec(`UPDATE match SET created_at = '2026-01-01 11:00:00' WHERE id = ${b}`);
+      db.exec(`UPDATE match SET created_at = '2026-01-01 12:00:00', tournament_id = 1 WHERE id = ${c}`);
+      db.exec(`UPDATE match SET created_at = '2026-01-01 14:00:00' WHERE id = ${e}`);
+
+      // медиана длительности матча: все — {300, 420, 600} → 420 с; текущий — {300, 420} → 360 с
+      assert.ok(Math.abs(matchService.getMedianMatchSeconds()! - 420) < 1e-3);
+      assert.ok(Math.abs(matchService.getMedianMatchSecondsCurrent()! - 360) < 1e-3);
+      // медиана длительности игры: все — {120×3, 180×2, 300×2} → 180 с; текущий — {120×3, 180×2} → 120 с
+      assert.ok(Math.abs(matchService.getMedianGameSeconds()! - 180) < 1e-3);
+      assert.ok(Math.abs(matchService.getMedianGameSecondsCurrent()! - 120) < 1e-3);
+      // игр в матче — среднее (показатель как float): все — (2 + 2 + 3) / 3; текущий — (2 + 3) / 2
+      assert.ok(Math.abs(matchService.getAverageGamesPerMatch()! - 7 / 3) < 1e-3);
+      assert.ok(Math.abs(matchService.getAverageGamesPerMatchCurrent()! - 2.5) < 1e-3);
+    });
+
+    it("должен вернуть null без подходящих матчей", async () => {
+      assert.strictEqual(matchService.getMedianMatchSeconds(), null);
+      assert.strictEqual(matchService.getMedianMatchSecondsCurrent(), null);
+      assert.strictEqual(matchService.getMedianGameSeconds(), null);
+      assert.strictEqual(matchService.getMedianGameSecondsCurrent(), null);
+      assert.strictEqual(matchService.getAverageGamesPerMatch(), null);
+      assert.strictEqual(matchService.getAverageGamesPerMatchCurrent(), null);
     });
   });
 });

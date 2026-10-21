@@ -21,6 +21,14 @@ class Match {
   getAllUnfinished = () => this.match.getAllUnfinished();
   getAllFinishedAtLastSession = () => this.match.getAllFinishedAtLastSession();
   getAllByUser = (user_id: number) => this.match.getAllByUser(user_id);
+  getMedianSecondsPerPoint = () => this.match.getMedianSecondsPerPoint(false);
+  getMedianSecondsPerPointCurrent = () => this.match.getMedianSecondsPerPoint(true);
+  getMedianMatchSeconds = () => this.match.getMedianMatchSeconds(false);
+  getMedianMatchSecondsCurrent = () => this.match.getMedianMatchSeconds(true);
+  getMedianGameSeconds = () => this.match.getMedianGameSeconds(false);
+  getMedianGameSecondsCurrent = () => this.match.getMedianGameSeconds(true);
+  getAverageGamesPerMatch = () => this.match.getAverageGamesPerMatch(false);
+  getAverageGamesPerMatchCurrent = () => this.match.getAverageGamesPerMatch(true);
   getById = (id: number) => this.match.getById(id);
   create = (user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number) => this.match.create(user_1_id, user_2_id, user_3_id, user_4_id);
   create110 = (team_1_id: number, team_2_id: number) => this.match110.create(team_1_id, team_2_id);
