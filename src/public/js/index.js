@@ -129,8 +129,8 @@ $(document).ready(() => {
       }
     });
 
-    // в разделе «Достижения» клик по игроку открывает модалку игрока
-    $('#achievement-block').on('click', '.achievement-player', function () {
+    // клик по игроку в «Достижениях» и «Истории матчей» открывает модалку игрока
+    $('#achievement-block, #match-history-block').on('click', '.achievement-player, .match-history-players-name', function () {
       openPlayerWindow(Number($(this).data('user-id')));
     });
   }
