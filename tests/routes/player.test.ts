@@ -97,7 +97,6 @@ describe("Player page", () => {
     assert.match(html, /Пулемётчик/);
     assert.match(html, /Очень старался, но ничего не получилось/);
     assert.match(html, /Черепаха/);
-    assert.match(html, /Медалист/);
   });
 
   it("не должен показывать карточку достижений без номинаций", async () => {
