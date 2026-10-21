@@ -10,6 +10,8 @@ import UnitService from '../services/unit.ts';
 const unitService = new UnitService();
 import MatchService from '../services/match.ts';
 const matchService = new MatchService();
+import AchievementService from '../services/achievement.ts';
+const achievementService = new AchievementService();
 import GroupService from '../services/group.ts';
 const groupService = new GroupService();
 import share from '../share.cjs';
@@ -47,7 +49,8 @@ const renderTournamentPage = (
         settingsService.states(),                  // 5
         settingsService.regions(),                 // 6
         settingsService.cities(),                  // 7
-        matchService.getAllFinishedAtLastSession() // 8
+        matchService.getAllFinishedAtLastSession(), // 8
+        achievementService.getByTournament(t.id)    // 9
       ];
       res.render('index', {
         device: commonService.device(req),
@@ -65,6 +68,7 @@ const renderTournamentPage = (
         regions: promises[6],
         cities: promises[7],
         matches: promises[8],
+        achievements: promises[9],
         playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, isPhone())
       });
       break;
