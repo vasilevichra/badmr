@@ -23,10 +23,18 @@ const tournamentService = new TournamentService();
 const userService = new UserService();
 const db = new Repository().db;
 
-// в тестовой БД после миграций текущий турнир id=4 ('Новая Лига', статус 'Регистрация');
-// турнир 1 ('Рейтинг', статус 'Идёт') имеет завершённые матчи и 14 неархивированных участников;
-// у турнира 4 девять неархивированных участников, двое из них оплатили взнос
-const unarchivedCount = { current: 9, first: 14 };
+// состояние турниров читается из БД, а не фиксируется: дамп 05-specific
+// перегенерируется из живой базы (статусы, составы участников меняются)
+const unarchivedCount = {
+  current: (db.get(`SELECT count(*) AS count
+                    FROM tournament_user
+                    WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                      AND archived = 0`) as { count: number }).count,
+  first: (db.get(`SELECT count(*) AS count
+                  FROM tournament_user
+                  WHERE tournament_id = 1
+                    AND archived = 0`) as { count: number }).count,
+};
 
 describe("Tournament", () => {
   beforeEach(async () => {
@@ -41,10 +49,22 @@ describe("Tournament", () => {
     it("должен вернуть текущий турнир", async () => {
       const current = await tournamentService.getCurrent() as TournamentRow;
 
-      assert.strictEqual(current.id, 4);
-      assert.strictEqual(current.name, "Новая Лига");
-      assert.strictEqual(current.city_id, 1);
-      assert.strictEqual(current.tournament_status_id, 1);
+      // дамп 05-specific перегенерируется из живой базы — статус и состав
+      // текущего турнира сверяем с фактическим состоянием БД
+      const expected = db.get(`SELECT t.id, t.name, g.city_id, t.tournament_status_id
+                               FROM tournament t
+                                        JOIN gym g ON g.id = t.gym_id
+                               WHERE t.current = 1`);
+
+      assert.deepStrictEqual(
+        {
+          id: current.id,
+          name: current.name,
+          city_id: current.city_id,
+          tournament_status_id: current.tournament_status_id,
+        },
+        expected,
+      );
     });
   });
 
@@ -62,15 +82,16 @@ describe("Tournament", () => {
     it("должен вернуть все турниры от новых к старым", async () => {
       const all = await tournamentService.getAll() as TournamentRow[];
 
-      assert.strictEqual(all.length, 4);
+      // состав турниров берём из БД: дамп 05-specific перегенерируется
+      const expected = db.all(`SELECT t.id, t.name, c.name AS city
+                               FROM tournament t
+                                        JOIN gym g ON g.id = t.gym_id
+                                        JOIN city c ON c.id = g.city_id
+                               ORDER BY t.id DESC`);
+
       assert.deepStrictEqual(
-        all.map((t) => ({ id: t.id, name: t.name, city: t.city })),
-        [
-          { id: 4, name: "Новая Лига", city: "Доброград" },
-          { id: 3, name: "ДЗР-Д", city: "Дзержинск" },
-          { id: 2, name: "110-1", city: "Доброград" },
-          { id: 1, name: "Рейтинг", city: "Доброград" },
-        ],
+        all.map((t) => ({id: t.id, name: t.name, city: t.city})),
+        expected,
       );
     });
   });
@@ -79,9 +100,19 @@ describe("Tournament", () => {
     it("должен вернуть турнир по id", async () => {
       const tournament = await tournamentService.getById(4) as TournamentRow;
 
-      assert.strictEqual(tournament.name, "Новая Лига");
-      assert.strictEqual(tournament.current, 1);
-      assert.strictEqual(tournament.tournament_status_id, 1);
+      // состав полей сверяем с фактическим состоянием БД — дамп 05-specific
+      // перегенерируется, его статусы не константа
+      const expected = db.get(`SELECT name, current, tournament_status_id
+                               FROM tournament WHERE id = 4`);
+
+      assert.deepStrictEqual(
+        {
+          name: tournament.name,
+          current: tournament.current,
+          tournament_status_id: tournament.tournament_status_id,
+        },
+        expected,
+      );
     });
 
     it("должен вернуть пустой ответ для несуществующего турнира", async () => {
