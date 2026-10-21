@@ -87,7 +87,7 @@ CREATE TABLE defaults
 (
     id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     name        TEXT    NOT NULL UNIQUE
-                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'priority', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee')),
+                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'priority', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_fresh_days')),
     value       TEXT    NOT NULL,
     description TEXT    NOT NULL,
     -- все настройки, кроме priority, хранят неотрицательные целые;
@@ -278,6 +278,13 @@ CREATE TABLE rating
     match_id INTEGER CONSTRAINT match REFERENCES match,
     previous INTEGER,
     delta    INTEGER,
+    -- калибровка рейтинга: серия игрока, начавшаяся с неактуального рейтинга.
+    -- stale — серия началась с протухшего (или отсутствующего) рейтинга;
+    -- series — номер матча в текущей серии, 0 для сидов (ручных установок);
+    -- дата последнего обновления рейтинга не хранится — берётся из связки
+    -- с матчем (match.created_at), у сидов её нет, они считаются протухшими.
+    stale    INTEGER NOT NULL DEFAULT 0 CHECK (stale IN (0, 1)),
+    series   INTEGER NOT NULL DEFAULT 0 CHECK (series >= 0),
     UNIQUE (user_id, match_id)
 );
 

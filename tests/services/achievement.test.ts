@@ -5,8 +5,13 @@ import AchievementService from "../../src/services/achievement.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
 import UserService from "../../src/services/user.ts";
+import SettingsService from "../../src/services/settings.ts";
 import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
+
+// точные значения дельт в номинациях посчитаны при фиксированном K —
+// калибровка здесь не тестируется, отключаем её
+const settingsService = new SettingsService();
 
 interface Nomination {
   value: number;
@@ -28,6 +33,7 @@ describe("Achievement", () => {
   beforeEach(async () => {
     console.log = function () {};
     await clean();
+    await settingsService.set("calibration_matches", "0");
   });
 
   // шесть матчей текущего турнира «Новая Лига»:
@@ -191,17 +197,17 @@ describe("Achievement", () => {
 
     // u1,u2 — 6 номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u1, 4), [
-      "Очень старался, но ничего не получилось", "Быстрый старт",
-      "Почти смог", "Разгром", "Гроза пар", "Черепаха"
+      "🤷 Очень старался, но ничего не получилось", "🚀 Быстрый старт",
+      "😬 Почти смог", "💥 Разгром", "⛈️ Гроза пар", "🐢 Черепаха"
     ]);
     // партнёр по команде имеет те же номинации
     assert.deepStrictEqual(achievementService.getNominationsByUser(u2, 4),
         achievementService.getNominationsByUser(u1, 4));
     // u3,u4 — Медалист (первым) и ещё 15 номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u3, 4), [
-      "Медалист", "Победитель", "Пулемётчик", "Неудержимый", "Быстрый старт", "Дожиматель",
-      "Камбэк", "На измор", "Стальные нервы", "Связка", "Гроза пар", "Трудяга",
-      "Молния", "Восходящая звезда", "Стабильный", "Жертва дедлайна"
+      "🏅 Медалист", "🏆 Победитель", "🔫 Пулемётчик", "🏃 Неудержимый", "🚀 Быстрый старт", "💪 Дожиматель",
+      "🔄 Камбэк", "🥵 На измор", "🧊 Стальные нервы", "🤝 Связка", "⛈️ Гроза пар", "🛠️ Трудяга",
+      "⚡ Молния", "🌟 Восходящая звезда", "📈 Стабильный", "⏰ Жертва дедлайна"
     ]);
     // без номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u5, 4), []);
@@ -251,8 +257,13 @@ describe("Achievement", () => {
       return matchId;
     };
 
+    // якорь — полночь суток base по UTC: без обнуления времени суток даты
+    // «вчера» при запуске после 14:00 уезжают в «сегодня» и тест становится
+    // зависимым от времени запуска
+    const midnight = new Date(base);
+    midnight.setUTCHours(0, 0, 0, 0);
     const yesterday = (hours: number) =>
-      new Date(base - 86400000 + hours * 3600000).toISOString().replace("T", " ").substring(0, 19);
+      new Date(midnight.getTime() - 86400000 + hours * 3600000).toISOString().replace("T", " ").substring(0, 19);
 
     const m1 = await seed([u1, u2, u3, u4], [[null, "5", 10], [null, "5", 30]]);
     const m2 = await seed([u1, u2, u3, u4], [[null, "5", 10], [null, "5", 30]]);

@@ -73,7 +73,7 @@
         <div class="col-lg-12 col-md-12 col-sm-12 desc">
             <div id="match-history-block" class="row justify-content-center mx-auto">
                 <% matches.forEach((m, i) => { %>
-                    <%- include('../../match', {index: i, match: m}); %>
+                    <%- include('../../match', {index: i, match: m, total: matches.length}); %>
                 <% }) %>
             </div>
         </div>
@@ -137,8 +137,49 @@
         </div>
         <hr class="hr-dashed"/>
     </div>
+
     <div class="pb-5"></div> <!-- Пустое пространство для корректного отображения последнего блока -->
 <% } %>
+
+<div class="container">
+    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
+    <div id="stats" class="stats closable">
+        <h1 class="text-center no-selection">Статистика</h1>
+        <table class="table stats-table mx-auto w-auto">
+            <thead>
+            <tr>
+                <th>Параметр</th>
+                <th class="text-center">Турнир</th>
+                <th class="text-center">За всё время</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Время розыгрыша</td>
+                <td class="text-center"><%= seconds_per_point_current %></td>
+                <td class="text-center"><%= seconds_per_point_all %></td>
+            </tr>
+            <tr>
+                <td>Время игры</td>
+                <td class="text-center"><%= game_seconds_current %></td>
+                <td class="text-center"><%= game_seconds_all %></td>
+            </tr>
+            <tr>
+                <td>Время матча</td>
+                <td class="text-center"><%= match_seconds_current %></td>
+                <td class="text-center"><%= match_seconds_all %></td>
+            </tr>
+            <tr>
+                <td>Игр в матче</td>
+                <td class="text-center"><%= games_per_match_current %></td>
+                <td class="text-center"><%= games_per_match_all %></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <hr class="hr-dashed"/>
+</div>
+
 <% if (device === 'phone') { %>
     <div class="col text-center">
         <div class="social no-selection">

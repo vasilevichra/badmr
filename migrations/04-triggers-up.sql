@@ -6,6 +6,14 @@
 -- пользователя (раньше — джойн match→user→rating с GROUP BY).
 -- Guard NOT EXISTS делает начисление идемпотентным: повторная установка
 -- finished = 1 не падает с UNIQUE.
+--
+-- Калибровка рейтинга: игроки с неактуальным рейтингом (последняя строка
+-- старше calibration_fresh_days от даты матча, отсутствует или является
+-- сидом — ручной установкой без матча) начинают серию из
+-- calibration_matches матчей с повышенным K. Множитель линейно затухает
+-- от calibration_boost до 1, дельта ограничена calibration_cap. Состояние
+-- серии (stale, series) переносится в строках rating; дата последнего
+-- обновления рейтинга берётся из связки с матчем.
 
 CREATE INDEX rating_user_id ON rating (user_id, id);
 
@@ -26,8 +34,14 @@ CREATE TRIGGER calculate_rating_when_match_finished
                                        FROM settings
                                        WHERE name = 'wins'))
 BEGIN
-    INSERT INTO rating (user_id, match_id, previous, delta)
-    WITH last AS (
+    INSERT INTO rating (user_id, match_id, previous, delta, stale, series)
+    WITH cal AS (
+        SELECT (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_matches')    AS c,
+               (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_boost')      AS boost,
+               (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_cap')        AS cap,
+               (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_fresh_days') AS fresh
+    ),
+    last AS (
         SELECT (SELECT previous + coalesce(delta, 0)
                 FROM rating
                 WHERE user_id = new.user_1_id
@@ -48,6 +62,76 @@ BEGIN
                 WHERE user_id = new.user_4_id
                 ORDER BY id DESC
                 LIMIT 1) AS p4,
+               -- состояние калибровки последней строки: stale, series и дата
+               -- матча, к которому она привязана (у сидов даты нет — NULL)
+               (SELECT stale
+                FROM rating
+                WHERE user_id = new.user_1_id
+                ORDER BY id DESC
+                LIMIT 1) AS st1,
+               (SELECT series
+                FROM rating
+                WHERE user_id = new.user_1_id
+                ORDER BY id DESC
+                LIMIT 1) AS se1,
+               (SELECT m.created_at
+                FROM match m
+                WHERE m.id = (SELECT match_id
+                              FROM rating
+                              WHERE user_id = new.user_1_id
+                              ORDER BY id DESC
+                              LIMIT 1)) AS d1,
+               (SELECT stale
+                FROM rating
+                WHERE user_id = new.user_2_id
+                ORDER BY id DESC
+                LIMIT 1) AS st2,
+               (SELECT series
+                FROM rating
+                WHERE user_id = new.user_2_id
+                ORDER BY id DESC
+                LIMIT 1) AS se2,
+               (SELECT m.created_at
+                FROM match m
+                WHERE m.id = (SELECT match_id
+                              FROM rating
+                              WHERE user_id = new.user_2_id
+                              ORDER BY id DESC
+                              LIMIT 1)) AS d2,
+               (SELECT stale
+                FROM rating
+                WHERE user_id = new.user_3_id
+                ORDER BY id DESC
+                LIMIT 1) AS st3,
+               (SELECT series
+                FROM rating
+                WHERE user_id = new.user_3_id
+                ORDER BY id DESC
+                LIMIT 1) AS se3,
+               (SELECT m.created_at
+                FROM match m
+                WHERE m.id = (SELECT match_id
+                              FROM rating
+                              WHERE user_id = new.user_3_id
+                              ORDER BY id DESC
+                              LIMIT 1)) AS d3,
+               (SELECT stale
+                FROM rating
+                WHERE user_id = new.user_4_id
+                ORDER BY id DESC
+                LIMIT 1) AS st4,
+               (SELECT series
+                FROM rating
+                WHERE user_id = new.user_4_id
+                ORDER BY id DESC
+                LIMIT 1) AS se4,
+               (SELECT m.created_at
+                FROM match m
+                WHERE m.id = (SELECT match_id
+                              FROM rating
+                              WHERE user_id = new.user_4_id
+                              ORDER BY id DESC
+                              LIMIT 1)) AS d4,
                (SELECT count(lost_1_by)
                 FROM game
                 WHERE match_id = new.id) AS lost_1,
@@ -74,20 +158,85 @@ BEGIN
                     ELSE round((100 - ((p1 + p2) / 2.0 - (p3 + p4) / 2.0)) / 10.0, 1) END  AS win12_delta,
                CASE WHEN (p1 + p2) / 2.0 - (p3 + p4) / 2.0 >= 100 THEN 0
                     ELSE round((100 - ((p1 + p2) / 2.0 - (p3 + p4) / 2.0)) / -10.0, 1) END AS lose34_delta,
-               lost_1 = wins AS team_1_lost
-        FROM last
+               lost_1 = wins AS team_1_lost,
+               -- калибровка игрока 1: серия начинается, если рейтинга нет,
+               -- последняя строка — сид (даты нет) или она протухла
+               CASE WHEN st1 IS NULL THEN 1
+                    WHEN d1 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d1) > fresh THEN 1
+                    ELSE st1 END                                                        AS stale1,
+               CASE WHEN st1 IS NULL OR d1 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d1) > fresh THEN 1
+                    ELSE se1 + 1 END                                                    AS series1,
+               CASE WHEN st2 IS NULL THEN 1
+                    WHEN d2 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d2) > fresh THEN 1
+                    ELSE st2 END                                                        AS stale2,
+               CASE WHEN st2 IS NULL OR d2 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d2) > fresh THEN 1
+                    ELSE se2 + 1 END                                                    AS series2,
+               CASE WHEN st3 IS NULL THEN 1
+                    WHEN d3 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d3) > fresh THEN 1
+                    ELSE st3 END                                                        AS stale3,
+               CASE WHEN st3 IS NULL OR d3 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d3) > fresh THEN 1
+                    ELSE se3 + 1 END                                                    AS series3,
+               CASE WHEN st4 IS NULL THEN 1
+                    WHEN d4 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d4) > fresh THEN 1
+                    ELSE st4 END                                                        AS stale4,
+               CASE WHEN st4 IS NULL OR d4 IS NULL THEN 1
+                    WHEN julianday(new.created_at) - julianday(d4) > fresh THEN 1
+                    ELSE se4 + 1 END                                                    AS series4,
+               c, boost, cap, fresh
+        FROM last, cal
+    ),
+    mult AS (
+        SELECT *,
+               -- множитель действует, пока серия калибровки не кончилась;
+               -- затухание линейное: series=1 → boost, series=c → ~1
+               CASE WHEN stale1 = 1 AND series1 <= c AND c > 0
+                    THEN 1 + (boost - 1) * (c - series1 + 1) / c ELSE 1 END             AS m1,
+               CASE WHEN stale2 = 1 AND series2 <= c AND c > 0
+                    THEN 1 + (boost - 1) * (c - series2 + 1) / c ELSE 1 END             AS m2,
+               CASE WHEN stale3 = 1 AND series3 <= c AND c > 0
+                    THEN 1 + (boost - 1) * (c - series3 + 1) / c ELSE 1 END             AS m3,
+               CASE WHEN stale4 = 1 AND series4 <= c AND c > 0
+                    THEN 1 + (boost - 1) * (c - series4 + 1) / c ELSE 1 END             AS m4,
+               CASE WHEN stale1 = 1 AND series1 <= c AND c > 0 THEN 1 ELSE 0 END        AS ic1,
+               CASE WHEN stale2 = 1 AND series2 <= c AND c > 0 THEN 1 ELSE 0 END        AS ic2,
+               CASE WHEN stale3 = 1 AND series3 <= c AND c > 0 THEN 1 ELSE 0 END        AS ic3,
+               CASE WHEN stale4 = 1 AND series4 <= c AND c > 0 THEN 1 ELSE 0 END        AS ic4
+        FROM calc
     )
-    SELECT new.user_1_id, new.id, r1, CASE WHEN team_1_lost THEN lose12_delta ELSE win12_delta END
-    FROM calc
+    SELECT new.user_1_id, new.id, r1,
+           round(CASE WHEN ic1 = 1 AND cap > 0
+                      THEN min(cap, max(-cap, CASE WHEN team_1_lost THEN lose12_delta ELSE win12_delta END * m1))
+                      ELSE CASE WHEN team_1_lost THEN lose12_delta ELSE win12_delta END * m1 END, 1),
+           stale1, series1
+    FROM mult
     UNION ALL
-    SELECT new.user_2_id, new.id, r2, CASE WHEN team_1_lost THEN lose12_delta ELSE win12_delta END
-    FROM calc
+    SELECT new.user_2_id, new.id, r2,
+           round(CASE WHEN ic2 = 1 AND cap > 0
+                      THEN min(cap, max(-cap, CASE WHEN team_1_lost THEN lose12_delta ELSE win12_delta END * m2))
+                      ELSE CASE WHEN team_1_lost THEN lose12_delta ELSE win12_delta END * m2 END, 1),
+           stale2, series2
+    FROM mult
     UNION ALL
-    SELECT new.user_3_id, new.id, r3, CASE WHEN team_1_lost THEN win34_delta ELSE lose34_delta END
-    FROM calc
+    SELECT new.user_3_id, new.id, r3,
+           round(CASE WHEN ic3 = 1 AND cap > 0
+                      THEN min(cap, max(-cap, CASE WHEN team_1_lost THEN win34_delta ELSE lose34_delta END * m3))
+                      ELSE CASE WHEN team_1_lost THEN win34_delta ELSE lose34_delta END * m3 END, 1),
+           stale3, series3
+    FROM mult
     UNION ALL
-    SELECT new.user_4_id, new.id, r4, CASE WHEN team_1_lost THEN win34_delta ELSE lose34_delta END
-    FROM calc;
+    SELECT new.user_4_id, new.id, r4,
+           round(CASE WHEN ic4 = 1 AND cap > 0
+                      THEN min(cap, max(-cap, CASE WHEN team_1_lost THEN win34_delta ELSE lose34_delta END * m4))
+                      ELSE CASE WHEN team_1_lost THEN win34_delta ELSE lose34_delta END * m4 END, 1),
+           stale4, series4
+    FROM mult;
 END;
 
 CREATE TRIGGER delete_rating_when_match_deleted

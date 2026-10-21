@@ -48,6 +48,22 @@ HAVING CASE -- сыгранных матчей меньше, чем в огра�
 ORDER BY played, matches DESC;
 
 CREATE VIEW players AS
+WITH cal AS (
+    -- настройки калибровки с приоритетом override'а текущего турнира
+    -- (вью settings объявлена ниже по файлу, поэтому merge повторён здесь)
+    SELECT CAST(coalesce(
+               (SELECT ts.value
+                FROM tournament_settings ts
+                         JOIN tournament _t ON ts.tournament_id = _t.id AND _t.current = 1
+                         JOIN defaults _d ON ts.defaults_id = _d.id AND _d.name = 'calibration_matches'),
+               (SELECT value FROM defaults WHERE name = 'calibration_matches')) AS REAL)   AS matches,
+           CAST(coalesce(
+               (SELECT ts.value
+                FROM tournament_settings ts
+                         JOIN tournament _t ON ts.tournament_id = _t.id AND _t.current = 1
+                         JOIN defaults _d ON ts.defaults_id = _d.id AND _d.name = 'calibration_fresh_days'),
+               (SELECT value FROM defaults WHERE name = 'calibration_fresh_days')) AS REAL) AS fresh_days
+)
 SELECT id,
        name,
        rating,
@@ -66,7 +82,9 @@ SELECT id,
        (SELECT _c.number
         FROM match _m
                  JOIN court _c ON _m.court_id = _c.id
-        WHERE _m.id = last_match_id)                                                         AS court
+        WHERE _m.id = last_match_id)                                                         AS court,
+       calibrating,
+       calibration_series
 FROM (SELECT u.id                                                       AS id,
              u.lastname || ' ' || u.firstname                           AS name,
              round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 0) AS rating,
@@ -81,13 +99,30 @@ FROM (SELECT u.id                                                       AS id,
              u.birthday                                                 AS birthday,
              coalesce(tu.available, 0)                                  AS enabled,
              coalesce(tu.paid, 0)                                       AS paid,
-             max(m.id)                                                  AS last_match_id
+             max(m.id)                                                  AS last_match_id,
+             -- игрок под критериями калибровки: рейтинга нет,
+             -- он сид (ручная установка без матча), начата серия (stale = 1)
+             -- или рейтинг не обновлялся дольше calibration_fresh_days;
+             -- во вьюху попадают только игроки текущего турнира (WHERE ниже)
+             CASE WHEN cal.matches > 0
+                       AND (r.id IS NULL
+                            OR r.match_id IS NULL
+                            OR r.stale = 1
+                            OR julianday('now') - julianday(rm.created_at) > cal.fresh_days)
+                  THEN 1 ELSE 0 END                                     AS calibrating,
+             -- сыграно матчей в текущей серии калибровки; у сида и протухшего
+             -- серия начнётся заново — отображается 0
+             CASE WHEN r.stale = 1
+                       AND julianday('now') - julianday(rm.created_at) <= cal.fresh_days
+                  THEN r.series ELSE 0 END                              AS calibration_series
       FROM user u
                JOIN city c ON c.id = u.city_id
+               CROSS JOIN cal
                LEFT OUTER JOIN tournament_user tu ON u.id = tu.user_id AND tu.archived != 1
                LEFT OUTER JOIN tournament t ON t.id = tu.tournament_id AND t.current = 1
                LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
-               LEFT OUTER JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
+               LEFT OUTER JOIN (SELECT max(id) AS id, user_id, previous, delta, stale, series, match_id FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
+               LEFT OUTER JOIN match rm ON rm.id = r.match_id
                LEFT OUTER JOIN delta_today dt ON dt.user_id = u.id
                LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
                LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id

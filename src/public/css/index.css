@@ -1,37 +1,44 @@
 /* cyrillic-ext */
 @font-face {
-  font-family: 'Raleway';
+  font-family: "Raleway";
   font-style: normal;
   font-weight: 400;
-  src: url('../fonts/raleway-cyrillic-ext.woff') format('woff');
-  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+  src: url("../fonts/raleway-cyrillic-ext.woff") format("woff");
+  unicode-range:
+    U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
 }
 
 /* cyrillic */
 @font-face {
-  font-family: 'Raleway';
+  font-family: "Raleway";
   font-style: normal;
   font-weight: 400;
-  src: url('../fonts/raleway-cyrillic.woff') format('woff');
+  src: url("../fonts/raleway-cyrillic.woff") format("woff");
   unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 
 /* latin-ext */
 @font-face {
-  font-family: 'Raleway';
+  font-family: "Raleway";
   font-style: normal;
   font-weight: 400;
-  src: url('../fonts/raleway-latin-ext.woff') format('woff');
-  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  src: url("../fonts/raleway-latin-ext.woff") format("woff");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 /* latin */
 @font-face {
-  font-family: 'Raleway';
+  font-family: "Raleway";
   font-style: normal;
   font-weight: 400;
-  src: url('../fonts/raleway-latin.woff') format('woff');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("../fonts/raleway-latin.woff") format("woff");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
 }
 
 body {
@@ -40,7 +47,14 @@ body {
   background: #f4f4f4;
 }
 
-html, h1, h2, h3, h4, h5, h6, button {
+html,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button {
   font-family: "Raleway", sans-serif;
   color: #007df9;
 }
@@ -55,7 +69,7 @@ html, h1, h2, h3, h4, h5, h6, button {
 
 .link {
   cursor: pointer;
-  color: rgba(var(--bs-link-color-rgb),var(--bs-link-opacity,1));
+  color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
   text-decoration: underline;
   text-decoration-color: currentcolor;
   text-decoration-line: underline;
@@ -74,7 +88,10 @@ html, h1, h2, h3, h4, h5, h6, button {
   font-size: 1.1rem;
 }
 
-.form-floating .select2-container--bootstrap-5 .select2-selection > .select2-selection__rendered {
+.form-floating
+  .select2-container--bootstrap-5
+  .select2-selection
+  > .select2-selection__rendered {
   margin-top: 0.6rem;
   margin-left: 0.25rem;
 }
@@ -105,7 +122,7 @@ input:focus::placeholder {
 .btn-xs {
   padding: 0.25rem 0.4rem; /* Уменьшенные отступы */
   font-size: 0.8rem; /* Меньший размер шрифта */
-  line-height: 1.0; /* Корректировка межстрочного интервала */
+  line-height: 1; /* Корректировка межстрочного интервала */
   border-radius: 0.1rem; /* Скругление углов */
 }
 
@@ -157,8 +174,8 @@ input:focus::placeholder {
   white-space: nowrap;
 }
 
-[data-field=paid] .th-inner,
-[data-field=enabled] .th-inner {
+[data-field="paid"] .th-inner,
+[data-field="enabled"] .th-inner {
   padding-right: 0 !important;
   padding-left: 0 !important;
 }
@@ -252,8 +269,14 @@ input:focus::placeholder {
    только сама ячейка: rowspan-ячейка принадлежит строке первого игрока,
    и штатный .table-hover красил бы всю его строку. Класс cell-hover-only
    ставится из select.js на mouseenter/mouseleave смёрженной ячейки */
-.select-form-table-1.table-hover.cell-hover-only > tbody > tr > td:not(td[rowspan]),
-.select-form-table-2.table-hover.cell-hover-only > tbody > tr > td:not(td[rowspan]) {
+.select-form-table-1.table-hover.cell-hover-only
+  > tbody
+  > tr
+  > td:not(td[rowspan]),
+.select-form-table-2.table-hover.cell-hover-only
+  > tbody
+  > tr
+  > td:not(td[rowspan]) {
   background-color: var(--bs-table-bg);
 }
 
@@ -309,6 +332,11 @@ input:focus::placeholder {
 
 .game-form-horizontal-inputs {
   margin: 1em 0 1em 0;
+}
+
+.match-history {
+  margin: 1em 0 3em 0;
+  position: relative;
 }
 
 .match-history-players {
@@ -382,9 +410,9 @@ input:focus::placeholder {
 }
 
 /* поля ввода с курсором по центру */
-#game input[type=text],
-#login input[type=text],
-#login input[type=password] {
+#game input[type="text"],
+#login input[type="text"],
+#login input[type="password"] {
   text-align: center;
 }
 
@@ -444,6 +472,26 @@ input:focus::placeholder {
   color: rgba(128, 128, 128, 0.3);
 }
 
+/* ненавязчивая индикация калибровки рейтинга в таблице игроков:
+   маленькая полупрозрачная точка-светофор после имени */
+.player-calibration {
+  font-size: 1.4em;
+  line-height: 0;
+  vertical-align: -0.12em;
+}
+
+.player-calibration-red {
+  color: rgba(220, 53, 69, 0.45);
+}
+
+.player-calibration-yellow {
+  color: rgba(255, 193, 7, 0.55);
+}
+
+.player-calibration-green {
+  color: rgba(25, 135, 84, 0.45);
+}
+
 .rating-plus {
   color: rgba(0, 153, 0, 1) !important;
 }
@@ -482,7 +530,15 @@ input:focus::placeholder {
 
 td.diagonal-cross {
   position: relative;
-  background: linear-gradient(to right top, #ffffff 0%, #ffffff 49.99%, #000000 50%, #000000 50.1%, #ffffff 50.2%, #ffffff 100%) !important;
+  background: linear-gradient(
+    to right top,
+    #ffffff 0%,
+    #ffffff 49.99%,
+    #000000 50%,
+    #000000 50.1%,
+    #ffffff 50.2%,
+    #ffffff 100%
+  ) !important;
   background-color: transparent;
   background-image: none !important;
 }
@@ -497,8 +553,24 @@ td.diagonal-cross:after {
   top: 0;
   left: 0;
   z-index: -1;
-  background: linear-gradient(to right bottom, white, white 49.8%, black 49.9%, black 50.1%, white 50.2%, white) !important;
-  background: linear-gradient(to right top, white, white 49.8%, black 49.9%, black 50.1%, white 50.2%, white) !important;
+  background: linear-gradient(
+    to right bottom,
+    white,
+    white 49.8%,
+    black 49.9%,
+    black 50.1%,
+    white 50.2%,
+    white
+  ) !important;
+  background: linear-gradient(
+    to right top,
+    white,
+    white 49.8%,
+    black 49.9%,
+    black 50.1%,
+    white 50.2%,
+    white
+  ) !important;
 }
 
 .vertical-text {
@@ -533,9 +605,17 @@ td.diagonal-cross:after {
 
 /* окончание партии на табло: вспышка вместо alert('kva!') */
 @keyframes board-score-flash {
-  0%, 100% { background-color: transparent; }
-  25%, 75% { background-color: rgba(220, 53, 69, 0.55); }
-  50% { background-color: rgba(255, 193, 7, 0.55); }
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  25%,
+  75% {
+    background-color: rgba(220, 53, 69, 0.55);
+  }
+  50% {
+    background-color: rgba(255, 193, 7, 0.55);
+  }
 }
 
 .board-score.kva {
@@ -610,6 +690,16 @@ td.diagonal-cross:after {
   border: 1px solid #dee2e6;
   border-radius: 0.5rem;
   margin: 0 0.5em 1em 0.5em;
+}
+
+.stats {
+  margin: 1em 0 5em 0;
+  position: relative;
+}
+
+.achievement {
+  margin: 1em 0 3em 0;
+  position: relative;
 }
 
 .achievement-title {

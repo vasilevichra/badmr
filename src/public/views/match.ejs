@@ -1,5 +1,6 @@
 <div class="col-auto text-center">
-    <% var match_index = index + 1; %>
+    <% // номер хронологический: старейший матч сессии — №1 (внизу списка)
+        var match_index = total - index; %>
     <% var match_id = Object.keys(match)[0]; %>
     <% var games = Object.values(Object.values(match)[0]).map(g => g[0]); %>
     <% var match_start_date = new Date(games[0]?.match_created_at + 'Z') %>
@@ -24,7 +25,8 @@
     <% var rating1 = Number(games[0].rating1).toFixed(1); %>
     <% var rating2 = Number(games[0].rating2).toFixed(1); %>
     <% var delta1 = games.map(g => Number(g.delta1))[0].toFixed(1); %>
-    <% var delta2 = delta1 * (-1); %>
+    <% // нижняя дельта — с той же дробной частью, что и верхняя
+        var delta2 = (Number(delta1) * (-1)).toFixed(1); %>
 
     <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %>, корт №<%= court %></nobr></label>
     <table class="match-history-players table" style="margin-bottom: 3em;">

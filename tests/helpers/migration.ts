@@ -36,6 +36,10 @@ const volatileSql = `
   DELETE FROM game;
   DELETE FROM rating;
   DELETE FROM match;
+  -- override'ы настроек калибровки из тестов: возвращаем дефолты миграций,
+  -- чтобы отключение калибровки в одной сюите не протекало в другие
+  DELETE FROM tournament_settings
+  WHERE defaults_id IN (SELECT id FROM defaults WHERE name LIKE 'calibration%');
   DELETE FROM team_user;
   DELETE FROM team;
   DELETE FROM game_110;

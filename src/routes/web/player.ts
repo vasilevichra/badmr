@@ -6,12 +6,16 @@ import TournamentService from '../../services/tournament.ts';
 const tournamentService = new TournamentService();
 import AchievementService from '../../services/achievement.ts';
 const achievementService = new AchievementService();
+import MatchService from '../../services/match.ts';
+const matchService = new MatchService();
 import CityService from '../../services/city.ts';
 const cityService = new CityService();
 import RegionService from '../../services/region.ts';
 const regionService = new RegionService();
 import StateService from '../../services/state.ts';
 const stateService = new StateService();
+import SettingsService from '../../services/settings.ts';
+const settingsService = new SettingsService();
 import Promise from 'bluebird';
 import share from '../../share.cjs';
 
@@ -33,6 +37,9 @@ router.get('/:id', (req, res) => {
     userService.getCoLosersById(userId),      // 9
     userService.getBuddiesById(userId),       // 10
     userService.getWorstOpponentsById(userId), // 11
+    matchService.getAllByUser(userId),         // 12
+    userService.getCalibration(userId),        // 13
+    settingsService.get('calibration_matches'), // 14
   ])
   .then((promises) => {
     return res.render('modal/player/id', {
@@ -49,6 +56,9 @@ router.get('/:id', (req, res) => {
       co_losers: promises[9],
       buddies: promises[10],
       worst_opponents: promises[11],
+      user_matches: promises[12],
+      calibration: promises[13],
+      calibration_matches: Number(promises[14]),
       achievements: achievements,
       playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
     });

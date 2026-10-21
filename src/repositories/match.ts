@@ -80,10 +80,20 @@ class Match {
     const max_point = Number(settingsService.get('max_point'));
     const game_point = Number(settingsService.get('game_point'));
     const raw = request(max_point, game_point, user_id);
-    const rawMatches = Object.groupBy(raw, (row: GetInfoRow) => row.match_id);
+    // группировка через Map: сохраняет порядок строк запроса (ORDER BY),
+    // в отличие от Object.groupBy + for...in, где числоподобные ключи
+    // итерируются по возрастанию независимо от порядка вставки
+    const rawMatches = new Map<number, GetInfoRow[]>();
+    for (const row of raw as GetInfoRow[]) {
+      const rows = rawMatches.get(row.match_id);
+      if (rows) {
+        rows.push(row);
+      } else {
+        rawMatches.set(row.match_id, [row]);
+      }
+    }
     const matches: Record<string, Partial<Record<number, GetInfoRow[]>>>[] = [];
-    for (const matchId in rawMatches) {
-      const rows: GetInfoRow[] = rawMatches[matchId] ?? [];
+    for (const [matchId, rows] of rawMatches) {
       matches.push({[matchId]: Object.groupBy(rows, (row: GetInfoRow) => row.game_id) as Partial<Record<number, GetInfoRow[]>>});
     }
     return matches;
@@ -134,7 +144,7 @@ class Match {
        WHERE m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)
          AND m.finished = 1
          AND date(m.created_at) = (SELECT date(created_at) AS date FROM match ORDER BY id DESC LIMIT 1)
-       ORDER BY date(m.created_at) DESC`,
+       ORDER BY date(m.created_at) DESC, m.id DESC`,
       { $game_point: game_point, $max_point: max_point }
   )
 
@@ -186,6 +196,102 @@ class Match {
        ORDER BY m.id DESC`,
       { $game_point: game_point, $max_point: max_point, $user_id: user_id }
   )
+
+  /** Медиана времени (секунд) на зарабатывание одного очка по завершённым
+   *  матчам, длившимся больше минуты. Длительность матча — от created_at
+   *  до последней игры, очки — суммы счёта обеих пар по всем играм
+   *  (незаписанный счёт выигравшего вычисляется по правилам бадминтона).
+   *  Медиана вместо среднего: один затянувшийся матч не портит показатель. */
+  getMedianSecondsPerPoint(current_only: boolean) {
+    return this.db.get<number>(
+        `SELECT avg(t.spd) AS value
+         FROM (SELECT s.dur * 1.0 / s.points                              AS spd,
+                      ROW_NUMBER() OVER (ORDER BY s.dur * 1.0 / s.points) AS rn,
+                      COUNT(*) OVER ()                                    AS n
+               FROM (SELECT m.id                                                                    AS match_id,
+                            (julianday((SELECT max(created_at) FROM game WHERE match_id = m.id)) -
+                             julianday(m.created_at)) * 86400                                       AS dur,
+                            sum(CASE
+                                    WHEN g.lost_1_by IS NOT NULL THEN g.lost_1_by
+                                    WHEN g.lost_2_by < $game_point - 1 THEN $game_point
+                                    WHEN g.lost_2_by < $max_point - 1 THEN g.lost_2_by + 2
+                                    ELSE $max_point END +
+                                CASE
+                                    WHEN g.lost_2_by IS NOT NULL THEN g.lost_2_by
+                                    WHEN g.lost_1_by < $game_point - 1 THEN $game_point
+                                    WHEN g.lost_1_by < $max_point - 1 THEN g.lost_1_by + 2
+                                    ELSE $max_point END)                                            AS points
+                     FROM match m
+                              JOIN game g ON g.match_id = m.id
+                     WHERE m.finished = 1
+                       ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}
+                     GROUP BY m.id) AS s
+               WHERE s.dur > 60
+                 AND s.points > 0) t
+         WHERE t.rn IN ((t.n + 1) / 2, (t.n + 2) / 2)`,
+        { $game_point: Number(settingsService.get('game_point')), $max_point: Number(settingsService.get('max_point')) }
+    )?.value ?? null;
+  }
+
+  /** Медианная длительность матча в секундах (та же выборка, что у
+   *  getMedianSecondsPerPoint: матчи короче минуты не учитываются). */
+  getMedianMatchSeconds(current_only: boolean) {
+    return this.db.get<number>(
+        `SELECT avg(t.dur) AS value
+         FROM (SELECT s.dur,
+                      ROW_NUMBER() OVER (ORDER BY s.dur) AS rn,
+                      COUNT(*) OVER ()                   AS n
+               FROM (SELECT m.id                                                                        AS match_id,
+                      CAST(strftime('%s', (SELECT max(created_at) FROM game WHERE match_id = m.id)) AS INTEGER) -
+                      CAST(strftime('%s', m.created_at) AS INTEGER)                               AS dur
+               FROM match m
+                        JOIN game g ON g.match_id = m.id
+               WHERE m.finished = 1
+                 ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}
+               GROUP BY m.id) AS s
+               WHERE s.dur > 60) t
+         WHERE t.rn IN ((t.n + 1) / 2, (t.n + 2) / 2)`
+    )?.value ?? null;
+  }
+
+  /** Медианная длительность игры в секундах: от предыдущей игры (или начала
+   *  матча) до конца игры; игры короче минуты не учитываются. */
+  getMedianGameSeconds(current_only: boolean) {
+    return this.db.get<number>(
+        `SELECT avg(t.game_dur) AS value
+         FROM (SELECT s.game_dur,
+                      ROW_NUMBER() OVER (ORDER BY s.game_dur) AS rn,
+                      COUNT(*) OVER ()                        AS n
+               FROM (SELECT CAST(strftime('%s', g.created_at) AS INTEGER) -
+                      CAST(strftime('%s', COALESCE((SELECT max(g2.created_at) FROM game g2
+                                                    WHERE g2.match_id = m.id
+                                                      AND g2.created_at < g.created_at), m.created_at)) AS INTEGER) AS game_dur
+               FROM match m
+                        JOIN game g ON g.match_id = m.id
+               WHERE m.finished = 1
+                 ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}) s
+               WHERE s.game_dur > 60) t
+         WHERE t.rn IN ((t.n + 1) / 2, (t.n + 2) / 2)`
+    )?.value ?? null;
+  }
+
+  /** Среднее число игр в матче — показатель выводится как float
+   *  (та же выборка, что у getMedianSecondsPerPoint). */
+  getAverageGamesPerMatch(current_only: boolean) {
+    return this.db.get<number>(
+        `SELECT avg(s.cnt) AS value
+         FROM (SELECT m.id                                                                        AS match_id,
+                      count(g.id)                                                                 AS cnt,
+                      CAST(strftime('%s', (SELECT max(created_at) FROM game WHERE match_id = m.id)) AS INTEGER) -
+                      CAST(strftime('%s', m.created_at) AS INTEGER)                               AS dur
+               FROM match m
+                        JOIN game g ON g.match_id = m.id
+               WHERE m.finished = 1
+                 ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}
+               GROUP BY m.id) AS s
+         WHERE s.dur > 60`
+    )?.value ?? null;
+  }
 
   getById(id: number) {
     return this.db.get(

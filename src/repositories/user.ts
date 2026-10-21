@@ -421,6 +421,31 @@ class User {
     );
   }
 
+  /** Состояние калибровки из последней строки рейтинга:
+   *  stale — серия началась с неактуального рейтинга, series — номер матча в серии;
+   *  is_seed — последняя строка является сидом (ручная установка без матча);
+   *  outdated — рейтинг неактуален: сид или дата последнего матча
+   *  старше calibration_fresh_days. Свежая строка с stale=0 — актуальный рейтинг. */
+  getCalibration(id: number) {
+    return this.db.get(
+        `SELECT r.stale,
+                r.series,
+                r.match_id IS NULL AS is_seed,
+                CASE WHEN r.match_id IS NULL THEN 1
+                     WHEN julianday('now') - julianday(m.created_at) >
+                          (SELECT CAST(value AS REAL)
+                           FROM settings
+                           WHERE name = 'calibration_fresh_days')
+                     THEN 1 ELSE 0 END AS outdated
+         FROM rating r
+                  LEFT JOIN match m ON m.id = r.match_id
+         WHERE r.user_id = ?
+         ORDER BY r.id DESC
+         LIMIT 1`,
+        [id]
+    );
+  }
+
   setRating(id: number, rating: number) {
     return this.db.run(
         `INSERT INTO rating (user_id, previous)
