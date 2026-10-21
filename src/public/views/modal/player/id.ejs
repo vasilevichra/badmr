@@ -48,9 +48,15 @@
                                                     <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0 mx-2" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
                                                 </div>
                                             </form>
+                                            <% // критерии калибровки: сид без матча, протухший рейтинг или идущая серия;
+                                               // серия отображается накопленная (stale=1), у сида и протухшего — 0
+                                               const calibrating = calibration && calibration_matches > 0 && (calibration.is_seed === 1 || calibration.outdated === 1 || (calibration.stale === 1 && calibration.series <= calibration_matches)); %>
+                                            <% const cal_series = calibration && calibration.outdated !== 1 && calibration.stale === 1 ? calibration.series : 0; %>
+                                            <% if (calibrating) { %>
                                             <div class="progress mt-2">
-                                                <div class="progress-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">Калибровка (50%)</div>
+                                                <div class="progress-bar" role="progressbar" style="width: <%= Math.round(cal_series / calibration_matches * 100) %>%" aria-valuenow="<%= Math.round(cal_series / calibration_matches * 100) %>" aria-valuemin="0" aria-valuemax="100">Калибровка (<%= cal_series %> из <%= calibration_matches %>)</div>
                                             </div>
+                                            <% } %>
                                             </p>
                                         </div>
                                     </div>
@@ -95,6 +101,13 @@
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Обзор</button>
                                         </li>
+                                        <% if (user_matches.length) { %>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches-tab-pane" type="button"
+                                                    role="tab" aria-controls="matches-tab-pane" aria-selected="false">Матчи
+                                            </button>
+                                        </li>
+                                        <% } %>
                                         <% if (co_winners.length) { %>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="win-tab" data-bs-toggle="tab" data-bs-target="#win-tab-pane" type="button"
@@ -228,6 +241,16 @@
                                                     <% }); %>
                                                     </tbody>
                                                 </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="matches-tab-pane" role="tabpanel" aria-labelledby="matches-tab" tabindex="0">
+                                            <!-- id отличается от страничного #match-history-block: периодический
+                                                 рефреш $(‘#match-history-block’).load(...) затрагивает все элементы
+                                                 с этим id и затирал бы фильтр по игроку всеми матчами турнира -->
+                                            <div id="player-match-history-block" class="row justify-content-center mx-auto">
+                                                <% user_matches.forEach((m, i) => { %>
+                                                    <%- include('../../match', {index: i, match: m, total: user_matches.length}); %>
+                                                <% }) %>
                                             </div>
                                         </div>
                                         <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">

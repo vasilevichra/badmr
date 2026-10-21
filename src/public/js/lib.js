@@ -47,9 +47,11 @@ const openPlayerWindow = (id) => {
         cache: false,
         success: html => {
           $("#player-window").html(html);
-          // модалка показывается после загрузки карточки — sync-запрос
-          // здесь замораживал интерфейс на время загрузки
-          new bootstrap.Modal('#player-window').show();
+          // getOrCreateInstance, а не new: при переходах игрок→соигрок модалка
+          // уже показана, но у нового экземпляра свой _isShown=false и свой
+          // backdrop — при закрытии крестиком удалялся только последний,
+          // остальные .modal-backdrop оставались серым экраном
+          bootstrap.Modal.getOrCreateInstance('#player-window').show();
         },
       }
   );

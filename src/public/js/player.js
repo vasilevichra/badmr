@@ -1,6 +1,6 @@
 // контекст приходит из index.js асинхронно: лимиты групп рейтинга из
 // настройки и флаги состояния турнира — синхронные запросы здесь запрещены
-const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, hasGames, everybodyPaid}) => {
+const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibrationMatches, hasGames, everybodyPaid}) => {
   $('#player-table')
   .bootstrapTable({
     url: '/api/users/',
@@ -40,6 +40,17 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, hasGame
         sortable: true,
         formatter: (value, row) =>
             this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()) +
+            // ненавязчивая индикация калибровки рейтинга: точка-светофор после
+            // имени. Красная — серия не начата (сид или протухший рейтинг),
+            // жёлтая — начало серии, зелёная — серия близка к концу;
+            // после последнего матча серии точка исчезает
+            (row.calibrating && row.calibration_series < calibrationMatches
+                ? '<i class="bi bi-dot player-calibration player-calibration-' +
+                  (row.calibration_series === 0 || calibrationMatches <= 0
+                      ? 'red'
+                      : row.calibration_series / calibrationMatches < 2 / 3 ? 'yellow' : 'green') +
+                  '" title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"></i>'
+                : '') +
             // кнопки в контейнере нулевой ширины: не влияют на ширину колонки «Имя»,
             // поверх неё рисуются по нажатию «Настройки»
             '<span class="player-settings-buttons">' +

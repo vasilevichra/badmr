@@ -35,6 +35,7 @@ $(document).ready(() => {
       F_max: values.F_max,
       G_max: values.G_max,
       H_max: values.H_max,
+      calibrationMatches: values.calibration_matches,
       hasGames: Boolean(played),
       everybodyPaid: Boolean(paid),
     });
@@ -129,9 +130,23 @@ $(document).ready(() => {
       }
     });
 
-    // клик по игроку в «Достижениях» и «Истории матчей» открывает модалку игрока
-    $('#achievement-block, #match-history-block').on('click', '.achievement-player, .match-history-players-name', function () {
+    // клик по игроку в «Достижениях» и «Истории матчей» (на странице и в
+    // карточке игрока) открывает модалку игрока; для карточки игрока
+    // делегирование — на постоянной оболочке #player-window: её содержимое
+    // подгружается ajax'ом, и на момент привязки #player-match-history-block
+    // ещё не существует
+    $('#achievement-block, #match-history-block, #player-window').on('click', '.achievement-player, .match-history-players-name', function () {
       openPlayerWindow(Number($(this).data('user-id')));
     });
   }
+
+  // закрытие открытого модального окна по Esc (дублирует встроенное поведение
+  // Bootstrap: работает и для модалок, созданных без фокуса внутри окна)
+  $(document).on('keydown', (event) => {
+    if (event.key === 'Escape') {
+      document.querySelectorAll('.modal.show').forEach((el) => {
+        bootstrap.Modal.getInstance(el)?.hide();
+      });
+    }
+  });
 });
