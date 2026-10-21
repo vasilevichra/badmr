@@ -2,6 +2,10 @@ import Express from 'express';
 const router = Express.Router();
 import UserService from '../../services/user.ts';
 const userService = new UserService();
+import TournamentService from '../../services/tournament.ts';
+const tournamentService = new TournamentService();
+import AchievementService from '../../services/achievement.ts';
+const achievementService = new AchievementService();
 import CityService from '../../services/city.ts';
 const cityService = new CityService();
 import RegionService from '../../services/region.ts';
@@ -13,6 +17,9 @@ import share from '../../share.cjs';
 
 router.get('/:id', (req, res) => {
   const userId = Number(req.params.id);
+  // номинации пользователя — по текущему турниру «Новая Лига»
+  const tournament = tournamentService.getCurrent() as { id: number } | undefined;
+  const achievements = tournament ? achievementService.getNominationsByUser(userId, tournament.id) : [];
   Promise.all([
     userService.getById(userId),              // 0
     userService.getRating(userId),            // 1
@@ -42,6 +49,7 @@ router.get('/:id', (req, res) => {
       co_losers: promises[9],
       buddies: promises[10],
       worst_opponents: promises[11],
+      achievements: achievements,
       playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
     });
   });

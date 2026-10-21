@@ -102,4 +102,23 @@ describe("Achievement", () => {
     // партнёры по команде всегда имеют одинаковые показатели
     assert.deepStrictEqual(userIds(result.turtle), [u1, u2].sort((a, b) => a - b));
   });
+
+  it("должен вернуть номинации пользователя для модалки игрока", async () => {
+    const [u1, u2, u3, u4, u5] = await seedMatches();
+
+    // u1,u2 — Пулемётчик, Очень старался, Черепаха и Медалист (3 номинации)
+    assert.deepStrictEqual(achievementService.getNominationsByUser(u1, 4), [
+      "Медалист", "Пулемётчик", "Очень старался, но ничего не получилось", "Черепаха"
+    ]);
+    // партнёр по команде имеет те же номинации
+    assert.deepStrictEqual(achievementService.getNominationsByUser(u2, 4), [
+      "Медалист", "Пулемётчик", "Очень старался, но ничего не получилось", "Черепаха"
+    ]);
+    // u3,u4 — Победитель и Стальные нервы
+    assert.deepStrictEqual(achievementService.getNominationsByUser(u3, 4), [
+      "Победитель", "Стальные нервы"
+    ]);
+    // без номинаций
+    assert.deepStrictEqual(achievementService.getNominationsByUser(u5, 4), []);
+  });
 });

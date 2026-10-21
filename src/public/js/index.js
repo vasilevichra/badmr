@@ -128,5 +128,10 @@ $(document).ready(() => {
         history.replaceState({}, '', url);
       }
     });
+
+    // в разделе «Достижения» клик по игроку открывает модалку игрока
+    $('#achievement-block').on('click', '.achievement-player', function () {
+      openPlayerWindow(Number($(this).data('user-id')));
+    });
   }
 });

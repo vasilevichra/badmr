@@ -66,6 +66,52 @@ describe("Player page", () => {
     assert.match(html, /Проигрывает/);
   });
 
+  it("должен показать номинации пользователя в карточке достижений", async () => {
+    const ids: number[] = [];
+    for (let i = 1; i <= 6; i++) {
+      const { id } = await userService.create(`Фамилия${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
+      ids.push(id);
+    }
+    await userService.deregisterAll();
+    await userService.registerByIds(ids);
+    const [u1, u2, u3, u4, u5, u6] = ids;
+    const at = (offsetMinutes: number) =>
+      new Date(Date.now() + offsetMinutes * 60000).toISOString().replace("T", " ").substring(0, 19);
+    const seed = async (users: number[], games: [string | null, string | null, number][]) => {
+      await matchService.create(...(users as [number, number, number, number]));
+      const match = (await matchService.getAll() as { id: number }[]).at(-1)!;
+      for (const [l1, l2, offset] of games) {
+        await gameService.create(match.id, l1, l2, at(offset));
+      }
+    };
+
+    await seed([u1, u2, u3, u4], [[null, "5", 10], [null, "25", 40]]);      // победа (u1,u2) 2:0
+    await seed([u1, u2, u3, u4], [["5", null, 10], ["8", null, 25]]);       // победа (u3,u4) 2:0
+    await seed([u1, u2, u3, u4], [[null, "3", 10], ["20", null, 30], ["20", null, 70]]); // (u3,u4) 2:1, по очкам выигрывает (u1,u2)
+
+    const res = await fetch(`${base}/${u1}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.match(html, /Достижения/);
+    assert.match(html, /Пулемётчик/);
+    assert.match(html, /Очень старался, но ничего не получилось/);
+    assert.match(html, /Черепаха/);
+    assert.match(html, /Медалист/);
+  });
+
+  it("не должен показывать карточку достижений без номинаций", async () => {
+    const { id } = await userService.create("Фамилия", "Имя", "Отчество", 500, 1, 1, "1990-01-01");
+    await userService.deregisterAll();
+    await userService.registerByIds([id]);
+
+    const res = await fetch(`${base}/${id}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.doesNotMatch(html, /Достижения/);
+  });
+
   it("не должен показать неудобных соперников когда их нет", async () => {
     const ids: number[] = [];
     for (let i = 1; i <= 4; i++) {
