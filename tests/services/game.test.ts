@@ -112,6 +112,18 @@ describe("Game", () => {
       assert.strictEqual(game.lost_2_by, null);
     });
 
+    it("не должен поставить created_at игры раньше предыдущей игры матча (история матчей, #баг времен)", async () => {
+      // клиентское время приходит из печенек и может быть старше
+      // уже записанных игр того же матча — длительности в истории
+      // считаются разностями created_at и перемешиваются
+      const { matchId } = await seedUnfinishedMatch();
+
+      await gameService.create(matchId, "21", "15", "2026-01-01 10:05:00");
+      const { id } = await gameService.create(matchId, "15", "21", "2026-01-01 10:00:00") as { id: number };
+
+      assert.strictEqual((await gameService.getById(id) as GameRow).created_at, "2026-01-01 10:05:00");
+    });
+
     it("должен вернуть пустой ответ для несуществующей игры", async () => {
       assert.strictEqual(await gameService.getById(999), undefined);
     });

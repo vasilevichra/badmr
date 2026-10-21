@@ -24,13 +24,17 @@ class Game {
   }
 
   create(match_id: number, lost_1_by: string | null, lost_2_by: string | null, created_at: string) {
+    // время приходит из печенек клиента (момент ввода счёта) и может быть
+    // старше уже записанных игр матча: длительности в истории матчей
+    // считаются разностями created_at соседних игр, инверсия перемешивает
+    // их начало/окончание — поэтому не даём времени уходить в прошлое
     return this.db.run(
         `INSERT INTO game (match_id,
                            lost_1_by,
                            lost_2_by,
                            created_at)
-         VALUES (?, ?, ?, ?)`,
-        [match_id, lost_1_by, lost_2_by, created_at]
+         VALUES (?, ?, ?, max(?, (SELECT coalesce(max(created_at), ?) FROM game WHERE match_id = ?)))`,
+        [match_id, lost_1_by, lost_2_by, created_at, created_at, match_id]
     );
   }
 }
