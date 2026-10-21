@@ -311,6 +311,10 @@ input:focus::placeholder {
   margin: 1em 0 1em 0;
 }
 
+.match-history-players {
+  border-radius: 0.5rem;
+}
+
 .match-history-players td {
   width: auto !important;
   padding: 6px;
@@ -324,6 +328,7 @@ input:focus::placeholder {
   font-size: 85%;
   display: flex;
   justify-content: left;
+  cursor: pointer;
 }
 
 .match-history-players-name img {
@@ -616,10 +621,7 @@ td.diagonal-cross:after {
   display: flex;
   justify-content: center;
   cursor: pointer;
-}
-
-.achievement-player:hover {
-  text-decoration: underline;
+  margin: 0.25em 0;
 }
 
 .achievement-player img {
