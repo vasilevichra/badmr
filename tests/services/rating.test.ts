@@ -4,7 +4,12 @@ import RatingService from "../../src/services/rating.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
 import UserService from "../../src/services/user.ts";
+import SettingsService from "../../src/services/settings.ts";
 import { clean } from "../helpers/migration.ts";
+
+// точки рейтинга в тестах посчитаны при фиксированном K —
+// калибровка здесь не тестируется, отключаем её
+const settingsService = new SettingsService();
 
 interface RatingPoint {
   x: string;
@@ -50,6 +55,7 @@ describe("Rating", () => {
   beforeEach(async () => {
     console.log = function () {};
     await clean();
+    await settingsService.set("calibration_matches", "0");
   });
 
   describe("constructor", () => {

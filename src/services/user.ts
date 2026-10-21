@@ -99,6 +99,7 @@ class User {
   unarchive = (id: number) => this.user.unarchive(id);
   unarchiveAll = () => this.user.unarchiveAll();
   getRating = (id: number) => this.user.getRating(id);
+  getCalibration = (id: number) => this.user.getCalibration(id);
   setRating = (id: number, rating: number) => this.user.setRating(id, rating);
   getDaysUntilBirthday = (id: number) => this.user.getDaysUntilBirthday(id);
   getMatchesCount = (id: number) => this.user.getMatchesCount(id);

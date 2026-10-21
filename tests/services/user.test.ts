@@ -7,6 +7,7 @@ import UserRepository from "../../src/repositories/user.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
 import Repository from "../../src/repositories/common.ts";
+import SettingsService from "../../src/services/settings.ts";
 import { clean } from "../helpers/migration.ts";
 
 interface UserRow {
@@ -211,6 +212,9 @@ describe("User", () => {
   beforeEach(async () => {
     console.log = function () {};
     await cleanAll();
+    // точные рейтинги в тестах посчитаны при фиксированном K —
+    // калибровка здесь не тестируется, отключаем её
+    await new SettingsService().set("calibration_matches", "0");
   });
 
   describe("create, getById", () => {
