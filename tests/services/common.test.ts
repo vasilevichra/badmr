@@ -141,6 +141,13 @@ describe("Common", () => {
   beforeEach(async () => {
     console.log = function () {};
     await cleanAll();
+    // готовность пар в тестах посчитана при фиксированном K —
+    // калибровка здесь не тестируется, отключаем её
+    const settingsService = new SettingsService();
+    await settingsService.set("calibration_matches", "0");
+    // порядок подбора фиксирован (played, matches, diff): тесты проверяют
+    // логику подбора, а не дефолт приоритетов (в миграциях — diff, matches, played)
+    await settingsService.set(settingsService.opt.PRIORITY, "1,2,3");
   });
 
   describe("constructor", () => {

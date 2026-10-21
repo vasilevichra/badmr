@@ -47,7 +47,8 @@ describe("Settings", () => {
     it("должен вернуть все настройки с описаниями", async () => {
       const all = await settingsService.getAll() as Setting[];
 
-      assert.strictEqual(all.length, 24);
+      // 24 базовых настройки + 4 настройки калибровки рейтинга
+      assert.strictEqual(all.length, 28);
       assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s));
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "delta"),
@@ -64,7 +65,7 @@ describe("Settings", () => {
     it("должен вернуть объект настроек текущего турнира", async () => {
       const settings = await settingsService.getSettings() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(settings).length, 24);
+      assert.strictEqual(Object.keys(settings).length, 28);
       assert.strictEqual(settings.delta, "100");
       assert.strictEqual(settings.state, "1");
       assert.strictEqual(settings.type, "1");
@@ -82,7 +83,7 @@ describe("Settings", () => {
     it("должен вернуть объект значений по умолчанию без переопределений", async () => {
       const defaults = await settingsService.getDefaults() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(defaults).length, 24);
+      assert.strictEqual(Object.keys(defaults).length, 28);
       assert.strictEqual(defaults.delta, "50");
       assert.strictEqual(defaults.state, "1");
     });
@@ -147,8 +148,8 @@ describe("Settings", () => {
     });
 
     it("должен принять priority со списком id через запятую", () => {
-      db.exec("UPDATE defaults SET value = '3,2,1' WHERE name = 'priority'");
-      db.exec("UPDATE defaults SET value = '1,2,3' WHERE name = 'priority'"); // возврат сида
+      db.exec("UPDATE defaults SET value = '1,2,3' WHERE name = 'priority'");
+      db.exec("UPDATE defaults SET value = '3,2,1' WHERE name = 'priority'"); // возврат сида
     });
 
     it("должен отклонить max_point не больше game_point", () => {
