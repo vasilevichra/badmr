@@ -29,6 +29,17 @@ interface AchievementUserRow {
 
 class Achievement {
   declare static _instance: Achievement | undefined;
+
+  // названия номинаций — единые для раздела «Достижения» и модалки игрока
+  static TITLES: Record<string, string> = {
+    winner: "Победитель",
+    machine_gunner: "Пулемётчик",
+    trier: "Очень старался, но ничего не получилось",
+    iron_nerves: "Стальные нервы",
+    turtle: "Черепаха",
+    medalist: "Медалист"
+  };
+
   achievement!: AchievementRepository;
   settingsService!: SettingsService;
 
@@ -102,6 +113,19 @@ class Achievement {
     }
 
     return Object.fromEntries(Object.entries(nominations).filter(([, nomination]) => nomination));
+  };
+
+  /**
+   * Номинации пользователя в турнире (для модалки игрока): «Медалист» первым,
+   * остальные — в порядке объявления. Названия берутся из Achievement.TITLES.
+   */
+  getNominationsByUser = (user_id: number, tournament_id: number): string[] => {
+    const nominations = this.getByTournament(tournament_id);
+    const keys = Object.keys(nominations).filter((key) =>
+      nominations[key].users.some((user) => user.user_id === user_id)
+    );
+    keys.sort((key1, key2) => Number(key2 === "medalist") - Number(key1 === "medalist"));
+    return keys.map((key) => Achievement.TITLES[key]);
   };
 }
 

@@ -1,12 +1,12 @@
 <% if (achievements && Object.keys(achievements).length > 0) { %>
     <% var plural = (n, forms) => forms[(n % 10 === 1 && n % 100 !== 11) ? 0 : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 1 : 2]; %>
-    <% var titles = {
-        winner: ['Победитель', (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`],
-        machine_gunner: ['Пулемётчик', (v) => `${v} ${plural(v, ['волан', 'волана', 'воланов'])}`],
-        trier: ['Очень старался, но ничего не получилось', (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`],
-        iron_nerves: ['Стальные нервы', (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`],
-        turtle: ['Черепаха', (v) => `${v}'`],
-        medalist: ['Медалист', (v) => `${v} ${plural(v, ['достижение', 'достижения', 'достижений'])}`]
+    <% var units = {
+        winner: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
+        machine_gunner: (v) => `${v} ${plural(v, ['волан', 'волана', 'воланов'])}`,
+        trier: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
+        iron_nerves: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
+        turtle: (v) => `${v}'`,
+        medalist: (v) => `${v} ${plural(v, ['достижение', 'достижения', 'достижений'])}`
     }; %>
     <div class="container">
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
@@ -18,11 +18,11 @@
                 <div id="achievement-block" class="row justify-content-center mx-auto">
                     <% for (const [key, nomination] of Object.entries(achievements)) { %>
                         <div class="col-auto text-center achievement-card p-3">
-                            <label class="form-label achievement-title"><%= titles[key][0] %></label>
+                            <label class="form-label achievement-title"><%= achievementTitles[key] %></label>
                             <% nomination.users.forEach((u) => { %>
-                                <div class="achievement-player"><%- playerNameFormatter(u.user_id, u.name, u.sex, u.pic) %></div>
+                                <div class="achievement-player no-selection" data-user-id="<%= u.user_id %>" role="button"><%- playerNameFormatter(u.user_id, u.name, u.sex, u.pic) %></div>
                             <% }) %>
-                            <label class="form-label achievement-value"><%= titles[key][1](nomination.value) %></label>
+                            <label class="form-label achievement-value"><%= units[key](nomination.value) %></label>
                         </div>
                     <% } %>
                 </div>
