@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, beforeEach, it } from "node:test";
+import fs from "node:fs";
+import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 
 import TournamentService from "../../src/services/tournament.ts";
 import UserService from "../../src/services/user.ts";
@@ -245,6 +248,17 @@ describe("Tournament", () => {
     });
 
     it("должен вернуть 1 для турнира с завершёнными матчами", async () => {
+      // сеем матч сами: дамп 05-specific перегенерируется из живой базы,
+      // рассчитывать на его матчи нельзя; finished=1 вставляется напрямую —
+      // триггер расчёта рейтинга вешается только на UPDATE
+      const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), {enableForeignKeyConstraints: false});
+      db.exec(`
+        INSERT INTO match (id, tournament_id, user_1_id, user_2_id, user_3_id, user_4_id, court_id, finished)
+        VALUES (900001, 1, 1, 2, 3, 4, 1, 1);
+        INSERT INTO game (id, match_id, created_at, lost_1_by)
+        VALUES (900001, 900001, '2026-01-01 10:00:00', 15);
+      `);
+
       assert.strictEqual(await tournamentService.hasGames(1), 1);
     });
 

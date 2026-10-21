@@ -27,6 +27,22 @@ const sanitize = (sql: string) =>
 
 const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), { enableForeignKeyConstraints: false });
 
+/** Волатильные данные из дампа 05-specific: тесты сеют свои матчи, игры,
+ *  рейтинги и команды и рассчитывают на чистое состояние после clean()
+ *  («пустые списки когда матчей нет», getAll()[0] — свой матч). Дамп
+ *  перегенерируется из живой базы и содержит незавершённые матчи —
+ *  после каждого сброса их нужно убирать заново. */
+const volatileSql = `
+  DELETE FROM game;
+  DELETE FROM rating;
+  DELETE FROM match;
+  DELETE FROM team_user;
+  DELETE FROM team;
+  DELETE FROM game_110;
+  DELETE FROM match_110;
+  DELETE FROM team_order_110;
+`;
+
 /** Откатывает и заново накатывает данные и сиды тестовой БД,
  *  не трогая схему таблиц, представлений и триггеров.
  *  Выполняется синхронно одним встроенным соединением node:sqlite:
@@ -36,4 +52,5 @@ export const clean = (): void => {
   for (const sql of resetSqlFiles) {
     db.exec(sanitize(sql));
   }
+  db.exec(volatileSql);
 };
