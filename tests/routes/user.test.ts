@@ -72,6 +72,47 @@ describe("User routes", () => {
 
       assert.ok(users.some((u) => u.id === id));
     });
+
+    it("должен пометить calibrating игроков под критериями калибровки", async () => {
+      const ids: number[] = [];
+      for (let i = 1; i <= 4; i++) {
+        ids.push(await createUser(`Фамилия${i}`, `Имя${i}`));
+      }
+      for (const id of ids) {
+        await post(`/register/${id}`);
+      }
+      const [u1, u2, u3, u4] = ids;
+
+      // пара (u1,u2) выигрывает обе игры
+      await matchService.create(u1, u2, u3, u4);
+      const matches = await matchService.getAll() as { id: number; finished: number }[];
+      const match = matches.filter((m) => m.finished === 0).at(-1)!;
+      await gameService.create(match.id, null, "15", "2026-01-01 10:00:00");
+      await gameService.create(match.id, null, "17", "2026-01-01 10:05:00");
+
+      const list = await (await fetch(`${base}/`)).json() as Record<string, number>[];
+      const byId = (id: number) => list.find((u) => u.id === id)!;
+      // игроки в серии калибровки (включая проигравших) — сиды до матча тоже
+      assert.strictEqual(byId(u1).calibrating, 1);
+      assert.strictEqual(byId(u3).calibrating, 1);
+      // серия после первого матча — точка будет жёлтой
+      assert.strictEqual(byId(u1).calibration_series, 1);
+      assert.strictEqual(byId(u3).calibration_series, 1);
+
+      // свежий актуальный рейтинг (stale=0) — калибровка не нужна
+      db.exec(`UPDATE rating SET stale = 0, series = 0 WHERE match_id = ${match.id}`);
+      const fresh = await (await fetch(`${base}/`)).json() as Record<string, number>[];
+      assert.strictEqual(fresh.find((u) => u.id === u1)!.calibrating, 0);
+      assert.strictEqual(fresh.find((u) => u.id === u1)!.calibration_series, 0);
+
+      // протухший рейтинг: матчу больше calibration_fresh_days —
+      // калибровка впереди, серия начнётся заново с нуля (красная точка)
+      db.exec(`UPDATE match SET created_at = datetime('now', '-70 days') WHERE id = ${match.id}`);
+      const stale = await (await fetch(`${base}/`)).json() as Record<string, number>[];
+      assert.strictEqual(stale.find((u) => u.id === u1)!.calibrating, 1);
+      assert.strictEqual(stale.find((u) => u.id === u3)!.calibrating, 1);
+      assert.strictEqual(stale.find((u) => u.id === u1)!.calibration_series, 0);
+    });
   });
 
   describe("GET /find", () => {
