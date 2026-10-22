@@ -14,6 +14,8 @@ interface ReadyRow {
   rating: number;
   matches: number;
   played: number;
+  // исход последнего матча: 1 - выиграл, 0 - проиграл, null - не играл
+  won: number | null;
   sex: number;
   pic: string | null;
 }

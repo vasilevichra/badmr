@@ -51,7 +51,9 @@ class Common {
 
     // пол и аватар нужны клиенту сразу (подбор рисует карточки игроков);
     // пользовательские подзапросы вместо JOIN: user_lab/user_pic могут
-    // хранить несколько строк на игрока — JOIN размножил бы кандидатов
+    // хранить несколько строк на игрока — JOIN размножил бы кандидатов;
+    // порядок повторяет ORDER BY вьюхи ready: сам по себе он через JOIN
+    // не гарантируется, а от него зависит перебор кандидатов в calcReadyRec
     return this.db.all(
         `SELECT r.*,
                 u.sex,
@@ -59,7 +61,8 @@ class Common {
                          (SELECT ul.img FROM user_lab ul WHERE ul.user_id = r.user_id ORDER BY ul.id DESC LIMIT 1)) AS pic
          FROM ready r
          JOIN user u ON u.id = r.user_id
-         WHERE r.user_id NOT IN (SELECT value FROM json_each(?))`,
+         WHERE r.user_id NOT IN (SELECT value FROM json_each(?))
+         ORDER BY r.played, r.matches DESC`,
         [JSON.stringify(uniqUsedUserIds)]
     );
   }
