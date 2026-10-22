@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it, beforeEach, after } from "node:test";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { testDbPath } from "../../src/test-db.ts";
 import UserService from "../../src/services/user.ts";
 import UserRepository from "../../src/repositories/user.ts";
 import MatchService from "../../src/services/match.ts";
@@ -281,7 +282,7 @@ describe("User", () => {
 
       // свой город: дамп 05-specific перегенерируется из живой базы,
       // и «свободный» город из словаря может получить пользователя
-      const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), {enableForeignKeyConstraints: false});
+      const db = new DatabaseSync(testDbPath(), {enableForeignKeyConstraints: false});
       db.exec(`INSERT OR IGNORE INTO city (id, region_id, name) VALUES (900001, 1, 'Тестоград')`);
 
       assert.deepStrictEqual(await userService.select(900001), []);

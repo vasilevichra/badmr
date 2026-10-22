@@ -1,4 +1,5 @@
 import DB from "../db.ts";
+import { testDbPath } from "../test-db.ts";
 import Specific from "./specific.ts";
 import crypto from "node:crypto";
 
@@ -26,7 +27,7 @@ class Common {
     }
     Common._instance = this;
 
-    this.db = new DB(process.env.NODE_ENV === 'test' ? './.data/test.db' : './.data/badmr.sqlite3');
+    this.db = new DB(process.env.NODE_ENV === 'test' ? testDbPath() : './.data/badmr.sqlite3');
     // create an initial users
     const salt = crypto.randomBytes(16);
     (Specific.users || []).forEach(u => {

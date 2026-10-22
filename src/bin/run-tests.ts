@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import {spawn, spawnSync} from "node:child_process";
 
@@ -7,6 +8,12 @@ const root = path.resolve(import.meta.dirname, "../..");
 const stampPath = path.join(root, ".data/test.stamp");
 const logPath = path.join(root, ".log/test.log");
 const testDbPath = path.join(root, ".data/test.db");
+
+/** БД-копии воркеров тестов (см. src/test-db.ts): воркер узнаваем по pid. */
+const workerDbPaths = () =>
+    fs.readdirSync(path.join(root, ".data"), {withFileTypes: true})
+        .filter((e) => e.isFile() && /^test-\d+\.db$/.test(e.name))
+        .map((e) => path.join(root, ".data", e.name));
 
 /** Что влияет на результат тестов. Браузерные js/css исключены: они не тестируются. */
 const sources = ["app.ts", "package.json", "src", "tests", "migrations"];
@@ -51,6 +58,9 @@ if (stamp === current) {
 }
 
 fs.rmSync(testDbPath, {force: true});
+for (const p of workerDbPaths()) {
+  fs.rmSync(p, {force: true});
+}
 
 const migrate = spawnSync("node", ["--experimental-strip-types", "src/bin/migrate.ts"], {
   cwd: root,
@@ -66,10 +76,19 @@ if (migrate.status !== 0) {
 await new Promise<void>((resolve) => {
   const test = spawn(
       "node",
-      ["--experimental-strip-types", "--test", "--test-concurrency=1", "--experimental-test-coverage",
+      ["--experimental-strip-types", "--test",
+        // ВСЕ опции — строго ДО пути: node --test трактует первый
+        // позиционный аргумент как начало списка тестовых путей, и всё,
+        // что после него, перестаёт быть опциями (force-exit молча
+        // игнорируется — воркеры с живыми таймерами не завершаются)
+        "--test-concurrency", String(Math.max(1, os.availableParallelism() - 1)),
+        "--experimental-test-coverage",
         // node-schedule в тестах отложенных статусов турниров держит event loop
         // даже после срабатывания задач — завершаем процесс принудительно
-        "--test-force-exit"],
+        "--test-force-exit",
+        // путь задаём явно: discovery от корня подбирает посторонние файлы
+        // (например, src/test-db.ts — имя начинается с "test-")
+        "tests"],
       {
         cwd: root,
         stdio: ["ignore", "pipe", "inherit"],
@@ -90,6 +109,11 @@ await new Promise<void>((resolve) => {
     resolve();
   });
 });
+
+// копии БД воркеров больше не нужны
+for (const p of workerDbPaths()) {
+  fs.rmSync(p, {force: true});
+}
 
 // штамп пишем только после успешного прогона
 fs.mkdirSync(path.dirname(stampPath), {recursive: true});

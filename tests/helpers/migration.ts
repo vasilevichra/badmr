@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { testDbPath } from "../../src/test-db.ts";
 
 const sqlsDir = path.resolve(import.meta.dirname, "../../migrations");
 
@@ -25,7 +26,7 @@ const sanitize = (sql: string) =>
     .replace(/DROP TABLE (?!IF )/g, "DROP TABLE IF EXISTS ")
     .replace(/CREATE TABLE (?!IF )/g, "CREATE TABLE IF NOT EXISTS ");
 
-const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), { enableForeignKeyConstraints: false });
+const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
 
 /** Волатильные данные из дампа 05-specific: тесты сеют свои матчи, игры,
  *  рейтинги и команды и рассчитывают на чистое состояние после clean()

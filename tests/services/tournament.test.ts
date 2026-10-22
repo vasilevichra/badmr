@@ -3,6 +3,7 @@ import { describe, beforeEach, it } from "node:test";
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { testDbPath } from "../../src/test-db.ts";
 
 import TournamentService from "../../src/services/tournament.ts";
 import UserService from "../../src/services/user.ts";
@@ -282,7 +283,7 @@ describe("Tournament", () => {
       // сеем матч сами: дамп 05-specific перегенерируется из живой базы,
       // рассчитывать на его матчи нельзя; finished=1 вставляется напрямую —
       // триггер расчёта рейтинга вешается только на UPDATE
-      const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), {enableForeignKeyConstraints: false});
+      const db = new DatabaseSync(testDbPath(), {enableForeignKeyConstraints: false});
       db.exec(`
         INSERT INTO match (id, tournament_id, user_1_id, user_2_id, user_3_id, user_4_id, court_id, finished)
         VALUES (900001, 1, 1, 2, 3, 4, 1, 1);
@@ -345,17 +346,16 @@ describe("Tournament", () => {
 
       tournamentService.setDeferredStatusHandlers();
 
-      // задачи назначены на секунду вперёд — ждём с запасом
-      await new Promise((resolve) => setTimeout(resolve, 1800));
+      // задачи назначены на секунду вперёд, но под нагрузкой таймер может
+      // сработать позже — опрашиваем с запасом
+      const status = (name: string) =>
+        db.get<{ s: number }>("SELECT tournament_status_id AS s FROM tournament WHERE name = ?", [name])!.s;
+      for (let i = 0; i < 100 && (status("Идёт") !== 3 || status("Регистрация") !== 2); i++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
 
-      assert.strictEqual(
-        db.get<{ s: number }>("SELECT tournament_status_id AS s FROM tournament WHERE name = 'Идёт'")!.s,
-        3,
-      );
-      assert.strictEqual(
-        db.get<{ s: number }>("SELECT tournament_status_id AS s FROM tournament WHERE name = 'Регистрация'")!.s,
-        2,
-      );
+      assert.strictEqual(status("Идёт"), 3);
+      assert.strictEqual(status("Регистрация"), 2);
     });
   });
 });
