@@ -396,52 +396,14 @@ $(document).on('click', '.coords-copy', function () {
   copyToClipboard(String($(this).data('coords')), () => showToast('Координаты скопированы', 'success'));
 });
 
-/** Наивное время в поясе турнира → Date в UTC. Смещение пояса на момент
- *  события вычисляется через Intl (честно учитывает DST и историю зон);
- *  две итерации — на случай попадания на DST-границу. */
-const zonedToUtcDate = (naive, timeZone) => {
-  const asUtc = new Date(String(naive).replace(' ', 'T') + 'Z');
-  const offsetMs = (date) => {
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone, hourCycle: 'h23',
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    }).formatToParts(date);
-    const get = (type) => Number(parts.find((part) => part.type === type).value);
-    return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second')) - date.getTime();
-  };
-  return new Date(asUtc.getTime() - offsetMs(new Date(asUtc.getTime() - offsetMs(asUtc))));
-};
-
-// смещение пояса на момент события в минутах (для VTIMEZONE)
-const zoneOffsetMinutes = (naive, timeZone) =>
-    Math.round((new Date(String(naive).replace(' ', 'T') + 'Z').getTime() - zonedToUtcDate(naive, timeZone).getTime()) / 60000);
-
-// '+300' / '-420': смещение в формате TZOFFSETFROM/TO
-const fmtOffset = (minutes) => {
-  const abs = Math.abs(minutes);
-  return `${minutes < 0 ? '-' : '+'}${String(Math.floor(abs / 60)).padStart(2, '0')}${String(abs % 60).padStart(2, '0')}`;
-};
-
 /** Скачивает .ics (RFC 5545) с событием турнира: клик по кнопке в шапке
  *  открывает/сохраняет файл, календарное приложение импортирует событие.
- *  Время события — «настенное» время таймзоны турнира (data-tz), явно
- *  помеченное DTSTART;TZID=... и блоком VTIMEZONE: в календаре показывается
- *  именно время турнира (у участника из другого пояса — эквивалент).
- *  DTSTAMP обязан быть в UTC. */
+ *  Время события в данных считается UTC — DTSTART/DTEND помечаются
+ *  суффиксом Z, тайзона турнира не участвует. */
 const addEventToCalendar = (button) => {
   const $button = $(button);
   // '2026-01-01 21:00:00' → '20260101T210000'
   const icsDate = (value) => String(value).replace(' ', 'T').replaceAll(/[-:]/g, '');
-  const timeZone = $button.data('tz');
-  // невалидная/отсутствующая зона — плавающее время, иначе Intl бросит RangeError
-  let zone = null;
-  try {
-    new Intl.DateTimeFormat('en-US', {timeZone});
-    zone = timeZone;
-  } catch {
-    // оставляем плавающее время
-  }
   const escapeIcs = (text) => String(text).replaceAll(/([,;\\])/g, '\\$1').replaceAll('\n', '\\n');
 
   const start = $button.data('start');
@@ -449,36 +411,16 @@ const addEventToCalendar = (button) => {
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//badmr//Tournament//RU',
+    'BEGIN:VEVENT',
+    `UID:${Date.now()}@badmr`,
+    // '2026-10-21T12:15:30.123Z' → '20261021T121530Z'
+    `DTSTAMP:${new Date().toISOString().replaceAll(/[-:]/g, '').slice(0, 15)}Z`,
+    `DTSTART:${icsDate(start)}Z`
   ];
-
-  if (zone) {
-    const offset = fmtOffset(zoneOffsetMinutes(start, zone));
-    const zoneName = new Intl.DateTimeFormat('en-US', {timeZone: zone, timeZoneName: 'short'})
-        .formatToParts(new Date()).find((part) => part.type === 'timeZoneName').value;
-    lines.push(
-        'BEGIN:VTIMEZONE',
-        `TZID:${zone}`,
-        'BEGIN:STANDARD',
-        'DTSTART:19700101T000000',
-        `TZOFFSETFROM:${offset}`,
-        `TZOFFSETTO:${offset}`,
-        `TZNAME:${zoneName}`,
-        'END:STANDARD',
-        'END:VTIMEZONE'
-    );
-  }
-
-  lines.push(
-      'BEGIN:VEVENT',
-      `UID:${Date.now()}@badmr`,
-      // '2026-10-21T12:15:30.123Z' → '20261021T121530Z'
-      `DTSTAMP:${new Date().toISOString().replaceAll(/[-:]/g, '').slice(0, 15)}Z`,
-      zone ? `DTSTART;TZID=${zone}:${icsDate(start)}` : `DTSTART:${icsDate(start)}`
-  );
   const end = $button.data('end');
   if (end) {
     // у незавершённого турнира длительность не задана — DTEND опускается
-    lines.push(zone ? `DTEND;TZID=${zone}:${icsDate(end)}` : `DTEND:${icsDate(end)}`);
+    lines.push(`DTEND:${icsDate(end)}Z`);
   }
   lines.push(
       `SUMMARY:${escapeIcs($button.data('name'))}`,
