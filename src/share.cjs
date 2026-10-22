@@ -10,8 +10,11 @@
   };
 
   const playerAvatarFormatter = (pic, name, sex) => {
+    // в БД аватар — data-URL (base64, в т.ч. из user_lab.img), либо http-ссылка,
+    // либо «сырой» base64 из user_pic.pic
+    const src = pic && (pic.startsWith('http') || pic.startsWith('data:')) ? pic : 'data:image/png;base64, ' + pic;
     return pic ?
-        `<img class="no-selection" src="${pic.startsWith('https://') ? pic : 'data:image/png;base64, ' + pic }" alt="${name}" width="20" height="20"/>` :
+        `<img class="no-selection" src="${src}" alt="${name}" width="20" height="20"/>` :
         `<span class="no-selection" style="font-size: 15px">${(sex ? '👨🏻‍🦰' : '👩🏻')}</span>`;
   };
 

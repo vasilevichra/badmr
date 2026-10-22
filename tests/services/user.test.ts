@@ -187,11 +187,24 @@ const mockFetch = (
   searchHtml: string,
   playerHtml: string = playerPage(),
   searchByTitle: Record<string, string> = {},
+  // байты аватара для GET /badm/users/...; null — сайт отвечает не-2xx
+  avatarBytes: Uint8Array | null = new Uint8Array([1, 2, 3, 4]),
 ): void => {
   fetchedUrls.length = 0;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = String(input);
     fetchedUrls.push(url);
+    if (url.includes("/badm/users/")) {
+      if (!avatarBytes) {
+        return {ok: false, status: 404} as unknown as Response;
+      }
+      return {
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => avatarBytes.buffer,
+        headers: {get: () => "image/webp"},
+      } as unknown as Response;
+    }
     let html: string;
     if (url.includes("/ajax?search=rating")) {
       const title = decodeURIComponent(String(init?.body ?? "").replace(/^title=/, "").replace(/&s=d$/, ""));
@@ -682,7 +695,7 @@ describe("User", () => {
       assert.deepStrictEqual<LabPlayer>(player, {
         user_id: 7,
         id: 12345,
-        img: "https://badminton4u.ru/badm/users/12345/mini-avatar.webp",
+        img: "data:image/webp;base64,AQIDBA==",
         r1: 500,
         r2: 520,
         name: "Иванов Иван",
@@ -710,9 +723,20 @@ describe("User", () => {
       mockFetch(siteRow(), playerPage({ id: "99999", login: "ivanov" }));
 
       const player = await userService.labSearch("Иванов", "Доброград", 7, 99999) as LabPlayer;
-      assert.deepStrictEqual(fetchedUrls, ["https://badminton4u.ru/players/99999"]);
+      assert.deepStrictEqual(fetchedUrls, [
+        "https://badminton4u.ru/players/99999",
+        // аватар скачивается следом за страницей игрока (с cache-buster'ом сайта)
+        "https://badminton4u.ru/badm/users/12345/mini-avatar.webp?1788129740",
+      ]);
       assert.strictEqual(player.id, 99999);
       assert.strictEqual(player.login, "ivanov");
+    });
+
+    it("должен вернуть img null когда аватар недоступен", async () => {
+      mockFetch(siteRow(), playerPage(), {}, null);
+
+      const player = await userService.labSearch("Иванов", "Доброград", 7) as LabPlayer;
+      assert.strictEqual(player.img, null);
     });
 
     it("должен вернуть undefined когда пользователь не уникальный", async () => {

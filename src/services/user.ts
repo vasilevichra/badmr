@@ -190,12 +190,11 @@ class User {
     // пауза перед каждым запросом, чтобы не походить на бота
     const pause = (base = 0) => Promise.delay(Math.random() * 1000 + 500 + base);
     // сайт иногда сбрасывает соединение (ECONNRESET) — повторяем попытки
-    const fetchHtml = async (url: string, body: string): Promise<string> => {
+    const retry = async <T>(request: () => Promise<T>): Promise<T> => {
       for (let attempt = 1; ; attempt++) {
         await pause(1000 * (attempt - 1));
         try {
-          const response = await fetch(url, {method: 'POST', headers: siteHeaders(), body});
-          return (await response.json() as {html: string}).html;
+          return await request();
         } catch (error) {
           if (attempt >= 3) {
             throw error;
@@ -203,6 +202,21 @@ class User {
         }
       }
     };
+    const fetchHtml = async (url: string, body: string): Promise<string> =>
+        retry(async () => {
+          const response = await fetch(url, {method: 'POST', headers: siteHeaders(), body});
+          return (await response.json() as {html: string}).html;
+        });
+    // бинарные ответы (аватар) — та же пауза и повторы; не-2xx означает «аватара нет»
+    const fetchBytes = async (url: string): Promise<Uint8Array | null> =>
+        retry(async () => {
+          const response = await fetch(url, {method: 'GET', headers: siteHeaders()});
+          if (!response.ok) {
+            return null;
+          }
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          return bytes.length > 0 ? bytes : null;
+        });
 
     let id = site_id;
     if (!id) {
@@ -242,10 +256,22 @@ class User {
       .match(/url\(['"]?([^'")]+)/)?.[1] ?? null;
     const year = (document.querySelector('#info .birth')?.textContent ?? '').match(/\d{4}/);
 
+    // аватар скачивается и хранится в БД как data-URL (base64): хотлинк на
+    // badminton4u.ru ненадёжен — сайт режет автоматические запросы и банит IP
+    let img: string | null = null;
+    if (avatarUrl) {
+      const bytes = await fetchBytes('https://badminton4u.ru/' + avatarUrl.replace(/^\//, ''));
+      if (bytes) {
+        const ext = avatarUrl.replace(/\?.*$/, '').split('.').pop()?.toLowerCase();
+        const mime = {webp: 'image/webp', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif'}[ext ?? ''] ?? 'image/webp';
+        img = `data:${mime};base64,${Buffer.from(bytes).toString('base64')}`;
+      }
+    }
+
     return {
       user_id: user_id,
       id: id,
-      img: avatarUrl ? 'https://badminton4u.ru/' + avatarUrl.replace(/^\//, '').replace(/\?.*$/, '') : null,
+      img: img,
       r1: Number(dfn('s')?.textContent) || null,
       r2: Number(dfn('d')?.textContent) || null,
       name: (document.querySelector('h1')?.textContent ?? '').trim(),

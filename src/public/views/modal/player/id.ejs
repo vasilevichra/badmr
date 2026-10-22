@@ -20,7 +20,7 @@
                                         <div class="card-body">
                                             <div class="text-center mb-3">
                                                 <img class="img-fluid"
-                                                     src="<% if (user.pic && user.pic.slice(0, 4) === 'http') { %><%= user.pic %><% } else if (user.pic) { %>data:image/png;base64, <%= user.pic %><% } else { %>/assets/images/pepe.png<% } %>"
+                                                     src="<% if (user.pic && (user.pic.slice(0, 4) === 'http' || user.pic.slice(0, 5) === 'data:')) { %><%= user.pic %><% } else if (user.pic) { %>data:image/png;base64, <%= user.pic %><% } else { %>/assets/images/pepe.png<% } %>"
                                                      alt="user@email.com">
                                             </div>
                                             <p>
