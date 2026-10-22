@@ -259,6 +259,38 @@ input:focus::placeholder {
   margin: 1em;
 }
 
+/* пометки в заголовке колонки «Имя»: название слева, дельта сильнейшей
+   пары и значок фаворита — группой у правого края */
+.select-mark-th .th-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25em;
+}
+
+.select-marks {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+}
+
+/* едва заметный значок пары-фаворита при системе 50% */
+.select-favorite {
+  font-size: 0.9rem;
+  line-height: 1;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* перевес сильнейшей пары в баллах (+1.6) — еле заметный, в одном стиле
+   со значком фаворита */
+.select-delta {
+  font-weight: bold;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  opacity: 0.2;
+}
+
 /* смёрженная ячейка колонки превышения среднего рейтинга */
 .select-form-table-1 td[rowspan],
 .select-form-table-2 td[rowspan] {
@@ -285,12 +317,9 @@ input:focus::placeholder {
   background-color: var(--bs-table-hover-bg);
 }
 
-.select-form-info {
-  margin: 1em 0 1em 0;
-}
-
 .select-form-buttons {
-  margin: 0 0 3em 0;
+  /* вертикальный пробел между таблицей пары и кнопками «Начать»/«Отменить» */
+  margin: 1em 0 3em 0;
 }
 
 .match {
@@ -704,6 +733,13 @@ td.diagonal-cross:after {
 
 .achievement-title {
   font-weight: bold;
+}
+
+/* иконки bootstrap перед названиями достижений (заголовок карточки
+   и бейдж в модалке игрока) */
+.achievement-title .bi,
+.badge .bi {
+  margin-right: 0.25em;
 }
 
 .achievement-player {

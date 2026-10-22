@@ -17,6 +17,8 @@ interface Nomination {
 interface NominationMeta {
   title: string;
   description: string;
+  // класс иконки bootstrap-icons (без префикса "bi bi-") для заголовка
+  icon: string;
 }
 
 /** Накопленные по игроку показатели из event-строк. */
@@ -43,31 +45,32 @@ interface UserStats extends AchievementUser {
 class Achievement {
   declare static _instance: Achievement | undefined;
 
-  // мета номинаций: название + описание. Порядок ключей — порядок вывода
-  // в разделе «Достижения».
+  // мета номинаций: название + описание + иконка. Порядок ключей — порядок
+  // вывода в разделе «Достижения». Иконки — bootstrap-icons (все есть в
+  // подключённом bootstrap-icons.min.css).
   static META: Record<string, NominationMeta> = {
-    medalist: { title: "🏅 Медалист", description: "Больше всех номинаций" },
-    winner: { title: "🏆 Победитель", description: "Больше всех выигранных матчей" },
-    machine_gunner: { title: "🔫 Пулемётчик", description: "Больше всех забитых воланов" },
-    trier: { title: "🤷 Очень старался, но ничего не получилось", description: "Больше всех проигранных матчей с перевесом по забитым очкам" },
-    unrestrainable: { title: "🏃 Неудержимый", description: "Самая длинная серия выигранных игр подряд" },
-    fast_start: { title: "🚀 Быстрый старт", description: "Чаще всех выигрывал первую игру матча" },
-    finisher: { title: "💪 Дожиматель", description: "Чаще всех выигрывал решающую игру при счёте 1:1" },
-    comeback: { title: "🔄 Камбэк", description: "Больше всех побед после проигранной первой игры" },
-    perfect: { title: "💯 Идеальный сезон", description: "Ни одного поражения при минимум трёх матчах" },
-    endurance: { title: "🥵 На измор", description: "Больше всех побед со счётом 30:29" },
-    iron_nerves: { title: "🧊 Стальные нервы", description: "Больше всех выигранных игр в дополнительном счёте (22 и больше)" },
-    almost: { title: "😬 Почти смог", description: "Больше всех проигранных игр со своим счётом 20 и больше" },
-    rout: { title: "💥 Разгром", description: "Больше всех игр, выигранных с разницей 15 очков и больше" },
-    duo: { title: "🤝 Связка", description: "Пара с наибольшим числом совместных побед" },
-    nightmare: { title: "⛈️ Гроза пар", description: "Больше всех побед над разными парами соперников" },
-    universal: { title: "🧩 Универсал", description: "Играл с наибольшим числом разных партнёров" },
-    workhorse: { title: "🛠️ Трудяга", description: "Больше всех сыгранных игр" },
-    turtle: { title: "🐢 Черепаха", description: "Больше всех минут, проведённых в играх" },
-    lightning: { title: "⚡ Молния", description: "Самые короткие игры в среднем (минимум три игры)" },
-    rising_star: { title: "🌟 Восходящая звезда", description: "Набрал больше всех рейтинговых очков за турнир" },
-    consistent: { title: "📈 Стабильный", description: "Лучший средний прирост рейтинга за матч (минимум три матча)" },
-    deadline: { title: "⏰ Жертва дедлайна", description: "Больше всех матчей в последний час игровой сессии" }
+    medalist: { title: "Медалист", description: "Больше всех номинаций", icon: "bi-award-fill" },
+    winner: { title: "Победитель", description: "Больше всех выигранных матчей", icon: "bi-trophy-fill" },
+    machine_gunner: { title: "Пулемётчик", description: "Больше всех забитых воланов", icon: "bi-crosshair" },
+    trier: { title: "Очень старался, но ничего не получилось", description: "Больше всех проигранных матчей с перевесом по забитым очкам", icon: "bi-emoji-frown" },
+    unrestrainable: { title: "Неудержимый", description: "Самая длинная серия выигранных игр подряд", icon: "bi-fire" },
+    fast_start: { title: "Быстрый старт", description: "Чаще всех выигрывал первую игру матча", icon: "bi-rocket-takeoff-fill" },
+    finisher: { title: "Дожиматель", description: "Чаще всех выигрывал решающую игру при счёте 1:1", icon: "bi-hammer" },
+    comeback: { title: "Камбэк", description: "Больше всех побед после проигранной первой игры", icon: "bi-arrow-repeat" },
+    perfect: { title: "Идеальный сезон", description: "Ни одного поражения при минимум трёх матчах", icon: "bi-patch-check-fill" },
+    endurance: { title: "На измор", description: "Больше всех побед со счётом 30:29", icon: "bi-hourglass-split" },
+    iron_nerves: { title: "Стальные нервы", description: "Больше всех выигранных игр в дополнительном счёте (22 и больше)", icon: "bi-snow2" },
+    almost: { title: "Почти смог", description: "Больше всех проигранных игр со своим счётом 20 и больше", icon: "bi-emoji-dizzy" },
+    rout: { title: "Разгром", description: "Больше всех игр, выигранных с разницей 15 очков и больше", icon: "bi-bullseye" },
+    duo: { title: "Связка", description: "Пара с наибольшим числом совместных побед", icon: "bi-people-fill" },
+    nightmare: { title: "Гроза пар", description: "Больше всех побед над разными парами соперников", icon: "bi-cloud-lightning-fill" },
+    universal: { title: "Универсал", description: "Играл с наибольшим числом разных партнёров", icon: "bi-puzzle-fill" },
+    workhorse: { title: "Трудяга", description: "Больше всех сыгранных игр", icon: "bi-tools" },
+    turtle: { title: "Черепаха", description: "Больше всех минут, проведённых в играх", icon: "bi-clock-history" },
+    lightning: { title: "Молния", description: "Самые короткие игры в среднем (минимум три игры)", icon: "bi-lightning-charge-fill" },
+    rising_star: { title: "Восходящая звезда", description: "Набрал больше всех рейтинговых очков за турнир", icon: "bi-stars" },
+    consistent: { title: "Стабильный", description: "Лучший средний прирост рейтинга за матч (минимум три матча)", icon: "bi-graph-up-arrow" },
+    deadline: { title: "Жертва дедлайна", description: "Больше всех матчей в последний час игровой сессии", icon: "bi-alarm-fill" }
   };
 
   // названия номинаций — единые для раздела «Достижения» и модалки игрока
@@ -328,13 +331,13 @@ class Achievement {
    * Номинации пользователя в турнире (для модалки игрока): «Медалист» первым,
    * остальные — в порядке объявления. Названия берутся из Achievement.TITLES.
    */
-  getNominationsByUser = (user_id: number, tournament_id: number): string[] => {
+  getNominationsByUser = (user_id: number, tournament_id: number): { icon: string; title: string }[] => {
     const nominations = this.getByTournament(tournament_id);
     const keys = Object.keys(nominations).filter((key) =>
       nominations[key].users.some((user) => user.user_id === user_id)
     );
     keys.sort((key1, key2) => Number(key2 === "medalist") - Number(key1 === "medalist"));
-    return keys.map((key) => Achievement.TITLES[key]);
+    return keys.map((key) => ({ icon: Achievement.META[key].icon, title: Achievement.TITLES[key] }));
   };
 }
 

@@ -85,8 +85,8 @@
                                     <div class="card widget-card border-light shadow-sm">
                                         <div class="card-header text-bg-primary">Достижения</div>
                                         <div class="card-body">
-                                            <% achievements.forEach((title) => { %>
-                                                <span class="badge text-bg-primary"><%= title %></span>
+                                            <% achievements.forEach((a) => { %>
+                                                <span class="badge text-bg-primary"><i class="bi <%= a.icon %>"></i> <%= a.title %></span>
                                             <% }) %>
                                         </div>
                                     </div>

@@ -75,7 +75,11 @@ const renderSelect = () => {
               openPlayerWindow(element.user_id);
             }
           });
-          if (field.players1.reduce((acc, p1) => acc + p1.rating, 0) > field.players2.reduce((acc, p2) => acc + p2.rating, 0)) {
+          // сильнейшая пара — с большей суммой рейтингов: её колонка красится
+          // как rating-plus; при равенстве сумм сильнейшей считается вторая
+          const stronger = field.players1.reduce((acc, p1) => acc + p1.rating, 0) >
+            field.players2.reduce((acc, p2) => acc + p2.rating, 0) ? 1 : 2;
+          if (stronger === 1) {
             $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
             $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
           } else {
@@ -83,7 +87,19 @@ const renderSelect = () => {
             $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
           }
 
-          $(`#select-form-info-${i}`).text(`Δ ${field.diff.toFixed(1)} баллов`);
+          // пометки в заголовке колонки «Имя»: слева название, у правого края —
+          // дельта сильнейшей пары (+1.6) и значок фаворита; если обе в одном
+          // заголовке — сначала дельта, через пробел значок
+          const marks = {};
+          marks[stronger] = `<span class="select-delta">+${field.diff.toFixed(1)}</span>`;
+          if (field.favorite === 1 || field.favorite === 2) {
+            marks[field.favorite] = `${marks[field.favorite] ?? ''}<i class="bi bi-award-fill select-favorite"></i>`;
+          }
+          for (const [tableNum, html] of Object.entries(marks)) {
+            const nameTh = $(`#select-form-table-${tableNum}-${i}`).find('thead th:first');
+            nameTh.addClass('select-mark-th');
+            nameTh.find('.th-inner').append(`<span class="select-marks">${html}</span>`);
+          }
           $(`#select-form-button-submit-${i}`).off('click').click((event) => {
             event.preventDefault();
 

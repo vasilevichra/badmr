@@ -197,17 +197,17 @@ describe("Achievement", () => {
 
     // u1,u2 — 6 номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u1, 4), [
-      "🤷 Очень старался, но ничего не получилось", "🚀 Быстрый старт",
-      "😬 Почти смог", "💥 Разгром", "⛈️ Гроза пар", "🐢 Черепаха"
+      {icon: "bi-emoji-frown", title: "Очень старался, но ничего не получилось"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт"},
+      {icon: "bi-emoji-dizzy", title: "Почти смог"}, {icon: "bi-bullseye", title: "Разгром"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар"}, {icon: "bi-clock-history", title: "Черепаха"}
     ]);
     // партнёр по команде имеет те же номинации
     assert.deepStrictEqual(achievementService.getNominationsByUser(u2, 4),
         achievementService.getNominationsByUser(u1, 4));
     // u3,u4 — Медалист (первым) и ещё 15 номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u3, 4), [
-      "🏅 Медалист", "🏆 Победитель", "🔫 Пулемётчик", "🏃 Неудержимый", "🚀 Быстрый старт", "💪 Дожиматель",
-      "🔄 Камбэк", "🥵 На измор", "🧊 Стальные нервы", "🤝 Связка", "⛈️ Гроза пар", "🛠️ Трудяга",
-      "⚡ Молния", "🌟 Восходящая звезда", "📈 Стабильный", "⏰ Жертва дедлайна"
+      {icon: "bi-award-fill", title: "Медалист"}, {icon: "bi-trophy-fill", title: "Победитель"}, {icon: "bi-crosshair", title: "Пулемётчик"}, {icon: "bi-fire", title: "Неудержимый"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт"}, {icon: "bi-hammer", title: "Дожиматель"},
+      {icon: "bi-arrow-repeat", title: "Камбэк"}, {icon: "bi-hourglass-split", title: "На измор"}, {icon: "bi-snow2", title: "Стальные нервы"}, {icon: "bi-people-fill", title: "Связка"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар"}, {icon: "bi-tools", title: "Трудяга"},
+      {icon: "bi-lightning-charge-fill", title: "Молния"}, {icon: "bi-stars", title: "Восходящая звезда"}, {icon: "bi-graph-up-arrow", title: "Стабильный"}, {icon: "bi-alarm-fill", title: "Жертва дедлайна"}
     ]);
     // без номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u5, 4), []);

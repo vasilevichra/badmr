@@ -45,25 +45,37 @@ const filterFifty = (candidates: CalculatedPair[]): CalculatedPair[] => {
     return wins1 * matches2 > wins2 * matches1;
   };
   const sum = (p: ReadyRow[]) => p[0].rating + p[1].rating;
-  const correct = ({ players1, players2 }: CalculatedPair) => {
+  // фаворит матчапа по моментуму: 1 — players1, 2 — players2,
+  // 0 — нейтральный матчап (исходы последних матчей и винрейты равны)
+  const favoriteOf = ({ players1, players2 }: CalculatedPair): 0 | 1 | 2 => {
     const wl1 = winsLast(players1 as ReadyRow[]);
     const wl2 = winsLast(players2 as ReadyRow[]);
-    // 0 — нейтральный матчап, фаворита нет
-    let fav = 0;
     if (wl1 !== wl2) {
-      fav = wl1 > wl2 ? 1 : 2;
-    } else if (winsMore(players1 as ReadyRow[], players2 as ReadyRow[])) {
-      fav = 1;
-    } else if (winsMore(players2 as ReadyRow[], players1 as ReadyRow[])) {
-      fav = 2;
+      return wl1 > wl2 ? 1 : 2;
     }
+    if (winsMore(players1 as ReadyRow[], players2 as ReadyRow[])) {
+      return 1;
+    }
+    if (winsMore(players2 as ReadyRow[], players1 as ReadyRow[])) {
+      return 2;
+    }
+    return 0;
+  };
+  const correct = (pair: CalculatedPair) => {
+    const fav = favoriteOf(pair);
     return fav === 0 ||
       (fav === 1
-        ? sum(players1 as ReadyRow[]) <= sum(players2 as ReadyRow[])
-        : sum(players2 as ReadyRow[]) <= sum(players1 as ReadyRow[]));
+        ? sum(pair.players1 as ReadyRow[]) <= sum(pair.players2 as ReadyRow[])
+        : sum(pair.players2 as ReadyRow[]) <= sum(pair.players1 as ReadyRow[]));
   };
   const filtered = candidates.filter(correct);
-  return filtered.length > 0 ? filtered : candidates;
+  const result = filtered.length > 0 ? filtered : candidates;
+  // помечаем фаворита каждой возвращённой пары — в том числе в fallback,
+  // где матчап может быть «неправильным», но фаворит по моментуму тот же
+  for (const pair of result) {
+    pair.favorite = favoriteOf(pair);
+  }
+  return result;
 };
 
 class Common {

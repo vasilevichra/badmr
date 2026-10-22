@@ -45,6 +45,9 @@ interface Pair {
   chance1: number | null;
   chance2: number | null;
   friends: number;
+  // система 50%: фаворит матчапа по моментуму — 1 (players1), 2 (players2),
+  // 0 (нейтральный); поле появляется в ответе только при включённой fifty
+  favorite?: 0 | 1 | 2;
 }
 
 interface ReadyCase {
@@ -167,6 +170,10 @@ describe("Common", () => {
     // порядок подбора фиксирован (played, matches, diff): тесты проверяют
     // логику подбора, а не дефолт приоритетов (в миграциях — diff, matches, played)
     await settingsService.set(settingsService.opt.PRIORITY, "1,2,3");
+    // fifty включён по умолчанию (сид миграций): базовые тесты подбора
+    // проверяют логику без фильтра 50% — выключаем явно; fifty-тесты
+    // включают настройку сами
+    await settingsService.set(settingsService.opt.FIFTY, "0");
   });
 
   describe("constructor", () => {
@@ -448,6 +455,10 @@ describe("Common", () => {
         const settingsService = new SettingsService();
         await settingsService.set("calibration_matches", "0");
         await settingsService.set(settingsService.opt.PRIORITY, "1,2,3");
+        // override fifty из beforeEach остался в первом турнире, а второй
+        // берёт дефолт из сидов (включён) — выключаем явно, фильтр 50%
+        // здесь не тестируется
+        await settingsService.set(settingsService.opt.FIFTY, "0");
 
         // played считается только по матчам текущего турнира (их нет):
         // все отдыхали, пара собирается по diff из всех игроков
@@ -531,6 +542,8 @@ describe("Common", () => {
           ],
           matches: 3,
           played: 3,
+          // фаворит — players2: u1 выиграл последний матч, соперники — нет
+          favorite: 2,
         };
 
         await settingsService.set(settingsService.opt.FIFTY, "1");
@@ -585,6 +598,8 @@ describe("Common", () => {
           chance1: 100,
           chance2: 0,
           friends: 100,
+          // фаворит — players1: оба выиграли последний матч, соперники — нет
+          favorite: 1,
         };
 
         await settingsService.set(settingsService.opt.FIFTY, "1");
@@ -694,6 +709,8 @@ describe("Common", () => {
           chance1: 66.67,
           chance2: 100,
           friends: 66.67 + 100,
+          // фаворит — players2: винрейт (u3,u4) 100% против 67% у (u1,u2)
+          favorite: 2,
         };
 
         await settingsService.set(settingsService.opt.FIFTY, "1");

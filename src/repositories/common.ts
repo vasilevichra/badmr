@@ -15,6 +15,9 @@ export interface CalculatedPair {
   chance2?: number | null;
   // сумма шансов обеих пар — метрика friends-приоритета
   friends?: number;
+  // система 50%: фаворит матчапа по моментуму — 1 (players1), 2 (players2),
+  // 0 (нейтральный); проставляется только при включённой fifty
+  favorite?: 0 | 1 | 2;
 }
 
 class Common {

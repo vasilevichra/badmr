@@ -6,6 +6,7 @@ import CommonRouter from "../../src/routes/common.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
 import CourtService from "../../src/services/court.ts";
 import UserService from "../../src/services/user.ts";
+import SettingsService from "../../src/services/settings.ts";
 import { clean } from "../helpers/migration.ts";
 import type { AddressInfo } from "node:net";
 
@@ -35,6 +36,9 @@ interface Pair {
   diff: number;
   matches: number;
   played: number;
+  // система 50%: фаворит матчапа по моментуму — 1 (players1), 2 (players2),
+  // 0 (нейтральный); поле приходит только при включённой fifty
+  favorite?: 0 | 1 | 2;
 }
 
 const app: App = Express();
@@ -113,6 +117,9 @@ describe("Common routes", () => {
 
     it("должен вернуть пару с минимальной разницей рейтингов", async () => {
       const ids = await seedReadyUsers(users.map((u) => u.rating));
+      // fifty включена явно (не полагаемся на дефолт сидов): матчап
+      // нейтральный — фаворита нет, поле favorite приходит с нулём
+      await new SettingsService().set("fifty", "1");
 
       const res = await fetch(`${base}/ready/`);
       assert.strictEqual(res.status, 200);
@@ -132,6 +139,7 @@ describe("Common routes", () => {
           chance1: null,
           chance2: null,
           friends: 0,
+          favorite: 0,
         },
       ]);
     });
