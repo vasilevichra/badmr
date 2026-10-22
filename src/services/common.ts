@@ -16,9 +16,55 @@ interface ReadyRow {
   played: number;
   // исход последнего матча: 1 - выиграл, 0 - проиграл, null - не играл
   won: number | null;
+  // выигранные матчи на турнире
+  wins: number;
   sex: number;
   pic: string | null;
 }
+
+/**
+ * Система 50%: фаворит по моментуму должен играть «вверх или на равных».
+ * Фаворит пары — большее число выигравших последний матч игроков; при
+ * равенстве — больший процент выигранных матчей на турнире (количество
+ * побед несправедливо при разном числе сыгранных матчей; при равенстве
+ * обоих показателей матчап нейтрален). Матчап правильный, если сумма
+ * рейтингов фаворита не больше суммы рейтингов соперников. Возвращаются
+ * только правильные матчапы; если таких нет — исходный список
+ * (настройка игнорируется, чтобы не блокировать подбор вовсе).
+ */
+const filterFifty = (candidates: CalculatedPair[]): CalculatedPair[] => {
+  const winsLast = (p: ReadyRow[]) =>
+    p.reduce((n, x) => n + (x.won === 1 ? 1 : 0), 0);
+  // сравнение винрейтов перекрёстным умножением — без деления и его
+  // погрешностей; пара без сыгранных матчей имеет винрейт 0
+  const winsMore = (p: ReadyRow[], q: ReadyRow[]) => {
+    const wins1 = p[0].wins + p[1].wins;
+    const wins2 = q[0].wins + q[1].wins;
+    const matches1 = p[0].matches + p[1].matches;
+    const matches2 = q[0].matches + q[1].matches;
+    return wins1 * matches2 > wins2 * matches1;
+  };
+  const sum = (p: ReadyRow[]) => p[0].rating + p[1].rating;
+  const correct = ({ players1, players2 }: CalculatedPair) => {
+    const wl1 = winsLast(players1 as ReadyRow[]);
+    const wl2 = winsLast(players2 as ReadyRow[]);
+    // 0 — нейтральный матчап, фаворита нет
+    let fav = 0;
+    if (wl1 !== wl2) {
+      fav = wl1 > wl2 ? 1 : 2;
+    } else if (winsMore(players1 as ReadyRow[], players2 as ReadyRow[])) {
+      fav = 1;
+    } else if (winsMore(players2 as ReadyRow[], players1 as ReadyRow[])) {
+      fav = 2;
+    }
+    return fav === 0 ||
+      (fav === 1
+        ? sum(players1 as ReadyRow[]) <= sum(players2 as ReadyRow[])
+        : sum(players2 as ReadyRow[]) <= sum(players1 as ReadyRow[]));
+  };
+  const filtered = candidates.filter(correct);
+  return filtered.length > 0 ? filtered : candidates;
+};
 
 class Common {
   declare static _instance: Common | undefined;
@@ -67,6 +113,9 @@ class Common {
       return [];
     }
     const delta = Number(settingsService.get(settingsService.opt.DELTA));
+    // Система 50%: фаворит по последним матчам подбирает соперников
+    // не слабее себя
+    const fifty = settingsService.get(settingsService.opt.FIFTY) === "1";
     // максимальный процент превышения среднего рейтинга пары одним из
     // игроков; 0 — не ограничивает
     const proc = Number(settingsService.get(settingsService.opt.PROC));
@@ -84,7 +133,7 @@ class Common {
     const calculated_objects: CalculatedPair[][] = [];
     while (available_courts-- > 0) {
       calculated_objects.push(
-        await this.calcReadyRec(delta, proc, priority, calculated_objects),
+        await this.calcReadyRec(delta, proc, priority, calculated_objects, fifty),
       );
     }
 
@@ -115,6 +164,9 @@ class Common {
    * "friends" — с максимальным совместным винрейтом напарников; пустой
    * список — кандидаты не ранжируются.
    * @param calculated_objects Матчи, уже рассчитанные для других кортов.
+   * @param fifty Система 50%: матчапы, где пара-фаворит играет вниз,
+   * отфильтровываются до применения приоритетов; если подходящих нет,
+   * настройка игнорируется.
    * @returns Единственный лучший матч или пустой массив, если
    * подходящего матча нет.
    */
@@ -123,6 +175,7 @@ class Common {
     proc: number,
     priority: string[],
     calculated_objects: CalculatedPair[][],
+    fifty: boolean,
   ): Promise<CalculatedPair[]> {
     const ready = await this.repository.ready(calculated_objects);
     const readyRows = ready as ReadyRow[];
@@ -215,7 +268,7 @@ class Common {
         });
       }
     }
-    const pairsRatingDiff_2 = pairsRatingDiff;
+    const pairsRatingDiff_2 = fifty ? filterFifty(pairsRatingDiff) : pairsRatingDiff;
     if (pairsRatingDiff_2.length === 0) {
       return [] as CalculatedPair[];
     } else {

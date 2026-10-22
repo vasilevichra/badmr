@@ -163,7 +163,24 @@ const selectColumns = [
   {
     field: 'matches',
     title: isPhone() ? 'И.' : 'Сыграно',
-    align: 'center'
+    align: 'center',
+    // выигранные матчи — зелёным, проигранные (всего минус выигранные) —
+    // красным; когда есть и те и другие — с суммой сыгранных матчей,
+    // при одной составляющей — только она, без матчей — «0»
+    formatter: (value, row) => {
+      if (!value) {
+        return '0';
+      }
+      const wins = row.wins ?? 0;
+      const lost = value - wins;
+      if (!lost) {
+        return `<span class="rating-plus">${value}</span>`;
+      }
+      if (!wins) {
+        return `<span class="rating-minus">${value}</span>`;
+      }
+      return `<span class="rating-plus">${wins}</span> + <span class="rating-minus">${lost}</span> = ${value}`;
+    }
   },
   {
     field: 'chance',
@@ -181,9 +198,11 @@ const selectColumns = [
   }
 ];
 
-const showSelectButton = () => {
+const showSelectButton = (force) => {
   const info = $('#select-info');
-  if (info.is(":visible") || $('.select-form-button-submit:visible').length === 0) {
+  // force — безусловный сброс: изменение настроек, влияющих на подбор,
+  // обесценивает уже показанные пары даже если все формы ещё видимы
+  if (force || info.is(":visible") || $('.select-form-button-submit:visible').length === 0) {
     info.hide();
     $('.select-form').remove();
     $('#select-button').show();

@@ -1,12 +1,14 @@
 -- ready — готовые к подбору игроки текущего турнира; играющие (чьи матчи
 -- ещё не завершены) во вьюху не попадают; won — исход последнего матча
--- игрока: 1 - выиграл, 0 - проиграл, null - не играл
+-- игрока: 1 - выиграл, 0 - проиграл, null - не играл; wins — выигранные
+-- игроком матчи текущего турнира
 CREATE VIEW ready AS
 SELECT r.name,
        r.user_id,
        r.rating,
        r.matches,
        r.played,
+       r.wins,
        -- исход последнего матча: гейм выигран стороной, когда у соперника
        -- установлен lost_*_by; матч выигран стороной с большим числом геймов
        CASE WHEN r.played = 0 THEN NULL ELSE (
@@ -30,6 +32,19 @@ FROM (SELECT u.lastname || ' ' || u.firstname AS name,
              u.id                             AS user_id,
              round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1) AS rating,
              count(DISTINCT m.id)             AS matches,
+             -- выигранные матчи на турнире: гейм выигран стороной, когда
+             -- у соперника установлен lost_*_by; матч выигран стороной
+             -- с большим числом геймов (порог — настройка wins)
+             count(DISTINCT CASE
+                       WHEN (u.id IN (m.user_1_id, m.user_2_id)
+                             AND (SELECT count(*) FROM game
+                                  WHERE match_id = m.id AND lost_2_by IS NOT NULL)
+                                 > (SELECT value - 1 FROM settings WHERE name = 'wins'))
+                           OR (u.id IN (m.user_3_id, m.user_4_id)
+                               AND (SELECT count(*) FROM game
+                                    WHERE match_id = m.id AND lost_1_by IS NOT NULL)
+                                   > (SELECT value - 1 FROM settings WHERE name = 'wins'))
+                       THEN m.id END) AS wins,
              u.id IN (SELECT DISTINCT u_id
                       FROM (SELECT u_id
                             FROM (SELECT user_1_id AS u_id

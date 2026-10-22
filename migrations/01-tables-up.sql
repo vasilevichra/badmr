@@ -87,7 +87,7 @@ CREATE TABLE defaults
 (
     id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     name        TEXT    NOT NULL UNIQUE
-                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'priority', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_fresh_days')),
+                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'priority', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'fifty', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_fresh_days')),
     value       TEXT    NOT NULL,
     description TEXT    NOT NULL,
     -- все настройки, кроме priority, хранят неотрицательные целые;
@@ -99,7 +99,9 @@ CREATE TABLE defaults
     CHECK (name NOT IN ('wins', 'game_point', 'max_point', 'capacity', 'courts') OR CAST(value AS INTEGER) >= 1),
     CHECK (name <> 'fee' OR CAST(value AS INTEGER) > 0),
     CHECK (name <> 'H_max' OR CAST(value AS INTEGER) > 0),
-    CHECK (name <> 'r_min' OR CAST(value AS INTEGER) > 0)
+    CHECK (name <> 'r_min' OR CAST(value AS INTEGER) > 0),
+    -- Система 50%: выключатель подбора
+    CHECK (name <> 'fifty' OR value IN ('0', '1'))
 );
 
 CREATE TABLE tournament_settings

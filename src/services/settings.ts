@@ -89,6 +89,7 @@ class Settings {
       PROC: 'proc',
       TYPE: 'type',
       PRIORITY: 'priority',
+      FIFTY: 'fifty',
     };
   }
 

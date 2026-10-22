@@ -156,6 +156,10 @@ const renderSettings = () => {
               if (row.name === 'type') {
                 return referenceSelector('type', refs.type, value);
               }
+              // Система 50%: выключатель вместо текстового ввода
+              if (row.name === 'fifty') {
+                return `<input type="checkbox" class="settings-fifty-input form-check-input" ${String(value) === '1' ? 'checked' : ''}/>`;
+              }
               return value;
             },
             cellStyle: () => ({css: {cursor: 'pointer'}})
@@ -175,7 +179,15 @@ const renderSettings = () => {
           const newValue = String(input.val()).trim();
           input.off('blur keydown');
           if (newValue && newValue !== String(row.value) && validValue(row.name, newValue)) {
-            $.post(`/api/settings/${row.name}`, {value: newValue}, () => refresh.table.settings());
+            // delta и proc влияют на расчёт подбора: показанные пары
+            // устаревают — сбрасываем подбор
+            const affectsReady = ['delta', 'proc'].includes(row.name);
+            $.post(`/api/settings/${row.name}`, {value: newValue}, () => {
+              refresh.table.settings();
+              if (affectsReady) {
+                showSelectButton(true);
+              }
+            });
           } else {
             refresh.table.settings(); // вернуть исходное значение (пустое, неизменённое или нарушающее ограничения)
           }
@@ -228,6 +240,14 @@ const renderSettings = () => {
           }
         });
       })
+      // Система 50%: переключатель влияет на расчёт подбора — после
+      // сохранения сбрасываем показанные пары
+      .on('change', '.settings-fifty-input', function () {
+        $.post('/api/settings/fifty', {value: this.checked ? '1' : '0'}, () => {
+          refresh.table.settings();
+          showSelectButton(true);
+        });
+      })
       // порядок сортировки: запоминаем прежнее значение разряда для обмена
       .on('focusin', '.settings-priority-select', function () {
         this.dataset.prev = this.value;
@@ -244,7 +264,11 @@ const renderSettings = () => {
         // пустые разряды («—») выпадают из значения
         const order = selects.map((i, el) => el.value).get().filter(Boolean).join(',');
         if (order && validValue('priority', order)) {
-          $.post('/api/settings/priority', {value: order}, () => refresh.table.settings());
+          // порядок приоритетов влияет на расчёт подбора — сбрасываем пары
+          $.post('/api/settings/priority', {value: order}, () => {
+            refresh.table.settings();
+            showSelectButton(true);
+          });
         } else {
           refresh.table.settings(); // вернуть исходное значение
         }
