@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, beforeEach, it } from "node:test";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { testDbPath } from "../../src/test-db.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
 import UserService from "../../src/services/user.ts";
@@ -13,7 +14,7 @@ const gameService = new GameService();
 const userService = new UserService();
 const settingsService = new SettingsService();
 
-const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), { enableForeignKeyConstraints: false });
+const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
 
 interface RatingRow {
   previous: number;

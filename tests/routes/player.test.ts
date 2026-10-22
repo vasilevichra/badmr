@@ -3,6 +3,7 @@ import { describe, beforeEach, after, it } from "node:test";
 import Express, { type Express as App } from "express";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { testDbPath } from "../../src/test-db.ts";
 import PlayerRouter from "../../src/routes/web/player.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
 import UserService from "../../src/services/user.ts";
@@ -272,7 +273,7 @@ describe("Player page", () => {
   it("должен показать калибровку у протухшего ветерана", async () => {
     // свежая строка stale=0, но матчу больше fresh_days — калибровка впереди
     const { id, matchId } = await seedCalibratedPlayer();
-    const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), { enableForeignKeyConstraints: false });
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
     db.prepare("UPDATE rating SET stale = 0, series = 0 WHERE match_id = ?").run(matchId);
     db.prepare("UPDATE match SET created_at = datetime('now', '-70 days') WHERE id = ?").run(matchId);
 
@@ -287,7 +288,7 @@ describe("Player page", () => {
   it("должен скрыть прогресс калибровки у свежего ветерана", async () => {
     // актуальный рейтинг (stale=0, дата свежая) — калибровка не нужна
     const { id, matchId } = await seedCalibratedPlayer();
-    const db = new DatabaseSync(path.resolve(import.meta.dirname, "../../.data/test.db"), { enableForeignKeyConstraints: false });
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
     db.prepare("UPDATE rating SET stale = 0, series = 0 WHERE match_id = ?").run(matchId);
 
     const res = await fetch(`${base}/${id}`);

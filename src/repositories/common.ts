@@ -1,4 +1,5 @@
 import DB from "../db.ts";
+import { testDbPath } from "../test-db.ts";
 import Specific from "./specific.ts";
 import crypto from "node:crypto";
 
@@ -8,6 +9,12 @@ export interface CalculatedPair {
   diff?: number;
   matches?: number;
   played?: number;
+  // «Шанс» пары — винрейт совместных доигранных матчей напарников
+  // в процентах; null — вместе не играли
+  chance1?: number | null;
+  chance2?: number | null;
+  // сумма шансов обеих пар — метрика friends-приоритета
+  friends?: number;
 }
 
 class Common {
@@ -20,7 +27,7 @@ class Common {
     }
     Common._instance = this;
 
-    this.db = new DB(process.env.NODE_ENV === 'test' ? './.data/test.db' : './.data/badmr.sqlite3');
+    this.db = new DB(process.env.NODE_ENV === 'test' ? testDbPath() : './.data/badmr.sqlite3');
     // create an initial users
     const salt = crypto.randomBytes(16);
     (Specific.users || []).forEach(u => {

@@ -149,7 +149,7 @@ describe("Settings", () => {
 
     it("должен принять priority со списком id через запятую", () => {
       db.exec("UPDATE defaults SET value = '1,2,3' WHERE name = 'priority'");
-      db.exec("UPDATE defaults SET value = '3,2,1' WHERE name = 'priority'"); // возврат сида
+      db.exec("UPDATE defaults SET value = '3,2,1,4' WHERE name = 'priority'"); // возврат сида
     });
 
     it("должен отклонить max_point не больше game_point", () => {

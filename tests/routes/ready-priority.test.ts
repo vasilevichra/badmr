@@ -27,6 +27,7 @@ describe("ReadyPriority API", () => {
       { id: 1, text: "played" },
       { id: 2, text: "matches" },
       { id: 3, text: "diff" },
+      { id: 4, text: "friends" },
     ]);
   });
 });

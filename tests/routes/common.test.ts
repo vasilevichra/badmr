@@ -125,6 +125,9 @@ describe("Common routes", () => {
           diff: 0,
           matches: 0,
           played: 0,
+          chance1: null,
+          chance2: null,
+          friends: 0,
         },
       ]);
     });
