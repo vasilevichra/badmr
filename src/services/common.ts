@@ -1,5 +1,6 @@
 import type { CalculatedPair } from "../repositories/common.ts";
 import Repository from "../repositories/common.ts";
+import UserRepository from "../repositories/user.ts";
 import SettingsService from "./settings.ts";
 const settingsService = new SettingsService();
 import CourtService from "./court.ts";
@@ -20,6 +21,7 @@ interface ReadyRow {
 class Common {
   declare static _instance: Common | undefined;
   repository!: Repository;
+  userRepository!: UserRepository;
 
   /**
    * Создаёт singleton-экземпляр. Повторные вызовы конструктора
@@ -32,6 +34,7 @@ class Common {
     Common._instance = this;
 
     this.repository = new Repository();
+    this.userRepository = new UserRepository();
   }
 
   /**
@@ -106,8 +109,9 @@ class Common {
    * @param priority Имена полей отбора в порядке убывания приоритета:
    * "played" — предпочитаются ещё не игравшие в предыдущем матче,
    * "matches" — с минимальным числом сыгранных матчей на турнире,
-   * "diff" — с минимальной разницей сумм рейтингов пар; пустой список —
-   * кандидаты не ранжируются.
+   * "diff" — с минимальной разницей сумм рейтингов пар,
+   * "friends" — с максимальным совместным винрейтом напарников; пустой
+   * список — кандидаты не ранжируются.
    * @param calculated_objects Матчи, уже рассчитанные для других кортов.
    * @returns Единственный лучший матч или пустой массив, если
    * подходящего матча нет.
@@ -121,6 +125,20 @@ class Common {
     const ready = await this.repository.ready(calculated_objects);
     const readyRows = ready as ReadyRow[];
     const byId = new Map(readyRows.map((u) => [u.user_id, u]));
+    // «Шанс» пары — винрейт совместных доигранных матчей напарников:
+    // getBuddiesById каждого готового игрока (сырой win_rate числом).
+    // Нужен и для показа колонки «Шанс» в «Подборе» (chance1/chance2),
+    // и для friends-приоритета; вместе не игравшие в списке отсутствуют
+    const buddies = new Map<number, Map<number, number>>();
+    for (const row of readyRows) {
+      const partnerRates = new Map<number, number>();
+      for (const b of await this.userRepository.getBuddiesById(row.user_id)) {
+        partnerRates.set(b.user_id, b.win_rate);
+      }
+      buddies.set(row.user_id, partnerRates);
+    }
+    const chance = (id1: number, id2: number): number | null =>
+      buddies.get(id1)?.get(id2) ?? null;
     const keys: number[][] = [];
     const sums: number[] = [];
     for (let i = 0; i < readyRows.length; i++) {
@@ -173,6 +191,8 @@ class Common {
         ) {
           continue;
         }
+        const chance1 = chance(i_key[0], i_key[1]);
+        const chance2 = chance(j_key[0], j_key[1]);
         pairsRatingDiff.push({
           players1: [readyPlayer11, readyPlayer12],
           players2: [readyPlayer21, readyPlayer22],
@@ -187,6 +207,9 @@ class Common {
             readyPlayer12.played +
             readyPlayer21.played +
             readyPlayer22.played,
+          chance1,
+          chance2,
+          friends: (chance1 ?? 0) + (chance2 ?? 0),
         });
       }
     }
@@ -197,7 +220,9 @@ class Common {
       // приоритеты применяются последовательно: сначала отбор по полю
       // с высшим приоритетом (первым в настройке priority), при равенстве —
       // по следующему; при равенстве всех полей побеждает кандидат,
-      // встретившийся при переборе первым
+      // встретившийся при переборе первым. friends — единственное поле,
+      // где предпочтение отдаётся большему значению (чем выше совместный
+      // винрейт напарников, тем выше шанс выиграть)
       const field = (candidate: CalculatedPair, name: string) =>
         Number((candidate as unknown as Record<string, unknown>)[name]);
       const best = pairsRatingDiff_2
@@ -206,7 +231,7 @@ class Common {
           for (const name of priority) {
             const d = field(a.candidate, name) - field(b.candidate, name);
             if (d !== 0) {
-              return d;
+              return name === "friends" ? -d : d;
             }
           }
           return a.index - b.index;

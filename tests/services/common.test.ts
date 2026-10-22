@@ -33,6 +33,12 @@ interface Pair {
   diff: number;
   matches: number;
   played: number;
+  // «Шанс» — винрейт совместных доигранных матчей пары в процентах
+  // (null — вместе не играли); friends — сумма шансов обеих пар,
+  // метрика friends-приоритета
+  chance1: number | null;
+  chance2: number | null;
+  friends: number;
 }
 
 interface ReadyCase {
@@ -135,6 +141,9 @@ const pair = (
   diff,
   matches: 0,
   played: 0,
+  chance1: null,
+  chance2: null,
+  friends: 0,
 });
 
 describe("Common", () => {
@@ -357,6 +366,131 @@ describe("Common", () => {
           diff: 0,
           matches: 2,
           played: 2,
+          chance1: null,
+          chance2: null,
+          friends: 0,
+        };
+        assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
+      });
+
+      it("должен выбирать пару с максимальным совместным винрейтом когда friends первый в priority", async () => {
+        const settingsService = new SettingsService();
+        const courtService = new CourtService();
+        const userService = new UserService();
+        const matchService = new MatchService();
+        const gameService = new GameService();
+        await courtService.disableAll();
+        await courtService.create();
+        // 4 - friends: только совместный винрейт напарников
+        await settingsService.set(settingsService.opt.PRIORITY, "4");
+        await settingsService.set(settingsService.opt.DELTA, "40");
+
+        const users = [
+          mkUser(1, 500),   // u1, u2 — напарники с винрейтом 100
+          mkUser(2, 460),
+          mkUser(3, 500),   // u3, u4 — напарники с винрейтом 0
+          mkUser(4, 460),
+          mkUser(5, 500),   // u5, u6 — винрейт 50 (поражение и победа)
+          mkUser(6, 460),
+          mkUser(7, 500),   // u7, u8 — винрейт 100, но сумма рейтингов
+          mkUser(8, 500),   // выводит их за дельту из кандидатов с (u1,u2)
+          mkUser(9, 500),   // u9, u10 — винрейт 0
+          mkUser(10, 500),
+        ];
+        const ids = await createAndRegister(new UserService(), users);
+        // история совместных матчей: null во втором аргументе игры —
+        // команда 1 не проиграла ни одной игры, "15" у второй — проиграла
+        // со счётом 15 (wins = 2 — матч доигран сразу)
+        // матч 1: (u1,u2) побеждают (u3,u4)
+        const match1 = await matchService.create(ids[0], ids[1], ids[2], ids[3]);
+        await gameService.create(match1.id, null, "15", "2026-01-01 10:00:00");
+        await gameService.create(match1.id, null, "15", "2026-01-01 10:05:00");
+        // матч 2: (u7,u8) побеждают (u5,u6)
+        const match2 = await matchService.create(ids[6], ids[7], ids[4], ids[5]);
+        await gameService.create(match2.id, null, "15", "2026-01-01 10:10:00");
+        await gameService.create(match2.id, null, "15", "2026-01-01 10:15:00");
+        // матч 3 (последний — played только у его участников):
+        // (u5,u6) побеждают (u9,u10) → винрейт (u5,u6) = 50
+        const match3 = await matchService.create(ids[4], ids[5], ids[8], ids[9]);
+        await gameService.create(match3.id, null, "15", "2026-01-01 10:20:00");
+        await gameService.create(match3.id, null, "15", "2026-01-01 10:25:00");
+        // рейтинги выставляются заново — ожидания не зависят от
+        // пересчёта рейтингов историей матчей
+        for (const [i, rating] of [[0, 500], [1, 460], [2, 500], [3, 460], [4, 500], [5, 460], [6, 750], [7, 300], [8, 600], [9, 400]] as const) {
+          await userService.setRating(ids[i], rating);
+        }
+
+        // friends-приоритет: уникальный максимум суммы шансов 150 —
+        // пары (u5,u6) и (u1,u2); у остальных кандидатов с парой (u1,u2)
+        // сумма 100, пары (u7,u8) отсечены дельтой. Порядок пар и игроков
+        // внутри них — по перечислению готовых игроков (played по
+        // возрастанию, matches по убыванию)
+        const expected: Pair = {
+          players1: [
+            {...player(users[4], ids[4]), matches: 2, played: 1, rating: 500},
+            {...player(users[5], ids[5]), matches: 2, played: 1, rating: 460},
+          ],
+          players2: [
+            {...player(users[0], ids[0]), matches: 1, played: 1, rating: 500},
+            {...player(users[1], ids[1]), matches: 1, played: 1, rating: 460},
+          ],
+          diff: 0,
+          matches: 6,
+          played: 4,
+          chance1: 50,
+          chance2: 100,
+          friends: 150,
+        };
+        assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
+      });
+
+      it("не должен учитывать совместный винрейт когда diff приоритетнее friends", async () => {
+        const settingsService = new SettingsService();
+        const courtService = new CourtService();
+        const userService = new UserService();
+        const matchService = new MatchService();
+        const gameService = new GameService();
+        await courtService.disableAll();
+        await courtService.create();
+        // 3 - diff, 4 - friends: diff перекрывает friends
+        await settingsService.set(settingsService.opt.PRIORITY, "3,4");
+        await settingsService.set(settingsService.opt.DELTA, "40");
+
+        const users = [
+          mkUser(1, 500),
+          mkUser(2, 460),
+          mkUser(3, 500),
+          mkUser(4, 460),
+          mkUser(5, 520),
+          mkUser(6, 480),
+        ];
+        const ids = await createAndRegister(new UserService(), users);
+        // (u1,u2) побеждают (u3,u4): винрейт (u1,u2) = 100
+        const match = await matchService.create(ids[0], ids[1], ids[2], ids[3]);
+        await gameService.create(match.id, null, "15", "2026-01-01 10:00:00");
+        await gameService.create(match.id, null, "15", "2026-01-01 10:05:00");
+        for (const [i, rating] of [[0, 500], [1, 460], [2, 470], [3, 450], [4, 520], [5, 480]] as const) {
+          await userService.setRating(ids[i], rating);
+        }
+
+        // diff-приоритет: кандидат с нулевой разницей сумм (520+460 против
+        // 480+500) выбирается, хотя шанс обеих его пар — null; кандидаты
+        // с парой (u1,u2) и её шансом 100 имеют разницу 40
+        const expected: Pair = {
+          players1: [
+            player(users[4], ids[4]),
+            {...player(users[1], ids[1]), matches: 1, played: 1, rating: 460},
+          ],
+          players2: [
+            player(users[5], ids[5]),
+            {...player(users[0], ids[0]), matches: 1, played: 1, rating: 500},
+          ],
+          diff: 0,
+          matches: 2,
+          played: 2,
+          chance1: null,
+          chance2: null,
+          friends: 0,
         };
         assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
       });

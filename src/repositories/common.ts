@@ -8,6 +8,12 @@ export interface CalculatedPair {
   diff?: number;
   matches?: number;
   played?: number;
+  // «Шанс» пары — винрейт совместных доигранных матчей напарников
+  // в процентах; null — вместе не играли
+  chance1?: number | null;
+  chance2?: number | null;
+  // сумма шансов обеих пар — метрика friends-приоритета
+  friends?: number;
 }
 
 class Common {
