@@ -93,7 +93,7 @@ const renderSelect = () => {
           const marks = {};
           marks[stronger] = `<span class="select-delta">+${field.diff.toFixed(1)}</span>`;
           if (field.favorite === 1 || field.favorite === 2) {
-            marks[field.favorite] = `${marks[field.favorite] ?? ''}<i class="bi bi-award-fill select-favorite"></i>`;
+            marks[field.favorite] = `${marks[field.favorite] ?? ''}<i class="bi bi-trophy-fill select-favorite"></i>`;
           }
           for (const [tableNum, html] of Object.entries(marks)) {
             const nameTh = $(`#select-form-table-${tableNum}-${i}`).find('thead th:first');
