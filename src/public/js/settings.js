@@ -78,10 +78,12 @@ const renderSettings = () => {
   // порядок сортировки: по селекту на каждое поле ready_priority; разряд можно
   // оставить пустым («—») — он выпадает из значения; выбор id, занятого другим
   // разрядом, меняет разряды местами
+  // подписи полей в селектах — эмодзи вместо имён из ready_priority
+  const priorityEmoji = {played: '🥵', matches: '🏸', diff: '⚖️', friends: '👫'};
   const prioritySelector = (value) => {
     const ids = String(value).split(',');
     const options = (selected) => `<option value=""${selected ? '' : ' selected'}>—</option>`
-        + refs.priority.map((r) => `<option value="${r.id}"${String(r.id) === String(selected) ? ' selected' : ''}>${r.text}</option>`).join('');
+        + refs.priority.map((r) => `<option value="${r.id}"${String(r.id) === String(selected) ? ' selected' : ''}>${priorityEmoji[r.text] ?? r.text}</option>`).join('');
     return refs.priority.map((r, i) =>
         `<select class="settings-priority-select form-select form-select-sm text-center" style="width:auto;display:inline-block;margin-right:4px">${options(ids[i])}</select>`).join('');
   };
