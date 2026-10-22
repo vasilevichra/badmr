@@ -66,7 +66,10 @@ router.get('/buddies/:id', (req, res) => {
 });
 
 router.get('/lab/search', (req, res) => {
-  res.promise(userService.labSearch(String(req.query.name), String(req.query.city), Number(req.query.user_id)));
+  // город необязателен: без параметра фильтр по городу не применяется
+  // (String(undefined) дал бы строку "undefined" и отсёк все результаты)
+  const city = req.query.city ? String(req.query.city) : null;
+  res.promise(userService.labSearch(String(req.query.name), city, Number(req.query.user_id)));
 });
 
 router.get('/:id', (req, res) => {

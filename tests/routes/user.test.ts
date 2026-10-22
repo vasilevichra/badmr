@@ -246,4 +246,33 @@ describe("User routes", () => {
       assert.deepStrictEqual(await res.json(), []);
     });
   });
+
+  describe("lab/search", () => {
+    const originalFetch = globalThis.fetch;
+
+    after(() => {
+      globalThis.fetch = originalFetch;
+    });
+
+    it("должен найти игрока без указания города", async () => {
+      // сайт отвечает JSON-объектом с разметкой в поле html; запросы
+      // к тестируемому express-серверу идут в оригинальный fetch
+      globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const url = String(input);
+        if (!url.startsWith("https://badminton4u.ru")) {
+          return originalFetch(input, init);
+        }
+        const html = url.includes("/ajax?search=rating")
+          ? `<a href="/players/12345"><span>1</span><span><bdo></bdo></span><span><b>Иванов Иван</b></span><span>г. Доброград</span><span><dfn data-type="d">520</dfn></span><span>01.01.26</span></a>`
+          : `<header><bdo></bdo><h1>Иванов Иван </h1><h2>@login</h2><dfn data-type="s">500</dfn><dfn data-type="d">520</dfn></header><section id="info"><p class="address">г. Доброград</p><p class="birth">1 января 1990</p></section>`;
+        return {json: async () => ({html})} as unknown as Response;
+      }) as unknown as typeof fetch;
+
+      const res = await fetch(`${base}/lab/search?name=${encodeURIComponent("Иванов Иван Отчество")}`);
+      assert.strictEqual(res.status, 200);
+      const text = await res.text();
+      const player = text ? JSON.parse(text) as {id: number} : null;
+      assert.strictEqual(player?.id, 12345);
+    });
+  });
 });
