@@ -622,7 +622,7 @@ td.diagonal-cross:after {
   animation: board-score-flash 0.75s ease-in-out 2;
 }
 
-/* признак «Играл» в подборе: точка у аватара игрока */
+/* признак исхода последнего матча в подборе: точка у аватара игрока */
 .played-dot {
   display: inline-block;
   width: 8px;
@@ -632,12 +632,12 @@ td.diagonal-cross:after {
   vertical-align: middle;
 }
 
-.played-dot-yes {
-  background-color: #dc3545; /* играл */
+.played-dot-won {
+  background-color: #198754; /* выиграл */
 }
 
-.played-dot-no {
-  background-color: #198754; /* не играл */
+.played-dot-lost {
+  background-color: #dc3545; /* проиграл */
 }
 
 .no-selection {

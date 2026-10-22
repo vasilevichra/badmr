@@ -149,7 +149,9 @@ const selectColumns = [
     title: 'Имя',
     // признак «Играл» — точка у аватара: зелёная — не играл, красная — играл
     formatter: (value, row) =>
-        `<span class="played-dot ${row.played ? 'played-dot-yes' : 'played-dot-no'}" title="${row.played ? 'Играл' : 'Не играл'}"></span>` +
+        // индикация последнего матча: проиграл — красная точка, выиграл —
+        // зелёная; отдыхал (played = 0) — без индикации
+        (row.played ? `<span class="played-dot ${row.won ? 'played-dot-won' : 'played-dot-lost'}" title="${row.won ? 'Выиграл' : 'Проиграл'}"></span>` : '') +
         this.share.playerNameFormatter(row.user_id, value, row.sex, row.pic, isPhone()),
     cellStyle: (value, row) => playerSexStyle(row.sex)
   },

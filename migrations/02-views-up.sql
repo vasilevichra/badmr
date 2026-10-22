@@ -1,50 +1,91 @@
+-- ready — готовые к подбору игроки текущего турнира; играющие (чьи матчи
+-- ещё не завершены) во вьюху не попадают; won — исход последнего матча
+-- игрока: 1 - выиграл, 0 - проиграл, null - не играл
 CREATE VIEW ready AS
-SELECT u.lastname || ' ' || u.firstname                                                                                                                AS name,
-       u.id                                                                                                                                            AS user_id,
-       round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1)                                                                                      AS rating,
-       count(DISTINCT m.id)                                                                                                                            AS matches,
-       u.id IN (SELECT DISTINCT u_id
-                FROM (SELECT u_id
-                      FROM (SELECT user_1_id AS u_id
-                            FROM match
-                            ORDER BY id DESC
-                            LIMIT (SELECT sum(n) courts
-                                   FROM (SELECT count(id) n FROM court WHERE available = 1 UNION SELECT count(id) n FROM match WHERE finished = 0)))
-                      UNION ALL
-                      SELECT u_id
-                      FROM (SELECT user_2_id AS u_id
-                            FROM match
-                            ORDER BY id DESC
-                            LIMIT (SELECT sum(n) courts
-                                   FROM (SELECT count(id) n FROM court WHERE available = 1 UNION SELECT count(id) n FROM match WHERE finished = 0)))
-                      UNION ALL
-                      SELECT u_id
-                      FROM (SELECT user_3_id AS u_id
-                            FROM match
-                            ORDER BY id DESC
-                            LIMIT (SELECT sum(n) courts
-                                   FROM (SELECT count(id) n FROM court WHERE available = 1 UNION SELECT count(id) n FROM match WHERE finished = 0)))
-                      UNION ALL
-                      SELECT u_id
-                      FROM (SELECT user_4_id AS u_id
-                            FROM match
-                            ORDER BY id DESC
-                            LIMIT (SELECT sum(n) courts
-                                   FROM (SELECT count(id) n FROM court WHERE available = 1 UNION SELECT count(id) n FROM match WHERE finished = 0))))) AS played
-FROM tournament as t
-         JOIN tournament_user AS tu ON tu.tournament_id = t.id AND tu.available = 1 AND tu.archived != 1
-         JOIN user AS u ON u.id = tu.user_id
-         LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
-         JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
-         JOIN defaults d ON d.name = 'matches'
-         LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = t.id
-WHERE t.current = 1
-  AND t.available = 1
-GROUP BY u.id
-HAVING CASE -- сыгранных матчей меньше, чем в ограничении для турнира
-           WHEN s.value > 0 THEN count(DISTINCT m.id) < s.value
-           WHEN d.value > 0 THEN count(DISTINCT m.id) < d.value
-           ELSE 1 END
+SELECT r.name,
+       r.user_id,
+       r.rating,
+       r.matches,
+       r.played,
+       -- исход последнего матча: гейм выигран стороной, когда у соперника
+       -- установлен lost_*_by; матч выигран стороной с большим числом геймов
+       CASE WHEN r.played = 0 THEN NULL ELSE (
+           SELECT CASE
+                      WHEN (r.user_id IN (lm.user_1_id, lm.user_2_id) AND g.g1 > g.g2)
+                          OR (r.user_id IN (lm.user_3_id, lm.user_4_id) AND g.g2 > g.g1)
+                          THEN 1
+                      ELSE 0 END
+           FROM match lm
+                    LEFT JOIN (SELECT match_id,
+                                      count(CASE WHEN lost_2_by IS NOT NULL THEN 1 END) AS g1,
+                                      count(CASE WHEN lost_1_by IS NOT NULL THEN 1 END) AS g2
+                               FROM game
+                               GROUP BY match_id) g ON g.match_id = lm.id
+           WHERE lm.id = (SELECT max(m.id)
+                          FROM match m
+                          WHERE m.tournament_id = r.tournament_id
+                            AND r.user_id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)))
+       END AS won
+FROM (SELECT u.lastname || ' ' || u.firstname AS name,
+             u.id                             AS user_id,
+             round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1) AS rating,
+             count(DISTINCT m.id)             AS matches,
+             u.id IN (SELECT DISTINCT u_id
+                      FROM (SELECT u_id
+                            FROM (SELECT user_1_id AS u_id
+                                  FROM match
+                                  WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                  ORDER BY id DESC
+                                  LIMIT (SELECT sum(n) courts
+                                         FROM (SELECT count(id) n FROM court WHERE available = 1 AND tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                         UNION SELECT count(id) n FROM match WHERE finished = 0 AND tournament_id = (SELECT id FROM tournament WHERE current = 1))))
+                            UNION ALL
+                            SELECT u_id
+                            FROM (SELECT user_2_id AS u_id
+                                  FROM match
+                                  WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                  ORDER BY id DESC
+                                  LIMIT (SELECT sum(n) courts
+                                         FROM (SELECT count(id) n FROM court WHERE available = 1 AND tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                         UNION SELECT count(id) n FROM match WHERE finished = 0 AND tournament_id = (SELECT id FROM tournament WHERE current = 1))))
+                            UNION ALL
+                            SELECT u_id
+                            FROM (SELECT user_3_id AS u_id
+                                  FROM match
+                                  WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                  ORDER BY id DESC
+                                  LIMIT (SELECT sum(n) courts
+                                         FROM (SELECT count(id) n FROM court WHERE available = 1 AND tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                         UNION SELECT count(id) n FROM match WHERE finished = 0 AND tournament_id = (SELECT id FROM tournament WHERE current = 1))))
+                            UNION ALL
+                            SELECT u_id
+                            FROM (SELECT user_4_id AS u_id
+                                  FROM match
+                                  WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                  ORDER BY id DESC
+                                  LIMIT (SELECT sum(n) courts
+                                         FROM (SELECT count(id) n FROM court WHERE available = 1 AND tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                                         UNION SELECT count(id) n FROM match WHERE finished = 0 AND tournament_id = (SELECT id FROM tournament WHERE current = 1)))))) AS played,
+             t.id                             AS tournament_id
+      FROM tournament as t
+               JOIN tournament_user AS tu ON tu.tournament_id = t.id AND tu.available = 1 AND tu.archived != 1
+               JOIN user AS u ON u.id = tu.user_id
+               LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
+               JOIN (SELECT max(id) AS id, user_id, previous, delta FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
+               JOIN defaults d ON d.name = 'matches'
+               LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = t.id
+      WHERE t.current = 1
+        AND t.available = 1
+        -- играющие не попадают в подбор: их текущий матч ещё не завершён
+        AND u.id NOT IN (SELECT user_1_id FROM match WHERE tournament_id = t.id AND finished = 0
+                         UNION SELECT user_2_id FROM match WHERE tournament_id = t.id AND finished = 0
+                         UNION SELECT user_3_id FROM match WHERE tournament_id = t.id AND finished = 0
+                         UNION SELECT user_4_id FROM match WHERE tournament_id = t.id AND finished = 0)
+      GROUP BY u.id
+      HAVING CASE -- сыгранных матчей меньше, чем в ограничении для турнира
+                 WHEN s.value > 0 THEN count(DISTINCT m.id) < s.value
+                 WHEN d.value > 0 THEN count(DISTINCT m.id) < d.value
+                 ELSE 1 END) r
 ORDER BY played, matches DESC;
 
 CREATE VIEW players AS
