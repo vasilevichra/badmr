@@ -197,17 +197,17 @@ describe("Achievement", () => {
 
     // u1,u2 — 6 номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u1, 4), [
-      {icon: "bi-emoji-frown", title: "Очень старался, но ничего не получилось"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт"},
-      {icon: "bi-emoji-dizzy", title: "Почти смог"}, {icon: "bi-bullseye", title: "Разгром"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар"}, {icon: "bi-clock-history", title: "Черепаха"}
+      {icon: "bi-emoji-frown", title: "Очень старался, но ничего не получилось", description: "Больше всех проигранных матчей с перевесом по забитым очкам"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт", description: "Чаще всех выигрывал первую игру матча"},
+      {icon: "bi-emoji-dizzy", title: "Почти смог", description: "Больше всех проигранных игр со своим счётом 20 и больше"}, {icon: "bi-bullseye", title: "Разгром", description: "Больше всех игр, выигранных с разницей 15 очков и больше"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар", description: "Больше всех побед над разными парами соперников"}, {icon: "bi-clock-history", title: "Черепаха", description: "Больше всех минут, проведённых в играх"}
     ]);
     // партнёр по команде имеет те же номинации
     assert.deepStrictEqual(achievementService.getNominationsByUser(u2, 4),
         achievementService.getNominationsByUser(u1, 4));
     // u3,u4 — Медалист (первым) и ещё 15 номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u3, 4), [
-      {icon: "bi-award-fill", title: "Медалист"}, {icon: "bi-trophy-fill", title: "Победитель"}, {icon: "bi-crosshair", title: "Пулемётчик"}, {icon: "bi-fire", title: "Неудержимый"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт"}, {icon: "bi-hammer", title: "Дожиматель"},
-      {icon: "bi-arrow-repeat", title: "Камбэк"}, {icon: "bi-hourglass-split", title: "На измор"}, {icon: "bi-snow2", title: "Стальные нервы"}, {icon: "bi-people-fill", title: "Связка"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар"}, {icon: "bi-tools", title: "Трудяга"},
-      {icon: "bi-lightning-charge-fill", title: "Молния"}, {icon: "bi-stars", title: "Восходящая звезда"}, {icon: "bi-graph-up-arrow", title: "Стабильный"}, {icon: "bi-alarm-fill", title: "Жертва дедлайна"}
+      {icon: "bi-award-fill", title: "Медалист", description: "Больше всех номинаций"}, {icon: "bi-trophy-fill", title: "Победитель", description: "Больше всех выигранных матчей"}, {icon: "bi-crosshair", title: "Пулемётчик", description: "Больше всех забитых воланов"}, {icon: "bi-fire", title: "Неудержимый", description: "Самая длинная серия выигранных игр подряд"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт", description: "Чаще всех выигрывал первую игру матча"}, {icon: "bi-hammer", title: "Дожиматель", description: "Чаще всех выигрывал решающую игру при счёте 1:1"},
+      {icon: "bi-arrow-repeat", title: "Камбэк", description: "Больше всех побед после проигранной первой игры"}, {icon: "bi-hourglass-split", title: "На измор", description: "Больше всех побед со счётом 30:29"}, {icon: "bi-snow2", title: "Стальные нервы", description: "Больше всех выигранных игр в дополнительном счёте (22 и больше)"}, {icon: "bi-people-fill", title: "Связка", description: "Пара с наибольшим числом совместных побед"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар", description: "Больше всех побед над разными парами соперников"}, {icon: "bi-tools", title: "Трудяга", description: "Больше всех сыгранных игр"},
+      {icon: "bi-lightning-charge-fill", title: "Молния", description: "Самые короткие игры в среднем (минимум три игры)"}, {icon: "bi-stars", title: "Восходящая звезда", description: "Набрал больше всех рейтинговых очков за турнир"}, {icon: "bi-graph-up-arrow", title: "Стабильный", description: "Лучший средний прирост рейтинга за матч (минимум три матча)"}, {icon: "bi-alarm-fill", title: "Жертва дедлайна", description: "Больше всех матчей в последний час игровой сессии"}
     ]);
     // без номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u5, 4), []);

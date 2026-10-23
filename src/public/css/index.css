@@ -771,3 +771,9 @@ td.diagonal-cross:after {
   max-width: 14rem;
   margin-bottom: 0.6rem;
 }
+/* Бэйджи достижений в карточке игрока: чуть крупнее дефолтных,
+   описание номинации — нативный тултип по title (#52) */
+.achievement-badge {
+  font-size: 0.875rem;
+  padding: 0.45em 0.75em;
+}

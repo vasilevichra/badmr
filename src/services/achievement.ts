@@ -331,13 +331,13 @@ class Achievement {
    * Номинации пользователя в турнире (для модалки игрока): «Медалист» первым,
    * остальные — в порядке объявления. Названия берутся из Achievement.TITLES.
    */
-  getNominationsByUser = (user_id: number, tournament_id: number): { icon: string; title: string }[] => {
+  getNominationsByUser = (user_id: number, tournament_id: number): { icon: string; title: string; description: string }[] => {
     const nominations = this.getByTournament(tournament_id);
     const keys = Object.keys(nominations).filter((key) =>
       nominations[key].users.some((user) => user.user_id === user_id)
     );
     keys.sort((key1, key2) => Number(key2 === "medalist") - Number(key1 === "medalist"));
-    return keys.map((key) => ({ icon: Achievement.META[key].icon, title: Achievement.TITLES[key] }));
+    return keys.map((key) => ({ icon: Achievement.META[key].icon, title: Achievement.TITLES[key], description: Achievement.META[key].description }));
   };
 }
 
