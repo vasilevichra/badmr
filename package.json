@@ -83,7 +83,7 @@
     "test": "node --experimental-strip-types src/bin/run-tests.ts",
     "dev": "npm run test && (lsof -ti tcp:3000 | xargs kill 2>/dev/null || true) && sleep 1 && (lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true) && (rm -f .data/badmr.sqlite3 || true) && npm run migrate && export NODE_ENV=dev && npm run open | tee -a .log/dev.log",
     "prod": "npm install && npm run migrate && export NODE_ENV=prod && node src/bin/start.ts | tee -a .log/prod.log",
-    "release": "npm run test && rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Projects.localized/badmr/.gitignore' /Users/r/Projects.localized/badmr box:~/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/{migrations,src/repositories} box:~/badmr && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'",
+    "release": "npm run test && rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Projects.localized/badmr/.gitignore' /Users/r/Projects.localized/badmr box:~/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/migrations/ box:~/badmr/migrations/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/src/repositories/ box:~/badmr/src/repositories/ && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'",
     "typecheck": "tsc --noEmit"
   },
   "author": {
