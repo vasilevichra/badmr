@@ -527,11 +527,11 @@ input:focus::placeholder {
 }
 
 .rating-plus {
-  color: rgba(25, 135, 84, 0.85) !important;
+  color: rgba(25, 135, 84, 0.7) !important;
 }
 
 .rating-minus {
-  color: rgba(220, 53, 69, 0.85) !important;
+  color: rgba(220, 53, 69, 0.7) !important;
 }
 
 .win {
