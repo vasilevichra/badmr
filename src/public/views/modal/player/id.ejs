@@ -48,6 +48,32 @@
                                                     <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0 mx-2" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
                                                 </div>
                                             </form>
+                                            <% // рейтинг ЛАБ под рейтингом турнира: @логин 380₁ 454₂,
+                                               // нижние индексы — как в таблицах турнира 110 %>
+                                            <div class="text-center text-secondary mt-1">
+                                                <i class="bi bi-at"></i><% if (user.site_id) { %><a class="player-window-link link-dark link-offset-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a><% } else { %>—<% } %>
+                                                <% if (user.rating_1 || user.rating_2) { %>
+                                                <math class="secondary-info">
+                                                    <% if (user.rating_1) { %>
+                                                    <msub>
+                                                        <mi><%= user.rating_1 %></mi>
+                                                        <mi>1</mi>
+                                                    </msub>
+                                                    <% } %>
+                                                    <% if (user.rating_1 && user.rating_2) { %>
+                                                    <mspace width="3px"/>
+                                                    <% } %>
+                                                    <% if (user.rating_2) { %>
+                                                    <msub>
+                                                        <mi><%= user.rating_2 %></mi>
+                                                        <mi>2</mi>
+                                                    </msub>
+                                                    <% } %>
+                                                </math>
+                                                <% } else { %>
+                                                <span class="secondary-info">—</span>
+                                                <% } %>
+                                            </div>
                                             <% // критерии калибровки: сид без матча, протухший рейтинг или идущая серия;
                                                // серия отображается накопленная (stale=1), у сида и протухшего — 0;
                                                // в завершённом/отменённом турнире прогресс калибровки не показываем %>
@@ -159,12 +185,6 @@
                                         <div class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab"
                                              tabindex="0">
                                             <div class="row g-0">
-                                                <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
-                                                    <div class="p-2"><a class="player-window-link link-dark link-offset-2" style="font-family: var(--bs-body-font-family); font-size: var(--bs-body-font-size); font-weight: var(--bs-body-font-weight);" href="https://badminton4u.ru" target="_blank" rel="noopener noreferrer">badminton4u.ru</a> (ЛАБ)</div>
-                                                </div>
-                                                <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
-                                                    <div class="p-2"><i class="bi bi-at"></i><% if (user.site_id) { %><a class="player-window-link link-dark link-offset-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a><% } else { %><%= '—' %><% } %> <i class="bi bi-star"></i> <%= user.rating_1 ?? '—' %> / <i class="bi bi-star"></i><i class="bi bi-star"></i> <%= user.rating_2 ?? '—' %><span style="margin-right: 0.3em"></span></div>
-                                                </div>
                                                 <% // разделение статистики: на этом турнире / за всё время (#57) %>
                                                 <% const wins_t = co_winners.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0); %>
                                                 <% const loses_t = co_losers.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0); %>
@@ -174,7 +194,9 @@
                                                 <% const win_rate_a = matches_total.count ? (wins_a / matches_total.count * 100).toFixed(2) : 0; %>
                                                 <% const matches3_t = Number(games.count) - 2 * Number(matches.count); %>
                                                 <% const matches3_a = Number(games_total.count) - 2 * Number(matches_total.count); %>
-                                                <div class="col-5 col-md-3 bg-light border-bottom border-white border-3"></div>
+                                                <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
+                                                    <div class="p-2">Параметр</div>
+                                                </div>
                                                 <div class="col-3 col-md-3 bg-light border-start border-bottom border-white border-3">
                                                     <div class="p-2 fw-bold">На этом турнире</div>
                                                 </div>
@@ -320,7 +342,7 @@
                                             <% // свёрнутые матчи турниров того же типа (#57): одна строка на матч %>
                                             <div class="mt-3">
                                                 <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#player-same-type-matches" role="button" aria-expanded="false" aria-controls="player-same-type-matches">
-                                                    <i class="bi bi-chevron-down"></i> Турниры того же типа (<%= type_matches.length %>)
+                                                    <i class="bi bi-chevron-down"></i> Все матчи (<%= type_matches.length %>)
                                                 </a>
                                                 <div class="collapse" id="player-same-type-matches">
                                                     <% type_matches.forEach((m) => { %>

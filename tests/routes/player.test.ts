@@ -329,6 +329,25 @@ describe("Player page", () => {
     assert.doesNotMatch(html, /Калибровка/);
   });
 
+  it("должен показать подпись рейтинга ЛАБ в главном фрейме без строки ЛАБ в обзоре", async () => {
+    const { id } = await userService.create("Фамилия1", "Имя1", "Отчество", 500, 1, 1, "1990-01-01");
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
+    db.prepare("INSERT INTO user_lab (user_id, site_id, site_login, rating_1, rating_2) VALUES (?, 42, 'vasilevich', 380, 454)").run(id);
+
+    const res = await fetch(`${base}/${id}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    // подпись в главном фрейме: @логин 380₁ 454₂ — как в таблицах турнира 110
+    assert.match(html, /vasilevich/);
+    assert.match(html, /<mi>380<\/mi>\s*<mi>1<\/mi>/);
+    assert.match(html, /<mi>454<\/mi>\s*<mi>2<\/mi>/);
+    // строки ЛАБ в таблице обзора больше нет
+    assert.doesNotMatch(html, /badminton4u\.ru \(ЛАБ\)/);
+    // первая колонка таблицы статистики называется «Параметр»
+    assert.match(html, /Параметр/);
+  });
+
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {
     const settingsService = new SettingsService();
     await settingsService.set("calibration_matches", "2");
