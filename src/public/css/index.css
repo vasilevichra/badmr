@@ -526,15 +526,12 @@ input:focus::placeholder {
   color: rgba(25, 135, 84, 0.45);
 }
 
-/* еле заметный тортик со свечами у правого края колонки «Имя» (#54);
-   td колонки получает position: relative через cellStyle */
+/* еле заметный тортик со свечами в самом конце колонки «Имя» (#54) */
 .player-birthday {
-  position: absolute;
-  right: 0.35em;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 0.875em;
   color: rgba(33, 37, 41);
+  margin-left: 0.2em;
+  vertical-align: -0.1em;
 }
 
 .rating-plus {

@@ -61,9 +61,6 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         field: 'name',
         title: '<span class="no-selection">Имя</span>',
         sortable: true,
-        // позиционирование для .player-birthday: тортик прижимается
-        // к правому краю ячейки (#54)
-        cellStyle: () => ({css: {position: 'relative'}}),
         formatter: (value, row) =>
             this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()) +
             // ненавязчивая индикация калибровки рейтинга: точка-светофор после
@@ -79,7 +76,7 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
                       : row.calibration_series / calibrationMatches < 2 / 3 ? 'yellow' : 'green') +
                   '" title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"></i>'
                 : '') +
-            // еле заметный тортик со свечами у правого края колонки —
+            // еле заметный тортик со свечами в самом конце колонки —
             // у того, чей день рождения на текущей неделе (#54)
             (isBirthdayThisWeek(row.birthday)
                 ? '<i class="bi bi-cake2 player-birthday" title="С днём рождения!"></i>'
