@@ -1,6 +1,16 @@
+<%# Выпадающий список турниров (#55).
+    Формат подписи везде одинаков: #id тип город дата («#3 НЛ Дзержинск 01 окт. 2026»).
+    Поведение зависит от зоны:
+    - авторизованный: смена выбора меняет глобальный current (POST /api/tournaments/current/:id)
+      и переходит на выбранный турнир;
+    - неавторизованный: current не трогается — только переход на /tournament/:id. %>
+<% const authorized = typeof user !== 'undefined' && user; %>
+<% const monthShort = ['янв.', 'фев.', 'мар.', 'апр.', 'мая', 'июн.', 'июл.', 'авг.', 'сен.', 'окт.', 'ноя.', 'дек.']; %>
+<% const typeShort = (typeName) => { const words = typeName.trim().split(/\s+/); return words.length > 1 ? words.map(w => w[0].toUpperCase()).join('') : typeName.trim(); }; %>
+<% const selectorLabel = (t) => { const d = new Date(t.started_at + 'Z'); return `#${t.id} ${typeShort(t.type_name)} ${t.city} ${String(d.getDate()).padStart(2, '0')} ${monthShort[d.getMonth()]} ${d.getFullYear()}`; }; %>
 <% const selected_tournament_id = typeof tournament_id !== 'undefined' ? tournament_id : tournaments.filter(t => t.current === 1)[0].id; %>
-<select id="tournament" class="tournament form-select-sm w-auto" onchange="$.post(`/api/tournaments/current/${this.value}`, () => location.href = '/tournament/' + this.value);" required>
+<select id="tournament" class="tournament form-select-sm w-auto" onchange="<% if (authorized) { %>$.post(`/api/tournaments/current/${this.value}`, () => location.href = '/tournament/' + this.value);<% } else { %>location.href = '/tournament/' + this.value;<% } %>" required>
     <% tournaments.forEach(tournament => { %>
-        <option value="<%= tournament.id %>" <% if (tournament.id === selected_tournament_id) { %>selected <% } %> ><%= tournament.name %></option>
+        <option value="<%= tournament.id %>" <% if (tournament.id === selected_tournament_id) { %>selected <% } %> ><%= selectorLabel(tournament) %></option>
     <% }); %>
 </select>

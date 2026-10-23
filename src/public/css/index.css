@@ -530,8 +530,7 @@ input:focus::placeholder {
 .player-birthday {
   font-size: 0.875em;
   color: rgba(33, 37, 41);
-  margin-left: 0.2em;
-  vertical-align: -0.1em;
+  margin-left: 0.6em;
 }
 
 .rating-plus {

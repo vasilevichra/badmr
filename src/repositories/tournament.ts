@@ -82,10 +82,11 @@ class Tournament {
 
   getAll() {
     return this.db.all(
-        `SELECT t.*, c.name AS city, g.latitude, g.longitude, g.address, g.map_url
+        `SELECT t.*, c.name AS city, tt.name AS type_name, g.latitude, g.longitude, g.address, g.map_url
          FROM tournament t
                   JOIN gym g on g.id = t.gym_id
                   JOIN city c ON c.id = g.city_id
+                  JOIN tournament_type tt ON tt.id = t.tournament_type_id
          ORDER BY id DESC`
     );
   }
