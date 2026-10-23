@@ -348,6 +348,45 @@ describe("Player page", () => {
     assert.match(html, /Параметр/);
   });
 
+  it("должен открывать вкладку из параметра ?tab= и не активировать чужие", async () => {
+    const ids: number[] = [];
+    for (let i = 1; i <= 4; i++) {
+      const { id } = await userService.create(`Фамилия${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
+      ids.push(id);
+    }
+    await userService.deregisterAll();
+    await userService.registerByIds(ids);
+    await matchService.create(...(ids as [number, number, number, number]));
+    const match = (await matchService.getAll() as { id: number }[]).at(-1)!;
+    await gameService.create(match.id, null, "15", "2026-01-01 10:00:00");
+    await gameService.create(match.id, null, "17", "2026-01-01 10:05:00");
+
+    // ?tab=matches — активна вкладка «Матчи»
+    let res = await fetch(`${base}/${ids[0]}?tab=matches`);
+    let html = await res.text();
+    assert.strictEqual(res.status, 200);
+    assert.match(html, /class="nav-link active"[^>]*id="matches-tab"/);
+    assert.match(html, /class="tab-pane fade show active" id="matches-tab-pane"/);
+    assert.doesNotMatch(html, /class="nav-link active"[^>]*id="overview-tab"/);
+
+    // ?tab=win — активна вкладка «Выигрывает»
+    res = await fetch(`${base}/${ids[0]}?tab=win`);
+    html = await res.text();
+    assert.match(html, /class="nav-link active"[^>]*id="win-tab"/);
+    assert.match(html, /class="tab-pane fade show active" id="win-tab-pane"/);
+
+    // невалидный tab — активен «Обзор» по умолчанию, мусор не рендерится
+    res = await fetch(`${base}/${ids[0]}?tab=%3Cscript%3Ealert(1)%3C/script%3E`);
+    html = await res.text();
+    assert.match(html, /class="nav-link active"[^>]*id="overview-tab"/);
+    assert.doesNotMatch(html, /alert\(1\)/);
+
+    // без параметра — «Обзор»
+    res = await fetch(`${base}/${ids[0]}`);
+    html = await res.text();
+    assert.match(html, /class="nav-link active"[^>]*id="overview-tab"/);
+  });
+
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {
     const settingsService = new SettingsService();
     await settingsService.set("calibration_matches", "2");

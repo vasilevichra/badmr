@@ -39,6 +39,11 @@ router.get('/:id', (req, res) => {
   const currentTournamentFinished = currentTournament !== undefined
     && (currentTournament.tournament_status_id === 3 || currentTournament.tournament_status_id === 4);
   const achievements = tournament ? achievementService.getNominationsByUser(userId, tournament.id) : [];
+  // активная вкладка карточки из ?tab=<имя> (ссылкой можно поделиться);
+  // только известные имена, иначе — «Обзор» по умолчанию
+  const knownTabs = ['matches', 'win', 'lose', 'chance', 'worst'];
+  const requestedTab = String(req.query.tab ?? '');
+  const activeTab = knownTabs.includes(requestedTab) ? requestedTab : 'overview';
   Promise.all([
     userService.getById(userId),              // 0
     userService.getRating(userId),            // 1
@@ -87,6 +92,7 @@ router.get('/:id', (req, res) => {
       co_losers_all: promises[18],
       type_matches: promises[19],
       current_tournament_finished: currentTournamentFinished,
+      active_tab: activeTab,
       achievements: achievements,
       playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
     });

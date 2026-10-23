@@ -128,40 +128,40 @@
                                 <div class="card-body p-4">
                                     <ul class="nav nav-tabs" id="profileTab" role="tablist">
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Обзор</button>
+                                            <button class="nav-link<%= active_tab === 'overview' ? ' active' : '' %>" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="<%= active_tab === 'overview' %>">Обзор</button>
                                         </li>
                                         <% if (user_matches.length || type_matches.length) { %>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches-tab-pane" type="button"
-                                                    role="tab" aria-controls="matches-tab-pane" aria-selected="false">Матчи
+                                            <button class="nav-link<%= active_tab === 'matches' ? ' active' : '' %>" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches-tab-pane" type="button"
+                                                    role="tab" aria-controls="matches-tab-pane" aria-selected="<%= active_tab === 'matches' %>">Матчи
                                             </button>
                                         </li>
                                         <% } %>
                                         <% if (co_winners.length || co_winners_all.length) { %>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="win-tab" data-bs-toggle="tab" data-bs-target="#win-tab-pane" type="button"
-                                                    role="tab" aria-controls="win-tab-pane" aria-selected="false">Выигрывает
+                                            <button class="nav-link<%= active_tab === 'win' ? ' active' : '' %>" id="win-tab" data-bs-toggle="tab" data-bs-target="#win-tab-pane" type="button"
+                                                    role="tab" aria-controls="win-tab-pane" aria-selected="<%= active_tab === 'win' %>">Выигрывает
                                             </button>
                                         </li>
                                         <% } %>
                                         <% if (co_losers.length || co_losers_all.length) { %>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="lose-tab" data-bs-toggle="tab" data-bs-target="#lose-tab-pane" type="button"
-                                                    role="tab" aria-controls="lose-tab-pane" aria-selected="false">Проигрывает
+                                            <button class="nav-link<%= active_tab === 'lose' ? ' active' : '' %>" id="lose-tab" data-bs-toggle="tab" data-bs-target="#lose-tab-pane" type="button"
+                                                    role="tab" aria-controls="lose-tab-pane" aria-selected="<%= active_tab === 'lose' %>">Проигрывает
                                             </button>
                                         </li>
                                         <% } %>
                                         <% if (buddies.length) { %>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="chance-tab" data-bs-toggle="tab" data-bs-target="#chance-tab-pane" type="button"
-                                                    role="tab" aria-controls="chance-tab-pane" aria-selected="false">Шанс
+                                            <button class="nav-link<%= active_tab === 'chance' ? ' active' : '' %>" id="chance-tab" data-bs-toggle="tab" data-bs-target="#chance-tab-pane" type="button"
+                                                    role="tab" aria-controls="chance-tab-pane" aria-selected="<%= active_tab === 'chance' %>">Шанс
                                             </button>
                                         </li>
                                         <% } %>
                                         <% if (worst_opponents.length) { %>
                                         <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="worst-tab" data-bs-toggle="tab" data-bs-target="#worst-tab-pane" type="button"
-                                                    role="tab" aria-controls="worst-tab-pane" aria-selected="false">Неудобные
+                                            <button class="nav-link<%= active_tab === 'worst' ? ' active' : '' %>" id="worst-tab" data-bs-toggle="tab" data-bs-target="#worst-tab-pane" type="button"
+                                                    role="tab" aria-controls="worst-tab-pane" aria-selected="<%= active_tab === 'worst' %>">Неудобные
                                             </button>
                                         </li>
                                         <% } %>
@@ -182,7 +182,7 @@
 <!--                                        </li>-->
                                     </ul>
                                     <div class="tab-content pt-4" id="profileTabContent">
-                                        <div class="tab-pane fade show active" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab"
+                                        <div class="tab-pane fade<%= active_tab === 'overview' ? ' show active' : '' %>" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab"
                                              tabindex="0">
                                             <div class="row g-0">
                                                 <% // разделение статистики: на этом турнире / за всё время (#57) %>
@@ -251,7 +251,7 @@
                                             </div>
                                             <canvas id="player-window-rating" height="120"></canvas>
                                         </div>
-                                        <div class="tab-pane fade" id="win-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
+                                        <div class="tab-pane fade<%= active_tab === 'win' ? ' show active' : '' %>" id="win-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
                                             <div class="p-2">
                                                 <% if (co_winners.length) { %>
                                                 <div class="text-secondary mb-1">На этом турнире</div>
@@ -279,7 +279,7 @@
                                                 <% } %>
                                             </div>
                                         </div>
-                                        <div class="tab-pane fade" id="lose-tab-pane" role="tabpanel" aria-labelledby="lose-tab" tabindex="0">
+                                        <div class="tab-pane fade<%= active_tab === 'lose' ? ' show active' : '' %>" id="lose-tab-pane" role="tabpanel" aria-labelledby="lose-tab" tabindex="0">
                                             <div class="p-2">
                                                 <% if (co_losers.length) { %>
                                                 <div class="text-secondary mb-1">На этом турнире</div>
@@ -307,7 +307,7 @@
                                                 <% } %>
                                             </div>
                                         </div>
-                                        <div class="tab-pane fade" id="chance-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
+                                        <div class="tab-pane fade<%= active_tab === 'chance' ? ' show active' : '' %>" id="chance-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
                                             <div class="p-2">
                                                 <table class="table no-selection">
                                                     <tbody>
@@ -318,7 +318,7 @@
                                                 </table>
                                             </div>
                                         </div>
-                                        <div class="tab-pane fade" id="worst-tab-pane" role="tabpanel" aria-labelledby="worst-tab" tabindex="0">
+                                        <div class="tab-pane fade<%= active_tab === 'worst' ? ' show active' : '' %>" id="worst-tab-pane" role="tabpanel" aria-labelledby="worst-tab" tabindex="0">
                                             <div class="p-2">
                                                 <table class="table no-selection">
                                                     <tbody>
@@ -329,7 +329,7 @@
                                                 </table>
                                             </div>
                                         </div>
-                                        <div class="tab-pane fade" id="matches-tab-pane" role="tabpanel" aria-labelledby="matches-tab" tabindex="0">
+                                        <div class="tab-pane fade<%= active_tab === 'matches' ? ' show active' : '' %>" id="matches-tab-pane" role="tabpanel" aria-labelledby="matches-tab" tabindex="0">
                                             <!-- id отличается от страничного #match-history-block: периодический
                                                  рефреш $(‘#match-history-block’).load(...) затрагивает все элементы
                                                  с этим id и затирал бы фильтр по игроку всеми матчами турнира -->
@@ -520,3 +520,24 @@
         </div>
     </div>
 </div>
+<script>
+    (function () {
+        // вкладка карточки синхронизируется с адресом (?tab=<имя>), чтобы
+        // ссылкой с открытой вкладкой можно было поделиться; replaceState —
+        // переключения вкладок не засоряют историю назад/вперёд
+        const nav = document.getElementById('profileTab');
+        if (!nav) {
+            return;
+        }
+        nav.addEventListener('shown.bs.tab', (event) => {
+            const url = new URL(location.href);
+            const name = event.target.id.replace(/-tab$/, '');
+            if (name === 'overview') {
+                url.searchParams.delete('tab');
+            } else {
+                url.searchParams.set('tab', name);
+            }
+            history.replaceState({}, '', url);
+        });
+    })();
+</script>

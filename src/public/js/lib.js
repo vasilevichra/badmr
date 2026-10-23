@@ -61,8 +61,16 @@ const openPlayerWindow = (id) => {
     history.pushState({}, '', url);
   }
 
+  // ?tab=<имя> — вкладка карточки, синхронизированная с адресом,
+  // прокидывается в запрос, чтобы карточка открылась на нужной вкладке
+  let cardUrl = withTournament(`/web/players/${id}`);
+  const tab = new URLSearchParams(location.search).get('tab');
+  if (tab) {
+    cardUrl += `${cardUrl.includes('?') ? '&' : '?'}tab=${encodeURIComponent(tab)}`;
+  }
+
   $.ajax({
-        url: withTournament(`/web/players/${id}`),
+        url: cardUrl,
         type: 'GET',
         cache: false,
         success: html => {
