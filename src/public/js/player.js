@@ -43,8 +43,10 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
             // ненавязчивая индикация калибровки рейтинга: точка-светофор после
             // имени. Красная — серия не начата (сид или протухший рейтинг),
             // жёлтая — начало серии, зелёная — серия близка к концу;
-            // после последнего матча серии точка исчезает
-            (row.calibrating && row.calibration_series < calibrationMatches
+            // после последнего матча серии точка исчезает.
+            // У завершённого турнира точки нет — калибровка по законченным
+            // матчам уже не актуальна (#53)
+            (row.calibrating && row.calibration_series < calibrationMatches && tournamentStatus() !== 3
                 ? '<i class="bi bi-dot player-calibration player-calibration-' +
                   (row.calibration_series === 0 || calibrationMatches <= 0
                       ? 'red'

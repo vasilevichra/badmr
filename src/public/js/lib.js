@@ -4,6 +4,13 @@ const csrfToken = () => $('meta[name="csrf-token"]').attr('content');
 // пусто на страницах без турнира (например, 404) — параметр не добавляется
 const tournamentId = () => document.body.dataset.tournament || '';
 
+// статус турнира (атрибут data-tournament-status на body) или undefined,
+// если страницы без турнира
+const tournamentStatus = () => {
+  const s = document.body.dataset.tournamentStatus;
+  return s === undefined || s === '' ? undefined : Number(s);
+};
+
 // добавляет ?tournament=<id> к read-URL раздела, если турнир задан;
 // write-запросы параметр не получают: мутации идут по глобальному current
 const withTournament = (url) => {
