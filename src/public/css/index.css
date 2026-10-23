@@ -393,6 +393,11 @@ input:focus::placeholder {
   height: 19px;
 }
 
+/* соигрок на вкладках карточки игрока — клик открывает карточку соигрока */
+.co-player {
+  cursor: pointer;
+}
+
 .match-history-game-col {
   padding-left: 3px !important;
   padding-right: 3px !important;

@@ -20,7 +20,7 @@
                                         <div class="card-body">
                                             <div class="text-center mb-3">
                                                 <img class="img-fluid"
-                                                     src="<% if (user.pic && (user.pic.slice(0, 4) === 'http' || user.pic.slice(0, 5) === 'data:')) { %><%= user.pic %><% } else if (user.pic) { %>data:image/png;base64, <%= user.pic %><% } else { %>/assets/images/pepe.png<% } %>"
+                                                     src="<% if (user.pic && (user.pic.slice(0, 4) === 'http' || user.pic.slice(0, 5) === 'data:')) { %><%= user.pic %><% } else if (user.pic) { %>data:image/png;base64, <%= user.pic %><% } else { %>/assets/images/<%= user.sex ? 'pepe' : 'pepe-girl' %>.svg<% } %>"
                                                      alt="user@email.com">
                                             </div>
                                             <p>
@@ -260,7 +260,7 @@
                                                     <div class="row gy-2">
                                                         <label class="col-12 form-label m-0">Profile Image</label>
                                                         <div class="col-12">
-                                                            <img src="/assets/images/pepe.png" class="img-fluid" alt="Luna John">
+                                                            <img src="/assets/images/<%= user.sex ? 'pepe' : 'pepe-girl' %>.svg" class="img-fluid" alt="Luna John">
                                                         </div>
                                                         <div class="col-12">
                                                             <a href="#!" class="d-inline-block bg-primary link-light lh-1 p-2 rounded">

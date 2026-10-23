@@ -15,7 +15,7 @@
     const src = pic && (pic.startsWith('http') || pic.startsWith('data:')) ? pic : 'data:image/png;base64, ' + pic;
     return pic ?
         `<img class="no-selection" src="${src}" alt="${name}" width="20" height="20"/>` :
-        `<span class="no-selection" style="font-size: 15px">${(sex ? '👨🏻‍🦰' : '👩🏻')}</span>`;
+        `<img class="no-selection" src="/assets/images/${sex ? 'pepe' : 'pepe-girl'}.svg" alt="${name}" width="20" height="20"/>`;
   };
 
   exports.playerNameFormatter = playerNameFormatter;

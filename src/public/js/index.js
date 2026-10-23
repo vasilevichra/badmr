@@ -135,7 +135,7 @@ $(document).ready(() => {
     // делегирование — на постоянной оболочке #player-window: её содержимое
     // подгружается ajax'ом, и на момент привязки #player-match-history-block
     // ещё не существует
-    $('#achievement-block, #match-history-block, #player-window').on('click', '.achievement-player, .match-history-players-name', function () {
+    $('#achievement-block, #match-history-block, #player-window').on('click', '.achievement-player, .match-history-players-name, .co-player', function () {
       openPlayerWindow(Number($(this).data('user-id')));
     });
   }

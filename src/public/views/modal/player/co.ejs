@@ -8,5 +8,5 @@
     <% } else if (typeof rate !== 'undefined') { %>
         <th style="width: 4em;" scope="row"><span class="no-selection rating-<%= rate > 50 ? 'plus' : 'minus' %>"><%= rate %>%</span></th>
     <% } %>
-    <td><%- playerNameFormatter(user_id, user_name, user_sex, user_pic); %>
+    <td class="co-player" data-user-id="<%= user_id %>" role="button"><%- playerNameFormatter(user_id, user_name, user_sex, user_pic); %>
 </tr>
