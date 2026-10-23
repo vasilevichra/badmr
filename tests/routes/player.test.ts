@@ -45,6 +45,9 @@ const seedCalibratedPlayer = async () => {
   }
   await userService.deregisterAll();
   await userService.registerByIds(ids);
+  // калибровка показывается только в идущем турнире: сид-турнир 4 — «Идёт»
+  const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
+  db.prepare("UPDATE tournament SET tournament_status_id = 2 WHERE id = 4").run();
   await matchService.create(ids[0], ids[1], ids[2], ids[3]);
   const matches = await matchService.getAll() as { id: number; finished: number }[];
   const match = matches.filter((m) => m.finished === 0).at(-1)!;
@@ -261,6 +264,9 @@ describe("Player page", () => {
     const { id } = await userService.create("Фамилия1", "Имя1", "Отчество", 500, 1, 1, "1990-01-01");
     await userService.deregisterAll();
     await userService.registerByIds([id]);
+    // калибровка показывается только в идущем турнире
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
+    db.prepare("UPDATE tournament SET tournament_status_id = 2 WHERE id = 4").run();
 
     const res = await fetch(`${base}/${id}`);
     const html = await res.text();
@@ -290,6 +296,19 @@ describe("Player page", () => {
     const { id, matchId } = await seedCalibratedPlayer();
     const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
     db.prepare("UPDATE rating SET stale = 0, series = 0 WHERE match_id = ?").run(matchId);
+
+    const res = await fetch(`${base}/${id}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.doesNotMatch(html, /Калибровка/);
+  });
+
+  it("должен скрыть прогресс калибровки когда турнир завершён", async () => {
+    const { id } = await seedCalibratedPlayer();
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
+    // текущий турнир сидов — id 4; завершаем его
+    db.prepare("UPDATE tournament SET tournament_status_id = 3 WHERE id = 4").run();
 
     const res = await fetch(`${base}/${id}`);
     const html = await res.text();

@@ -49,8 +49,9 @@
                                                 </div>
                                             </form>
                                             <% // критерии калибровки: сид без матча, протухший рейтинг или идущая серия;
-                                               // серия отображается накопленная (stale=1), у сида и протухшего — 0
-                                               const calibrating = calibration && calibration_matches > 0 && (calibration.is_seed === 1 || calibration.outdated === 1 || (calibration.stale === 1 && calibration.series <= calibration_matches)); %>
+                                               // серия отображается накопленная (stale=1), у сида и протухшего — 0;
+                                               // в завершённом/отменённом турнире прогресс калибровки не показываем %>
+                                            <% const calibrating = !current_tournament_finished && calibration && calibration_matches > 0 && (calibration.is_seed === 1 || calibration.outdated === 1 || (calibration.stale === 1 && calibration.series <= calibration_matches)); %>
                                             <% const cal_series = calibration && calibration.outdated !== 1 && calibration.stale === 1 ? calibration.series : 0; %>
                                             <% if (calibrating) { %>
                                             <div class="progress mt-2">

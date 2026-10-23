@@ -31,9 +31,13 @@ router.get('/:id', (req, res) => {
   // без него — глобальный current; если и его нет — оба среза совпадают
   const currentTournamentId = tournamentId ?? tournament?.id;
   const currentTournament = currentTournamentId !== undefined
-    ? tournamentService.getById(currentTournamentId) as { tournament_type_id: number } | undefined
+    ? tournamentService.getById(currentTournamentId) as { tournament_type_id: number; tournament_status_id: number } | undefined
     : undefined;
   const typeId = currentTournament?.tournament_type_id;
+  // калибровка бессмысленна, когда матчи больше не играются:
+  // 3 — Завершён, 4 — Отменён
+  const currentTournamentFinished = currentTournament !== undefined
+    && (currentTournament.tournament_status_id === 3 || currentTournament.tournament_status_id === 4);
   const achievements = tournament ? achievementService.getNominationsByUser(userId, tournament.id) : [];
   Promise.all([
     userService.getById(userId),              // 0
@@ -82,6 +86,7 @@ router.get('/:id', (req, res) => {
       co_winners_all: promises[17],
       co_losers_all: promises[18],
       type_matches: promises[19],
+      current_tournament_finished: currentTournamentFinished,
       achievements: achievements,
       playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
     });
