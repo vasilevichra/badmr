@@ -777,3 +777,31 @@ td.diagonal-cross:after {
   font-size: 0.875rem;
   padding: 0.45em 0.75em;
 }
+
+/* Футер прижат к низу экрана даже на коротких страницах:
+   body — flex-колонка на всю высоту вьюпорта, футер — в потоке
+   (на телефоне) — с margin-top:auto; svh учитывает панели Safari */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+/* во flex-колонке блок свернулся бы по ширине до содержимого */
+body > .container {
+  width: 100%;
+}
+
+body > #footer:not(.fixed-bottom) {
+  margin-top: auto;
+}
+
+/* Safari не перепозиционирует fixed-элементы после динамического изменения
+   высоты контента (подгрузка таблиц) до следующей прокрутки/ресайза —
+   собственный слой композитинга заставляет пересчитать позицию сразу */
+#footer.fixed-bottom {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
