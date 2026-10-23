@@ -97,8 +97,8 @@ const createAndRegister = async (userService: UserService, users: TestUser[]): P
 const withIds = (pairs: Pair[], ids: number[]): Pair[] =>
   pairs.map((p) => ({
     ...p,
-    players1: p.players1.map((pl) => ({ ...pl, user_id: ids[pl.user_id - 1] })),
-    players2: p.players2.map((pl) => ({ ...pl, user_id: ids[pl.user_id - 1] })),
+    players1: p.players1.map((pl) => ({ ...pl, user_id: ids[pl.user_id - 1] })) as [Player, Player],
+    players2: p.players2.map((pl) => ({ ...pl, user_id: ids[pl.user_id - 1] })) as [Player, Player],
   }));
 
 const mkUser = (id: number, rating: number): TestUser => ({

@@ -45,7 +45,7 @@ describe("Settings", () => {
 
   describe("getAll", () => {
     it("должен вернуть все настройки с описаниями", async () => {
-      const all = await settingsService.getAll() as Setting[];
+      const all = await settingsService.getAll() as unknown as Setting[];
 
       // 24 базовых настройки + 4 настройки калибровки рейтинга + fifty
       assert.strictEqual(all.length, 29);
@@ -99,7 +99,7 @@ describe("Settings", () => {
 
   describe("regions", () => {
     it("должен пометить регион по умолчанию", async () => {
-      const regions = await settingsService.regions() as Region[];
+      const regions = await settingsService.regions() as unknown as Region[];
 
       assert.deepStrictEqual<Region[]>(
         regions.filter((r) => r.is_default === 1),
@@ -111,7 +111,7 @@ describe("Settings", () => {
 
   describe("cities", () => {
     it("должен пометить город по умолчанию", async () => {
-      const cities = await settingsService.cities() as City[];
+      const cities = await settingsService.cities() as unknown as City[];
 
       assert.deepStrictEqual<City[]>(cities.filter((c) => c.is_default === 1), [
         // cities() возвращает c.* из таблицы city: id, region_id, name (+ is_default), state_id живёт в region

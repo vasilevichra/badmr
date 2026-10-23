@@ -102,7 +102,7 @@ describe("Rating", () => {
       await gameService.create(match2.id, null, "15", "2026-01-02 10:00:00");
       await gameService.create(match2.id, null, "17", "2026-01-02 10:05:00");
 
-      const points = await ratingService.getByUserId(ids[0]) as RatingPoint[];
+      const points = await ratingService.getByUserId(ids[0]) as unknown as RatingPoint[];
       assert.strictEqual(points.length, 2);
       assert.deepStrictEqual(points.map((p) => p.x), ["2026-01-01 10:05:00", "2026-01-02 10:05:00"]);
       assert.ok(points.every((p) => typeof p.y === "number"));

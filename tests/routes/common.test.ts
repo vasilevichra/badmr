@@ -28,6 +28,7 @@ interface Player {
   wins: number;
   sex: number;
   pic: string | null;
+  tournament_id: number;
 }
 
 interface Pair {
@@ -36,6 +37,11 @@ interface Pair {
   diff: number;
   matches: number;
   played: number;
+  // «Шанс» пары — винрейт совместных доигранных матчей напарников
+  // (null — вместе не играли); friends — сумма шансов обеих пар
+  chance1: number | null;
+  chance2: number | null;
+  friends: number;
   // система 50%: фаворит матчапа по моментуму — 1 (players1), 2 (players2),
   // 0 (нейтральный); поле приходит только при включённой fifty
   favorite?: 0 | 1 | 2;

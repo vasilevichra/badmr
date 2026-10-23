@@ -1,6 +1,6 @@
 import UserRepository from '../repositories/user.ts';
 import { JSDOM } from 'jsdom';
-import Promise from 'bluebird';
+import Bluebird from 'bluebird';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -188,7 +188,7 @@ class User {
    */
   async labSearch(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabPlayer | undefined> {
     // пауза перед каждым запросом, чтобы не походить на бота
-    const pause = (base = 0) => Promise.delay(Math.random() * 1000 + 500 + base);
+    const pause = (base = 0) => Bluebird.delay(Math.random() * 1000 + 500 + base);
     // сайт иногда сбрасывает соединение (ECONNRESET) — повторяем попытки
     const retry = async <T>(request: () => Promise<T>): Promise<T> => {
       for (let attempt = 1; ; attempt++) {
@@ -286,9 +286,9 @@ class User {
     const users = this.getAll() as unknown as { id: number; name: string; city: string | null }[];
     const labSites = await this.user.getLabSites() as unknown as { user_id: number; site_id: number }[];
     const siteIds = new Map(labSites.map(row => [row.user_id, row.site_id]));
-    const responses = await Promise.map(users, user => this.labSearch(user.name, user.city, user.id, siteIds.get(user.id) ?? null), {concurrency: 1});
+    const responses = await Bluebird.map(users, user => this.labSearch(user.name, user.city, user.id, siteIds.get(user.id) ?? null), {concurrency: 1});
     const players = responses.filter(r => r);
-    return Promise.all(players.map(p => this.user.setLabInfo(p!.user_id, p!.id, p!.login ?? '', p!.name, p!.r1 === null ? '' : String(p!.r1), p!.r2 === null ? '' : String(p!.r2), p!.img ?? '', p!.city ?? '', p!.club ?? '', p!.year === null ? '' : String(p!.year))));
+    return Bluebird.all(players.map(p => this.user.setLabInfo(p!.user_id, p!.id, p!.login ?? '', p!.name, p!.r1 === null ? '' : String(p!.r1), p!.r2 === null ? '' : String(p!.r2), p!.img ?? '', p!.city ?? '', p!.club ?? '', p!.year === null ? '' : String(p!.year))));
   };
 }
 

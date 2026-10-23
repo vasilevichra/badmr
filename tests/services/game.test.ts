@@ -107,7 +107,7 @@ describe("Game", () => {
 
       const { id } = await gameService.create(matchId, null, null, "2026-01-01 10:00:00") as { id: number };
 
-      const game = await gameService.getById(id) as GameRow;
+      const game = await gameService.getById(id) as unknown as GameRow;
       assert.strictEqual(game.lost_1_by, null);
       assert.strictEqual(game.lost_2_by, null);
     });
@@ -121,7 +121,7 @@ describe("Game", () => {
       await gameService.create(matchId, "21", "15", "2026-01-01 10:05:00");
       const { id } = await gameService.create(matchId, "15", "21", "2026-01-01 10:00:00") as { id: number };
 
-      assert.strictEqual((await gameService.getById(id) as GameRow).created_at, "2026-01-01 10:05:00");
+      assert.strictEqual((await gameService.getById(id) as unknown as GameRow).created_at, "2026-01-01 10:05:00");
     });
 
     it("должен вернуть пустой ответ для несуществующей игры", async () => {
@@ -135,7 +135,7 @@ describe("Game", () => {
 
       const { id } = await gameService.create110(match110Id) as { id: number };
 
-      const game = await game110Repository.getById(id) as Game110Row;
+      const game = await game110Repository.getById(id) as unknown as Game110Row;
       assert.strictEqual(game.match_110_id, match110Id);
       assert.strictEqual(game.game_type_id, 1);
       assert.strictEqual(game.score_1, 0);

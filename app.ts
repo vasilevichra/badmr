@@ -16,7 +16,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // connect-sqlite3 exports a factory: module.exports = function(connect) => SQLiteStore class bound to session store
-const SQLiteStore = ((await import('connect-sqlite3')).default as (connect: unknown) => new (options: { db: string }) => import('express-session').Store)(session);
+const SQLiteStore = ((await import('connect-sqlite3')).default as unknown as (connect: unknown) => new (options: { db: string }) => import('express-session').Store)(session);
 const store = new SQLiteStore({ db: '.data/sessions.db' });
 
 app.set('views', './src/public/views');

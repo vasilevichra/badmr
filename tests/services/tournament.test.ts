@@ -18,6 +18,7 @@ interface TournamentRow {
   current: number;
   tournament_status_id: number;
   unit_id: number;
+  rules: string;
 }
 
 const tournamentService = new TournamentService();
@@ -48,7 +49,7 @@ describe("Tournament", () => {
 
   describe("getCurrent", () => {
     it("должен вернуть текущий турнир", async () => {
-      const current = await tournamentService.getCurrent() as TournamentRow;
+      const current = await tournamentService.getCurrent() as unknown as TournamentRow;
 
       // дамп 05-specific перегенерируется из живой базы — статус и состав
       // текущего турнира сверяем с фактическим состоянием БД
@@ -73,15 +74,15 @@ describe("Tournament", () => {
     it("должен сделать турнир текущим, сбросив остальные", async () => {
       await tournamentService.setCurrent(1);
 
-      assert.strictEqual((await tournamentService.getById(1) as TournamentRow).current, 1);
-      assert.strictEqual((await tournamentService.getById(4) as TournamentRow).current, 0);
-      assert.strictEqual((await tournamentService.getCurrent() as TournamentRow).id, 1);
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).current, 1);
+      assert.strictEqual((await tournamentService.getById(4) as unknown as TournamentRow).current, 0);
+      assert.strictEqual((await tournamentService.getCurrent() as unknown as TournamentRow).id, 1);
     });
   });
 
   describe("getAll", () => {
     it("должен вернуть все турниры от новых к старым", async () => {
-      const all = await tournamentService.getAll() as TournamentRow[];
+      const all = await tournamentService.getAll() as unknown as TournamentRow[];
 
       // состав турниров берём из БД: дамп 05-specific перегенерируется
       const expected = db.all(`SELECT t.id, t.name, c.name AS city
@@ -99,7 +100,7 @@ describe("Tournament", () => {
 
   describe("getById", () => {
     it("должен вернуть турнир по id", async () => {
-      const tournament = await tournamentService.getById(4) as TournamentRow;
+      const tournament = await tournamentService.getById(4) as unknown as TournamentRow;
 
       // состав полей сверяем с фактическим состоянием БД — дамп 05-specific
       // перегенерируется, его статусы не константа
@@ -125,13 +126,13 @@ describe("Tournament", () => {
     it("должен изменить статус указанного турнира", async () => {
       await tournamentService.setStatus(3, 1);
 
-      assert.strictEqual((await tournamentService.getById(1) as TournamentRow).tournament_status_id, 3);
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).tournament_status_id, 3);
     });
 
     it("должен изменить статус текущего турнира без указания id", async () => {
       await tournamentService.setStatus(4);
 
-      assert.strictEqual((await tournamentService.getById(4) as TournamentRow).tournament_status_id, 4);
+      assert.strictEqual((await tournamentService.getById(4) as unknown as TournamentRow).tournament_status_id, 4);
     });
   });
 
@@ -140,35 +141,35 @@ describe("Tournament", () => {
       await tournamentService.setLostStatuses();
 
       // турнир 4: статус 'Регистрация', дата окончания в прошлом -> 'Завершён'
-      assert.strictEqual((await tournamentService.getById(4) as TournamentRow).tournament_status_id, 3);
+      assert.strictEqual((await tournamentService.getById(4) as unknown as TournamentRow).tournament_status_id, 3);
       // турнир 1: дата окончания в будущем, но регистрация уже прошла -> 'Идёт'
-      assert.strictEqual((await tournamentService.getById(1) as TournamentRow).tournament_status_id, 2);
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).tournament_status_id, 2);
       // турниры 2 и 3 уже завершены -> не меняются
-      assert.strictEqual((await tournamentService.getById(2) as TournamentRow).tournament_status_id, 3);
+      assert.strictEqual((await tournamentService.getById(2) as unknown as TournamentRow).tournament_status_id, 3);
     });
 
     it("должен перевести турниры с прошедшей регистрацией в статус 'Идёт'", async () => {
-      const id = await tournamentService.create(
+      const id = (await tournamentService.create(
         1, 1, 1, 1, "Тест",
         "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
         20, 1, "100", "750", "", 0,
-      );
+      ))!;
 
       await tournamentService.setLostStatuses();
 
-      assert.strictEqual((await tournamentService.getById(id) as TournamentRow).tournament_status_id, 2);
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 2);
     });
   });
 
   describe("create", () => {
     it("должен создать текущий турнир с кортами и настройками рейтинга", async () => {
-      const id = await tournamentService.create(
+      const id = (await tournamentService.create(
         1, 1, 1, 1, "Тестовый турнир",
         "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
         25, 2, "200", "600", "<a>Правила</a>", 1,
-      );
+      ))!;
 
-      const created = await tournamentService.getById(id) as TournamentRow;
+      const created = await tournamentService.getById(id) as unknown as TournamentRow;
       assert.strictEqual(created.name, "Тестовый турнир");
       assert.strictEqual(created.current, 1);
       assert.strictEqual(created.tournament_status_id, 1);
@@ -176,7 +177,7 @@ describe("Tournament", () => {
       assert.strictEqual(created.rules, "<a>Правила</a>");
 
       // прежний текущий турнир должен перестать быть текущим
-      assert.strictEqual((await tournamentService.getById(4) as TournamentRow).current, 0);
+      assert.strictEqual((await tournamentService.getById(4) as unknown as TournamentRow).current, 0);
 
       // должны быть созданы 2 корта
       const courts = await db.get<{ count: number }>(
@@ -198,15 +199,15 @@ describe("Tournament", () => {
     });
 
     it("должен создать не текущий турнир, не сбрасывая текущий", async () => {
-      const id = await tournamentService.create(
+      const id = (await tournamentService.create(
         1, 1, 1, 1, "Тестовый турнир",
         "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
         20, 1, "100", "750", "", 0,
-      );
+      ))!;
 
-      assert.strictEqual((await tournamentService.getById(id) as TournamentRow).current, 0);
-      assert.strictEqual((await tournamentService.getById(4) as TournamentRow).current, 1);
-      assert.strictEqual((await tournamentService.getCurrent() as TournamentRow).id, 4);
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).current, 0);
+      assert.strictEqual((await tournamentService.getById(4) as unknown as TournamentRow).current, 1);
+      assert.strictEqual((await tournamentService.getCurrent() as unknown as TournamentRow).id, 4);
     });
   });
 
@@ -220,11 +221,11 @@ describe("Tournament", () => {
     });
 
     it("должен вернуть 1, когда все участники оплатили", async () => {
-      const tournamentId = await tournamentService.create(
+      const tournamentId = (await tournamentService.create(
         1, 1, 1, 1, "Тестовый турнир",
         "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
         20, 1, "100", "750", "", 1,
-      );
+      ))!;
       const { id } = await userService.create("Тестов", "Алексей", "Отчество", 500, 1, 1, "1990-01-01");
       await userService.registerByIds([id]);
 
@@ -237,11 +238,11 @@ describe("Tournament", () => {
     });
 
     it("должен вернуть 1 для турнира без участников", async () => {
-      const tournamentId = await tournamentService.create(
+      const tournamentId = (await tournamentService.create(
         1, 1, 1, 1, "Тестовый турнир",
         "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
         20, 1, "100", "750", "", 0,
-      );
+      ))!;
 
       assert.strictEqual(await tournamentService.isEveryonePaid(tournamentId), 1);
     });

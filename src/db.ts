@@ -1,11 +1,11 @@
 import { DatabaseSync } from "node:sqlite";
 
 export interface RunResult {
-  id: number | null;
+  id: number;
 }
 
-type SqliteParam = string | number | bigint | null | Uint8Array;
-type SqliteParams = SqliteParam[] | Record<string, SqliteParam>;
+export type SqliteParam = string | number | bigint | null | Uint8Array;
+export type SqliteParams = SqliteParam[] | Record<string, SqliteParam>;
 
 class DB {
   db: DatabaseSync;

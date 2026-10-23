@@ -204,7 +204,7 @@ class Match {
    *  (незаписанный счёт выигравшего вычисляется по правилам бадминтона).
    *  Медиана вместо среднего: один затянувшийся матч не портит показатель. */
   getMedianSecondsPerPoint(current_only: boolean, tournamentId?: number) {
-    return this.db.get<number>(
+    return this.db.get<{value: number}>(
         `SELECT avg(t.spd) AS value
          FROM (SELECT s.dur * 1.0 / s.points                              AS spd,
                       ROW_NUMBER() OVER (ORDER BY s.dur * 1.0 / s.points) AS rn,
@@ -237,7 +237,7 @@ class Match {
   /** Медианная длительность матча в секундах (та же выборка, что у
    *  getMedianSecondsPerPoint: матчи короче минуты не учитываются). */
   getMedianMatchSeconds(current_only: boolean, tournamentId?: number) {
-    return this.db.get<number>(
+    return this.db.get<{value: number}>(
         `SELECT avg(t.dur) AS value
          FROM (SELECT s.dur,
                       ROW_NUMBER() OVER (ORDER BY s.dur) AS rn,
@@ -258,7 +258,7 @@ class Match {
   /** Медианная длительность игры в секундах: от предыдущей игры (или начала
    *  матча) до конца игры; игры короче минуты не учитываются. */
   getMedianGameSeconds(current_only: boolean, tournamentId?: number) {
-    return this.db.get<number>(
+    return this.db.get<{value: number}>(
         `SELECT avg(t.game_dur) AS value
          FROM (SELECT s.game_dur,
                       ROW_NUMBER() OVER (ORDER BY s.game_dur) AS rn,
@@ -279,7 +279,7 @@ class Match {
   /** Среднее число игр в матче — показатель выводится как float
    *  (та же выборка, что у getMedianSecondsPerPoint). */
   getAverageGamesPerMatch(current_only: boolean, tournamentId?: number) {
-    return this.db.get<number>(
+    return this.db.get<{value: number}>(
         `SELECT avg(s.cnt) AS value
          FROM (SELECT m.id                                                                        AS match_id,
                       count(g.id)                                                                 AS cnt,

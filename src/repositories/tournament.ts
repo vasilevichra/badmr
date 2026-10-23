@@ -141,7 +141,9 @@ class Tournament {
          WHERE ended_at > datetime('now')
            AND tournament_status_id = 2`
     );
-    ended.forEach(t => schedule.scheduleJob(new Date(t.date + 'Z'), () => this.setStatus(3, t.id)));
+    ended.forEach(t => schedule.scheduleJob(new Date(t.date + 'Z'), () => {
+      this.setStatus(3, t.id);
+    }));
 
     // Отложенные задачи на окончания регистраций
     const regEnded = this.db.all<{ id: number; date: string }>(
@@ -150,7 +152,9 @@ class Tournament {
          WHERE reg_ended_at > datetime('now')
            AND tournament_status_id = 1`
     );
-    regEnded.forEach(t => schedule.scheduleJob(new Date(t.date + 'Z'), () => this.setStatus(2, t.id)));
+    regEnded.forEach(t => schedule.scheduleJob(new Date(t.date + 'Z'), () => {
+      this.setStatus(2, t.id);
+    }));
   }
 
   isEveryonePaid(id?: number) {

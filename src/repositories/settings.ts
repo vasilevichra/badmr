@@ -66,7 +66,7 @@ class Settings {
     return settings.reduce((obj: Record<string, unknown>, s) => Object.assign(obj, {[s.name]: s.value}), {});
   }
 
-  set(name: string, value: string, tournament_id: number) {
+  set(name: string, value: string, tournament_id?: number) {
     const id = tournament_id || this.db.get<{ id: number }>(`SELECT id FROM tournament WHERE current = 1`)?.id;
     return this.db.get(
         `INSERT INTO tournament_settings (defaults_id, tournament_id, value)

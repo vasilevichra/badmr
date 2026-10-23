@@ -119,7 +119,7 @@ describe("Личный просмотр турнира (?tournament=)", () => {
 
   describe("view players / user.getAll", () => {
     it("с параметром возвращает игроков турнира 3", () => {
-      const rows = userRepository.getAll(B) as PlayerRow[];
+      const rows = userRepository.getAll(B) as unknown as PlayerRow[];
       // в сиде есть и другие регистрации в турнир 3 — проверяем
       // включение своих и принадлежность каждой строки турниру 3
       assert.ok(rows.every((r) => r.tournament_id === B));
@@ -128,7 +128,7 @@ describe("Личный просмотр турнира (?tournament=)", () => {
     });
 
     it("без параметра возвращает игроков текущего турнира", () => {
-      const rows = userRepository.getAll() as PlayerRow[];
+      const rows = userRepository.getAll() as unknown as PlayerRow[];
       assert.ok(rows.every((r) => r.tournament_id !== B));
       for (const id of currentIds) assert.ok(idsOf(rows).includes(id));
       for (const id of bIds) assert.ok(!idsOf(rows).includes(id));
@@ -137,14 +137,14 @@ describe("Личный просмотр турнира (?tournament=)", () => {
 
   describe("view ready / common.ready", () => {
     it("с параметром возвращает готовых игроков турнира 3", () => {
-      const rows = commonRepository.ready([], B) as ReadyRow[];
+      const rows = commonRepository.ready([], B) as unknown as ReadyRow[];
       assert.ok(rows.every((r) => r.tournament_id === B));
       for (const id of bIds) assert.ok(idsOf(rows).includes(id));
       for (const id of currentIds) assert.ok(!idsOf(rows).includes(id));
     });
 
     it("без параметра возвращает готовых игроков текущего турнира", () => {
-      const rows = commonRepository.ready([]) as ReadyRow[];
+      const rows = commonRepository.ready([]) as unknown as ReadyRow[];
       for (const id of currentIds) assert.ok(idsOf(rows).includes(id));
       for (const id of bIds) assert.ok(!idsOf(rows).includes(id));
     });

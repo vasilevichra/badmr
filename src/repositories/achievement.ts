@@ -8,7 +8,7 @@ import Repository from './common.ts';
  * Длительность игры — разность created_at с предыдущей игрой матча
  * (первая — от создания матча), как в истории матчей.
  */
-interface AchievementGameRow {
+export interface AchievementGameRow {
   user_id: number;
   lastname: string;
   firstname: string;

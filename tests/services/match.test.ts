@@ -75,7 +75,7 @@ describe("Match", () => {
 
       await matchService.create(...(ids as [number, number, number, number]));
 
-      const matches = await matchService.getAll() as MatchRow[];
+      const matches = await matchService.getAll() as unknown as MatchRow[];
       assert.strictEqual(matches.length, 1);
       assert.deepStrictEqual(
         [
@@ -120,7 +120,7 @@ describe("Match", () => {
       const ids = await seedMatchUsers();
 
       await matchService.create(...(ids as [number, number, number, number]));
-      const created = (await matchService.getAll() as MatchRow[])[0];
+      const created = (await matchService.getAll() as unknown as MatchRow[])[0];
 
       assert.deepStrictEqual(await matchService.getById(created.id), created);
     });
@@ -131,7 +131,7 @@ describe("Match", () => {
       const ids = await seedMatchUsers();
 
       await matchService.create(...(ids as [number, number, number, number]));
-      const created = (await matchService.getAll() as MatchRow[])[0];
+      const created = (await matchService.getAll() as unknown as MatchRow[])[0];
 
       await matchService.deleteById(created.id);
 
@@ -198,7 +198,7 @@ describe("Match", () => {
     it("должен вернуть протокол завершённого матча, сгруппированный по играм", async () => {
       const ids = await seedMatchUsers();
       await matchService.create(...(ids as [number, number, number, number]));
-      const matchId = (await matchService.getAll() as MatchRow[])[0].id;
+      const matchId = (await matchService.getAll() as unknown as MatchRow[])[0].id;
       await finishMatch(matchId, [["15", null], ["17", null]]);
 
       const protocol = await matchService.getAllFinishedAtLastSession() as unknown as Protocol;
@@ -236,7 +236,7 @@ describe("Match", () => {
       for (const [games] of cases) {
         await matchService.create(...(ids as [number, number, number, number]));
         // getAll() без ORDER BY возвращает от старых к новым — нужен последний
-        const id = (await matchService.getAll() as MatchRow[]).at(-1)!.id;
+        const id = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
         await finishMatch(id, [games, games]); // две одинаковые игры завершают матч
       }
 
@@ -268,11 +268,11 @@ describe("Match", () => {
       }
 
       await matchService.create(ids[0], ids[1], ids[2], ids[3]);
-      const first = (await matchService.getAll() as MatchRow[]).at(-1)!.id;
+      const first = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
       await finishMatch(first, [["15", null], ["15", null]]);
 
       await matchService.create(ids[0], extra[0], extra[1], extra[2]);
-      const second = (await matchService.getAll() as MatchRow[]).at(-1)!.id;
+      const second = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
       await finishMatch(second, [["15", null], ["15", null]]);
 
       const all = await matchService.getAllByUser(ids[0]) as unknown as Protocol;
@@ -294,7 +294,7 @@ describe("Match", () => {
       const ids = await createUsers([400, 400, 600, 600]);
 
       await matchService.create(...(ids as [number, number, number, number]));
-      const matchId = (await matchService.getAll() as MatchRow[])[0].id;
+      const matchId = (await matchService.getAll() as unknown as MatchRow[])[0].id;
       await finishMatch(matchId, [["15", null], ["15", null]]); // команда 1 проиграла
 
       const rows = db.all<{ user_id: number; previous: number; delta: number }>(
@@ -314,7 +314,7 @@ describe("Match", () => {
       const ids = await createUsers([450, 450, 400, 400]);
 
       await matchService.create(...(ids as [number, number, number, number]));
-      const matchId = (await matchService.getAll() as MatchRow[])[0].id;
+      const matchId = (await matchService.getAll() as unknown as MatchRow[])[0].id;
       await finishMatch(matchId, [[null, "15"], [null, "15"]]); // команда 2 проиграла
 
       const rows = db.all<{ user_id: number; previous: number; delta: number }>(
@@ -337,7 +337,7 @@ describe("Match", () => {
       const ids = await seedMatchUsers();
       const createMatch = async () => {
         await matchService.create(...(ids as [number, number, number, number]));
-        return (await matchService.getAll() as MatchRow[]).at(-1)!.id;
+        return (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
       };
 
       // матч A (текущий турнир): игры в 10:02 и 10:05 → длительность
@@ -379,7 +379,7 @@ describe("Match", () => {
       const ids = await seedMatchUsers();
       const createMatch = async () => {
         await matchService.create(...(ids as [number, number, number, number]));
-        return (await matchService.getAll() as MatchRow[]).at(-1)!.id;
+        return (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
       };
 
       // матч A (текущий турнир): создан 10:00, игры в 10:02 и 10:05 →

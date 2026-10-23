@@ -3,6 +3,19 @@ import { testDbPath } from "../test-db.ts";
 import Specific from "./specific.ts";
 import crypto from "node:crypto";
 
+export interface ReadyRow {
+  user_id: number;
+  rating: number;
+  matches: number;
+  played: number;
+  // исход последнего матча: 1 - выиграл, 0 - проиграл, null - не играл
+  won: number | null;
+  // выигранные матчи на турнире
+  wins: number;
+  sex: number;
+  pic: string | null;
+}
+
 export interface CalculatedPair {
   players1: { user_id: number }[];
   players2: { user_id: number }[];
@@ -57,7 +70,7 @@ class Common {
     // хранить несколько строк на игрока — JOIN размножил бы кандидатов;
     // порядок повторяет ORDER BY вьюхи ready: сам по себе он через JOIN
     // не гарантируется, а от него зависит перебор кандидатов в calcReadyRec
-    return this.db.all(
+    return this.db.all<ReadyRow>(
         `SELECT r.*,
                 u.sex,
                 coalesce((SELECT up.pic FROM user_pic up WHERE up.user_id = r.user_id ORDER BY up.id DESC LIMIT 1),

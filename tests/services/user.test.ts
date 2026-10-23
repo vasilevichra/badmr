@@ -259,7 +259,7 @@ describe("User", () => {
     it("должен вернуть зарегистрированных игроков", async () => {
       const ids = await seedUsers();
 
-      const players = await userService.getAll() as PlayerRow[];
+      const players = await userService.getAll() as unknown as PlayerRow[];
       assert.strictEqual(players.length, 4);
       const first = players.find((p) => p.id === ids[0])!;
       assert.strictEqual(first.name, "Фамилия1 Имя1");
@@ -282,7 +282,7 @@ describe("User", () => {
     it("должен вернуть пользователей города без команды", async () => {
       const ids = await seedUsers();
 
-      const selected = await userService.select(1) as SelectRow[];
+      const selected = await userService.select(1) as unknown as SelectRow[];
       // в сиде есть другие пользователи города 1 без команды —
       // созданные должны быть среди выбранных
       assert.deepStrictEqual<number[]>(
@@ -307,7 +307,7 @@ describe("User", () => {
     it("должен найти по фамилии", async () => {
       await seedUsers();
 
-      const found = await userService.findBy("Фамилия1", "", "") as FoundRow[];
+      const found = await userService.findBy("Фамилия1", "", "") as unknown as FoundRow[];
       assert.strictEqual(found.length, 1);
       assert.strictEqual(found[0].lastname, "Фамилия1");
       assert.strictEqual(found[0].city, "Доброград");
@@ -316,7 +316,7 @@ describe("User", () => {
     it("должен найти по фамилии и началу имени", async () => {
       await seedUsers();
 
-      const found = await userService.findBy("Фамилия1", "Имя", "") as FoundRow[];
+      const found = await userService.findBy("Фамилия1", "Имя", "") as unknown as FoundRow[];
       assert.strictEqual(found.length, 1);
       assert.strictEqual(found[0].firstname, "Имя1");
     });
@@ -324,7 +324,7 @@ describe("User", () => {
     it("должен найти по фамилии, имени и началу отчества", async () => {
       await seedUsers();
 
-      const found = await userService.findBy("Фамилия1", "Имя1", "Отч") as FoundRow[];
+      const found = await userService.findBy("Фамилия1", "Имя1", "Отч") as unknown as FoundRow[];
       assert.strictEqual(found.length, 1);
       assert.strictEqual(found[0].patronymic, "Отчество");
     });
@@ -332,7 +332,7 @@ describe("User", () => {
     it("должен найти нескольких по маске фамилии", async () => {
       await seedUsers();
 
-      const found = await userService.findBy("Фамилия", "", "") as FoundRow[];
+      const found = await userService.findBy("Фамилия", "", "") as unknown as FoundRow[];
       assert.strictEqual(found.length, 4);
     });
   });
@@ -381,7 +381,7 @@ describe("User", () => {
       const ids = await seedUsers();
       await userService.deregisterByIds([ids[0], ids[1]]);
 
-      const players = await userService.getAll() as PlayerRow[];
+      const players = await userService.getAll() as unknown as PlayerRow[];
       assert.deepStrictEqual<number[]>(players.map((p) => p.id), [ids[2], ids[3]]);
     });
   });
@@ -391,13 +391,13 @@ describe("User", () => {
       const ids = await seedUsers();
       await userService.disable([ids[0], ids[1]]);
 
-      let players = await userService.getAll() as PlayerRow[];
+      let players = await userService.getAll() as unknown as PlayerRow[];
       assert.strictEqual(players.find((p) => p.id === ids[0])!.enabled, 0);
       assert.strictEqual(players.find((p) => p.id === ids[2])!.enabled, 1);
 
       await userService.enable([ids[0]]);
 
-      players = await userService.getAll() as PlayerRow[];
+      players = await userService.getAll() as unknown as PlayerRow[];
       assert.strictEqual(players.find((p) => p.id === ids[0])!.enabled, 1);
       assert.strictEqual(players.find((p) => p.id === ids[1])!.enabled, 0);
     });
@@ -408,7 +408,7 @@ describe("User", () => {
       const ids = await seedUsers();
       await userService.archive(ids[0]);
 
-      const archived = await userService.getArchived() as ArchivedRow[];
+      const archived = await userService.getArchived() as unknown as ArchivedRow[];
       assert.deepStrictEqual<ArchivedRow[]>(archived, [{
         id: ids[0],
         name: "Фамилия1 Имя1",
@@ -418,13 +418,13 @@ describe("User", () => {
         // выборка текущего турнира (сид, current = 4)
         tournament_id: 4,
       }]);
-      let players = await userService.getAll() as PlayerRow[];
+      let players = await userService.getAll() as unknown as PlayerRow[];
       assert.strictEqual(players.length, 3);
 
       await userService.unarchive(ids[0]);
 
       assert.deepStrictEqual(await userService.getArchived(), []);
-      players = await userService.getAll() as PlayerRow[];
+      players = await userService.getAll() as unknown as PlayerRow[];
       assert.strictEqual(players.length, 4);
     });
 
@@ -434,12 +434,12 @@ describe("User", () => {
 
       // unarchiveAll восстанавливает available у незархивированных игроков
       await userService.unarchiveAll();
-      let players = await userService.getAll() as PlayerRow[];
+      let players = await userService.getAll() as unknown as PlayerRow[];
       assert.strictEqual(players.find((p) => p.id === ids[0])!.enabled, 1);
 
       await userService.archiveAll();
 
-      const archived = await userService.getArchived() as ArchivedRow[];
+      const archived = await userService.getArchived() as unknown as ArchivedRow[];
       assert.strictEqual(archived.length, 4);
       assert.deepStrictEqual(await userService.getAll(), []);
     });
@@ -450,12 +450,12 @@ describe("User", () => {
       const { ids } = await seedFinishedMatch();
       await userService.archiveAll();
 
-      assert.strictEqual((await userService.getArchived() as ArchivedRow[]).length, 4);
+      assert.strictEqual((await userService.getArchived() as unknown as ArchivedRow[]).length, 4);
 
       await userService.actualize();
 
-      const archived = await userService.getArchived() as ArchivedRow[];
-      const players = await userService.getAll() as PlayerRow[];
+      const archived = await userService.getArchived() as unknown as ArchivedRow[];
+      const players = await userService.getAll() as unknown as PlayerRow[];
       assert.deepStrictEqual<number[]>(archived.map((a) => a.id), []);
       assert.deepStrictEqual<number[]>(players.map((p) => p.id).sort((a, b) => a - b), ids);
       assert.ok(players.every((p) => p.enabled === 1));

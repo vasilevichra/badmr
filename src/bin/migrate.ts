@@ -19,9 +19,8 @@ const applied = new Set(db.prepare("SELECT name FROM _migrations").all().map(r =
 
 /** База, перенесённая со старого db-migrate: таблицы уже есть, а своей
  *  книги миграций у раннера ещё нет — помечаем всё применённым. */
-const baseline = db
-    .prepare("SELECT count() AS count FROM sqlite_master WHERE type = 'table' AND name = 'state'")
-    .get()!.count > 0 && applied.size === 0;
+const baselineRow = db.prepare("SELECT count() AS count FROM sqlite_master WHERE type = 'table' AND name = 'state'").get();
+const baseline = baselineRow !== undefined && Number(baselineRow.count) > 0 && applied.size === 0;
 
 const migrations = fs.readdirSync(sqlsDir)
     .filter(f => f.endsWith("-up.sql"))

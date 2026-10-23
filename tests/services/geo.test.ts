@@ -42,14 +42,14 @@ describe("Region", () => {
 
   describe("select", () => {
     it("должен вернуть регионы страны", async () => {
-      const regions = await regionService.select(1) as IdText[];
+      const regions = await regionService.select(1) as unknown as IdText[];
 
       assert.strictEqual(regions.length, 90);
       assert.ok(regions.some((r) => r.id === 33 && r.text === "Владимирская область"));
     });
 
     it("должен вернуть все регионы без указания страны", async () => {
-      const regions = await regionService.select() as IdText[];
+      const regions = await regionService.select() as unknown as IdText[];
 
       assert.strictEqual(regions.length, 90);
     });
@@ -59,7 +59,7 @@ describe("Region", () => {
     });
 
     it("должен вернуть часовой пояс региона", async () => {
-      const regions = await regionService.select(1) as (IdText & { timezone_id: number | null; timezone: string | null })[];
+      const regions = await regionService.select(1) as unknown as (IdText & { timezone_id: number | null; timezone: string | null })[];
 
       assert.strictEqual(regions.length, 90);
       assert.strictEqual(regions.find((r) => r.id === 33)!.timezone_id, 1);
@@ -165,7 +165,7 @@ describe("UserClub", () => {
 
   describe("select", () => {
     it("должен вернуть все клубы", async () => {
-      const clubs = (await userClubService.select()) as IdText[];
+      const clubs = (await userClubService.select()) as unknown as IdText[];
       // порядок строк без ORDER BY не гарантирован — сравниваем отсортированным
       assert.deepStrictEqual<IdText[]>(clubs.sort((a, b) => a.id - b.id), [
         { id: 1, text: "БК Доброград" },

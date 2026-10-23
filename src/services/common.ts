@@ -1,4 +1,4 @@
-import type { CalculatedPair } from "../repositories/common.ts";
+import type { CalculatedPair, ReadyRow } from "../repositories/common.ts";
 import Repository from "../repositories/common.ts";
 import UserRepository from "../repositories/user.ts";
 import SettingsService from "./settings.ts";
@@ -8,19 +8,6 @@ const courtService = new CourtService();
 import ReadyPriorityService from "./ready-priority.ts";
 const readyPriorityService = new ReadyPriorityService();
 import type { Request } from "express";
-
-interface ReadyRow {
-  user_id: number;
-  rating: number;
-  matches: number;
-  played: number;
-  // исход последнего матча: 1 - выиграл, 0 - проиграл, null - не играл
-  won: number | null;
-  // выигранные матчи на турнире
-  wins: number;
-  sex: number;
-  pic: string | null;
-}
 
 /**
  * Система 50%: фаворит по моментуму должен играть «вверх или на равных».
@@ -192,8 +179,7 @@ class Common {
     tournamentId?: number,
   ): Promise<CalculatedPair[]> {
     const ready = await this.repository.ready(calculated_objects, tournamentId);
-    const readyRows = ready as ReadyRow[];
-    const byId = new Map(readyRows.map((u) => [u.user_id, u]));
+    const readyRows = ready as ReadyRow[];    const byId = new Map(readyRows.map((u) => [u.user_id, u]));
     // «Шанс» пары — винрейт совместных доигранных матчей напарников:
     // getBuddiesById каждого готового игрока (сырой win_rate числом).
     // Нужен и для показа колонки «Шанс» в «Подборе» (chance1/chance2),
