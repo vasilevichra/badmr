@@ -1,5 +1,7 @@
 # Бадминтон и ром
 
+[![badmr CI](https://github.com/vasilevichra/badmr/actions/workflows/badmr.ci.yml/badge.svg)](https://github.com/vasilevichra/badmr/actions/workflows/badmr.ci.yml)
+
 Программа для подбора игроков по рейтингу для равных и захватывающих матчей.
 Суть игры с выбором по рейтингу напарника и соперников в том, чтобы сделать игры максильмально
 интересными и напряжёнными, чтобы борьба велась за каждое очко. В таких условиях у **любителей** быстро
