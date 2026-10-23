@@ -53,12 +53,12 @@
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 </form>
             <% } else { %>
-                <% if (device !== 'phone') { %>
-                    <div class="player-selectors">
-                        <%- include('tournament', {tournaments: tournaments}); %>
-                    </div>
-                <% } %>
                 <form action="/api/auth/login" method="get" class="login">
+                    <% if (device !== 'phone') { %>
+                        <%# селектор внутри формы — flex-центрирование ставит его
+                            на одну высоту с кнопкой «Войти» (#55) %>
+                        <%- include('tournament', {tournaments: tournaments}); %>
+                    <% } %>
                     <button class="btn<% if (device === 'phone') { %> mx-2<% } %>" type="submit"><p class="bi bi-box-arrow-in-left"> Войти</p></button>
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 </form>
