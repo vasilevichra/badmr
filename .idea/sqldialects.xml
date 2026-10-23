@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="SqlDialectMappings">
-    <file url="file://$PROJECT_DIR$/migrations/sqls/20250107151853-tables-up.sql" dialect="SQLite" />
-    <file url="file://$PROJECT_DIR$/migrations/sqls/20250107165930-views-up.sql" dialect="SQLite" />
-    <file url="file://$PROJECT_DIR$/migrations/sqls/20250107170718-data-up.sql" dialect="SQLite" />
     <file url="PROJECT" dialect="SQLite" />
   </component>
 </project>

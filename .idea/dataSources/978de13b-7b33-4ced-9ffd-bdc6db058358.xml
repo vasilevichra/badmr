@@ -1589,225 +1589,317 @@
     <argument id="554" parent="190">
       <Position>1</Position>
     </argument>
-    <table id="555" parent="191" name="city"/>
-    <table id="556" parent="191" name="court"/>
-    <table id="557" parent="191" name="defaults"/>
-    <table id="558" parent="191" name="game"/>
-    <table id="559" parent="191" name="match"/>
-    <table id="560" parent="191" name="migrations"/>
-    <table id="561" parent="191" name="rating"/>
-    <table id="562" parent="191" name="region"/>
-    <table id="563" parent="191" name="sqlite_master">
+    <table id="555" parent="191" name="_migrations"/>
+    <table id="556" parent="191" name="city"/>
+    <table id="557" parent="191" name="court"/>
+    <table id="558" parent="191" name="defaults"/>
+    <table id="559" parent="191" name="game"/>
+    <table id="560" parent="191" name="game_110"/>
+    <table id="561" parent="191" name="game_type"/>
+    <table id="562" parent="191" name="group"/>
+    <table id="563" parent="191" name="gym"/>
+    <table id="564" parent="191" name="match"/>
+    <table id="565" parent="191" name="match_110"/>
+    <table id="566" parent="191" name="rating"/>
+    <table id="567" parent="191" name="ready_priority"/>
+    <table id="568" parent="191" name="region"/>
+    <table id="569" parent="191" name="region_timezone"/>
+    <table id="570" parent="191" name="sqlite_master">
       <System>1</System>
     </table>
-    <table id="564" parent="191" name="sqlite_sequence">
+    <table id="571" parent="191" name="sqlite_sequence">
       <System>1</System>
     </table>
-    <table id="565" parent="191" name="state"/>
-    <table id="566" parent="191" name="tournament"/>
-    <table id="567" parent="191" name="tournament_settings"/>
-    <table id="568" parent="191" name="tournament_user"/>
-    <table id="569" parent="191" name="unit"/>
-    <table id="570" parent="191" name="user"/>
-    <table id="571" parent="191" name="user_pic"/>
-    <view id="572" parent="191" name="archived">
-      <SourceTextLength>387</SourceTextLength>
+    <table id="572" parent="191" name="state"/>
+    <table id="573" parent="191" name="team"/>
+    <table id="574" parent="191" name="team_color"/>
+    <table id="575" parent="191" name="team_order_110"/>
+    <table id="576" parent="191" name="team_user"/>
+    <table id="577" parent="191" name="timezone"/>
+    <table id="578" parent="191" name="tournament"/>
+    <table id="579" parent="191" name="tournament_settings"/>
+    <table id="580" parent="191" name="tournament_status"/>
+    <table id="581" parent="191" name="tournament_type"/>
+    <table id="582" parent="191" name="tournament_user"/>
+    <table id="583" parent="191" name="unit"/>
+    <table id="584" parent="191" name="user"/>
+    <table id="585" parent="191" name="user_club"/>
+    <table id="586" parent="191" name="user_club_gym"/>
+    <table id="587" parent="191" name="user_id"/>
+    <table id="588" parent="191" name="user_id_type"/>
+    <table id="589" parent="191" name="user_lab"/>
+    <table id="590" parent="191" name="user_pic"/>
+    <table id="591" parent="191" name="user_sizes"/>
+    <view id="592" parent="191" name="archived">
+      <SourceTextLength>463</SourceTextLength>
     </view>
-    <view id="573" parent="191" name="delta_month">
+    <view id="593" parent="191" name="delta_month">
       <SourceTextLength>374</SourceTextLength>
     </view>
-    <view id="574" parent="191" name="delta_today">
+    <view id="594" parent="191" name="delta_today">
       <SourceTextLength>294</SourceTextLength>
     </view>
-    <view id="575" parent="191" name="delta_week">
+    <view id="595" parent="191" name="delta_week">
       <SourceTextLength>351</SourceTextLength>
     </view>
-    <view id="576" parent="191" name="players">
-      <SourceTextLength>1831</SourceTextLength>
+    <view id="596" parent="191" name="players">
+      <SourceTextLength>2683</SourceTextLength>
     </view>
-    <view id="577" parent="191" name="ready">
-      <SourceTextLength>3146</SourceTextLength>
+    <view id="597" parent="191" name="ready">
+      <SourceTextLength>3174</SourceTextLength>
     </view>
-    <view id="578" parent="191" name="settings">
-      <SourceTextLength>263</SourceTextLength>
+    <view id="598" parent="191" name="settings">
+      <SourceTextLength>272</SourceTextLength>
     </view>
-    <column id="579" parent="555" name="id">
+    <column id="599" parent="555" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="600" parent="555" name="applied_at">
+      <DasType>TEXT|0s</DasType>
+      <DefaultExpression>(datetime(&apos;now&apos;))</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <index id="601" parent="555" name="sqlite_autoindex__migrations_1">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="602" parent="555">
+      <ColNames>name</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex__migrations_1</UnderlyingIndexName>
+    </key>
+    <column id="603" parent="556" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="580" parent="555" name="region_id">
+    <column id="604" parent="556" name="region_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="581" parent="555" name="name">
+    <column id="605" parent="556" name="name">
       <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <foreign-key id="582" parent="555" name="region">
+    <foreign-key id="606" parent="556" name="region">
       <ColNames>region_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>region</RefTableName>
     </foreign-key>
-    <index id="583" parent="555" name="sqlite_autoindex_city_1">
+    <index id="607" parent="556" name="sqlite_autoindex_city_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="584" parent="555" name="sqlite_autoindex_city_2">
-      <ColNames>name</ColNames>
+    <index id="608" parent="556" name="sqlite_autoindex_city_2">
+      <ColNames>region_id
+name</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="585" parent="555">
+    <index id="609" parent="556" name="city_lower_name">
+      <ColNames>lower(name)</ColNames>
+    </index>
+    <key id="610" parent="556">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_city_1</UnderlyingIndexName>
     </key>
-    <key id="586" parent="555">
+    <key id="611" parent="556">
       <ColNames>id</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_city_1</UnderlyingIndexName>
     </key>
-    <key id="587" parent="555">
-      <ColNames>name</ColNames>
+    <key id="612" parent="556">
+      <ColNames>region_id
+name</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_city_2</UnderlyingIndexName>
     </key>
-    <check id="588" parent="556">
+    <check id="613" parent="557">
       <Predicate>available IN (0, 1)</Predicate>
     </check>
-    <column id="589" parent="556" name="id">
+    <column id="614" parent="557" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="590" parent="556" name="tournament_id">
+    <column id="615" parent="557" name="tournament_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="591" parent="556" name="number">
+    <column id="616" parent="557" name="number">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="592" parent="556" name="available">
+    <column id="617" parent="557" name="available">
       <DasType>BOOLEAN|0s</DasType>
       <DefaultExpression>1</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <foreign-key id="593" parent="556" name="tournament">
+    <foreign-key id="618" parent="557" name="tournament">
       <ColNames>tournament_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>tournament</RefTableName>
     </foreign-key>
-    <index id="594" parent="556" name="sqlite_autoindex_court_1">
+    <index id="619" parent="557" name="sqlite_autoindex_court_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="595" parent="556">
+    <index id="620" parent="557" name="sqlite_autoindex_court_2">
+      <ColNames>tournament_id
+number</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="621" parent="557">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_court_1</UnderlyingIndexName>
     </key>
-    <key id="596" parent="556">
+    <key id="622" parent="557">
       <ColNames>id</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_court_1</UnderlyingIndexName>
     </key>
-    <column id="597" parent="557" name="id">
+    <key id="623" parent="557">
+      <ColNames>tournament_id
+number</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_court_2</UnderlyingIndexName>
+    </key>
+    <check id="624" parent="558">
+      <Predicate>name &lt;&gt; &apos;H_max&apos; OR CAST(value AS INTEGER) &gt; 0</Predicate>
+    </check>
+    <check id="625" parent="558">
+      <Predicate>name &lt;&gt; &apos;fee&apos; OR CAST(value AS INTEGER) &gt; 0</Predicate>
+    </check>
+    <check id="626" parent="558">
+      <Predicate>name &lt;&gt; &apos;priority&apos; OR (value &lt;&gt; &apos;&apos; AND value NOT GLOB &apos;*[^0-9,]*&apos;)</Predicate>
+    </check>
+    <check id="627" parent="558">
+      <Predicate>name &lt;&gt; &apos;r_min&apos; OR CAST(value AS INTEGER) &gt; 0</Predicate>
+    </check>
+    <check id="628" parent="558">
+      <Predicate>name = &apos;priority&apos; OR (value &lt;&gt; &apos;&apos; AND value NOT GLOB &apos;*[^0-9]*&apos;)</Predicate>
+    </check>
+    <check id="629" parent="558">
+      <Predicate>name IN (&apos;state&apos;, &apos;region&apos;, &apos;city&apos;, &apos;timezone&apos;, &apos;delta&apos;, &apos;proc&apos;, &apos;type&apos;, &apos;matches&apos;, &apos;priority&apos;, &apos;wins&apos;, &apos;game_point&apos;, &apos;max_point&apos;, &apos;B_max&apos;, &apos;C_max&apos;, &apos;D_max&apos;, &apos;E_max&apos;, &apos;F_max&apos;, &apos;G_max&apos;, &apos;H_max&apos;, &apos;capacity&apos;, &apos;courts&apos;, &apos;r_min&apos;, &apos;r_max&apos;, &apos;fee&apos;)</Predicate>
+    </check>
+    <check id="630" parent="558">
+      <Predicate>name NOT IN (&apos;delta&apos;, &apos;proc&apos;, &apos;matches&apos;) OR CAST(value AS INTEGER) &gt;= 0</Predicate>
+    </check>
+    <check id="631" parent="558">
+      <Predicate>name NOT IN (&apos;wins&apos;, &apos;game_point&apos;, &apos;max_point&apos;, &apos;capacity&apos;, &apos;courts&apos;) OR CAST(value AS INTEGER) &gt;= 1</Predicate>
+    </check>
+    <column id="632" parent="558" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="598" parent="557" name="name">
+    <column id="633" parent="558" name="name">
       <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="599" parent="557" name="value">
+    <column id="634" parent="558" name="value">
       <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="600" parent="557" name="description">
+    <column id="635" parent="558" name="description">
       <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <index id="601" parent="557" name="sqlite_autoindex_defaults_1">
+    <index id="636" parent="558" name="sqlite_autoindex_defaults_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="602" parent="557" name="sqlite_autoindex_defaults_2">
+    <index id="637" parent="558" name="sqlite_autoindex_defaults_2">
       <ColNames>name</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="603" parent="557">
+    <key id="638" parent="558">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_defaults_1</UnderlyingIndexName>
     </key>
-    <key id="604" parent="557">
+    <key id="639" parent="558">
       <ColNames>id</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_defaults_1</UnderlyingIndexName>
     </key>
-    <key id="605" parent="557">
+    <key id="640" parent="558">
       <ColNames>name</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_defaults_2</UnderlyingIndexName>
     </key>
-    <column id="606" parent="558" name="id">
+    <trigger id="641" parent="558" name="defaults_cross_value_insert">
+      <Events>I</Events>
+      <SourceTextLength>2278</SourceTextLength>
+      <Turn>after-row</Turn>
+    </trigger>
+    <trigger id="642" parent="558" name="defaults_cross_value_update">
+      <ColNames>value</ColNames>
+      <Events>U</Events>
+      <SourceTextLength>2287</SourceTextLength>
+      <Turn>after-row</Turn>
+    </trigger>
+    <column id="643" parent="559" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="607" parent="558" name="match_id">
+    <column id="644" parent="559" name="match_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="608" parent="558" name="created_at">
+    <column id="645" parent="559" name="created_at">
       <DasType>DATETIME|0s</DasType>
       <DefaultExpression>current_timestamp</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="609" parent="558" name="lost_1_by">
+    <column id="646" parent="559" name="lost_1_by">
       <DasType>INTEGER|0s</DasType>
       <Position>4</Position>
     </column>
-    <column id="610" parent="558" name="lost_2_by">
+    <column id="647" parent="559" name="lost_2_by">
       <DasType>INTEGER|0s</DasType>
       <Position>5</Position>
     </column>
-    <foreign-key id="611" parent="558" name="match">
+    <foreign-key id="648" parent="559" name="match">
       <ColNames>match_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>match</RefTableName>
     </foreign-key>
-    <index id="612" parent="558" name="sqlite_autoindex_game_1">
+    <index id="649" parent="559" name="sqlite_autoindex_game_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="613" parent="558">
+    <key id="650" parent="559">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_game_1</UnderlyingIndexName>
     </key>
-    <key id="614" parent="558">
+    <key id="651" parent="559">
       <ColNames>id</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_game_1</UnderlyingIndexName>
     </key>
-    <trigger id="615" parent="558" name="enable_resources_when_match_finished">
+    <trigger id="652" parent="559" name="enable_resources_when_match_finished">
       <Condition>((SELECT count(g.lost_1_by)
            FROM game g
                     JOIN match m ON m.id = g.match_id
@@ -1819,784 +1911,2097 @@
                                                                                                             FROM settings
                                                                                                             WHERE name = &apos;wins&apos;))</Condition>
       <Events>I</Events>
-      <SourceTextLength>1418</SourceTextLength>
+      <SourceTextLength>1505</SourceTextLength>
       <Turn>after-row</Turn>
     </trigger>
-    <check id="616" parent="559">
-      <Predicate>finished IN (0, 1)</Predicate>
+    <check id="653" parent="560">
+      <Predicate>current IN (0, 1)</Predicate>
     </check>
-    <column id="617" parent="559" name="id">
+    <check id="654" parent="560">
+      <Predicate>score_1 &gt;= 0 AND score_1 &lt;= 110</Predicate>
+    </check>
+    <check id="655" parent="560">
+      <Predicate>score_2 &gt;= 0 AND score_2 &lt;= 110</Predicate>
+    </check>
+    <column id="656" parent="560" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="618" parent="559" name="tournament_id">
+    <column id="657" parent="560" name="match_110_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="619" parent="559" name="created_at">
+    <column id="658" parent="560" name="created_at">
       <DasType>DATETIME|0s</DasType>
       <DefaultExpression>current_timestamp</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="620" parent="559" name="user_1_id">
+    <column id="659" parent="560" name="game_type_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <column id="621" parent="559" name="user_2_id">
+    <column id="660" parent="560" name="score_1">
       <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>5</Position>
     </column>
-    <column id="622" parent="559" name="user_3_id">
+    <column id="661" parent="560" name="score_2">
       <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>6</Position>
     </column>
-    <column id="623" parent="559" name="user_4_id">
+    <column id="662" parent="560" name="current">
       <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>7</Position>
     </column>
-    <column id="624" parent="559" name="court_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>8</Position>
-    </column>
-    <column id="625" parent="559" name="finished">
-      <DasType>INTEGER|0s</DasType>
-      <DefaultExpression>0</DefaultExpression>
-      <NotNull>1</NotNull>
-      <Position>9</Position>
-    </column>
-    <foreign-key id="626" parent="559">
-      <ColNames>tournament_id</ColNames>
+    <foreign-key id="663" parent="560" name="match_110">
+      <ColNames>match_110_id</ColNames>
       <RefColNames>id</RefColNames>
-      <RefTableName>tournament</RefTableName>
+      <RefTableName>match_110</RefTableName>
     </foreign-key>
-    <foreign-key id="627" parent="559">
-      <ColNames>user_1_id</ColNames>
+    <foreign-key id="664" parent="560" name="game_type">
+      <ColNames>game_type_id</ColNames>
       <RefColNames>id</RefColNames>
-      <RefTableName>user</RefTableName>
+      <RefTableName>game_type</RefTableName>
     </foreign-key>
-    <foreign-key id="628" parent="559">
-      <ColNames>user_2_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>user</RefTableName>
-    </foreign-key>
-    <foreign-key id="629" parent="559">
-      <ColNames>user_3_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>user</RefTableName>
-    </foreign-key>
-    <foreign-key id="630" parent="559">
-      <ColNames>user_4_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>user</RefTableName>
-    </foreign-key>
-    <foreign-key id="631" parent="559">
-      <ColNames>court_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>court</RefTableName>
-    </foreign-key>
-    <index id="632" parent="559" name="sqlite_autoindex_match_1">
+    <index id="665" parent="560" name="sqlite_autoindex_game_110_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="633" parent="559">
+    <key id="666" parent="560">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_match_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_game_110_1</UnderlyingIndexName>
     </key>
-    <key id="634" parent="559">
+    <key id="667" parent="560">
       <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_match_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_game_110_1</UnderlyingIndexName>
     </key>
-    <trigger id="635" parent="559" name="disable_court_and_tournament_users_by_match_created">
-      <Events>I</Events>
-      <SourceTextLength>381</SourceTextLength>
-      <Turn>after-row</Turn>
-    </trigger>
-    <trigger id="636" parent="559" name="calculate_rating_lost_by_1">
-      <Condition>new.finished = 1 AND old.finished != 1 AND (SELECT count(lost_1_by)
-                                                     FROM game g
-                                                     WHERE new.id = g.match_id
-                                                     GROUP BY g.match_id) = (SELECT cast(value AS int)
-                                                                             FROM settings
-                                                                             WHERE name = &apos;wins&apos;)</Condition>
-      <Events>U</Events>
-      <SourceTextLength>6356</SourceTextLength>
-      <Turn>after-row</Turn>
-    </trigger>
-    <trigger id="637" parent="559" name="calculate_rating_lost_by_2">
-      <Condition>new.finished = 1 AND old.finished != 1 AND (SELECT count(lost_2_by)
-                                                     FROM game g
-                                                     WHERE new.id = g.match_id
-                                                     GROUP BY g.match_id) = (SELECT cast(value AS int)
-                                                                             FROM settings
-                                                                             WHERE name = &apos;wins&apos;)</Condition>
-      <Events>U</Events>
-      <SourceTextLength>6356</SourceTextLength>
-      <Turn>after-row</Turn>
-    </trigger>
-    <trigger id="638" parent="559" name="delete_rating_when_match_deleted">
-      <Events>D</Events>
-      <SourceTextLength>135</SourceTextLength>
-      <Turn>after-row</Turn>
-    </trigger>
-    <trigger id="639" parent="559" name="enable_court_and_tournament_users_by_match_deleted">
-      <Events>D</Events>
-      <SourceTextLength>380</SourceTextLength>
-      <Turn>after-row</Turn>
-    </trigger>
-    <column id="640" parent="560" name="id">
+    <column id="668" parent="561" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="641" parent="560" name="name">
-      <DasType>VARCHAR(255)|0s</DasType>
+    <column id="669" parent="561" name="name">
+      <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="642" parent="560" name="run_on">
-      <DasType>datetime|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>3</Position>
-    </column>
-    <key id="643" parent="560">
-      <ColNames>id</ColNames>
-      <Primary>1</Primary>
-    </key>
-    <column id="644" parent="561" name="id">
-      <AutoIncrement>1</AutoIncrement>
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>1</Position>
-    </column>
-    <column id="645" parent="561" name="user_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>2</Position>
-    </column>
-    <column id="646" parent="561" name="match_id">
-      <DasType>INTEGER|0s</DasType>
-      <Position>3</Position>
-    </column>
-    <column id="647" parent="561" name="previous">
-      <DasType>INTEGER|0s</DasType>
-      <Position>4</Position>
-    </column>
-    <column id="648" parent="561" name="delta">
-      <DasType>INTEGER|0s</DasType>
-      <Position>5</Position>
-    </column>
-    <foreign-key id="649" parent="561" name="user">
-      <ColNames>user_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>user</RefTableName>
-    </foreign-key>
-    <foreign-key id="650" parent="561" name="game">
-      <ColNames>match_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>match</RefTableName>
-    </foreign-key>
-    <index id="651" parent="561" name="sqlite_autoindex_rating_1">
-      <ColNames>id</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <key id="652" parent="561">
-      <ColNames>id</ColNames>
-      <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_rating_1</UnderlyingIndexName>
-    </key>
-    <key id="653" parent="561">
-      <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_rating_1</UnderlyingIndexName>
-    </key>
-    <column id="654" parent="562" name="id">
-      <AutoIncrement>1</AutoIncrement>
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>1</Position>
-    </column>
-    <column id="655" parent="562" name="state_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>2</Position>
-    </column>
-    <column id="656" parent="562" name="name">
+    <column id="670" parent="561" name="description">
       <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <foreign-key id="657" parent="562" name="state">
-      <ColNames>state_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>state</RefTableName>
-    </foreign-key>
-    <index id="658" parent="562" name="sqlite_autoindex_region_1">
+    <index id="671" parent="561" name="sqlite_autoindex_game_type_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="659" parent="562" name="sqlite_autoindex_region_2">
+    <index id="672" parent="561" name="sqlite_autoindex_game_type_2">
       <ColNames>name</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="660" parent="562">
+    <index id="673" parent="561" name="sqlite_autoindex_game_type_3">
+      <ColNames>description</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="674" parent="561">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_region_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_game_type_1</UnderlyingIndexName>
     </key>
-    <key id="661" parent="562">
+    <key id="675" parent="561">
       <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_region_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_game_type_1</UnderlyingIndexName>
     </key>
-    <key id="662" parent="562">
+    <key id="676" parent="561">
       <ColNames>name</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_region_2</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_game_type_2</UnderlyingIndexName>
     </key>
-    <column id="663" parent="563" name="type">
-      <DasType>TEXT|0s</DasType>
-      <Position>1</Position>
-    </column>
-    <column id="664" parent="563" name="name">
-      <DasType>TEXT|0s</DasType>
-      <Position>2</Position>
-    </column>
-    <column id="665" parent="563" name="tbl_name">
-      <DasType>TEXT|0s</DasType>
-      <Position>3</Position>
-    </column>
-    <column id="666" parent="563" name="rootpage">
-      <DasType>INT|0s</DasType>
-      <Position>4</Position>
-    </column>
-    <column id="667" parent="563" name="sql">
-      <DasType>TEXT|0s</DasType>
-      <Position>5</Position>
-    </column>
-    <column id="668" parent="564" name="name">
-      <Position>1</Position>
-    </column>
-    <column id="669" parent="564" name="seq">
-      <Position>2</Position>
-    </column>
-    <column id="670" parent="565" name="id">
+    <key id="677" parent="561">
+      <ColNames>description</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_game_type_3</UnderlyingIndexName>
+    </key>
+    <column id="678" parent="562" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="671" parent="565" name="name">
+    <column id="679" parent="562" name="name">
       <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <index id="672" parent="565" name="sqlite_autoindex_state_1">
+    <index id="680" parent="562" name="sqlite_autoindex_group_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="673" parent="565" name="sqlite_autoindex_state_2">
+    <index id="681" parent="562" name="sqlite_autoindex_group_2">
       <ColNames>name</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="674" parent="565">
+    <key id="682" parent="562">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_state_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_group_1</UnderlyingIndexName>
     </key>
-    <key id="675" parent="565">
+    <key id="683" parent="562">
       <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_state_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_group_1</UnderlyingIndexName>
     </key>
-    <key id="676" parent="565">
+    <key id="684" parent="562">
       <ColNames>name</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_state_2</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_group_2</UnderlyingIndexName>
     </key>
-    <check id="677" parent="566">
-      <Predicate>available IN (0, 1)</Predicate>
-    </check>
-    <check id="678" parent="566">
-      <Predicate>current IN (0, 1)</Predicate>
-    </check>
-    <column id="679" parent="566" name="id">
+    <column id="685" parent="563" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="680" parent="566" name="unit_id">
-      <DasType>INTEGER|0s</DasType>
+    <column id="686" parent="563" name="name">
+      <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="681" parent="566" name="name">
-      <DasType>TEXT|0s</DasType>
+    <column id="687" parent="563" name="city_id">
+      <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="682" parent="566" name="current">
-      <DasType>INTEGER|0s</DasType>
-      <DefaultExpression>0</DefaultExpression>
+    <column id="688" parent="563" name="address">
+      <DasType>TEXT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <column id="683" parent="566" name="available">
-      <DasType>INTEGER|0s</DasType>
-      <DefaultExpression>1</DefaultExpression>
-      <NotNull>1</NotNull>
+    <column id="689" parent="563" name="latitude">
+      <DasType>REAL|0s</DasType>
       <Position>5</Position>
     </column>
-    <foreign-key id="684" parent="566" name="unit">
-      <ColNames>unit_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>unit</RefTableName>
-    </foreign-key>
-    <index id="685" parent="566" name="sqlite_autoindex_tournament_1">
-      <ColNames>id</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <key id="686" parent="566">
-      <ColNames>id</ColNames>
-      <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_1</UnderlyingIndexName>
-    </key>
-    <key id="687" parent="566">
-      <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_1</UnderlyingIndexName>
-    </key>
-    <column id="688" parent="567" name="id">
-      <AutoIncrement>1</AutoIncrement>
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>1</Position>
-    </column>
-    <column id="689" parent="567" name="defaults_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>2</Position>
-    </column>
-    <column id="690" parent="567" name="tournament_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>3</Position>
-    </column>
-    <column id="691" parent="567" name="value">
-      <DasType>TEXT|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>4</Position>
-    </column>
-    <foreign-key id="692" parent="567">
-      <ColNames>defaults_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>defaults</RefTableName>
-    </foreign-key>
-    <foreign-key id="693" parent="567">
-      <ColNames>tournament_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>tournament</RefTableName>
-    </foreign-key>
-    <index id="694" parent="567" name="sqlite_autoindex_tournament_settings_1">
-      <ColNames>id</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <index id="695" parent="567" name="sqlite_autoindex_tournament_settings_2">
-      <ColNames>defaults_id
-tournament_id</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <key id="696" parent="567">
-      <ColNames>id</ColNames>
-      <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_settings_1</UnderlyingIndexName>
-    </key>
-    <key id="697" parent="567">
-      <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_settings_1</UnderlyingIndexName>
-    </key>
-    <key id="698" parent="567" name="tournament_settings_uq">
-      <ColNames>defaults_id
-tournament_id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_settings_2</UnderlyingIndexName>
-    </key>
-    <check id="699" parent="568">
-      <Predicate>archived IN (0, 1)</Predicate>
-    </check>
-    <check id="700" parent="568">
-      <Predicate>available IN (0, 1)</Predicate>
-    </check>
-    <column id="701" parent="568" name="id">
-      <AutoIncrement>1</AutoIncrement>
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>1</Position>
-    </column>
-    <column id="702" parent="568" name="tournament_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>2</Position>
-    </column>
-    <column id="703" parent="568" name="user_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>3</Position>
-    </column>
-    <column id="704" parent="568" name="available">
-      <DasType>BOOLEAN|0s</DasType>
-      <DefaultExpression>1</DefaultExpression>
-      <NotNull>1</NotNull>
-      <Position>4</Position>
-    </column>
-    <column id="705" parent="568" name="archived">
-      <DasType>BOOLEAN|0s</DasType>
-      <DefaultExpression>0</DefaultExpression>
-      <NotNull>1</NotNull>
-      <Position>5</Position>
-    </column>
-    <foreign-key id="706" parent="568">
-      <ColNames>tournament_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>tournament</RefTableName>
-    </foreign-key>
-    <foreign-key id="707" parent="568">
-      <ColNames>user_id</ColNames>
-      <RefColNames>id</RefColNames>
-      <RefTableName>user</RefTableName>
-    </foreign-key>
-    <index id="708" parent="568" name="sqlite_autoindex_tournament_user_1">
-      <ColNames>id</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <index id="709" parent="568" name="sqlite_autoindex_tournament_user_2">
-      <ColNames>tournament_id
-user_id</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <key id="710" parent="568">
-      <ColNames>id</ColNames>
-      <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_user_1</UnderlyingIndexName>
-    </key>
-    <key id="711" parent="568">
-      <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_user_1</UnderlyingIndexName>
-    </key>
-    <key id="712" parent="568">
-      <ColNames>tournament_id
-user_id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_tournament_user_2</UnderlyingIndexName>
-    </key>
-    <check id="713" parent="569">
-      <Predicate>available IN (0, 1)</Predicate>
-    </check>
-    <check id="714" parent="569">
-      <Predicate>current IN (0, 1)</Predicate>
-    </check>
-    <column id="715" parent="569" name="id">
-      <AutoIncrement>1</AutoIncrement>
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>1</Position>
-    </column>
-    <column id="716" parent="569" name="name">
-      <DasType>TEXT|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>2</Position>
-    </column>
-    <column id="717" parent="569" name="current">
-      <DasType>INTEGER|0s</DasType>
-      <DefaultExpression>0</DefaultExpression>
-      <NotNull>1</NotNull>
-      <Position>3</Position>
-    </column>
-    <column id="718" parent="569" name="available">
-      <DasType>INTEGER|0s</DasType>
-      <DefaultExpression>1</DefaultExpression>
-      <NotNull>1</NotNull>
-      <Position>4</Position>
-    </column>
-    <index id="719" parent="569" name="sqlite_autoindex_unit_1">
-      <ColNames>id</ColNames>
-      <NameSurrogate>1</NameSurrogate>
-      <Unique>1</Unique>
-    </index>
-    <key id="720" parent="569">
-      <ColNames>id</ColNames>
-      <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_unit_1</UnderlyingIndexName>
-    </key>
-    <key id="721" parent="569">
-      <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_unit_1</UnderlyingIndexName>
-    </key>
-    <check id="722" parent="570">
-      <Predicate>email LIKE &apos;%_@_%._%&apos; AND LENGTH(email) - LENGTH(REPLACE(email, &apos;@&apos;, &apos;&apos;)) = 1 AND
-           SUBSTR(LOWER(email), 1, INSTR(email, &apos;.&apos;) - 1) NOT GLOB &apos;*[^@0-9a-z]*&apos; AND
-           SUBSTR(LOWER(email), INSTR(email, &apos;.&apos;) + 1) NOT GLOB &apos;*[^a-z]*&apos;</Predicate>
-    </check>
-    <check id="723" parent="570">
-      <Predicate>phone GLOB &apos;+79[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]&apos;</Predicate>
-    </check>
-    <check id="724" parent="570">
-      <Predicate>sex IN (0, 1)</Predicate>
-    </check>
-    <column id="725" parent="570" name="id">
-      <AutoIncrement>1</AutoIncrement>
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>1</Position>
-    </column>
-    <column id="726" parent="570" name="lastname">
-      <DasType>TEXT|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>2</Position>
-    </column>
-    <column id="727" parent="570" name="firstname">
-      <DasType>TEXT|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>3</Position>
-    </column>
-    <column id="728" parent="570" name="patronymic">
-      <DasType>TEXT|0s</DasType>
-      <Position>4</Position>
-    </column>
-    <column id="729" parent="570" name="phone">
-      <DasType>TEXT|0s</DasType>
-      <Position>5</Position>
-    </column>
-    <column id="730" parent="570" name="email">
-      <DasType>TEXT|0s</DasType>
+    <column id="690" parent="563" name="longitude">
+      <DasType>REAL|0s</DasType>
       <Position>6</Position>
     </column>
-    <column id="731" parent="570" name="hashed_password">
-      <DasType>BLOB|0s</DasType>
+    <column id="691" parent="563" name="map_url">
+      <DasType>TEXT|0s</DasType>
       <Position>7</Position>
     </column>
-    <column id="732" parent="570" name="salt">
-      <DasType>BLOB|0s</DasType>
-      <Position>8</Position>
-    </column>
-    <column id="733" parent="570" name="sex">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>9</Position>
-    </column>
-    <column id="734" parent="570" name="city_id">
-      <DasType>INTEGER|0s</DasType>
-      <NotNull>1</NotNull>
-      <Position>10</Position>
-    </column>
-    <column id="735" parent="570" name="birthday">
-      <DasType>DATE|0s</DasType>
-      <Position>11</Position>
-    </column>
-    <foreign-key id="736" parent="570" name="city">
+    <foreign-key id="692" parent="563" name="city">
       <ColNames>city_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>city</RefTableName>
     </foreign-key>
-    <index id="737" parent="570" name="sqlite_autoindex_user_1">
+    <index id="693" parent="563" name="sqlite_autoindex_gym_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="738" parent="570" name="sqlite_autoindex_user_2">
-      <ColNames>phone</ColNames>
+    <index id="694" parent="563" name="sqlite_autoindex_gym_2">
+      <ColNames>address</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="739" parent="570" name="sqlite_autoindex_user_3">
-      <ColNames>email</ColNames>
+    <index id="695" parent="563" name="sqlite_autoindex_gym_3">
+      <ColNames>latitude</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="740" parent="570">
+    <index id="696" parent="563" name="sqlite_autoindex_gym_4">
+      <ColNames>longitude</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="697" parent="563" name="sqlite_autoindex_gym_5">
+      <ColNames>map_url</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="698" parent="563">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
-      <UnderlyingIndexName>sqlite_autoindex_user_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_gym_1</UnderlyingIndexName>
     </key>
-    <key id="741" parent="570">
+    <key id="699" parent="563">
       <ColNames>id</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_user_1</UnderlyingIndexName>
+      <UnderlyingIndexName>sqlite_autoindex_gym_1</UnderlyingIndexName>
     </key>
-    <key id="742" parent="570">
-      <ColNames>phone</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_user_2</UnderlyingIndexName>
+    <key id="700" parent="563">
+      <ColNames>address</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_gym_2</UnderlyingIndexName>
     </key>
-    <key id="743" parent="570">
-      <ColNames>email</ColNames>
-      <UnderlyingIndexName>sqlite_autoindex_user_3</UnderlyingIndexName>
+    <key id="701" parent="563">
+      <ColNames>latitude</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_gym_3</UnderlyingIndexName>
     </key>
-    <column id="744" parent="571" name="id">
+    <key id="702" parent="563">
+      <ColNames>longitude</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_gym_4</UnderlyingIndexName>
+    </key>
+    <key id="703" parent="563">
+      <ColNames>map_url</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_gym_5</UnderlyingIndexName>
+    </key>
+    <check id="704" parent="564">
+      <Predicate>finished IN (0, 1)</Predicate>
+    </check>
+    <column id="705" parent="564" name="id">
       <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="745" parent="571" name="user_id">
+    <column id="706" parent="564" name="tournament_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="746" parent="571" name="pic">
-      <DasType>TEXT|0s</DasType>
+    <column id="707" parent="564" name="created_at">
+      <DasType>DATETIME|0s</DasType>
+      <DefaultExpression>current_timestamp</DefaultExpression>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <foreign-key id="747" parent="571">
-      <ColNames>user_id</ColNames>
+    <column id="708" parent="564" name="user_1_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <column id="709" parent="564" name="user_2_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+    </column>
+    <column id="710" parent="564" name="user_3_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <column id="711" parent="564" name="user_4_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+    </column>
+    <column id="712" parent="564" name="court_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>8</Position>
+    </column>
+    <column id="713" parent="564" name="finished">
+      <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>9</Position>
+    </column>
+    <foreign-key id="714" parent="564" name="tournament">
+      <ColNames>tournament_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tournament</RefTableName>
+    </foreign-key>
+    <foreign-key id="715" parent="564" name="user1">
+      <ColNames>user_1_id</ColNames>
       <RefColNames>id</RefColNames>
       <RefTableName>user</RefTableName>
     </foreign-key>
-    <index id="748" parent="571" name="sqlite_autoindex_user_pic_1">
+    <foreign-key id="716" parent="564" name="user2">
+      <ColNames>user_2_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <foreign-key id="717" parent="564" name="user3">
+      <ColNames>user_3_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <foreign-key id="718" parent="564" name="user4">
+      <ColNames>user_4_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <foreign-key id="719" parent="564" name="court">
+      <ColNames>court_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>court</RefTableName>
+    </foreign-key>
+    <index id="720" parent="564" name="sqlite_autoindex_match_1">
       <ColNames>id</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="749" parent="571">
+    <key id="721" parent="564">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_match_1</UnderlyingIndexName>
+    </key>
+    <key id="722" parent="564">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_match_1</UnderlyingIndexName>
+    </key>
+    <trigger id="723" parent="564" name="disable_court_and_tournament_users_by_match_created">
+      <Events>I</Events>
+      <SourceTextLength>381</SourceTextLength>
+      <Turn>after-row</Turn>
+    </trigger>
+    <trigger id="724" parent="564" name="calculate_rating_when_match_finished">
+      <Condition>new.finished = 1
+     AND old.finished != 1
+     AND NOT EXISTS (SELECT 1 FROM rating WHERE match_id = new.id)
+     AND ((SELECT count(lost_1_by)
+           FROM game
+           WHERE match_id = new.id) = (SELECT cast(value AS int)
+                                       FROM settings
+                                       WHERE name = &apos;wins&apos;)
+       OR (SELECT count(lost_2_by)
+           FROM game
+           WHERE match_id = new.id) = (SELECT cast(value AS int)
+                                       FROM settings
+                                       WHERE name = &apos;wins&apos;))</Condition>
+      <Events>U</Events>
+      <SourceTextLength>3543</SourceTextLength>
+      <Turn>after-row</Turn>
+    </trigger>
+    <trigger id="725" parent="564" name="delete_rating_when_match_deleted">
+      <Events>D</Events>
+      <SourceTextLength>135</SourceTextLength>
+      <Turn>after-row</Turn>
+    </trigger>
+    <trigger id="726" parent="564" name="enable_court_and_tournament_users_by_match_deleted">
+      <Events>D</Events>
+      <SourceTextLength>380</SourceTextLength>
+      <Turn>after-row</Turn>
+    </trigger>
+    <check id="727" parent="565">
+      <Predicate>finished IN (0, 1)</Predicate>
+    </check>
+    <column id="728" parent="565" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="729" parent="565" name="tournament_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="730" parent="565" name="created_at">
+      <DasType>DATETIME|0s</DasType>
+      <DefaultExpression>current_timestamp</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="731" parent="565" name="team_1_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <column id="732" parent="565" name="team_2_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+    </column>
+    <column id="733" parent="565" name="court_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <column id="734" parent="565" name="finished">
+      <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+    </column>
+    <foreign-key id="735" parent="565" name="tournament">
+      <ColNames>tournament_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tournament</RefTableName>
+    </foreign-key>
+    <foreign-key id="736" parent="565" name="team1">
+      <ColNames>team_1_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team</RefTableName>
+    </foreign-key>
+    <foreign-key id="737" parent="565" name="team2">
+      <ColNames>team_2_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team</RefTableName>
+    </foreign-key>
+    <foreign-key id="738" parent="565" name="court">
+      <ColNames>court_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>court</RefTableName>
+    </foreign-key>
+    <index id="739" parent="565" name="sqlite_autoindex_match_110_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="740" parent="565">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_match_110_1</UnderlyingIndexName>
+    </key>
+    <key id="741" parent="565">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_match_110_1</UnderlyingIndexName>
+    </key>
+    <column id="742" parent="566" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="743" parent="566" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="744" parent="566" name="match_id">
+      <DasType>INTEGER|0s</DasType>
+      <Position>3</Position>
+    </column>
+    <column id="745" parent="566" name="previous">
+      <DasType>INTEGER|0s</DasType>
+      <Position>4</Position>
+    </column>
+    <column id="746" parent="566" name="delta">
+      <DasType>INTEGER|0s</DasType>
+      <Position>5</Position>
+    </column>
+    <foreign-key id="747" parent="566" name="user">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <foreign-key id="748" parent="566" name="match">
+      <ColNames>match_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>match</RefTableName>
+    </foreign-key>
+    <index id="749" parent="566" name="sqlite_autoindex_rating_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="750" parent="566" name="sqlite_autoindex_rating_2">
+      <ColNames>user_id
+match_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="751" parent="566" name="rating_user_id">
+      <ColNames>user_id
+id</ColNames>
+    </index>
+    <key id="752" parent="566">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_rating_1</UnderlyingIndexName>
+    </key>
+    <key id="753" parent="566">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_rating_1</UnderlyingIndexName>
+    </key>
+    <key id="754" parent="566">
+      <ColNames>user_id
+match_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_rating_2</UnderlyingIndexName>
+    </key>
+    <column id="755" parent="567" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="756" parent="567" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="757" parent="567" name="description">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <index id="758" parent="567" name="sqlite_autoindex_ready_priority_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="759" parent="567" name="sqlite_autoindex_ready_priority_2">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="760" parent="567">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_ready_priority_1</UnderlyingIndexName>
+    </key>
+    <key id="761" parent="567">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_ready_priority_1</UnderlyingIndexName>
+    </key>
+    <key id="762" parent="567">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_ready_priority_2</UnderlyingIndexName>
+    </key>
+    <column id="763" parent="568" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="764" parent="568" name="state_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="765" parent="568" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <foreign-key id="766" parent="568" name="state">
+      <ColNames>state_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>state</RefTableName>
+    </foreign-key>
+    <index id="767" parent="568" name="sqlite_autoindex_region_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="768" parent="568" name="sqlite_autoindex_region_2">
+      <ColNames>state_id
+name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="769" parent="568">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_region_1</UnderlyingIndexName>
+    </key>
+    <key id="770" parent="568">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_region_1</UnderlyingIndexName>
+    </key>
+    <key id="771" parent="568">
+      <ColNames>state_id
+name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_region_2</UnderlyingIndexName>
+    </key>
+    <column id="772" parent="569" name="region_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="773" parent="569" name="timezone_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <foreign-key id="774" parent="569" name="region">
+      <ColNames>region_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>region</RefTableName>
+    </foreign-key>
+    <foreign-key id="775" parent="569" name="timezone">
+      <ColNames>timezone_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>timezone</RefTableName>
+    </foreign-key>
+    <key id="776" parent="569">
+      <ColNames>region_id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <column id="777" parent="570" name="type">
+      <DasType>TEXT|0s</DasType>
+      <Position>1</Position>
+    </column>
+    <column id="778" parent="570" name="name">
+      <DasType>TEXT|0s</DasType>
+      <Position>2</Position>
+    </column>
+    <column id="779" parent="570" name="tbl_name">
+      <DasType>TEXT|0s</DasType>
+      <Position>3</Position>
+    </column>
+    <column id="780" parent="570" name="rootpage">
+      <DasType>INT|0s</DasType>
+      <Position>4</Position>
+    </column>
+    <column id="781" parent="570" name="sql">
+      <DasType>TEXT|0s</DasType>
+      <Position>5</Position>
+    </column>
+    <column id="782" parent="571" name="name">
+      <Position>1</Position>
+    </column>
+    <column id="783" parent="571" name="seq">
+      <Position>2</Position>
+    </column>
+    <column id="784" parent="572" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="785" parent="572" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <index id="786" parent="572" name="sqlite_autoindex_state_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="787" parent="572" name="sqlite_autoindex_state_2">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="788" parent="572">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_state_1</UnderlyingIndexName>
+    </key>
+    <key id="789" parent="572">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_state_1</UnderlyingIndexName>
+    </key>
+    <key id="790" parent="572">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_state_2</UnderlyingIndexName>
+    </key>
+    <column id="791" parent="573" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="792" parent="573" name="tournament_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="793" parent="573" name="group_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="794" parent="573" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <column id="795" parent="573" name="city_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+    </column>
+    <column id="796" parent="573" name="team_color_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <foreign-key id="797" parent="573" name="tournament">
+      <ColNames>tournament_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tournament</RefTableName>
+    </foreign-key>
+    <foreign-key id="798" parent="573" name="group">
+      <ColNames>group_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>group</RefTableName>
+    </foreign-key>
+    <foreign-key id="799" parent="573" name="city">
+      <ColNames>city_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>city</RefTableName>
+    </foreign-key>
+    <foreign-key id="800" parent="573" name="team_color">
+      <ColNames>team_color_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_color</RefTableName>
+    </foreign-key>
+    <index id="801" parent="573" name="sqlite_autoindex_team_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="802" parent="573" name="sqlite_autoindex_team_3">
+      <ColNames>tournament_id
+group_id
+team_color_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="803" parent="573" name="sqlite_autoindex_team_2">
+      <ColNames>tournament_id
+city_id
+name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="804" parent="573">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_team_1</UnderlyingIndexName>
+    </key>
+    <key id="805" parent="573">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_1</UnderlyingIndexName>
+    </key>
+    <key id="806" parent="573">
+      <ColNames>tournament_id
+group_id
+team_color_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_3</UnderlyingIndexName>
+    </key>
+    <key id="807" parent="573">
+      <ColNames>tournament_id
+city_id
+name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_2</UnderlyingIndexName>
+    </key>
+    <column id="808" parent="574" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="809" parent="574" name="hex">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="810" parent="574" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <index id="811" parent="574" name="sqlite_autoindex_team_color_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="812" parent="574" name="sqlite_autoindex_team_color_2">
+      <ColNames>hex</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="813" parent="574" name="sqlite_autoindex_team_color_3">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="814" parent="574">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_team_color_1</UnderlyingIndexName>
+    </key>
+    <key id="815" parent="574">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_color_1</UnderlyingIndexName>
+    </key>
+    <key id="816" parent="574">
+      <ColNames>hex</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_color_2</UnderlyingIndexName>
+    </key>
+    <key id="817" parent="574">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_color_3</UnderlyingIndexName>
+    </key>
+    <check id="818" parent="575">
+      <Predicate>md11 != md12</Predicate>
+    </check>
+    <check id="819" parent="575">
+      <Predicate>md21 != md22</Predicate>
+    </check>
+    <check id="820" parent="575">
+      <Predicate>ms1 != ms2</Predicate>
+    </check>
+    <check id="821" parent="575">
+      <Predicate>wd11 != wd12</Predicate>
+    </check>
+    <check id="822" parent="575">
+      <Predicate>wd21 != wd22</Predicate>
+    </check>
+    <check id="823" parent="575">
+      <Predicate>ws1 != ws2</Predicate>
+    </check>
+    <column id="824" parent="575" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="825" parent="575" name="team_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="826" parent="575" name="ms1">
+      <DasType>INTEGER|0s</DasType>
+      <Position>3</Position>
+    </column>
+    <column id="827" parent="575" name="ws1">
+      <DasType>INTEGER|0s</DasType>
+      <Position>4</Position>
+    </column>
+    <column id="828" parent="575" name="md11">
+      <DasType>INTEGER|0s</DasType>
+      <Position>5</Position>
+    </column>
+    <column id="829" parent="575" name="md12">
+      <DasType>INTEGER|0s</DasType>
+      <Position>6</Position>
+    </column>
+    <column id="830" parent="575" name="wd11">
+      <DasType>INTEGER|0s</DasType>
+      <Position>7</Position>
+    </column>
+    <column id="831" parent="575" name="wd12">
+      <DasType>INTEGER|0s</DasType>
+      <Position>8</Position>
+    </column>
+    <column id="832" parent="575" name="xd11">
+      <DasType>INTEGER|0s</DasType>
+      <Position>9</Position>
+    </column>
+    <column id="833" parent="575" name="xd12">
+      <DasType>INTEGER|0s</DasType>
+      <Position>10</Position>
+    </column>
+    <column id="834" parent="575" name="ms2">
+      <DasType>INTEGER|0s</DasType>
+      <Position>11</Position>
+    </column>
+    <column id="835" parent="575" name="ws2">
+      <DasType>INTEGER|0s</DasType>
+      <Position>12</Position>
+    </column>
+    <column id="836" parent="575" name="md21">
+      <DasType>INTEGER|0s</DasType>
+      <Position>13</Position>
+    </column>
+    <column id="837" parent="575" name="md22">
+      <DasType>INTEGER|0s</DasType>
+      <Position>14</Position>
+    </column>
+    <column id="838" parent="575" name="wd21">
+      <DasType>INTEGER|0s</DasType>
+      <Position>15</Position>
+    </column>
+    <column id="839" parent="575" name="wd22">
+      <DasType>INTEGER|0s</DasType>
+      <Position>16</Position>
+    </column>
+    <column id="840" parent="575" name="xd21">
+      <DasType>INTEGER|0s</DasType>
+      <Position>17</Position>
+    </column>
+    <column id="841" parent="575" name="xd22">
+      <DasType>INTEGER|0s</DasType>
+      <Position>18</Position>
+    </column>
+    <foreign-key id="842" parent="575" name="team">
+      <ColNames>team_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team</RefTableName>
+    </foreign-key>
+    <foreign-key id="843" parent="575" name="ms1">
+      <ColNames>ms1</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="844" parent="575" name="ws1">
+      <ColNames>ws1</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="845" parent="575" name="md11">
+      <ColNames>md11</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="846" parent="575" name="md12">
+      <ColNames>md12</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="847" parent="575" name="wd11">
+      <ColNames>wd11</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="848" parent="575" name="wd12">
+      <ColNames>wd12</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="849" parent="575" name="xd11">
+      <ColNames>xd11</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="850" parent="575" name="xd12">
+      <ColNames>xd12</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="851" parent="575" name="ms2">
+      <ColNames>ms2</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="852" parent="575" name="ws2">
+      <ColNames>ws2</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="853" parent="575" name="md21">
+      <ColNames>md21</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="854" parent="575" name="md22">
+      <ColNames>md22</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="855" parent="575" name="wd21">
+      <ColNames>wd21</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="856" parent="575" name="wd22">
+      <ColNames>wd22</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="857" parent="575" name="xd21">
+      <ColNames>xd21</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <foreign-key id="858" parent="575" name="xd22">
+      <ColNames>xd22</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team_user</RefTableName>
+    </foreign-key>
+    <index id="859" parent="575" name="sqlite_autoindex_team_order_110_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="860" parent="575" name="sqlite_autoindex_team_order_110_2">
+      <ColNames>team_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="861" parent="575">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_team_order_110_1</UnderlyingIndexName>
+    </key>
+    <key id="862" parent="575">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_order_110_1</UnderlyingIndexName>
+    </key>
+    <key id="863" parent="575">
+      <ColNames>team_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_order_110_2</UnderlyingIndexName>
+    </key>
+    <column id="864" parent="576" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="865" parent="576" name="team_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="866" parent="576" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="867" parent="576" name="group_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <foreign-key id="868" parent="576" name="team">
+      <ColNames>team_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>team</RefTableName>
+    </foreign-key>
+    <foreign-key id="869" parent="576" name="user">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <foreign-key id="870" parent="576" name="group">
+      <ColNames>group_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>group</RefTableName>
+    </foreign-key>
+    <index id="871" parent="576" name="sqlite_autoindex_team_user_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="872" parent="576" name="sqlite_autoindex_team_user_2">
+      <ColNames>team_id
+user_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="873" parent="576">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_team_user_1</UnderlyingIndexName>
+    </key>
+    <key id="874" parent="576">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_user_1</UnderlyingIndexName>
+    </key>
+    <key id="875" parent="576">
+      <ColNames>team_id
+user_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_team_user_2</UnderlyingIndexName>
+    </key>
+    <column id="876" parent="577" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="877" parent="577" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <index id="878" parent="577" name="sqlite_autoindex_timezone_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="879" parent="577" name="sqlite_autoindex_timezone_2">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="880" parent="577">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_timezone_1</UnderlyingIndexName>
+    </key>
+    <key id="881" parent="577">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_timezone_1</UnderlyingIndexName>
+    </key>
+    <key id="882" parent="577">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_timezone_2</UnderlyingIndexName>
+    </key>
+    <check id="883" parent="578">
+      <Predicate>available IN (0, 1)</Predicate>
+    </check>
+    <check id="884" parent="578">
+      <Predicate>current IN (0, 1)</Predicate>
+    </check>
+    <check id="885" parent="578">
+      <Predicate>reg_ended_at &lt;= started_at</Predicate>
+    </check>
+    <check id="886" parent="578">
+      <Predicate>started_at &lt; ended_at</Predicate>
+    </check>
+    <column id="887" parent="578" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="888" parent="578" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="889" parent="578" name="user_club_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="890" parent="578" name="gym_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <column id="891" parent="578" name="unit_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+    </column>
+    <column id="892" parent="578" name="tournament_type_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <column id="893" parent="578" name="tournament_status_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+    </column>
+    <column id="894" parent="578" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>8</Position>
+    </column>
+    <column id="895" parent="578" name="current">
+      <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>9</Position>
+    </column>
+    <column id="896" parent="578" name="available">
+      <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>1</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>10</Position>
+    </column>
+    <column id="897" parent="578" name="reg_ended_at">
+      <DasType>DATETIME|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>11</Position>
+    </column>
+    <column id="898" parent="578" name="started_at">
+      <DasType>DATETIME|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>12</Position>
+    </column>
+    <column id="899" parent="578" name="ended_at">
+      <DasType>DATETIME|0s</DasType>
+      <Position>13</Position>
+    </column>
+    <column id="900" parent="578" name="rules">
+      <DasType>TEXT|0s</DasType>
+      <Position>14</Position>
+    </column>
+    <foreign-key id="901" parent="578" name="creator">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <foreign-key id="902" parent="578" name="user_club">
+      <ColNames>user_club_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user_club</RefTableName>
+    </foreign-key>
+    <foreign-key id="903" parent="578" name="gym">
+      <ColNames>gym_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>gym</RefTableName>
+    </foreign-key>
+    <foreign-key id="904" parent="578" name="unit">
+      <ColNames>unit_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>unit</RefTableName>
+    </foreign-key>
+    <foreign-key id="905" parent="578" name="tournament_type">
+      <ColNames>tournament_type_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tournament_type</RefTableName>
+    </foreign-key>
+    <foreign-key id="906" parent="578" name="tournament_status">
+      <ColNames>tournament_status_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tournament_status</RefTableName>
+    </foreign-key>
+    <index id="907" parent="578" name="sqlite_autoindex_tournament_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="908" parent="578">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_1</UnderlyingIndexName>
+    </key>
+    <key id="909" parent="578">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_1</UnderlyingIndexName>
+    </key>
+    <column id="910" parent="579" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="911" parent="579" name="defaults_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="912" parent="579" name="tournament_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="913" parent="579" name="value">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <foreign-key id="914" parent="579" name="defaults">
+      <ColNames>defaults_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>defaults</RefTableName>
+    </foreign-key>
+    <foreign-key id="915" parent="579" name="tournament">
+      <ColNames>tournament_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tournament</RefTableName>
+    </foreign-key>
+    <index id="916" parent="579" name="sqlite_autoindex_tournament_settings_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="917" parent="579" name="sqlite_autoindex_tournament_settings_2">
+      <ColNames>defaults_id
+tournament_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="918" parent="579">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_settings_1</UnderlyingIndexName>
+    </key>
+    <key id="919" parent="579">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_settings_1</UnderlyingIndexName>
+    </key>
+    <key id="920" parent="579">
+      <ColNames>defaults_id
+tournament_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_settings_2</UnderlyingIndexName>
+    </key>
+    <column id="921" parent="580" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="922" parent="580" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <index id="923" parent="580" name="sqlite_autoindex_tournament_status_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="924" parent="580" name="sqlite_autoindex_tournament_status_2">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="925" parent="580">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_status_1</UnderlyingIndexName>
+    </key>
+    <key id="926" parent="580">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_status_1</UnderlyingIndexName>
+    </key>
+    <key id="927" parent="580">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_status_2</UnderlyingIndexName>
+    </key>
+    <column id="928" parent="581" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="929" parent="581" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <index id="930" parent="581" name="sqlite_autoindex_tournament_type_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="931" parent="581" name="sqlite_autoindex_tournament_type_2">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="932" parent="581">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_type_1</UnderlyingIndexName>
+    </key>
+    <key id="933" parent="581">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_type_1</UnderlyingIndexName>
+    </key>
+    <key id="934" parent="581">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_type_2</UnderlyingIndexName>
+    </key>
+    <check id="935" parent="582">
+      <Predicate>archived IN (0, 1)</Predicate>
+    </check>
+    <check id="936" parent="582">
+      <Predicate>available IN (0, 1)</Predicate>
+    </check>
+    <check id="937" parent="582">
+      <Predicate>confirmed IN (0, 1)</Predicate>
+    </check>
+    <check id="938" parent="582">
+      <Predicate>paid IN (0, 1)</Predicate>
+    </check>
+    <column id="939" parent="582" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="940" parent="582" name="tournament_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="941" parent="582" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="942" parent="582" name="available">
+      <DasType>BOOLEAN|0s</DasType>
+      <DefaultExpression>1</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <column id="943" parent="582" name="archived">
+      <DasType>BOOLEAN|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>5</Position>
+    </column>
+    <column id="944" parent="582" name="confirmed">
+      <DasType>BOOLEAN|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>6</Position>
+    </column>
+    <column id="945" parent="582" name="paid">
+      <DasType>BOOLEAN|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+    </column>
+    <foreign-key id="946" parent="582" name="tournament">
+      <ColNames>tournament_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>tournament</RefTableName>
+    </foreign-key>
+    <foreign-key id="947" parent="582" name="user">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <index id="948" parent="582" name="sqlite_autoindex_tournament_user_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="949" parent="582" name="sqlite_autoindex_tournament_user_2">
+      <ColNames>tournament_id
+user_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="950" parent="582">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_user_1</UnderlyingIndexName>
+    </key>
+    <key id="951" parent="582">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_user_1</UnderlyingIndexName>
+    </key>
+    <key id="952" parent="582">
+      <ColNames>tournament_id
+user_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_tournament_user_2</UnderlyingIndexName>
+    </key>
+    <check id="953" parent="583">
+      <Predicate>available IN (0, 1)</Predicate>
+    </check>
+    <check id="954" parent="583">
+      <Predicate>current IN (0, 1)</Predicate>
+    </check>
+    <column id="955" parent="583" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="956" parent="583" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="957" parent="583" name="current">
+      <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>0</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="958" parent="583" name="available">
+      <DasType>INTEGER|0s</DasType>
+      <DefaultExpression>1</DefaultExpression>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <index id="959" parent="583" name="sqlite_autoindex_unit_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="960" parent="583">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_unit_1</UnderlyingIndexName>
+    </key>
+    <key id="961" parent="583">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_unit_1</UnderlyingIndexName>
+    </key>
+    <check id="962" parent="584">
+      <Predicate>email LIKE &apos;%_@_%._%&apos; AND LENGTH(email) - LENGTH(REPLACE(email, &apos;@&apos;, &apos;&apos;)) = 1 AND
+           SUBSTR(LOWER(email), 1, INSTR(email, &apos;.&apos;) - 1) NOT GLOB &apos;*[^@0-9a-z]*&apos; AND
+           SUBSTR(LOWER(email), INSTR(email, &apos;.&apos;) + 1) NOT GLOB &apos;*[^a-z]*&apos;</Predicate>
+    </check>
+    <check id="963" parent="584">
+      <Predicate>phone GLOB &apos;+79[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]&apos;</Predicate>
+    </check>
+    <check id="964" parent="584">
+      <Predicate>sex IN (0, 1)</Predicate>
+    </check>
+    <column id="965" parent="584" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="966" parent="584" name="lastname">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="967" parent="584" name="firstname">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="968" parent="584" name="patronymic">
+      <DasType>TEXT|0s</DasType>
+      <Position>4</Position>
+    </column>
+    <column id="969" parent="584" name="phone">
+      <DasType>TEXT|0s</DasType>
+      <Position>5</Position>
+    </column>
+    <column id="970" parent="584" name="email">
+      <DasType>TEXT|0s</DasType>
+      <Position>6</Position>
+    </column>
+    <column id="971" parent="584" name="hashed_password">
+      <DasType>BLOB|0s</DasType>
+      <Position>7</Position>
+    </column>
+    <column id="972" parent="584" name="salt">
+      <DasType>BLOB|0s</DasType>
+      <Position>8</Position>
+    </column>
+    <column id="973" parent="584" name="sex">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>9</Position>
+    </column>
+    <column id="974" parent="584" name="city_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>10</Position>
+    </column>
+    <column id="975" parent="584" name="birthday">
+      <DasType>DATE|0s</DasType>
+      <Position>11</Position>
+    </column>
+    <foreign-key id="976" parent="584" name="city">
+      <ColNames>city_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>city</RefTableName>
+    </foreign-key>
+    <index id="977" parent="584" name="sqlite_autoindex_user_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="978" parent="584" name="sqlite_autoindex_user_2">
+      <ColNames>phone</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="979" parent="584" name="sqlite_autoindex_user_3">
+      <ColNames>email</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="980" parent="584" name="user_names">
+      <ColNames>lastname
+firstname
+patronymic</ColNames>
+    </index>
+    <key id="981" parent="584">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_user_1</UnderlyingIndexName>
+    </key>
+    <key id="982" parent="584">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_1</UnderlyingIndexName>
+    </key>
+    <key id="983" parent="584">
+      <ColNames>phone</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_2</UnderlyingIndexName>
+    </key>
+    <key id="984" parent="584">
+      <ColNames>email</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_3</UnderlyingIndexName>
+    </key>
+    <column id="985" parent="585" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="986" parent="585" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="987" parent="585" name="city_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <foreign-key id="988" parent="585" name="city">
+      <ColNames>city_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>city</RefTableName>
+    </foreign-key>
+    <index id="989" parent="585" name="sqlite_autoindex_user_club_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="990" parent="585" name="sqlite_autoindex_user_club_3">
+      <ColNames>name
+city_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="991" parent="585" name="sqlite_autoindex_user_club_2">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="992" parent="585">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_user_club_1</UnderlyingIndexName>
+    </key>
+    <key id="993" parent="585">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_club_1</UnderlyingIndexName>
+    </key>
+    <key id="994" parent="585">
+      <ColNames>name
+city_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_club_3</UnderlyingIndexName>
+    </key>
+    <key id="995" parent="585">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_club_3</UnderlyingIndexName>
+    </key>
+    <column id="996" parent="586" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="997" parent="586" name="user_club_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="998" parent="586" name="gym_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <foreign-key id="999" parent="586" name="user_club">
+      <ColNames>user_club_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user_club</RefTableName>
+    </foreign-key>
+    <foreign-key id="1000" parent="586" name="gym">
+      <ColNames>gym_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>gym</RefTableName>
+    </foreign-key>
+    <index id="1001" parent="586" name="sqlite_autoindex_user_club_gym_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="1002" parent="586" name="sqlite_autoindex_user_club_gym_2">
+      <ColNames>user_club_id
+gym_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="1003" parent="586">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_user_club_gym_1</UnderlyingIndexName>
+    </key>
+    <key id="1004" parent="586">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_club_gym_1</UnderlyingIndexName>
+    </key>
+    <key id="1005" parent="586">
+      <ColNames>user_club_id
+gym_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_club_gym_2</UnderlyingIndexName>
+    </key>
+    <column id="1006" parent="587" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="1007" parent="587" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="1008" parent="587" name="user_id_type_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="1009" parent="587" name="data">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <foreign-key id="1010" parent="587" name="user">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <foreign-key id="1011" parent="587" name="user_id_type">
+      <ColNames>user_id_type_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user_id_type</RefTableName>
+    </foreign-key>
+    <index id="1012" parent="587" name="sqlite_autoindex_user_id_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="1013" parent="587" name="sqlite_autoindex_user_id_2">
+      <ColNames>data</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="1014" parent="587">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_user_id_1</UnderlyingIndexName>
+    </key>
+    <key id="1015" parent="587">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_id_1</UnderlyingIndexName>
+    </key>
+    <key id="1016" parent="587">
+      <ColNames>data</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_id_2</UnderlyingIndexName>
+    </key>
+    <column id="1017" parent="588" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="1018" parent="588" name="name">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <index id="1019" parent="588" name="sqlite_autoindex_user_id_type_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="1020" parent="588" name="sqlite_autoindex_user_id_type_2">
+      <ColNames>name</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="1021" parent="588">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_user_id_type_1</UnderlyingIndexName>
+    </key>
+    <key id="1022" parent="588">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_id_type_1</UnderlyingIndexName>
+    </key>
+    <key id="1023" parent="588">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_id_type_2</UnderlyingIndexName>
+    </key>
+    <column id="1024" parent="589" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="1025" parent="589" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="1026" parent="589" name="site_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="1027" parent="589" name="site_login">
+      <DasType>TEXT|0s</DasType>
+      <Position>4</Position>
+    </column>
+    <column id="1028" parent="589" name="site_name">
+      <DasType>TEXT|0s</DasType>
+      <Position>5</Position>
+    </column>
+    <column id="1029" parent="589" name="rating_1">
+      <DasType>INTEGER|0s</DasType>
+      <Position>6</Position>
+    </column>
+    <column id="1030" parent="589" name="rating_2">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>7</Position>
+    </column>
+    <column id="1031" parent="589" name="img">
+      <DasType>TEXT|0s</DasType>
+      <Position>8</Position>
+    </column>
+    <column id="1032" parent="589" name="city">
+      <DasType>TEXT|0s</DasType>
+      <Position>9</Position>
+    </column>
+    <column id="1033" parent="589" name="club">
+      <DasType>TEXT|0s</DasType>
+      <Position>10</Position>
+    </column>
+    <column id="1034" parent="589" name="year">
+      <DasType>INTEGER|0s</DasType>
+      <Position>11</Position>
+    </column>
+    <foreign-key id="1035" parent="589" name="user">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <index id="1036" parent="589" name="sqlite_autoindex_user_lab_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <index id="1037" parent="589" name="sqlite_autoindex_user_lab_2">
+      <ColNames>user_id
+site_id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="1038" parent="589">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_user_lab_1</UnderlyingIndexName>
+    </key>
+    <key id="1039" parent="589">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_lab_1</UnderlyingIndexName>
+    </key>
+    <key id="1040" parent="589">
+      <ColNames>user_id
+site_id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_lab_2</UnderlyingIndexName>
+    </key>
+    <column id="1041" parent="590" name="id">
+      <AutoIncrement>1</AutoIncrement>
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="1042" parent="590" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="1043" parent="590" name="pic">
+      <DasType>TEXT|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <foreign-key id="1044" parent="590" name="user">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <index id="1045" parent="590" name="sqlite_autoindex_user_pic_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="1046" parent="590">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
       <UnderlyingIndexName>sqlite_autoindex_user_pic_1</UnderlyingIndexName>
     </key>
-    <key id="750" parent="571">
+    <key id="1047" parent="590">
       <ColNames>id</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_user_pic_1</UnderlyingIndexName>
     </key>
-    <column id="751" parent="572" name="id">
+    <column id="1048" parent="591" name="id">
+      <AutoIncrement>1</AutoIncrement>
       <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="752" parent="572" name="name">
+    <column id="1049" parent="591" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="753" parent="572" name="sex">
+    <column id="1050" parent="591" name="height">
       <DasType>INTEGER|0s</DasType>
       <Position>3</Position>
     </column>
-    <column id="754" parent="572" name="pic">
-      <DasType>TEXT|0s</DasType>
+    <column id="1051" parent="591" name="chest_cm">
+      <DasType>INTEGER|0s</DasType>
       <Position>4</Position>
     </column>
-    <column id="755" parent="572" name="city">
-      <DasType>TEXT|0s</DasType>
+    <column id="1052" parent="591" name="waist_cm">
+      <DasType>INTEGER|0s</DasType>
       <Position>5</Position>
     </column>
-    <column id="756" parent="573" name="user_id">
+    <column id="1053" parent="591" name="hips_cm">
       <DasType>INTEGER|0s</DasType>
-      <Position>1</Position>
-    </column>
-    <column id="757" parent="573" name="name">
-      <Position>2</Position>
-    </column>
-    <column id="758" parent="573" name="sum">
-      <Position>3</Position>
-    </column>
-    <column id="759" parent="574" name="user_id">
-      <DasType>INTEGER|0s</DasType>
-      <Position>1</Position>
-    </column>
-    <column id="760" parent="574" name="name">
-      <Position>2</Position>
-    </column>
-    <column id="761" parent="574" name="sum">
-      <Position>3</Position>
-    </column>
-    <column id="762" parent="575" name="user_id">
-      <DasType>INTEGER|0s</DasType>
-      <Position>1</Position>
-    </column>
-    <column id="763" parent="575" name="name">
-      <Position>2</Position>
-    </column>
-    <column id="764" parent="575" name="sum">
-      <Position>3</Position>
-    </column>
-    <column id="765" parent="576" name="id">
-      <DasType>INTEGER|0s</DasType>
-      <Position>1</Position>
-    </column>
-    <column id="766" parent="576" name="name">
-      <Position>2</Position>
-    </column>
-    <column id="767" parent="576" name="rating">
-      <Position>3</Position>
-    </column>
-    <column id="768" parent="576" name="delta_today">
-      <Position>4</Position>
-    </column>
-    <column id="769" parent="576" name="delta_week">
-      <Position>5</Position>
-    </column>
-    <column id="770" parent="576" name="delta_month">
       <Position>6</Position>
     </column>
-    <column id="771" parent="576" name="sex">
+    <column id="1054" parent="591" name="waist_to_floor_cm">
       <DasType>INTEGER|0s</DasType>
       <Position>7</Position>
     </column>
-    <column id="772" parent="576" name="pic">
-      <DasType>TEXT|0s</DasType>
+    <column id="1055" parent="591" name="t_shirt_size">
+      <DasType>INTEGER|0s</DasType>
       <Position>8</Position>
     </column>
-    <column id="773" parent="576" name="matches">
+    <column id="1056" parent="591" name="shorts_or_skirt_size">
+      <DasType>INTEGER|0s</DasType>
       <Position>9</Position>
     </column>
-    <column id="774" parent="576" name="city">
-      <DasType>TEXT|0s</DasType>
+    <column id="1057" parent="591" name="shoe_size">
+      <DasType>INTEGER|0s</DasType>
       <Position>10</Position>
     </column>
-    <column id="775" parent="576" name="birthday">
-      <DasType>DATE|0s</DasType>
-      <Position>11</Position>
-    </column>
-    <column id="776" parent="576" name="registered">
-      <Position>12</Position>
-    </column>
-    <column id="777" parent="576" name="enabled">
-      <Position>13</Position>
-    </column>
-    <column id="778" parent="576" name="archived">
-      <DasType>BOOLEAN|0s</DasType>
-      <Position>14</Position>
-    </column>
-    <column id="779" parent="577" name="name">
+    <foreign-key id="1058" parent="591" name="user">
+      <ColNames>user_id</ColNames>
+      <RefColNames>id</RefColNames>
+      <RefTableName>user</RefTableName>
+    </foreign-key>
+    <index id="1059" parent="591" name="sqlite_autoindex_user_sizes_1">
+      <ColNames>id</ColNames>
+      <NameSurrogate>1</NameSurrogate>
+      <Unique>1</Unique>
+    </index>
+    <key id="1060" parent="591">
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>sqlite_autoindex_user_sizes_1</UnderlyingIndexName>
+    </key>
+    <key id="1061" parent="591">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>sqlite_autoindex_user_sizes_1</UnderlyingIndexName>
+    </key>
+    <column id="1062" parent="592" name="id">
+      <DasType>INTEGER|0s</DasType>
       <Position>1</Position>
     </column>
-    <column id="780" parent="577" name="user_id">
+    <column id="1063" parent="592" name="name">
+      <Position>2</Position>
+    </column>
+    <column id="1064" parent="592" name="sex">
+      <DasType>INTEGER|0s</DasType>
+      <Position>3</Position>
+    </column>
+    <column id="1065" parent="592" name="pic">
+      <Position>4</Position>
+    </column>
+    <column id="1066" parent="592" name="city">
+      <DasType>TEXT|0s</DasType>
+      <Position>5</Position>
+    </column>
+    <column id="1067" parent="593" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <Position>1</Position>
+    </column>
+    <column id="1068" parent="593" name="name">
+      <Position>2</Position>
+    </column>
+    <column id="1069" parent="593" name="sum">
+      <Position>3</Position>
+    </column>
+    <column id="1070" parent="594" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <Position>1</Position>
+    </column>
+    <column id="1071" parent="594" name="name">
+      <Position>2</Position>
+    </column>
+    <column id="1072" parent="594" name="sum">
+      <Position>3</Position>
+    </column>
+    <column id="1073" parent="595" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <Position>1</Position>
+    </column>
+    <column id="1074" parent="595" name="name">
+      <Position>2</Position>
+    </column>
+    <column id="1075" parent="595" name="sum">
+      <Position>3</Position>
+    </column>
+    <column id="1076" parent="596" name="id">
+      <DasType>INTEGER|0s</DasType>
+      <Position>1</Position>
+    </column>
+    <column id="1077" parent="596" name="name">
+      <Position>2</Position>
+    </column>
+    <column id="1078" parent="596" name="rating">
+      <Position>3</Position>
+    </column>
+    <column id="1079" parent="596" name="rating_lab">
+      <Position>4</Position>
+    </column>
+    <column id="1080" parent="596" name="delta_today">
+      <Position>5</Position>
+    </column>
+    <column id="1081" parent="596" name="delta_week">
+      <Position>6</Position>
+    </column>
+    <column id="1082" parent="596" name="delta_month">
+      <Position>7</Position>
+    </column>
+    <column id="1083" parent="596" name="sex">
+      <DasType>INTEGER|0s</DasType>
+      <Position>8</Position>
+    </column>
+    <column id="1084" parent="596" name="pic">
+      <Position>9</Position>
+    </column>
+    <column id="1085" parent="596" name="matches">
+      <Position>10</Position>
+    </column>
+    <column id="1086" parent="596" name="city">
+      <DasType>TEXT|0s</DasType>
+      <Position>11</Position>
+    </column>
+    <column id="1087" parent="596" name="birthday">
+      <DasType>DATE|0s</DasType>
+      <Position>12</Position>
+    </column>
+    <column id="1088" parent="596" name="enabled">
+      <Position>13</Position>
+    </column>
+    <column id="1089" parent="596" name="paid">
+      <Position>14</Position>
+    </column>
+    <column id="1090" parent="596" name="occupied">
+      <Position>15</Position>
+    </column>
+    <column id="1091" parent="596" name="court">
+      <DasType>INTEGER|0s</DasType>
+      <Position>16</Position>
+    </column>
+    <column id="1092" parent="597" name="name">
+      <Position>1</Position>
+    </column>
+    <column id="1093" parent="597" name="user_id">
       <DasType>INTEGER|0s</DasType>
       <Position>2</Position>
     </column>
-    <column id="781" parent="577" name="rating">
+    <column id="1094" parent="597" name="rating">
       <Position>3</Position>
     </column>
-    <column id="782" parent="577" name="matches">
+    <column id="1095" parent="597" name="matches">
       <Position>4</Position>
     </column>
-    <column id="783" parent="577" name="played">
+    <column id="1096" parent="597" name="played">
       <Position>5</Position>
     </column>
-    <column id="784" parent="578" name="name">
+    <column id="1097" parent="598" name="name">
       <DasType>TEXT|0s</DasType>
       <Position>1</Position>
     </column>
-    <column id="785" parent="578" name="value">
+    <column id="1098" parent="598" name="value">
       <Position>2</Position>
     </column>
   </database-model>

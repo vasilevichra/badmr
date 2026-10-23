@@ -5,8 +5,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7fcbda41-1436-4905-973a-6a7a3b93c845" name="Changes" comment="Fix #30">
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/04399619-6bda-44fb-ac7f-8127bf09bb68.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/04399619-6bda-44fb-ac7f-8127bf09bb68/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/04399619-6bda-44fb-ac7f-8127bf09bb68/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4bca6927-5cd2-43f1-b02b-c95ebd3df6f6.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4bca6927-5cd2-43f1-b02b-c95ebd3df6f6/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4bca6927-5cd2-43f1-b02b-c95ebd3df6f6/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4ed93d43-9c3c-48a6-b906-15320e33d2e5.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4ed93d43-9c3c-48a6-b906-15320e33d2e5/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4ed93d43-9c3c-48a6-b906-15320e33d2e5/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/72f99042-dfac-4aed-8e21-6d2267639e1a.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/72f99042-dfac-4aed-8e21-6d2267639e1a/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/72f99042-dfac-4aed-8e21-6d2267639e1a/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA/table/match.xdktBg.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA/table/match.xdktBg/trigger/delete_rating_when_match_deleted.qCfApA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA/table/match.xdktBg/trigger/delete_rating_when_match_deleted.qCfApA.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.zip" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a91a8e40-a792-4dbc-8ac9-36c32e71164b.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a91a8e40-a792-4dbc-8ac9-36c32e71164b/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a91a8e40-a792-4dbc-8ac9-36c32e71164b/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c004d247-29c1-4a94-b2bf-b548f0090486.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c004d247-29c1-4a94-b2bf-b548f0090486/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c004d247-29c1-4a94-b2bf-b548f0090486/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/da3799e4-b863-4dda-8dbf-79f905e16a3d.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/da3799e4-b863-4dda-8dbf-79f905e16a3d/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/da3799e4-b863-4dda-8dbf-79f905e16a3d/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,7 +99,7 @@
     &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
     &quot;database.data.extractors.current.export.id&quot;: &quot;SQL Inserts&quot;,
     &quot;database.data.extractors.current.id&quot;: &quot;SQL Inserts&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Merging master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
     &quot;javascript.nodejs.core.library.configured.version&quot;: &quot;25.2.1&quot;,
     &quot;javascript.nodejs.core.library.typings.version&quot;: &quot;24.10.1&quot;,
@@ -85,7 +117,7 @@
     &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;settings.codegpt.services.custom&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;ts.external.directory.path&quot;: &quot;/Applications/IntelliJ IDEA.app/Contents/plugins/javascript-impl/jsLanguageServicesImpl/external&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
@@ -729,7 +761,15 @@
       <option name="project" value="LOCAL" />
       <updated>1766007751313</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="Fix #30">
+      <option name="closed" value="true" />
+      <created>1792532409512</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1792532409512</updated>
+    </task>
+    <option name="localTasksCounter" value="49" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
