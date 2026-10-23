@@ -9,6 +9,9 @@ const stampPath = path.join(root, ".data/test.stamp");
 const logPath = path.join(root, ".log/test.log");
 const testDbPath = path.join(root, ".data/test.db");
 
+// .data в .gitignore — в свежем checkout его нет, создаем до первого обращения
+fs.mkdirSync(path.join(root, ".data"), {recursive: true});
+
 /** БД-копии воркеров тестов (см. src/test-db.ts): воркер узнаваем по pid. */
 const workerDbPaths = () =>
     fs.readdirSync(path.join(root, ".data"), {withFileTypes: true})
