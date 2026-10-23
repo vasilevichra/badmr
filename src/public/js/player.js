@@ -1,5 +1,17 @@
 // контекст приходит из index.js асинхронно: лимиты групп рейтинга из
 // настройки и флаги состояния турнира — синхронные запросы здесь запрещены
+
+// день рождения сегодня: месяц и день даты рождения совпадают с текущей
+// датой в часовом поясе браузера (у клуба и игроков он один) (#54)
+const isBirthdayToday = (birthday) => {
+  if (!birthday) {
+    return false;
+  }
+  const [, month, day] = birthday.split('-');
+  const now = new Date();
+  return Number(month) === now.getMonth() + 1 && Number(day) === now.getDate();
+};
+
 const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibrationMatches, hasGames, everybodyPaid}) => {
   $('#player-table')
   .bootstrapTable({
@@ -52,6 +64,10 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
                       ? 'red'
                       : row.calibration_series / calibrationMatches < 2 / 3 ? 'yellow' : 'green') +
                   '" title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"></i>'
+                : '') +
+            // еле заметный тортик со свечами в самом конце колонки — у именинника (#54)
+            (isBirthdayToday(row.birthday)
+                ? '<i class="bi bi-cake2 player-birthday" title="С днём рождения!"></i>'
                 : '') +
             // кнопки в контейнере нулевой ширины: не влияют на ширину колонки «Имя»,
             // поверх неё рисуются по нажатию «Настройки»
