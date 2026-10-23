@@ -50,8 +50,8 @@
                                             </form>
                                             <% // рейтинг ЛАБ под рейтингом турнира: @логин 380₁ 454₂,
                                                // нижние индексы — как в таблицах турнира 110 %>
-                                            <div class="text-center text-secondary mt-1">
-                                                <i class="bi bi-at"></i><% if (user.site_id) { %><a class="player-window-link link-dark link-offset-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a><% } else { %>—<% } %>
+                                            <div class="text-center text-secondary mt-3">
+                                                <i class="bi bi-at"></i><% if (user.site_id) { %><a class="player-window-link link-dark link-offset-2  me-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a><% } else { %>—<% } %>
                                                 <% if (user.rating_1 || user.rating_2) { %>
                                                 <math class="secondary-info">
                                                     <% if (user.rating_1) { %>
