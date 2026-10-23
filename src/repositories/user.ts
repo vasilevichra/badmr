@@ -158,14 +158,23 @@ class User {
    * @param kind Какие напарники вернуть: `win` — только с совместными
    *             победами, `lose` — только с совместными поражениями,
    *             `all` — все.
+   * @param scope Ограничение области: `tournamentId` — матчи одного
+   *              турнира («на этом турнире»), `typeId` — матчи турниров
+   *              одного типа («за всё время на турнирах подобного типа»).
+   *              Без scope учитываются все матчи.
    * @returns Напарники с числом совместных побед/поражений и винрейтом
    *          в процентах.
    */
-  private getBuddies(id: number, kind: 'win' | 'lose' | 'all') {
+  private getBuddies(id: number, kind: 'win' | 'lose' | 'all', scope?: { tournamentId?: number; typeId?: number }) {
     const having = kind === 'win' ? 'HAVING win_count > 0'
       : kind === 'lose' ? 'HAVING lose_count > 0' : '';
     const order = kind === 'win' ? 'win_count DESC, win_rate DESC'
       : kind === 'lose' ? 'lose_count DESC, win_rate ASC' : 'win_rate DESC, win_count DESC';
+    const filter = scope?.tournamentId !== undefined
+      ? 'AND m.tournament_id = $tid'
+      : scope?.typeId !== undefined
+        ? 'AND m.tournament_id IN (SELECT id FROM tournament WHERE tournament_type_id = $tid)'
+        : '';
     return this.db.all<BuddyRow>(`
                 SELECT p.user_id,
                        u.lastname || ' ' || u.firstname AS user_name,
@@ -181,6 +190,7 @@ class User {
                       FROM match m
                                JOIN game g ON m.id = g.match_id
                       WHERE $user_id IN (m.user_1_id, m.user_2_id)
+                        ${filter}
                       GROUP BY m.id
                       HAVING count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
                           OR count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
@@ -191,6 +201,7 @@ class User {
                       FROM match m
                                JOIN game g ON m.id = g.match_id
                       WHERE $user_id IN (m.user_3_id, m.user_4_id)
+                        ${filter}
                       GROUP BY m.id
                       HAVING count(g.lost_1_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')
                           OR count(g.lost_2_by) > (SELECT value - 1 FROM settings WHERE name = 'wins')) p
@@ -200,6 +211,9 @@ class User {
                 ORDER BY ${order}`,
         {
           $user_id: id,
+          // $tid участвует в SQL только при заданном scope — неиспользуемый
+          // именованный параметр node:sqlite отвергает
+          ...(filter ? { $tid: scope?.tournamentId ?? scope?.typeId ?? null } : {}),
         }
     );
   }
@@ -208,27 +222,30 @@ class User {
    * Возвращает напарников пользователя, с которыми он выигрывал матчи,
    * отсортированных по убыванию числа совместных побед.
    * @param id Id пользователя.
+   * @param scope Ограничение области — см. {@link getBuddies}.
    */
-  getCoWinnersById(id: number) {
-    return this.getBuddies(id, 'win');
+  getCoWinnersById(id: number, scope?: { tournamentId?: number; typeId?: number }) {
+    return this.getBuddies(id, 'win', scope);
   }
 
   /**
    * Возвращает напарников пользователя, с которыми он проигрывал матчи,
    * отсортированных по убыванию числа совместных поражений.
    * @param id Id пользователя.
+   * @param scope Ограничение области — см. {@link getBuddies}.
    */
-  getCoLosersById(id: number) {
-    return this.getBuddies(id, 'lose');
+  getCoLosersById(id: number, scope?: { tournamentId?: number; typeId?: number }) {
+    return this.getBuddies(id, 'lose', scope);
   }
 
   /**
    * Возвращает всех напарников пользователя, включая тех, с кем не было
    * ни одной совместной победы, отсортированных по убыванию винрейта.
    * @param id Id пользователя.
+   * @param scope Ограничение области — см. {@link getBuddies}.
    */
-  getBuddiesById(id: number) {
-    return this.getBuddies(id, 'all');
+  getBuddiesById(id: number, scope?: { tournamentId?: number; typeId?: number }) {
+    return this.getBuddies(id, 'all', scope);
   }
 
   /**
@@ -506,24 +523,34 @@ class User {
     );
   }
 
-  getMatchesCount(id: number) {
+  /**
+   * Число матчей пользователя; с tournamentId — только в этом турнире,
+   * без — за всё время.
+   */
+  getMatchesCount(id: number, tournamentId?: number) {
     return this.db.get(
         `SELECT count() AS count
          FROM user u
                   JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
-         WHERE u.id = ?`,
-        [id]
+         WHERE u.id = ?
+           AND m.tournament_id = coalesce(?, m.tournament_id)`,
+        [id, tournamentId ?? null]
     );
   }
 
-  getGamesCount(id: number) {
+  /**
+   * Число игр пользователя; с tournamentId — только в этом турнире,
+   * без — за всё время.
+   */
+  getGamesCount(id: number, tournamentId?: number) {
     return this.db.get(
         `SELECT count() AS count
          FROM user u
                   JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
                   JOIN game g on m.id = g.match_id
-         WHERE u.id = ?`,
-        [id]
+         WHERE u.id = ?
+           AND m.tournament_id = coalesce(?, m.tournament_id)`,
+        [id, tournamentId ?? null]
     );
   }
 }

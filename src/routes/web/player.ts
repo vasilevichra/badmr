@@ -27,6 +27,13 @@ router.get('/:id', (req, res) => {
   const tournamentId = requestedTournament(req);
   // номинации пользователя — по текущему турниру «Новая Лига»
   const tournament = tournamentService.getCurrent() as { id: number } | undefined;
+  // «текущий турнир» статистики карточки: турнир просматриваемой страницы,
+  // без него — глобальный current; если и его нет — оба среза совпадают
+  const currentTournamentId = tournamentId ?? tournament?.id;
+  const currentTournament = currentTournamentId !== undefined
+    ? tournamentService.getById(currentTournamentId) as { tournament_type_id: number } | undefined
+    : undefined;
+  const typeId = currentTournament?.tournament_type_id;
   const achievements = tournament ? achievementService.getNominationsByUser(userId, tournament.id) : [];
   Promise.all([
     userService.getById(userId),              // 0
@@ -35,15 +42,22 @@ router.get('/:id', (req, res) => {
     cityService.getByUserId(userId),          // 3
     regionService.getByUserId(userId),        // 4
     stateService.getByUserId(userId),         // 5
-    userService.getMatchesCount(userId),      // 6
-    userService.getGamesCount(userId),        // 7
-    userService.getCoWinnersById(userId),     // 8
-    userService.getCoLosersById(userId),      // 9
+    userService.getMatchesCount(userId, currentTournamentId),      // 6 — на этом турнире
+    userService.getGamesCount(userId, currentTournamentId),        // 7
+    userService.getCoWinnersById(userId, {tournamentId: currentTournamentId}),  // 8
+    userService.getCoLosersById(userId, {tournamentId: currentTournamentId}),   // 9
     userService.getBuddiesById(userId),       // 10
     userService.getWorstOpponentsById(userId), // 11
     matchService.getAllByUser(userId, tournamentId), // 12
     userService.getCalibration(userId),        // 13
     settingsService.get('calibration_matches'), // 14
+    userService.getMatchesCount(userId),       // 15 — за всё время
+    userService.getGamesCount(userId),         // 16
+    userService.getCoWinnersById(userId, {typeId}), // 17 — за всё время, турниры того же типа
+    userService.getCoLosersById(userId, {typeId}),  // 18
+    typeId !== undefined
+      ? matchService.getAllByUserSameType(userId, typeId, currentTournamentId) // 19 — свёрнутые матчи того же типа
+      : Promise.resolve([]),
   ])
   .then((promises) => {
     return res.render('modal/player/id', {
@@ -63,6 +77,11 @@ router.get('/:id', (req, res) => {
       user_matches: promises[12],
       calibration: promises[13],
       calibration_matches: Number(promises[14]),
+      matches_total: promises[15],
+      games_total: promises[16],
+      co_winners_all: promises[17],
+      co_losers_all: promises[18],
+      type_matches: promises[19],
       achievements: achievements,
       playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
     });

@@ -7,6 +7,7 @@ import UserService from "../../src/services/user.ts";
 import UserRepository from "../../src/repositories/user.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
+import TournamentService from "../../src/services/tournament.ts";
 import Repository from "../../src/repositories/common.ts";
 import SettingsService from "../../src/services/settings.ts";
 import { clean } from "../helpers/migration.ts";
@@ -100,6 +101,7 @@ const userService = new UserService();
 const userRepository = new UserRepository();
 const matchService = new MatchService();
 const gameService = new GameService();
+const tournamentService = new TournamentService();
 const db = new Repository().db;
 
 // повторное создание сервиса должно вернуть существующий singleton
@@ -507,6 +509,18 @@ describe("User", () => {
       assert.deepStrictEqual(await userService.getMatchesCount(id), { count: 0 });
       assert.deepStrictEqual(await userService.getGamesCount(id), { count: 0 });
     });
+
+    it("должен считать матчи и игры только указанного турнира (#57)", async () => {
+      const { ids } = await seedFinishedMatch();
+      const tid = (await db.get<{ id: number }>(`SELECT id FROM tournament WHERE current = 1`))!.id;
+
+      assert.deepStrictEqual(await userService.getMatchesCount(ids[0], tid), { count: 1 });
+      assert.deepStrictEqual(await userService.getGamesCount(ids[0], tid), { count: 2 });
+      // чужой турнир — нули; без турнира — за всё время
+      assert.deepStrictEqual(await userService.getMatchesCount(ids[0], tid + 100000), { count: 0 });
+      assert.deepStrictEqual(await userService.getGamesCount(ids[0], tid + 100000), { count: 0 });
+      assert.deepStrictEqual(await userService.getMatchesCount(ids[0]), { count: 1 });
+    });
   });
 
   describe("getCoWinnersById, getCoLosersById, getBuddiesById", () => {
@@ -594,6 +608,45 @@ describe("User", () => {
       await gameService.create(match.id, "15", null, "2026-01-01 10:00:00");
 
       assert.deepStrictEqual<BuddyRow[]>(await userService.getBuddiesById(ids[0]), []);
+    });
+
+    it("должен ограничивать статистику турниром (scope.tournamentId) (#57)", async () => {
+      const ids = await seedTwoMatches();
+      const tid = (await db.get<{ id: number }>(`SELECT id FROM tournament WHERE current = 1`))!.id;
+
+      // в этом турнире — как без scope; в чужом турнире — пусто
+      assert.deepStrictEqual<CoPlayerRow[]>(await userService.getCoWinnersById(ids[0], { tournamentId: tid }), [{
+        user_id: ids[1],
+        win_count: 1,
+        user_name: "Фамилия2 Имя2",
+        user_sex: 1,
+        user_pic: null,
+      }]);
+      assert.deepStrictEqual(await userService.getCoWinnersById(ids[0], { tournamentId: tid + 100000 }), []);
+    });
+
+    it("должен ограничивать статистику типом турнира (scope.typeId) (#57)", async () => {
+      const ids = await seedTwoMatches();
+      const current = (await db.get<{ id: number; tournament_type_id: number }>(
+        `SELECT id, tournament_type_id FROM tournament WHERE current = 1`,
+      ))!;
+      // турнир другого типа — становится текущим
+      const other = (await tournamentService.create(
+        1, 1, 1, current.tournament_type_id === 1 ? 2 : 1, "Другой тип",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        25, 1, "200", "600", "", 1,
+      ))!;
+
+      // по типу исходного турнира напарники находятся, по типу нового — нет
+      assert.deepStrictEqual<CoPlayerRow[]>(await userService.getCoWinnersById(ids[0], { typeId: current.tournament_type_id }), [{
+        user_id: ids[1],
+        win_count: 1,
+        user_name: "Фамилия2 Имя2",
+        user_sex: 1,
+        user_pic: null,
+      }]);
+      assert.deepStrictEqual(await userService.getCoWinnersById(ids[0], { tournamentId: other }), []);
+      assert.deepStrictEqual(await userService.getCoLosersById(ids[0], { typeId: other }), []);
     });
   });
 

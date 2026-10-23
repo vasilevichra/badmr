@@ -102,16 +102,19 @@ class User {
   getCalibration = (id: number) => this.user.getCalibration(id);
   setRating = (id: number, rating: number) => this.user.setRating(id, rating);
   getDaysUntilBirthday = (id: number) => this.user.getDaysUntilBirthday(id);
-  getMatchesCount = (id: number) => this.user.getMatchesCount(id);
-  getGamesCount = (id: number) => this.user.getGamesCount(id);
+  getMatchesCount = (id: number, tournamentId?: number) => this.user.getMatchesCount(id, tournamentId);
+  getGamesCount = (id: number, tournamentId?: number) => this.user.getGamesCount(id, tournamentId);
   /**
    * Возвращает напарников пользователя, с которыми он выигрывал матчи
    * (соперники не учитываются). Напарники отсортированы по убыванию
    * числа совместных побед.
    * @param id Id пользователя.
+   * @param scope Ограничение области: `tournamentId` — матчи одного
+   *              турнира, `typeId` — матчи турниров одного типа;
+   *              без scope — все матчи.
    * @returns Список напарников: id, имя, пол, аватар, число совместных побед.
    */
-  getCoWinnersById = (id: number) => (this.user.getCoWinnersById(id) as BuddyStatRow[]).map(w => ({
+  getCoWinnersById = (id: number, scope?: { tournamentId?: number; typeId?: number }) => (this.user.getCoWinnersById(id, scope) as BuddyStatRow[]).map(w => ({
     user_id: w.user_id,
     win_count: w.win_count,
     user_name: w.user_name,
@@ -124,9 +127,10 @@ class User {
    * (соперники не учитываются). Напарники отсортированы по убыванию
    * числа совместных поражений.
    * @param id Id пользователя.
+   * @param scope Ограничение области — см. {@link getCoWinnersById}.
    * @returns Список напарников: id, имя, пол, аватар, число совместных поражений.
    */
-  getCoLosersById = (id: number) => (this.user.getCoLosersById(id) as BuddyStatRow[]).map(l => ({
+  getCoLosersById = (id: number, scope?: { tournamentId?: number; typeId?: number }) => (this.user.getCoLosersById(id, scope) as BuddyStatRow[]).map(l => ({
     user_id: l.user_id,
     lose_count: l.lose_count,
     user_name: l.user_name,

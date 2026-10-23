@@ -21,6 +21,7 @@ class Match {
   getAllUnfinished = () => this.match.getAllUnfinished();
   getAllFinishedAtLastSession = (tournamentId?: number) => this.match.getAllFinishedAtLastSession(tournamentId);
   getAllByUser = (user_id: number, tournamentId?: number) => this.match.getAllByUser(user_id, tournamentId);
+  getAllByUserSameType = (user_id: number, type_id: number, excludeTournamentId?: number) => this.match.getAllByUserSameType(user_id, type_id, excludeTournamentId);
   getMedianSecondsPerPoint = () => this.match.getMedianSecondsPerPoint(false);
   getMedianSecondsPerPointCurrent = (tournamentId?: number) => this.match.getMedianSecondsPerPoint(true, tournamentId);
   getMedianMatchSeconds = () => this.match.getMedianMatchSeconds(false);

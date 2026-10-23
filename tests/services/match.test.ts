@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, beforeEach, it } from "node:test";
 
 import MatchService from "../../src/services/match.ts";
+import TournamentService from "../../src/services/tournament.ts";
+import { type SameTypeMatchRow } from "../../src/repositories/match.ts";
 import UserService from "../../src/services/user.ts";
 import CourtService from "../../src/services/court.ts";
 import GameService from "../../src/services/game.ts";
@@ -286,6 +288,47 @@ describe("Match", () => {
       assert.deepStrictEqual(idsOf(own), [first]);
 
       assert.deepStrictEqual(await matchService.getAllByUser(extra[3]), []);
+    });
+  });
+
+  describe("getAllByUserSameType", () => {
+    it("должен вернуть доигранные матчи пользователя из турниров того же типа, кроме исключённого (#57)", async () => {
+      const tournamentService = new TournamentService();
+      const ids = await createUsers([500, 500, 500, 500]);
+
+      // матч в текущем турнире (id 4, «Новая Лига», тип 1); пара 1 проигрывает
+      await matchService.create(...(ids as [number, number, number, number]));
+      const first = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
+      await finishMatch(first, [["15", null], ["15", null]]);
+
+      // турнир другого типа становится текущим — матч уходит в него
+      const other = (await tournamentService.create(
+        1, 1, 1, 2, "110-тест",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        25, 1, "200", "600", "", 1,
+      ))!;
+      await matchService.create(...(ids as [number, number, number, number]));
+      const second = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
+      await finishMatch(second, [["15", null], ["15", null]]);
+
+      // тип 1 — только матч турнира «Новая Лига»: участники с инициалами
+      // и счёт по парам (пара 1 проиграла обе игры — wins1=0, wins2=2)
+      const rows = await matchService.getAllByUserSameType(ids[0], 1) as unknown as SameTypeMatchRow[];
+      assert.deepStrictEqual(rows.map((r) => r.match_id), [first]);
+      assert.strictEqual(rows[0].tournament_id, 4);
+      assert.strictEqual(rows[0].name1, "Тестов А.");
+      assert.strictEqual(rows[0].wins1, 0);
+      assert.strictEqual(rows[0].wins2, 2);
+
+      // тип 2 — только матч нового турнира
+      assert.deepStrictEqual(
+        ((await matchService.getAllByUserSameType(ids[0], 2)) as unknown as SameTypeMatchRow[]).map((r) => r.match_id),
+        [second],
+      );
+
+      // исключение турнира убирает его матчи
+      assert.deepStrictEqual(await matchService.getAllByUserSameType(ids[0], 1, 4), []);
+      assert.deepStrictEqual(await matchService.getAllByUserSameType(ids[0], 2, other), []);
     });
   });
 

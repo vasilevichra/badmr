@@ -103,21 +103,21 @@
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="true">Обзор</button>
                                         </li>
-                                        <% if (user_matches.length) { %>
+                                        <% if (user_matches.length || type_matches.length) { %>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches-tab-pane" type="button"
                                                     role="tab" aria-controls="matches-tab-pane" aria-selected="false">Матчи
                                             </button>
                                         </li>
                                         <% } %>
-                                        <% if (co_winners.length) { %>
+                                        <% if (co_winners.length || co_winners_all.length) { %>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="win-tab" data-bs-toggle="tab" data-bs-target="#win-tab-pane" type="button"
                                                     role="tab" aria-controls="win-tab-pane" aria-selected="false">Выигрывает
                                             </button>
                                         </li>
                                         <% } %>
-                                        <% if (co_losers.length) { %>
+                                        <% if (co_losers.length || co_losers_all.length) { %>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link" id="lose-tab" data-bs-toggle="tab" data-bs-target="#lose-tab-pane" type="button"
                                                     role="tab" aria-controls="lose-tab-pane" aria-selected="false">Проигрывает
@@ -164,45 +164,74 @@
                                                 <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
                                                     <div class="p-2"><i class="bi bi-at"></i><% if (user.site_id) { %><a class="player-window-link link-dark link-offset-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a><% } else { %><%= '—' %><% } %> <i class="bi bi-star"></i> <%= user.rating_1 ?? '—' %> / <i class="bi bi-star"></i><i class="bi bi-star"></i> <%= user.rating_2 ?? '—' %><span style="margin-right: 0.3em"></span></div>
                                                 </div>
+                                                <% // разделение статистики: на этом турнире / за всё время (#57) %>
+                                                <% const wins_t = co_winners.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0); %>
+                                                <% const loses_t = co_losers.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0); %>
+                                                <% const win_rate_t = matches.count ? (wins_t / matches.count * 100).toFixed(2) : 0; %>
+                                                <% const wins_a = co_winners_all.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0); %>
+                                                <% const loses_a = co_losers_all.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0); %>
+                                                <% const win_rate_a = matches_total.count ? (wins_a / matches_total.count * 100).toFixed(2) : 0; %>
+                                                <% const matches3_t = Number(games.count) - 2 * Number(matches.count); %>
+                                                <% const matches3_a = Number(games_total.count) - 2 * Number(matches_total.count); %>
+                                                <div class="col-5 col-md-3 bg-light border-bottom border-white border-3"></div>
+                                                <div class="col-3 col-md-3 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2 fw-bold">На этом турнире</div>
+                                                </div>
+                                                <div class="col-4 col-md-6 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2 fw-bold">За всё время</div>
+                                                </div>
                                                 <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
                                                     <div class="p-2">Матчей</div>
                                                 </div>
-                                                <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
+                                                <div class="col-3 col-md-3 bg-light border-start border-bottom border-white border-3">
                                                     <div class="p-2"><%= matches.count %></div>
+                                                </div>
+                                                <div class="col-4 col-md-6 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2"><%= matches_total.count %></div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
                                                     <div class="p-2">Игр</div>
                                                 </div>
-                                                <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
+                                                <div class="col-3 col-md-3 bg-light border-start border-bottom border-white border-3">
                                                     <div class="p-2"><%= games.count %></div>
+                                                </div>
+                                                <div class="col-4 col-md-6 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2"><%= games_total.count %></div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
                                                     <div class="p-2">Игр на матч</div>
                                                 </div>
-                                                <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
+                                                <div class="col-3 col-md-3 bg-light border-start border-bottom border-white border-3">
                                                     <div class="p-2"><%= matches.count ? (Number(games.count) / Number(matches.count)).toFixed(2) : 0; %></div>
+                                                </div>
+                                                <div class="col-4 col-md-6 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2"><%= matches_total.count ? (Number(games_total.count) / Number(matches_total.count)).toFixed(2) : 0; %></div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
                                                     <div class="p-2">Матчей из трёх игр</div>
                                                 </div>
-                                                <% const matches3 = Number(games.count) - 2 * Number(matches.count) %>
-                                                <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
-                                                    <div class="p-2"><%= matches3 %> (<%= matches.count ? (matches3 / matches.count * 100).toFixed(2) : 0; %>%)</div>
+                                                <div class="col-3 col-md-3 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2"><%= matches3_t %> (<%= matches.count ? (matches3_t / matches.count * 100).toFixed(2) : 0; %>%)</div>
+                                                </div>
+                                                <div class="col-4 col-md-6 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2"><%= matches3_a %> (<%= matches_total.count ? (matches3_a / matches_total.count * 100).toFixed(2) : 0; %>%)</div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-light border-bottom border-white border-3">
                                                     <div class="p-2">Побед / Поражений / %</div>
                                                 </div>
-                                                <div class="col-7 col-md-9 bg-light border-start border-bottom border-white border-3">
-                                                    <% const wins = co_winners.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0); %>
-                                                    <% const loses = co_losers.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0); %>
-                                                    <% const win_rate = matches.count ? (wins / matches.count * 100).toFixed(2) : 0; %>
-                                                    <div class="p-2"><span class="rating-plus"><%= wins %></span> / <span class="rating-minus"><%= loses %></span> / <span class="rating-<%= win_rate > 50 ? 'plus' : 'minus' %>"><%= win_rate %>%</span></div>
+                                                <div class="col-3 col-md-3 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2"><span class="rating-plus"><%= wins_t %></span> / <span class="rating-minus"><%= loses_t %></span> / <span class="rating-<%= win_rate_t > 50 ? 'plus' : 'minus' %>"><%= win_rate_t %>%</span></div>
+                                                </div>
+                                                <div class="col-4 col-md-6 bg-light border-start border-bottom border-white border-3">
+                                                    <div class="p-2"><span class="rating-plus"><%= wins_a %></span> / <span class="rating-minus"><%= loses_a %></span> / <span class="rating-<%= win_rate_a > 50 ? 'plus' : 'minus' %>"><%= win_rate_a %>%</span></div>
                                                 </div>
                                             </div>
                                             <canvas id="player-window-rating" height="120"></canvas>
                                         </div>
                                         <div class="tab-pane fade" id="win-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
                                             <div class="p-2">
+                                                <% if (co_winners.length) { %>
+                                                <div class="text-secondary mb-1">На этом турнире</div>
                                                 <table class="table no-selection">
                                                     <tbody>
                                                     <% co_winners.forEach((w) => { %>
@@ -210,10 +239,27 @@
                                                     <% }); %>
                                                     </tbody>
                                                 </table>
+                                                <% } %>
+                                                <% if (co_winners_all.length) { %>
+                                                <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#win-all-collapse" role="button" aria-expanded="false" aria-controls="win-all-collapse">
+                                                    <i class="bi bi-chevron-down"></i> За всё время (турниры того же типа)
+                                                </a>
+                                                <div class="collapse" id="win-all-collapse">
+                                                    <table class="table no-selection">
+                                                        <tbody>
+                                                        <% co_winners_all.forEach((w) => { %>
+                                                            <%- include('co', {win_count: w.win_count, user_id: w.user_id, user_name: w.user_name, user_sex: w.user_sex, user_pic: w.user_pic}); %>
+                                                        <% }); %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <% } %>
                                             </div>
                                         </div>
                                         <div class="tab-pane fade" id="lose-tab-pane" role="tabpanel" aria-labelledby="lose-tab" tabindex="0">
                                             <div class="p-2">
+                                                <% if (co_losers.length) { %>
+                                                <div class="text-secondary mb-1">На этом турнире</div>
                                                 <table class="table no-selection">
                                                     <tbody>
                                                     <% co_losers.forEach((l) => { %>
@@ -221,6 +267,21 @@
                                                     <% }); %>
                                                     </tbody>
                                                 </table>
+                                                <% } %>
+                                                <% if (co_losers_all.length) { %>
+                                                <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#lose-all-collapse" role="button" aria-expanded="false" aria-controls="lose-all-collapse">
+                                                    <i class="bi bi-chevron-down"></i> За всё время (турниры того же типа)
+                                                </a>
+                                                <div class="collapse" id="lose-all-collapse">
+                                                    <table class="table no-selection">
+                                                        <tbody>
+                                                        <% co_losers_all.forEach((l) => { %>
+                                                            <%- include('co', {lose_count: l.lose_count, user_id: l.user_id, user_name: l.user_name, user_sex: l.user_sex, user_pic: l.user_pic}); %>
+                                                        <% }); %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <% } %>
                                             </div>
                                         </div>
                                         <div class="tab-pane fade" id="chance-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
@@ -254,6 +315,29 @@
                                                     <%- include('../../match', {index: i, match: m, total: user_matches.length}); %>
                                                 <% }) %>
                                             </div>
+                                            <% if (type_matches.length) { %>
+                                            <% // свёрнутые матчи турниров того же типа (#57): одна строка на матч %>
+                                            <div class="mt-3">
+                                                <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#player-same-type-matches" role="button" aria-expanded="false" aria-controls="player-same-type-matches">
+                                                    <i class="bi bi-chevron-down"></i> Турниры того же типа (<%= type_matches.length %>)
+                                                </a>
+                                                <div class="collapse" id="player-same-type-matches">
+                                                    <% type_matches.forEach((m) => { %>
+                                                        <% // пара игрока показывается первой, её счёт — первым числом %>
+                                                        <% const mine_first = m.user_1_id === user.id || m.user_2_id === user.id; %>
+                                                        <% const d = new Date(m.match_created_at + 'Z'); %>
+                                                        <div class="border-bottom py-1 small no-selection">
+                                                            <%= d.getDate() %> <%= monthArray[d.getMonth()] %> <%= d.getFullYear() %> · <%= m.tournament_name %> —
+                                                            <% if (mine_first) { %>
+                                                                <%= m.name1 %> / <%= m.name2 %> <span class="rating-<%= m.wins1 > m.wins2 ? 'plus' : 'minus' %> fw-bold"><%= m.wins1 %>:<%= m.wins2 %></span> <%= m.name3 %> / <%= m.name4 %>
+                                                            <% } else { %>
+                                                                <%= m.name3 %> / <%= m.name4 %> <span class="rating-<%= m.wins2 > m.wins1 ? 'plus' : 'minus' %> fw-bold"><%= m.wins2 %>:<%= m.wins1 %></span> <%= m.name1 %> / <%= m.name2 %>
+                                                            <% } %>
+                                                        </div>
+                                                    <% }) %>
+                                                </div>
+                                            </div>
+                                            <% } %>
                                         </div>
                                         <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                                             <form action="#!" class="row gy-3 gy-xxl-4">

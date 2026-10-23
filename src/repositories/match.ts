@@ -8,6 +8,27 @@ interface GetInfoRow {
   game_id: number;
 }
 
+/** Строка лаконичного списка матчей пользователя по турнирам одного типа:
+ *  участники — «Фамилия И.», счёт — выигранные игры по парам. */
+export interface SameTypeMatchRow {
+  match_id: number;
+  match_created_at: string;
+  tournament_id: number;
+  tournament_name: string;
+  user_1_id: number;
+  user_2_id: number;
+  user_3_id: number;
+  user_4_id: number;
+  name1: string;
+  name2: string;
+  name3: string;
+  name4: string;
+  /** выигранных игр у пары 1 (user_1/user_2) */
+  wins1: number;
+  /** выигранных игр у пары 2 (user_3/user_4) */
+  wins2: number;
+}
+
 type GetInfoRequest = (max_point: number, game_point: number, user_id: number, tournament_id?: number) => GetInfoRow[];
 
 class Match {
@@ -196,6 +217,41 @@ class Match {
          AND (u1.id = $user_id OR u2.id = $user_id OR u3.id = $user_id OR u4.id = $user_id)
        ORDER BY m.id DESC`,
       { $game_point: game_point, $max_point: max_point, $user_id: user_id, $tournament_id: tournament_id ?? null }
+  )
+
+  /**
+   * Все доигранные матчи пользователя в турнирах того же типа (type_id),
+   * кроме турнира excludeTournamentId, — по одной строке на матч:
+   * дата, турнир, участники («Фамилия И.») и счёт по парам — формат
+   * лаконичного свёрнутого списка в карточке игрока (#57).
+   */
+  getAllByUserSameType = (user_id: number, type_id: number, excludeTournamentId?: number) => this.db.all<SameTypeMatchRow>(
+      `SELECT m.id                                                                AS match_id,
+              m.created_at                                                        AS match_created_at,
+              t.id                                                                AS tournament_id,
+              t.name                                                              AS tournament_name,
+              m.user_1_id                                                         AS user_1_id,
+              m.user_2_id                                                         AS user_2_id,
+              m.user_3_id                                                         AS user_3_id,
+              m.user_4_id                                                         AS user_4_id,
+              u1.lastname || ' ' || substr(u1.firstname, 1, 1) || '.'             AS name1,
+              u2.lastname || ' ' || substr(u2.firstname, 1, 1) || '.'             AS name2,
+              u3.lastname || ' ' || substr(u3.firstname, 1, 1) || '.'             AS name3,
+              u4.lastname || ' ' || substr(u4.firstname, 1, 1) || '.'             AS name4,
+              (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_2_by IS NOT NULL) AS wins1,
+              (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_1_by IS NOT NULL) AS wins2
+       FROM match m
+                JOIN tournament t ON t.id = m.tournament_id
+                JOIN user u1 on u1.id = m.user_1_id
+                JOIN user u2 on u2.id = m.user_2_id
+                JOIN user u3 on u3.id = m.user_3_id
+                JOIN user u4 on u4.id = m.user_4_id
+       WHERE m.finished = 1
+         AND $user_id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)
+         AND t.tournament_type_id = $type_id
+         AND t.id != coalesce($exclude, -1)
+       ORDER BY m.created_at DESC, m.id DESC`,
+      { $user_id: user_id, $type_id: type_id, $exclude: excludeTournamentId ?? null }
   )
 
   /** Медиана времени (секунд) на зарабатывание одного очка по завершённым

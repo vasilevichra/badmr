@@ -246,6 +246,10 @@ input:focus::placeholder {
   position: relative;
 }
 
+#tournament {
+  margin: -1rem 0 0 0 !important;
+}
+
 .tournament-new-registration-input {
   border-color: #007df9;
 }
