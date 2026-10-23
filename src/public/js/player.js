@@ -1,15 +1,26 @@
 // контекст приходит из index.js асинхронно: лимиты групп рейтинга из
 // настройки и флаги состояния турнира — синхронные запросы здесь запрещены
 
-// день рождения сегодня: месяц и день даты рождения совпадают с текущей
-// датой в часовом поясе браузера (у клуба и игроков он один) (#54)
-const isBirthdayToday = (birthday) => {
+// день рождения на текущей неделе: месяц-день рождения совпадает с одним
+// из дней календарной недели (Пн–Вс) в часовом поясе браузера — у клуба
+// и игроков он один; год не сравнивается (#54)
+const isBirthdayThisWeek = (birthday) => {
   if (!birthday) {
     return false;
   }
-  const [, month, day] = birthday.split('-');
+  const [, month, day] = birthday.split('-').map(Number);
   const now = new Date();
-  return Number(month) === now.getMonth() + 1 && Number(day) === now.getDate();
+  // начало календарной недели — понедельник
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (now.getDay() + 6) % 7);
+  for (let offset = 0; offset < 7; offset++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + offset);
+    if (d.getMonth() + 1 === month && d.getDate() === day) {
+      return true;
+    }
+  }
+  return false;
 };
 
 const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibrationMatches, hasGames, everybodyPaid}) => {
@@ -50,6 +61,9 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         field: 'name',
         title: '<span class="no-selection">Имя</span>',
         sortable: true,
+        // позиционирование для .player-birthday: тортик прижимается
+        // к правому краю ячейки (#54)
+        cellStyle: () => ({css: {position: 'relative'}}),
         formatter: (value, row) =>
             this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()) +
             // ненавязчивая индикация калибровки рейтинга: точка-светофор после
@@ -65,8 +79,9 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
                       : row.calibration_series / calibrationMatches < 2 / 3 ? 'yellow' : 'green') +
                   '" title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"></i>'
                 : '') +
-            // еле заметный тортик со свечами в самом конце колонки — у именинника (#54)
-            (isBirthdayToday(row.birthday)
+            // еле заметный тортик со свечами у правого края колонки —
+            // у того, чей день рождения на текущей неделе (#54)
+            (isBirthdayThisWeek(row.birthday)
                 ? '<i class="bi bi-cake2 player-birthday" title="С днём рождения!"></i>'
                 : '') +
             // кнопки в контейнере нулевой ширины: не влияют на ширину колонки «Имя»,
