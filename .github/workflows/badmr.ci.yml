@@ -25,4 +25,10 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build --if-present
+    - name: Расшифровать секретные seed-данные (specific.ts, 05-specific-*.sql)
+      env:
+        CI_SEED_KEY: ${{ secrets.CI_SEED_KEY }}
+      run: |
+        openssl enc -d -aes-256-cbc -pbkdf2 -in etc/ci-seed.enc -out /tmp/ci-seed.tar -pass env:CI_SEED_KEY
+        tar -xf /tmp/ci-seed.tar -C .
     - run: npm test
