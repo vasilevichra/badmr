@@ -1,9 +1,23 @@
+/* Ночная тема (#56): переменные поверхностей (значения синхронизированы
+   с index.css; auth-страницы index.css не загружают) */
+:root {
+  --badmr-card-bg: #ffffff;
+  --badmr-card-border: #e6e6e6;
+  --badmr-input-border: #d9d9d9;
+}
+
+[data-bs-theme=dark] {
+  --badmr-card-bg: #2b3035;
+  --badmr-card-border: #495057;
+  --badmr-input-border: #495057;
+}
+
 .prompt {
   max-width: 330px;
   margin: 50px auto;
   padding: 25px;
-  background: #fff;
-  border: 1px solid #e6e6e6;
+  background: var(--badmr-card-bg);
+  border: 1px solid var(--badmr-card-border);
   border-radius: 8px;
 }
 
@@ -32,7 +46,7 @@ input {
   width: 100%;
   padding: 10px;
   font-size: 14px;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--badmr-input-border);
   border-radius: 5px;
 }
 
@@ -43,7 +57,7 @@ input[type=password]:not(:focus):invalid {
 }
 
 hr {
-  border-top: 1px solid #d9d9d9;
+  border-top: 1px solid var(--badmr-input-border);
   border-bottom: none;
 }
 

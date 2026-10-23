@@ -41,10 +41,44 @@
     U+2215, U+FEFF, U+FFFD;
 }
 
+/* Ночная тема по требованию ОС (#56): жёсткие светлые цвета вынесены в
+   переменные; [data-bs-theme=dark] на <html> ставит скрипт из theme.ejs
+   по prefers-color-scheme. Компоненты bootstrap перекрашиваются сами,
+   свои поверхности и select2 — через переменные и оверрайды ниже */
+:root {
+  --badmr-bg: #f4f4f4;
+  --badmr-card-bg: #ffffff;
+  --badmr-card-border: #dee2e6;
+  --badmr-input-border: #d9d9d9;
+  --badmr-placeholder: rgb(222, 226, 230);
+  --badmr-birthday: rgba(33, 37, 41);
+  --badmr-diag-cell: #ffffff;
+  --badmr-diag-line: #000000;
+  --badmr-sex-top: #fff;
+  --badmr-sex-bottom: #ddd;
+  --badmr-sex-hover-bottom: #b9b9b9;
+  --badmr-sex-border: #9e9fa1;
+}
+
+[data-bs-theme=dark] {
+  --badmr-bg: #212529;
+  --badmr-card-bg: #2b3035;
+  --badmr-card-border: #495057;
+  --badmr-input-border: #495057;
+  --badmr-placeholder: rgb(108, 117, 125);
+  --badmr-birthday: rgba(248, 249, 250);
+  --badmr-diag-cell: #212529;
+  --badmr-diag-line: #f8f9fa;
+  --badmr-sex-top: #212529;
+  --badmr-sex-bottom: #2b3035;
+  --badmr-sex-hover-bottom: #495057;
+  --badmr-sex-border: #495057;
+}
+
 body {
   padding: 0;
   margin: 0;
-  background: #f4f4f4;
+  background: var(--badmr-bg);
 }
 
 html,
@@ -127,7 +161,7 @@ input:focus::placeholder {
 }
 
 .form-control::placeholder {
-  color: rgb(222, 226, 230);
+  color: var(--badmr-placeholder);
 }
 
 .form-floating > input {
@@ -488,8 +522,8 @@ input:focus::placeholder {
   display: block;
   float: left;
   padding: 5px 10px;
-  background-image: linear-gradient(to bottom, #fff, #ddd);
-  border: 1px solid #9e9fa1;
+  background-image: linear-gradient(to bottom, var(--badmr-sex-top), var(--badmr-sex-bottom));
+  border: 1px solid var(--badmr-sex-border);
   cursor: pointer;
 }
 
@@ -499,7 +533,7 @@ input:focus::placeholder {
 
 .sex label[id="male"]:hover,
 .sex label[id="female"]:hover {
-  background-image: linear-gradient(to bottom, #fff, #b9b9b9);
+  background-image: linear-gradient(to bottom, var(--badmr-sex-top), var(--badmr-sex-hover-bottom));
 }
 
 .secondary-info {
@@ -529,7 +563,7 @@ input:focus::placeholder {
 /* еле заметный тортик со свечами в самом конце колонки «Имя» (#54) */
 .player-birthday {
   font-size: 0.875em;
-  color: rgba(33, 37, 41);
+  color: var(--badmr-birthday);
   margin-left: 0.6em;
 }
 
@@ -573,12 +607,12 @@ td.diagonal-cross {
   position: relative;
   background: linear-gradient(
     to right top,
-    #ffffff 0%,
-    #ffffff 49.99%,
-    #000000 50%,
-    #000000 50.1%,
-    #ffffff 50.2%,
-    #ffffff 100%
+    var(--badmr-diag-cell) 0%,
+    var(--badmr-diag-cell) 49.99%,
+    var(--badmr-diag-line) 50%,
+    var(--badmr-diag-line) 50.1%,
+    var(--badmr-diag-cell) 50.2%,
+    var(--badmr-diag-cell) 100%
   ) !important;
   background-color: transparent;
   background-image: none !important;
@@ -596,21 +630,21 @@ td.diagonal-cross:after {
   z-index: -1;
   background: linear-gradient(
     to right bottom,
-    white,
-    white 49.8%,
-    black 49.9%,
-    black 50.1%,
-    white 50.2%,
-    white
+    var(--badmr-diag-cell),
+    var(--badmr-diag-cell) 49.8%,
+    var(--badmr-diag-line) 49.9%,
+    var(--badmr-diag-line) 50.1%,
+    var(--badmr-diag-cell) 50.2%,
+    var(--badmr-diag-cell)
   ) !important;
   background: linear-gradient(
     to right top,
-    white,
-    white 49.8%,
-    black 49.9%,
-    black 50.1%,
-    white 50.2%,
-    white
+    var(--badmr-diag-cell),
+    var(--badmr-diag-cell) 49.8%,
+    var(--badmr-diag-line) 49.9%,
+    var(--badmr-diag-line) 50.1%,
+    var(--badmr-diag-cell) 50.2%,
+    var(--badmr-diag-cell)
   ) !important;
 }
 
@@ -727,8 +761,8 @@ td.diagonal-cross:after {
   color: deeppink;
 }
 .achievement-card {
-  background: #ffffff;
-  border: 1px solid #dee2e6;
+  background: var(--badmr-card-bg);
+  border: 1px solid var(--badmr-card-border);
   border-radius: 0.5rem;
   margin: 0 0.5em 1em 0.5em;
 }
@@ -810,4 +844,28 @@ body > #footer:not(.fixed-bottom) {
 #footer.fixed-bottom {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
+}
+
+/* select2-bootstrap-5-theme жёстко светлое и про темы bootstrap не знает —
+   в ночной теме перекрашиваем поверхности (#56) */
+[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-selection,
+[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown,
+[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+}
+
+[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-selection,
+[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field {
+  border-color: var(--bs-border-color);
+}
+
+[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown {
+  /* рамка дропдауна в светлой теме — светло-голубая (#86b7fe), сохраняем тон */
+  border-color: var(--bs-primary);
+}
+
+[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option.select2-results__option--highlighted {
+  color: var(--bs-body-color);
+  background-color: var(--bs-border-color);
 }

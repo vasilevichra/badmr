@@ -1,0 +1,12 @@
+<%# Ночная тема по требованию ОС (#56): data-bs-theme на <html> ставится
+    по prefers-color-scheme и меняется на лету вслед за темой ОС.
+    Подключать в <head> до стилей — иначе вспышка светлой темы %>
+<script>
+    (() => {
+        const media = matchMedia('(prefers-color-scheme: dark)');
+        const apply = () => document.documentElement.dataset.bsTheme =
+            media.matches ? 'dark' : 'light';
+        apply();
+        media.addEventListener('change', apply);
+    })();
+</script>
