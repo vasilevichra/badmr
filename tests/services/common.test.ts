@@ -31,6 +31,8 @@ interface Player {
   user_id: number;
   sex: number;
   pic: string | null;
+  // турнир выборки (текущий — id 4)
+  tournament_id: number;
 }
 
 interface Pair {
@@ -120,7 +122,7 @@ const user_8 = mkUser(8, 420);
 const user_9 = mkUser(9, 300);
 const user_10 = mkUser(10, 560);
 
-const player = (u: TestUser, userId: number): Player => ({
+const player = (u: TestUser, userId: number, tournamentId = 4): Player => ({
   matches: 0,
   played: 0,
   won: null,
@@ -132,6 +134,7 @@ const player = (u: TestUser, userId: number): Player => ({
   // пользователей нет — аватара нет
   sex: 1,
   pic: null,
+  tournament_id: tournamentId,
 });
 
 // игрок, сыгравший один завершённый матч (для тестов priority)
@@ -148,9 +151,11 @@ const pair = (
   p11: TestUser, p12: TestUser, p21: TestUser, p22: TestUser,
   ids: [number, number, number, number],
   diff: number,
+  // турнир выборки; тест «played других турниров» переключает current
+  tournamentId = 4,
 ): Pair => ({
-  players1: [player(p11, ids[0]), player(p12, ids[1])],
-  players2: [player(p21, ids[2]), player(p22, ids[3])],
+  players1: [player(p11, ids[0], tournamentId), player(p12, ids[1], tournamentId)],
+  players2: [player(p21, ids[2], tournamentId), player(p22, ids[3], tournamentId)],
   diff,
   matches: 0,
   played: 0,
@@ -465,7 +470,7 @@ describe("Common", () => {
         assert.deepStrictEqual<Pair[]>(
           await new CommonService().ready(),
           withIds([{
-            ...pair(users[0], users[1], users[2], users[3], [1, 2, 3, 4], 0),
+            ...pair(users[0], users[1], users[2], users[3], [1, 2, 3, 4], 0, 2),
             // (u1,u2) и (u3,u4) вместе играли матч первого турнира:
             // винрейты совместных матчей 100% и 0%
             chance1: 100,

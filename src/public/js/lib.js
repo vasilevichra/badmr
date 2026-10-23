@@ -1,5 +1,17 @@
 const csrfToken = () => $('meta[name="csrf-token"]').attr('content');
 
+// id просматриваемого турнира (атрибут data-tournament на body);
+// пусто на страницах без турнира (например, 404) — параметр не добавляется
+const tournamentId = () => document.body.dataset.tournament || '';
+
+// добавляет ?tournament=<id> к read-URL раздела, если турнир задан;
+// write-запросы параметр не получают: мутации идут по глобальному current
+const withTournament = (url) => {
+  const id = tournamentId();
+  return id ? `${url}${url.includes('?') ? '&' : '?'}tournament=${id}` : url;
+};
+
+
 $.ajaxSetup({
   beforeSend: (xhr) => xhr.setRequestHeader('CSRF-Token', csrfToken())
 });

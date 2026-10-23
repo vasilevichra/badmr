@@ -14,7 +14,7 @@ class Court {
   }
 
   create = () => this.court.create();
-  getAll = () => this.court.getAll();
+  getAll = (tournamentId?: number) => this.court.getAll(tournamentId);
   getById = (id: number) => this.court.getById(id);
   enableAll = () => this.court.enableAll();
   // async: отклонённый промис превращается promise-мидлварой в {error: message}
@@ -27,7 +27,7 @@ class Court {
   };
   disableAll = () => this.court.disableAll();
   disable = (number: number) => this.court.disable(number);
-  countAvailable = () => this.court.countAvailable();
+  countAvailable = (tournamentId?: number) => this.court.countAvailable(tournamentId);
   delete = (id: number) => this.court.delete(id);
   deleteAll = () => this.court.deleteAll();
 }

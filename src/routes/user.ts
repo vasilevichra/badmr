@@ -3,6 +3,7 @@ const router = Express.Router();
 // const csrf = require('csurf');
 import { ensureLoggedIn } from 'connect-ensure-login';
 import UserService from '../services/user.ts';
+import requestedTournament from '../tournament-request.ts';
 const userService = new UserService();
 
 // const csrfProtection = csrf({ cookie: true });
@@ -26,7 +27,7 @@ router.post('/disable/:ids', ensureLoggedIn(), (req, res) => {
 });
 
 router.get('/archived', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.getArchived());
+  res.promise(userService.getArchived(requestedTournament(req)));
 });
 
 router.post('/archive/:id', ensureLoggedIn(), (req, res) => {
@@ -46,7 +47,7 @@ router.post('/unarchive', ensureLoggedIn(), (req, res) => {
 });
 
 router.get('/', (req, res) => {
-  res.promise(userService.getAll());
+  res.promise(userService.getAll(requestedTournament(req)));
 });
 
 router.get('/select/:city_id', ensureLoggedIn(), (req, res) => {

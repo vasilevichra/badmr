@@ -8,7 +8,7 @@ interface GetInfoRow {
   game_id: number;
 }
 
-type GetInfoRequest = (max_point: number, game_point: number, user_id: number) => GetInfoRow[];
+type GetInfoRequest = (max_point: number, game_point: number, user_id: number, tournament_id?: number) => GetInfoRow[];
 
 class Match {
   declare static _instance: Match | undefined;
@@ -73,13 +73,13 @@ class Match {
     );
   }
 
-  getAllFinishedAtLastSession = () => this.getInfo(this.getAllFinishedAtLastSessionRequest);
+  getAllFinishedAtLastSession = (tournamentId?: number) => this.getInfo(this.getAllFinishedAtLastSessionRequest, 0, tournamentId);
   getAllByUser = (user_id: number) => this.getInfo(this.getAllByUserRequest, user_id);
 
-  getInfo(request: GetInfoRequest, user_id: number = 0) {
+  getInfo(request: GetInfoRequest, user_id: number = 0, tournamentId?: number) {
     const max_point = Number(settingsService.get('max_point'));
     const game_point = Number(settingsService.get('game_point'));
-    const raw = request(max_point, game_point, user_id);
+    const raw = request(max_point, game_point, user_id, tournamentId);
     // группировка через Map: сохраняет порядок строк запроса (ORDER BY),
     // в отличие от Object.groupBy + for...in, где числоподобные ключи
     // итерируются по возрастанию независимо от порядка вставки
@@ -99,7 +99,7 @@ class Match {
     return matches;
   }
 
-  getAllFinishedAtLastSessionRequest = (max_point: number, game_point: number) => this.db.all<GetInfoRow>(
+  getAllFinishedAtLastSessionRequest = (max_point: number, game_point: number, user_id: number, tournament_id?: number) => this.db.all<GetInfoRow>(
       `SELECT m.id                                                                                                                AS match_id,
               m.created_at                                                                                                        AS match_created_at,
               m.user_1_id                                                                                                         AS user_1_id,
@@ -141,11 +141,11 @@ class Match {
                 JOIN user u4 on u4.id = m.user_4_id
                 JOIN court c on c.id = m.court_id
                 JOIN game g on m.id = g.match_id
-       WHERE m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)
+       WHERE m.tournament_id = coalesce($tid, (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1))
          AND m.finished = 1
-         AND date(m.created_at) = (SELECT date(created_at) AS date FROM match ORDER BY id DESC LIMIT 1)
+         AND date(m.created_at) = (SELECT date(created_at) AS date FROM match WHERE tournament_id = coalesce($tid, (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)) ORDER BY id DESC LIMIT 1)
        ORDER BY date(m.created_at) DESC, m.id DESC`,
-      { $game_point: game_point, $max_point: max_point }
+      { $game_point: game_point, $max_point: max_point, $tid: tournament_id ?? null }
   )
 
   getAllByUserRequest = (max_point: number, game_point: number, user_id: number) => this.db.all<GetInfoRow>(
@@ -202,7 +202,7 @@ class Match {
    *  до последней игры, очки — суммы счёта обеих пар по всем играм
    *  (незаписанный счёт выигравшего вычисляется по правилам бадминтона).
    *  Медиана вместо среднего: один затянувшийся матч не портит показатель. */
-  getMedianSecondsPerPoint(current_only: boolean) {
+  getMedianSecondsPerPoint(current_only: boolean, tournamentId?: number) {
     return this.db.get<number>(
         `SELECT avg(t.spd) AS value
          FROM (SELECT s.dur * 1.0 / s.points                              AS spd,
@@ -224,7 +224,7 @@ class Match {
                      FROM match m
                               JOIN game g ON g.match_id = m.id
                      WHERE m.finished = 1
-                       ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}
+                       ${current_only ? `AND m.tournament_id = ${tournamentId ?? '(SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)'}` : ''}
                      GROUP BY m.id) AS s
                WHERE s.dur > 60
                  AND s.points > 0) t
@@ -235,7 +235,7 @@ class Match {
 
   /** Медианная длительность матча в секундах (та же выборка, что у
    *  getMedianSecondsPerPoint: матчи короче минуты не учитываются). */
-  getMedianMatchSeconds(current_only: boolean) {
+  getMedianMatchSeconds(current_only: boolean, tournamentId?: number) {
     return this.db.get<number>(
         `SELECT avg(t.dur) AS value
          FROM (SELECT s.dur,
@@ -247,7 +247,7 @@ class Match {
                FROM match m
                         JOIN game g ON g.match_id = m.id
                WHERE m.finished = 1
-                 ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}
+                 ${current_only ? `AND m.tournament_id = ${tournamentId ?? '(SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)'}` : ''}
                GROUP BY m.id) AS s
                WHERE s.dur > 60) t
          WHERE t.rn IN ((t.n + 1) / 2, (t.n + 2) / 2)`
@@ -256,7 +256,7 @@ class Match {
 
   /** Медианная длительность игры в секундах: от предыдущей игры (или начала
    *  матча) до конца игры; игры короче минуты не учитываются. */
-  getMedianGameSeconds(current_only: boolean) {
+  getMedianGameSeconds(current_only: boolean, tournamentId?: number) {
     return this.db.get<number>(
         `SELECT avg(t.game_dur) AS value
          FROM (SELECT s.game_dur,
@@ -269,7 +269,7 @@ class Match {
                FROM match m
                         JOIN game g ON g.match_id = m.id
                WHERE m.finished = 1
-                 ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}) s
+                 ${current_only ? `AND m.tournament_id = ${tournamentId ?? '(SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)'}` : ''}) s
                WHERE s.game_dur > 60) t
          WHERE t.rn IN ((t.n + 1) / 2, (t.n + 2) / 2)`
     )?.value ?? null;
@@ -277,7 +277,7 @@ class Match {
 
   /** Среднее число игр в матче — показатель выводится как float
    *  (та же выборка, что у getMedianSecondsPerPoint). */
-  getAverageGamesPerMatch(current_only: boolean) {
+  getAverageGamesPerMatch(current_only: boolean, tournamentId?: number) {
     return this.db.get<number>(
         `SELECT avg(s.cnt) AS value
          FROM (SELECT m.id                                                                        AS match_id,
@@ -287,7 +287,7 @@ class Match {
                FROM match m
                         JOIN game g ON g.match_id = m.id
                WHERE m.finished = 1
-                 ${current_only ? 'AND m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)' : ''}
+                 ${current_only ? `AND m.tournament_id = ${tournamentId ?? '(SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)'}` : ''}
                GROUP BY m.id) AS s
          WHERE s.dur > 60`
     )?.value ?? null;

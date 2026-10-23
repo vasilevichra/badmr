@@ -28,14 +28,14 @@ const formatSeconds = (value: number | null): string => {
 const formatAvg = (value: number | null): string =>
   value === null ? '—' : String(Math.round(value * 10) / 10).replace('.', ',');
 
-const stats = () => ({
-  seconds_per_point_current: formatSeconds(matchService.getMedianSecondsPerPointCurrent()),
+const stats = (tournamentId?: number) => ({
+  seconds_per_point_current: formatSeconds(matchService.getMedianSecondsPerPointCurrent(tournamentId)),
   seconds_per_point_all: formatSeconds(matchService.getMedianSecondsPerPoint()),
-  game_seconds_current: formatSeconds(matchService.getMedianGameSecondsCurrent()),
+  game_seconds_current: formatSeconds(matchService.getMedianGameSecondsCurrent(tournamentId)),
   game_seconds_all: formatSeconds(matchService.getMedianGameSeconds()),
-  match_seconds_current: formatSeconds(matchService.getMedianMatchSecondsCurrent()),
+  match_seconds_current: formatSeconds(matchService.getMedianMatchSecondsCurrent(tournamentId)),
   match_seconds_all: formatSeconds(matchService.getMedianMatchSeconds()),
-  games_per_match_current: formatAvg(matchService.getAverageGamesPerMatchCurrent()),
+  games_per_match_current: formatAvg(matchService.getAverageGamesPerMatchCurrent(tournamentId)),
   games_per_match_all: formatAvg(matchService.getAverageGamesPerMatch()),
 });
 
@@ -69,17 +69,17 @@ const renderTournamentPage = (
         tournamentService.registeredCount(t.id),   // 1
         unitService.getAll(),                      // 2
         settingsService.getDefaults(),             // 3
-        settingsService.getSettings(),             // 4
-        settingsService.states(),                  // 5
-        settingsService.regions(),                 // 6
-        settingsService.cities(),                  // 7
-        matchService.getAllFinishedAtLastSession(), // 8
+        settingsService.getSettings(t.id),         // 4
+        settingsService.states(t.id),              // 5
+        settingsService.regions(t.id),             // 6
+        settingsService.cities(t.id),              // 7
+        matchService.getAllFinishedAtLastSession(t.id), // 8
         achievementService.getByTournament(t.id)    // 9
       ];
       res.render('index', {
         device: commonService.device(req),
         user: req.user,
-        ...stats(),
+        ...stats(t.id),
         tournaments: promises[0],
         tournament: t,
         tournament_id: t.id,
@@ -88,7 +88,7 @@ const renderTournamentPage = (
         units: promises[2],
         defaults: promises[3],
         settings: promises[4],
-        timezone: settingsService.getTimezone(),
+        timezone: settingsService.getTimezone(t.id),
         states: promises[5],
         regions: promises[6],
         cities: promises[7],
@@ -110,7 +110,7 @@ const renderTournamentPage = (
         settingsService.cities(),                  // 4
         groupService.getAll(),                     // 5
         tournamentService.registeredCount(t.id),   // 6
-        settingsService.getSettings()              // 7
+        settingsService.getSettings(t.id)          // 7
       ];
       res.render('index', {
         device: commonService.device(req),

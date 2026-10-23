@@ -84,6 +84,10 @@ app.use('/assets', assets(path.join(__dirname, '/src/public/assets')));
 app.use('/assets', assets(path.join(__dirname, '/node_modules/bootstrap-icons')));
 app.use('/views', assets(path.join(__dirname, '/src/public/views')));
 
+// мутации — только над глобальным current: write-запрос с ?tournament=,
+// указывающим на другой турнир, отклоняется (просмотр по ссылке — read-only)
+app.use(await import('./src/middleware/tournament-write-guard.ts').then(m => m.default));
+
 app.use('/', await import('./src/routes/index.ts').then(m => m.default));
 
 // todo взять файлы в routes и помапить их ниже, кроме cities

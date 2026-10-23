@@ -193,7 +193,7 @@ const tournamentNewRegistrationAddHandler = (city) => {
 
   const setDefaultLocation = () =>
       Promise.all([
-        $.get('/api/settings/state'),  // 0
+        $.get(withTournament('/api/settings/state')),  // 0
         $.get('/api/settings/region'), // 1
         $.get('/api/settings/city')    // 2
       ]).then(promises => {
@@ -287,7 +287,7 @@ $('#tournament-add form').submit(() => {
 // статус проверяем асинхронно: зарегистрировано меньше, чем capacity —
 // закрываем регистрацию (без блокирующих запросов)
 const closeRegistrationIfNeed = () => {
-  $.when($.getJSON('/api/tournaments/registered/count'), $.getJSON('/api/settings/'))
+  $.when($.getJSON(withTournament('/api/tournaments/registered/count')), $.getJSON(withTournament('/api/settings/')))
   .done((count, settings) => {
     const capacity = Number(settings[0].find((row) => row.name === 'capacity')?.value ?? 0);
     if (count[0] < capacity) {

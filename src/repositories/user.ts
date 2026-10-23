@@ -33,12 +33,18 @@ class User {
     this.db = new Repository().db;
   }
 
-  getArchived() {
-    return this.db.all('SELECT * FROM archived');
+  getArchived(tournamentId?: number) {
+    return this.db.all(
+        `SELECT * FROM archived WHERE tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [tournamentId ?? null]
+    );
   }
 
-  getAll() {
-    return this.db.all('SELECT * FROM players');
+  getAll(tournamentId?: number) {
+    return this.db.all(
+        `SELECT * FROM players WHERE tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [tournamentId ?? null]
+    );
   }
 
   select(city_id: number) {
@@ -373,7 +379,7 @@ class User {
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
          SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
          FROM players
-         WHERE true
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
          ON CONFLICT DO UPDATE SET available = 0,
                                    archived  = 1`
     );
@@ -394,7 +400,7 @@ class User {
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
          SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
          FROM players
-         WHERE true
+         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
          ON CONFLICT DO UPDATE SET available = 1,
                                    archived  = 0`
     );

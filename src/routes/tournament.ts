@@ -2,6 +2,7 @@ import Express from 'express';
 const router = Express.Router();
 import { ensureLoggedIn } from 'connect-ensure-login';
 import TournamentService from '../services/tournament.ts';
+import requestedTournament from '../tournament-request.ts';
 const tournamentService = new TournamentService();
 import moment from 'moment';
 
@@ -18,7 +19,7 @@ router.get('/paid/:id', ensureLoggedIn(), (req, res) => {
 });
 
 router.get('/paid/', (req, res) => {
-  res.promise(tournamentService.isEveryonePaid());
+  res.promise(tournamentService.isEveryonePaid(requestedTournament(req)));
 });
 
 router.get('/played/:id', (req, res) => {
@@ -26,7 +27,7 @@ router.get('/played/:id', (req, res) => {
 });
 
 router.get('/played/', (req, res) => {
-  res.promise(tournamentService.hasGames());
+  res.promise(tournamentService.hasGames(requestedTournament(req)));
 });
 
 router.post('/pay/:user_id', ensureLoggedIn(), (req, res) => {
@@ -36,7 +37,7 @@ router.post('/pay/:user_id', ensureLoggedIn(), (req, res) => {
 });
 
 router.get('/registered/count', (req, res) => {
-  res.promise(tournamentService.registeredCount());
+  res.promise(tournamentService.registeredCount(requestedTournament(req)));
 });
 
 router.post('/status/:status_id', ensureLoggedIn(), (req, res) => {

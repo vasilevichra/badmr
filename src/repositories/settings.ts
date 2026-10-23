@@ -14,42 +14,46 @@ class Settings {
     this.db = new Repository().db;
   }
 
-  get(name: number | string) {
+  get(name: number | string, tournamentId?: number) {
     return this.db.get<{ value: string }>(
         `SELECT distinct coalesce(s.value, d.value) AS value
          FROM defaults d
-                  LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = (SELECT id FROM tournament WHERE current = 1)
-                  LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1
+                  LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
          WHERE d.name = ?`,
-        [name]
+        [tournamentId ?? null, name]
     );
   }
 
-  getAll() {
+  getAll(tournamentId?: number) {
     return this.db.all(
         `SELECT d.name AS name, coalesce(s.value, d.value) AS value, d.description AS description
          FROM defaults d
-                  LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = (SELECT id FROM tournament WHERE current = 1)
-                  LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1`,
+                  LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [tournamentId ?? null]
     );
   }
 
-  getSettings() {
+  getSettings(tournamentId?: number) {
     const settings = this.db.all<{ name: string; value: unknown }>(
-        `SELECT name, value
-         FROM settings`
+        `SELECT d.name AS name, coalesce(s.value, d.value) AS value
+         FROM defaults d
+                  LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [tournamentId ?? null]
     );
     return settings.reduce((obj: Record<string, unknown>, s) => Object.assign(obj, {[s.name]: s.value}), {});
   }
 
   /** IANA-имя пояса турнира: в settings хранится id из справочника
    *  timezone, а клиенту (календарю) нужно имя вида 'Europe/Moscow'. */
-  getTimezone() {
+  getTimezone(tournamentId?: number) {
     const result = this.db.get<{ name: string }>(
         `SELECT t.name
-         FROM settings s
-                  JOIN timezone t ON t.id = CAST(s.value AS INTEGER)
-         WHERE s.name = 'timezone'`
+         FROM (SELECT distinct coalesce(s.value, d.value) AS value
+               FROM defaults d
+                        LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
+               WHERE d.name = 'timezone') s
+                  JOIN timezone t ON t.id = CAST(s.value AS INTEGER)`,
+        [tournamentId ?? null]
     );
     return result?.name;
   }
@@ -78,47 +82,47 @@ class Settings {
     );
   }
 
-  states() {
+  states(tournamentId?: number) {
     return this.db.all(
         `WITH default_state (id) AS (SELECT coalesce(s.value, d.value)
                                      FROM defaults d
-                                              LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id
-                                              LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1
+                                              LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
                                      WHERE d.name = 'state'
                                      LIMIT 1)
          SELECT s.*, CASE WHEN s.id = ds.id THEN 1 ELSE 0 END AS is_default
          FROM state s,
-              default_state ds;`
+              default_state ds;`,
+        [tournamentId ?? null]
     )
   }
 
-  regions() {
+  regions(tournamentId?: number) {
     return this.db.all(
         `WITH default_region (id) AS (SELECT coalesce(s.value, d.value)
                                       FROM defaults d
-                                               LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id
-                                               LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1
+                                               LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
                                       WHERE d.name = 'region'
                                       LIMIT 1)
          SELECT r.*, t.name AS timezone, CASE WHEN r.id = dr.id THEN 1 ELSE 0 END AS is_default
          FROM region r
                   LEFT JOIN region_timezone rt ON rt.region_id = r.id
                   LEFT JOIN timezone t ON t.id = rt.timezone_id,
-              default_region dr;`
+              default_region dr;`,
+        [tournamentId ?? null]
     )
   }
 
-  cities() {
+  cities(tournamentId?: number) {
     return this.db.all(
         `WITH default_city (id) AS (SELECT coalesce(s.value, d.value)
                                     FROM defaults d
-                                             LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id
-                                             LEFT OUTER JOIN tournament t ON s.tournament_id = t.id AND t.current = 1
+                                             LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
                                     WHERE d.name = 'city'
                                     LIMIT 1)
          SELECT c.*, CASE WHEN c.id = dc.id THEN 1 ELSE 0 END AS is_default
          FROM city c,
-              default_city dc;`
+              default_city dc;`,
+        [tournamentId ?? null]
     )
   }
 }

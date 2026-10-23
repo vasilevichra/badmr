@@ -42,7 +42,7 @@ class Common {
     });
   }
 
-  ready(calculated_objects: CalculatedPair[][] = []) {
+  ready(calculated_objects: CalculatedPair[][] = [], tournamentId?: number) {
     const uniqUsedUserIds = [...new Set(
         calculated_objects
         .flat(1)
@@ -64,9 +64,10 @@ class Common {
                          (SELECT ul.img FROM user_lab ul WHERE ul.user_id = r.user_id ORDER BY ul.id DESC LIMIT 1)) AS pic
          FROM ready r
          JOIN user u ON u.id = r.user_id
-         WHERE r.user_id NOT IN (SELECT value FROM json_each(?))
+         WHERE r.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
+           AND r.user_id NOT IN (SELECT value FROM json_each(?))
          ORDER BY r.played, r.matches DESC`,
-        [JSON.stringify(uniqUsedUserIds)]
+        [tournamentId ?? null, JSON.stringify(uniqUsedUserIds)]
     );
   }
 }

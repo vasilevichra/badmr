@@ -40,6 +40,7 @@ interface ArchivedRow {
   sex: number;
   pic: string | null;
   city: string;
+  tournament_id: number;
 }
 
 interface FoundRow {
@@ -414,6 +415,8 @@ describe("User", () => {
         sex: 1,
         pic: null,
         city: "Доброград",
+        // выборка текущего турнира (сид, current = 4)
+        tournament_id: 4,
       }]);
       let players = await userService.getAll() as PlayerRow[];
       assert.strictEqual(players.length, 3);

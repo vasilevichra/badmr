@@ -81,9 +81,9 @@ class User {
   }
 
   create = (lastname: string, firstname: string, patronymic: string, rating: number, sex: number, city_id: number, birthday: string) => this.user.create(lastname, firstname, patronymic, rating, sex, city_id, birthday);
-  getAll = () => this.user.getAll();
+  getAll = (tournamentId?: number) => this.user.getAll(tournamentId);
   select = (city_id: number) => this.user.select(city_id);
-  getArchived = () => this.user.getArchived();
+  getArchived = (tournamentId?: number) => this.user.getArchived(tournamentId);
   getById = (id: number) => this.user.getById(id);
   findBy = (lastname: string, firstname: string, patronymic: string) => this.user.findBy(lastname, firstname, patronymic);
   registerAll = () => this.user.registerAll();

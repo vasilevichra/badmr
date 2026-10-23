@@ -93,18 +93,18 @@ class Settings {
     };
   }
 
-  get = (name: string) => this.settings.get(name)!.value;
-  getAll = () => this.settings.getAll();
+  get = (name: string, tournamentId?: number) => this.settings.get(name, tournamentId)!.value;
+  getAll = (tournamentId?: number) => this.settings.getAll(tournamentId);
   set = async (name: string, value: string) => {
     await this.assertValid(name, String(value));
     return this.settings.set(name, value);
   };
-  getSettings = () => this.settings.getSettings();
-  getTimezone = () => this.settings.getTimezone();
+  getSettings = (tournamentId?: number) => this.settings.getSettings(tournamentId);
+  getTimezone = (tournamentId?: number) => this.settings.getTimezone(tournamentId);
   getDefaults = () => this.settings.getDefaults();
-  states = () => this.settings.states();
-  regions = () => this.settings.regions();
-  cities = () => this.settings.cities();
+  states = (tournamentId?: number) => this.settings.states(tournamentId);
+  regions = (tournamentId?: number) => this.settings.regions(tournamentId);
+  cities = (tournamentId?: number) => this.settings.cities(tournamentId);
 }
 
 export default Settings;

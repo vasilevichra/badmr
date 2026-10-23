@@ -1,7 +1,7 @@
 const renderCourts = () => {
   $('#cort-table')
   .bootstrapTable({
-    url: '/api/courts/', columns: [
+    url: withTournament('/api/courts/'), columns: [
       {
         field: 'number',
         title: 'Номер',

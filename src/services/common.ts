@@ -119,25 +119,25 @@ class Common {
    * @returns Массив рассчитанных пар, по одной на каждый доступный корт
    * (пустой, если доступных кортов нет).
    */
-  ready = async (): Promise<CalculatedPair[]> => {
-    let available_courts = await courtService.countAvailable();
+  ready = async (tournamentId?: number): Promise<CalculatedPair[]> => {
+    let available_courts = await courtService.countAvailable(tournamentId);
     if (available_courts === 0) {
       return [];
     }
-    const delta = Number(settingsService.get(settingsService.opt.DELTA));
+    const delta = Number(settingsService.get(settingsService.opt.DELTA, tournamentId));
     // Система 50%: фаворит по последним матчам подбирает соперников
     // не слабее себя
-    const fifty = settingsService.get(settingsService.opt.FIFTY) === "1";
+    const fifty = settingsService.get(settingsService.opt.FIFTY, tournamentId) === "1";
     // максимальный процент превышения среднего рейтинга пары одним из
     // игроков; 0 — не ограничивает
-    const proc = Number(settingsService.get(settingsService.opt.PROC));
+    const proc = Number(settingsService.get(settingsService.opt.PROC, tournamentId));
     // настройка priority хранит id из ready_priority ('1,2,3') — переводим
     // их в имена полей; порядок значений задаёт приоритет отбора пар:
     // первое значение — высший приоритет
     const priorityMap = new Map<number, string>(
       (await readyPriorityService.select()).map((r) => [Number(r.id), String(r.text)]),
     );
-    const priority = String(settingsService.get(settingsService.opt.PRIORITY))
+    const priority = String(settingsService.get(settingsService.opt.PRIORITY, tournamentId))
       .split(",")
       .map((id) => priorityMap.get(Number(id)))
       .filter((field): field is string => Boolean(field));
@@ -145,7 +145,7 @@ class Common {
     const calculated_objects: CalculatedPair[][] = [];
     while (available_courts-- > 0) {
       calculated_objects.push(
-        await this.calcReadyRec(delta, proc, priority, calculated_objects, fifty),
+        await this.calcReadyRec(delta, proc, priority, calculated_objects, fifty, tournamentId),
       );
     }
 
@@ -179,6 +179,7 @@ class Common {
    * @param fifty Система 50%: матчапы, где пара-фаворит играет вниз,
    * отфильтровываются до применения приоритетов; если подходящих нет,
    * настройка игнорируется.
+   * @param tournamentId Турнир выборки готовых игроков; undefined — текущий.
    * @returns Единственный лучший матч или пустой массив, если
    * подходящего матча нет.
    */
@@ -188,8 +189,9 @@ class Common {
     priority: string[],
     calculated_objects: CalculatedPair[][],
     fifty: boolean,
+    tournamentId?: number,
   ): Promise<CalculatedPair[]> {
-    const ready = await this.repository.ready(calculated_objects);
+    const ready = await this.repository.ready(calculated_objects, tournamentId);
     const readyRows = ready as ReadyRow[];
     const byId = new Map(readyRows.map((u) => [u.user_id, u]));
     // «Шанс» пары — винрейт совместных доигранных матчей напарников:

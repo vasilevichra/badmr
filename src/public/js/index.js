@@ -20,9 +20,9 @@ $(document).ready(() => {
   // настройки и статусы турнира загружаются одним асинхронным пакетом
   // (раньше — 11 блокирующих синхронных запросов при каждой загрузке)
   Promise.all([
-    $.getJSON('/api/settings/'),
-    $.getJSON('/api/tournaments/paid/'),
-    $.getJSON('/api/tournaments/played/'),
+    $.getJSON(withTournament('/api/settings/')),
+    $.getJSON(withTournament('/api/tournaments/paid/')),
+    $.getJSON(withTournament('/api/tournaments/played/')),
   ]).then(([settingRows, paid, played]) => {
     const values = {};
     settingRows.forEach((row) => values[row.name] = Number(row.value));

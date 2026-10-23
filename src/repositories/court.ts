@@ -27,12 +27,13 @@ class Court {
     );
   }
 
-  getAll() {
+  getAll(tournamentId?: number) {
     return this.db.all(
         `SELECT c.id, c.number, c.available
          FROM tournament t
                   JOIN court c ON t.id = c.tournament_id
-         WHERE t.current = 1`);
+         WHERE t.id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [tournamentId ?? null]);
   }
 
   getById(id: number) {
@@ -103,12 +104,13 @@ class Court {
     );
   }
 
-  countAvailable() {
+  countAvailable(tournamentId?: number) {
     const result = this.db.get<{ count: number }>(
         `SELECT count(id) AS count
          FROM court
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
-           AND available = 1`
+         WHERE tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
+           AND available = 1`,
+        [tournamentId ?? null]
     );
     return result!.count;
   }

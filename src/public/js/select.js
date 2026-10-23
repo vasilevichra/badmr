@@ -4,7 +4,7 @@ const renderSelect = () => {
 
     $('#select-button').hide();
 
-    $.getJSON("/api/common/ready/", ready => {
+    $.getJSON(withTournament("/api/common/ready/"), ready => {
       if (ready.join("").length) {
         // шанс пары («Шанс») считает сервер: win_rate совместных доигранных
         // матчей напарников входит в ответ ready() — chance1/chance2;

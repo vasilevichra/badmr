@@ -3,7 +3,7 @@
 const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibrationMatches, hasGames, everybodyPaid}) => {
   $('#player-table')
   .bootstrapTable({
-    url: '/api/users/',
+    url: withTournament('/api/users/'),
     search: loggedInUser && isNotPhone(),
     sortName: hasGames ? 'delta_today' : 'rating',
     sortOrder: 'desc',
@@ -153,7 +153,7 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
       $.post(`/api/tournaments/pay/${element.id}?paid=${element.paid ? 0 : 1}`, {}, () => {
         refresh.table.player();
         // статус оплат перепроверяем асинхронно
-        $.getJSON('/api/tournaments/paid/', (paid) => {
+        $.getJSON(withTournament('/api/tournaments/paid/'), (paid) => {
           if (paid) {
             new Promise(resolve => setTimeout(resolve, 3000)).then(() => hide.player.column.paid());
           }

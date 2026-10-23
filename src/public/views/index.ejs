@@ -25,7 +25,7 @@
     <% } %>
 </head>
 
-<body>
+<body data-tournament="<%= typeof tournament_id !== 'undefined' ? tournament_id : '' %>">
 <div class="container">
     <% if (user) { %>
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>

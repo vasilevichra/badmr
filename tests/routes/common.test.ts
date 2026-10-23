@@ -126,12 +126,12 @@ describe("Common routes", () => {
       assert.deepStrictEqual<Pair[]>(await res.json(), [
         {
           players1: [
-            { name: fullName(users[0]), user_id: ids[0], rating: 500, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null },
-            { name: fullName(users[1]), user_id: ids[1], rating: 460, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null },
+            { name: fullName(users[0]), user_id: ids[0], rating: 500, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null, tournament_id: 4 },
+            { name: fullName(users[1]), user_id: ids[1], rating: 460, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null, tournament_id: 4 },
           ],
           players2: [
-            { name: fullName(users[2]), user_id: ids[2], rating: 500, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null },
-            { name: fullName(users[3]), user_id: ids[3], rating: 460, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null },
+            { name: fullName(users[2]), user_id: ids[2], rating: 500, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null, tournament_id: 4 },
+            { name: fullName(users[3]), user_id: ids[3], rating: 460, matches: 0, played: 0, won: null, wins: 0, sex: 1, pic: null, tournament_id: 4 },
           ],
           diff: 0,
           matches: 0,

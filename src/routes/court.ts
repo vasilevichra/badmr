@@ -2,10 +2,11 @@ import Express from 'express';
 const router = Express.Router();
 import { ensureLoggedIn } from 'connect-ensure-login';
 import CourtService from '../services/court.ts';
+import requestedTournament from '../tournament-request.ts';
 const courtService = new CourtService();
 
 router.get('/', ensureLoggedIn(), (req, res) => {
-  res.promise(courtService.getAll());
+  res.promise(courtService.getAll(requestedTournament(req)));
 });
 
 router.get('/:id', ensureLoggedIn(), (req, res) => {
