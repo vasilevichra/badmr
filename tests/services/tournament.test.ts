@@ -346,11 +346,12 @@ describe("Tournament", () => {
 
       tournamentService.setDeferredStatusHandlers();
 
-      // задачи назначены на секунду вперёд, но под нагрузкой таймер может
-      // сработать позже — опрашиваем с запасом
+      // задачи назначены на секунду вперёд, но под нагрузкой (coverage,
+      // последовательное выполнение тестов на 2-ядерных раннерах CI) таймер
+      // может сработать сильно позже — опрашиваем с большим запасом
       const status = (name: string) =>
         db.get<{ s: number }>("SELECT tournament_status_id AS s FROM tournament WHERE name = ?", [name])!.s;
-      for (let i = 0; i < 100 && (status("Идёт") !== 3 || status("Регистрация") !== 2); i++) {
+      for (let i = 0; i < 300 && (status("Идёт") !== 3 || status("Регистрация") !== 2); i++) {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
