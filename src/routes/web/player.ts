@@ -15,12 +15,16 @@ const regionService = new RegionService();
 import StateService from '../../services/state.ts';
 const stateService = new StateService();
 import SettingsService from '../../services/settings.ts';
+import requestedTournament from '../../tournament-request.ts';
 const settingsService = new SettingsService();
 import Promise from 'bluebird';
 import share from '../../share.cjs';
 
 router.get('/:id', (req, res) => {
   const userId = Number(req.params.id);
+  // личный просмотр: матчи карточки — по турниру из ?tournament=<id>
+  // (ссылки вида /tournament/3?player=1), без параметра — по глобальному current
+  const tournamentId = requestedTournament(req);
   // номинации пользователя — по текущему турниру «Новая Лига»
   const tournament = tournamentService.getCurrent() as { id: number } | undefined;
   const achievements = tournament ? achievementService.getNominationsByUser(userId, tournament.id) : [];
@@ -37,7 +41,7 @@ router.get('/:id', (req, res) => {
     userService.getCoLosersById(userId),      // 9
     userService.getBuddiesById(userId),       // 10
     userService.getWorstOpponentsById(userId), // 11
-    matchService.getAllByUser(userId),         // 12
+    matchService.getAllByUser(userId, tournamentId), // 12
     userService.getCalibration(userId),        // 13
     settingsService.get('calibration_matches'), // 14
   ])

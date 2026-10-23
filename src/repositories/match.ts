@@ -74,7 +74,7 @@ class Match {
   }
 
   getAllFinishedAtLastSession = (tournamentId?: number) => this.getInfo(this.getAllFinishedAtLastSessionRequest, 0, tournamentId);
-  getAllByUser = (user_id: number) => this.getInfo(this.getAllByUserRequest, user_id);
+  getAllByUser = (user_id: number, tournamentId?: number) => this.getInfo(this.getAllByUserRequest, user_id, tournamentId);
 
   getInfo(request: GetInfoRequest, user_id: number = 0, tournamentId?: number) {
     const max_point = Number(settingsService.get('max_point'));
@@ -148,7 +148,7 @@ class Match {
       { $game_point: game_point, $max_point: max_point, $tid: tournament_id ?? null }
   )
 
-  getAllByUserRequest = (max_point: number, game_point: number, user_id: number) => this.db.all<GetInfoRow>(
+  getAllByUserRequest = (max_point: number, game_point: number, user_id: number, tournament_id?: number) => this.db.all<GetInfoRow>(
       `SELECT m.id                                                                                                                AS match_id,
               m.created_at                                                                                                        AS match_created_at,
               m.user_1_id                                                                                                         AS user_1_id,
@@ -190,11 +190,12 @@ class Match {
                 JOIN user u4 on u4.id = m.user_4_id
                 JOIN court c on c.id = m.court_id
                 JOIN game g on m.id = g.match_id
-       WHERE m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)
+       WHERE m.tournament_id = coalesce($tournament_id,
+                                          (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1))
          AND m.finished = 1
          AND (u1.id = $user_id OR u2.id = $user_id OR u3.id = $user_id OR u4.id = $user_id)
        ORDER BY m.id DESC`,
-      { $game_point: game_point, $max_point: max_point, $user_id: user_id }
+      { $game_point: game_point, $max_point: max_point, $user_id: user_id, $tournament_id: tournament_id ?? null }
   )
 
   /** Медиана времени (секунд) на зарабатывание одного очка по завершённым

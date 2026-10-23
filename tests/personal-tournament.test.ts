@@ -189,6 +189,22 @@ describe("Личный просмотр турнира (?tournament=)", () => {
     });
   });
 
+  describe("карточка игрока: история матчей / match.getAllByUser", () => {
+    it("с параметром — матчи турнира 3", async () => {
+      const rows = await matchService.getAllByUser(bIds[0], B) as Record<string, unknown>[];
+      const matchIds = rows.flatMap((m) => Object.keys(m));
+      assert.ok(matchIds.includes(String(bMatchId)));
+      assert.ok(matchIds.every((id) => id !== String(currentMatchId)));
+    });
+
+    it("без параметра — матчи текущего турнира", async () => {
+      const rows = await matchService.getAllByUser(currentIds[0]) as Record<string, unknown>[];
+      const matchIds = rows.flatMap((m) => Object.keys(m));
+      assert.ok(matchIds.includes(String(currentMatchId)));
+      assert.ok(matchIds.every((id) => id !== String(bMatchId)));
+    });
+  });
+
   describe("settings", () => {
     it("get с параметром отдаёт override турнира 3", () => {
       assert.strictEqual(settingsRepository.get("game_point", B)?.value, "11");

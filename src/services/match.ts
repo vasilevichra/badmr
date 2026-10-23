@@ -20,7 +20,7 @@ class Match {
   hasUnfinished = () => this.match.hasUnfinished();
   getAllUnfinished = () => this.match.getAllUnfinished();
   getAllFinishedAtLastSession = (tournamentId?: number) => this.match.getAllFinishedAtLastSession(tournamentId);
-  getAllByUser = (user_id: number) => this.match.getAllByUser(user_id);
+  getAllByUser = (user_id: number, tournamentId?: number) => this.match.getAllByUser(user_id, tournamentId);
   getMedianSecondsPerPoint = () => this.match.getMedianSecondsPerPoint(false);
   getMedianSecondsPerPointCurrent = (tournamentId?: number) => this.match.getMedianSecondsPerPoint(true, tournamentId);
   getMedianMatchSeconds = () => this.match.getMedianMatchSeconds(false);

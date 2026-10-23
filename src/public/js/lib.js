@@ -42,6 +42,7 @@ const playerSexStyle = (sex) => {
 }
 
 /** Открывает модальное окно игрока: загружает карточку /web/players/<id>
+ *  (с ?tournament=<id> — матчи карточки по открытому турниру)
  *  в #player-window и рисует график рейтинга из /api/ratings/<id>.
  *  Адрес синхронизируется: в URL добавляется ?player=<id>, чтобы ссылкой
  *  можно было поделиться. */
@@ -54,7 +55,7 @@ const openPlayerWindow = (id) => {
   }
 
   $.ajax({
-        url: `/web/players/${id}`,
+        url: withTournament(`/web/players/${id}`),
         type: 'GET',
         cache: false,
         success: html => {
