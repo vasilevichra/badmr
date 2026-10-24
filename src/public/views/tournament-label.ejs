@@ -1,0 +1,7 @@
+<%# Стандартная подпись турнира: «#3 НЛ Дзержинск 01 окт. 2026» (#55).
+    Тип турнира из нескольких слов сокращается до инициалов, дата — dd mmm. yyyy.
+    Параметры: id (number), type_name (string), city (string), date (ISO-строка «YYYY-MM-DD HH:MM:SS» или Date).
+    Используется в селекторе турниров и в свёрнутом списке матчей карточки игрока. %>
+<% const monthShort = ['янв.', 'фев.', 'мар.', 'апр.', 'мая', 'июн.', 'июл.', 'авг.', 'сен.', 'окт.', 'ноя.', 'дек.']; %>
+<% const typeShort = (typeName) => { const words = typeName.trim().split(/\s+/); return words.length > 1 ? words.map(w => w[0].toUpperCase()).join('') : typeName.trim(); }; %>
+<% const d = typeof date === 'string' ? new Date(date.replace(' ', 'T') + 'Z') : date; %>#<%= id %> <%= typeShort(type_name) %> <%= city %> <%= String(d.getDate()).padStart(2, '0') %> <%= monthShort[d.getMonth()] %> <%= d.getFullYear() %>

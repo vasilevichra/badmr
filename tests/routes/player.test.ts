@@ -450,6 +450,39 @@ describe("Player page", () => {
     assert.match(html, /class="collapse" id="win-all-collapse"/);
   });
 
+  it("должен показать матчи «За всё время» в стандартном формате подписи турнира с дельтой и жирным именем игрока", async () => {
+    const [u1] = await seedTwoSameTypeTournaments();
+    const res = await fetch(`${base}/${u1}`);
+    const html = await res.text();
+
+    // параметры подписи — из тестовой БД
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
+    const { type_name } = db.prepare(
+      "SELECT tt.name AS type_name FROM tournament t JOIN tournament_type tt ON tt.id = t.tournament_type_id WHERE t.id = 4",
+    ).get() as { type_name: string };
+    const { name: city } = db.prepare(
+      "SELECT c.name AS name FROM tournament t JOIN gym g ON g.id = t.gym_id JOIN city c ON c.id = g.city_id WHERE t.id = 4",
+    ).get() as { name: string };
+    const { id: matchId, created_at } = db.prepare(
+      "SELECT id, created_at FROM match WHERE tournament_id = 4 ORDER BY id DESC LIMIT 1",
+    ).get() as { id: number; created_at: string };
+    const { delta } = db.prepare(
+      "SELECT delta FROM rating WHERE user_id = ? AND match_id = ?",
+    ).get(u1, matchId) as { delta: number };
+
+    // стандартная подпись (как в селекторе турниров): #<id> <тип-инициалами> <город> <dd mmm. yyyy>
+    const typeShort = (n: string) => { const w = n.trim().split(/\s+/); return w.length > 1 ? w.map(x => x[0].toUpperCase()).join('') : n.trim(); };
+    const monthShort = ['янв.', 'фев.', 'мар.', 'апр.', 'мая', 'июн.', 'июл.', 'авг.', 'сен.', 'окт.', 'ноя.', 'дек.'];
+    const d = new Date(created_at.replace(' ', 'T') + 'Z');
+    const label = `#4 ${typeShort(type_name)} ${city} ${String(d.getDate()).padStart(2, '0')} ${monthShort[d.getMonth()]} ${d.getFullYear()}`;
+
+    // имя игрока карточки жирным, счёт его пары первым, в конце дельта его рейтинга;
+    // переносы от scriptlet-тегов EJS нормализуются до одинарных пробелов
+    const deltaText = `${delta >= 0 ? '+' : ''}${Number(delta).toFixed(2)}`;
+    const expected = `${label} - <strong>Фамилия1 И.</strong> / Фамилия2 И. <span class="rating-plus fw-bold">2:0</span> Фамилия3 И. / Фамилия4 И. (${deltaText})`;
+    assert.ok(html.replace(/\s+/g, ' ').includes(expected), `ожидалась строка: ${expected}`);
+  });
+
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {
     const settingsService = new SettingsService();
     await settingsService.set("calibration_matches", "2");

@@ -343,17 +343,21 @@
                                                     <i class="bi bi-chevron-down"></i> За всё время (<%= type_matches.length %>)
                                                 </a>
                                                 <div class="collapse<%= expand_all ? ' show' : '' %>" id="player-same-type-matches">
+                                                    <% // формат строки: стандартная подпись турнира (#<id> тип город дата) -
+                                                       // пара игрока первой, имя игрока карточки — жирным, в конце дельта его рейтинга %>
+                                                    <% const esc = (s) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); %>
+                                                    <% const nameHtml = (name, uid) => uid === user.id ? `<strong>${esc(name)}</strong>` : esc(name); %>
                                                     <% type_matches.forEach((m) => { %>
                                                         <% // пара игрока показывается первой, её счёт — первым числом %>
                                                         <% const mine_first = m.user_1_id === user.id || m.user_2_id === user.id; %>
-                                                        <% const d = new Date(m.match_created_at + 'Z'); %>
                                                         <div class="border-bottom py-1 small no-selection">
-                                                            <%= d.getDate() %> <%= monthArray[d.getMonth()] %> <%= d.getFullYear() %> · <%= m.tournament_name %> —
+                                                            <%- include('../../tournament-label', {id: m.tournament_id, type_name: m.tournament_type_name, city: m.tournament_city, date: m.match_created_at}) %> -
                                                             <% if (mine_first) { %>
-                                                                <%= m.name1 %> / <%= m.name2 %> <span class="rating-<%= m.wins1 > m.wins2 ? 'plus' : 'minus' %> fw-bold"><%= m.wins1 %>:<%= m.wins2 %></span> <%= m.name3 %> / <%= m.name4 %>
+                                                                <%- nameHtml(m.name1, m.user_1_id) %> / <%- nameHtml(m.name2, m.user_2_id) %> <span class="rating-<%= m.wins1 > m.wins2 ? 'plus' : 'minus' %> fw-bold"><%= m.wins1 %>:<%= m.wins2 %></span> <%= m.name3 %> / <%= m.name4 %>
                                                             <% } else { %>
-                                                                <%= m.name3 %> / <%= m.name4 %> <span class="rating-<%= m.wins2 > m.wins1 ? 'plus' : 'minus' %> fw-bold"><%= m.wins2 %>:<%= m.wins1 %></span> <%= m.name1 %> / <%= m.name2 %>
+                                                                <%- nameHtml(m.name3, m.user_3_id) %> / <%- nameHtml(m.name4, m.user_4_id) %> <span class="rating-<%= m.wins2 > m.wins1 ? 'plus' : 'minus' %> fw-bold"><%= m.wins2 %>:<%= m.wins1 %></span> <%= m.name1 %> / <%= m.name2 %>
                                                             <% } %>
+                                                            <% if (m.delta !== null && m.delta !== undefined) { %>(<%= m.delta >= 0 ? '+' : '' %><%= Number(m.delta).toFixed(2) %>)<% } %>
                                                         </div>
                                                     <% }) %>
                                                 </div>
@@ -535,6 +539,8 @@
             } else {
                 url.searchParams.set('tab', name);
             }
+            // при переходе на другую вкладку раскрытие «За всё время» сбрасывается
+            url.searchParams.delete('all');
             history.replaceState({}, '', url);
         });
 

@@ -15,6 +15,8 @@ export interface SameTypeMatchRow {
   match_created_at: string;
   tournament_id: number;
   tournament_name: string;
+  tournament_type_name: string;
+  tournament_city: string;
   user_1_id: number;
   user_2_id: number;
   user_3_id: number;
@@ -27,6 +29,8 @@ export interface SameTypeMatchRow {
   wins1: number;
   /** выигранных игр у пары 2 (user_3/user_4) */
   wins2: number;
+  /** дельта рейтинга игрока карточки в этом матче */
+  delta: number | null;
 }
 
 type GetInfoRequest = (max_point: number, game_point: number, user_id: number, tournament_id?: number) => GetInfoRow[];
@@ -230,6 +234,8 @@ class Match {
               m.created_at                                                        AS match_created_at,
               t.id                                                                AS tournament_id,
               t.name                                                              AS tournament_name,
+              tt.name                                                             AS tournament_type_name,
+              c.name                                                              AS tournament_city,
               m.user_1_id                                                         AS user_1_id,
               m.user_2_id                                                         AS user_2_id,
               m.user_3_id                                                         AS user_3_id,
@@ -239,9 +245,13 @@ class Match {
               u3.lastname || ' ' || substr(u3.firstname, 1, 1) || '.'             AS name3,
               u4.lastname || ' ' || substr(u4.firstname, 1, 1) || '.'             AS name4,
               (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_2_by IS NOT NULL) AS wins1,
-              (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_1_by IS NOT NULL) AS wins2
+              (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_1_by IS NOT NULL) AS wins2,
+              (SELECT r.delta FROM rating r WHERE r.match_id = m.id AND r.user_id = $user_id)   AS delta
        FROM match m
                 JOIN tournament t ON t.id = m.tournament_id
+                JOIN gym g ON g.id = t.gym_id
+                JOIN city c ON c.id = g.city_id
+                JOIN tournament_type tt ON tt.id = t.tournament_type_id
                 JOIN user u1 on u1.id = m.user_1_id
                 JOIN user u2 on u2.id = m.user_2_id
                 JOIN user u3 on u3.id = m.user_3_id
