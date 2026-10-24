@@ -105,7 +105,7 @@ $(document).ready(() => {
 
   // модалка игрока привязана к адресу (?player=<id>):
   // по ссылке открываем модалку, назад/вперёд открывают/закрывают её,
-  // закрытие модалки убирает параметр из адреса
+  // закрытие модалки убирает её параметры из адреса
   if ($('#player-window').length) {
     const playerParam = () => new URLSearchParams(location.search).get('player');
 
@@ -122,10 +122,12 @@ $(document).ready(() => {
       }
     });
 
+    // при закрытии карточки из адреса уходит всё, что к ней относится:
+    // ?player=<id>, ?tab=<имя> и ?all=1 (id.ejs синхронизирует их с адресом)
     $('#player-window').on('hidden.bs.modal', () => {
       if (playerParam()) {
         const url = new URL(location.href);
-        url.searchParams.delete('player');
+        ['player', 'tab', 'all'].forEach((name) => url.searchParams.delete(name));
         history.replaceState({}, '', url);
       }
     });
