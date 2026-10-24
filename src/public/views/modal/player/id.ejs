@@ -346,7 +346,8 @@
                                                     <% // компактная таблица: подпись турнира (#id тип город дата),
                                                        // пара игрока первой (её счёт первым), имя игрока жирным,
                                                        // игроки в стандартном формате и кликабельны (открывают карточку),
-                                                       // колонки игроков и дельта по центру,
+                                                       // каждая пара — в две строки, остальные колонки объединены
+                                                       // rowspan'ом; шрифты — как в таблицах матчей (match-history-*),
                                                        // дельта рейтинга игрока с цветом, дробная часть — без хвостовых нулей %>
                                                     <% const playerHtml = (uid, name, sex, pic) =>
                                                         (uid === user.id ? '<strong>' : '') +
@@ -357,19 +358,25 @@
                                                         <tbody>
                                                         <% type_matches.forEach((m) => { %>
                                                             <% // пара игрока показывается первой, её счёт — первым числом %>
-                                                            <% const mine_first = m.user_1_id === user.id || m.user_2_id === user.id; %>
+                                                            <% const mine_first = m.user_1_id === user.id || m.user_2_id === user.id;
+                                                               const mine_wins = mine_first ? m.wins1 : m.wins2;
+                                                               const their_wins = mine_first ? m.wins2 : m.wins1;
+                                                               const pairA = mine_first
+                                                                   ? [[m.user_1_id, m.name1, m.sex1, m.pic1], [m.user_2_id, m.name2, m.sex2, m.pic2]]
+                                                                   : [[m.user_3_id, m.name3, m.sex3, m.pic3], [m.user_4_id, m.name4, m.sex4, m.pic4]];
+                                                               const pairB = mine_first
+                                                                   ? [[m.user_3_id, m.name3, m.sex3, m.pic3], [m.user_4_id, m.name4, m.sex4, m.pic4]]
+                                                                   : [[m.user_1_id, m.name1, m.sex1, m.pic1], [m.user_2_id, m.name2, m.sex2, m.pic2]]; %>
                                                             <tr>
-                                                                <td><%- include('../../tournament-label', {id: m.tournament_id, type_name: m.tournament_type_name, city: m.tournament_city, date: m.match_created_at}).trim() %></td>
-                                                                <% if (mine_first) { %>
-                                                                    <td class="text-center"><%- playerHtml(m.user_1_id, m.name1, m.sex1, m.pic1) %> / <%- playerHtml(m.user_2_id, m.name2, m.sex2, m.pic2) %></td>
-                                                                    <td><span class="rating-<%= m.wins1 > m.wins2 ? 'plus' : 'minus' %> fw-bold"><%= m.wins1 %>:<%= m.wins2 %></span></td>
-                                                                    <td class="text-center"><%- playerHtml(m.user_3_id, m.name3, m.sex3, m.pic3) %> / <%- playerHtml(m.user_4_id, m.name4, m.sex4, m.pic4) %></td>
-                                                                <% } else { %>
-                                                                    <td class="text-center"><%- playerHtml(m.user_3_id, m.name3, m.sex3, m.pic3) %> / <%- playerHtml(m.user_4_id, m.name4, m.sex4, m.pic4) %></td>
-                                                                    <td><span class="rating-<%= m.wins2 > m.wins1 ? 'plus' : 'minus' %> fw-bold"><%= m.wins2 %>:<%= m.wins1 %></span></td>
-                                                                    <td class="text-center"><%- playerHtml(m.user_1_id, m.name1, m.sex1, m.pic1) %> / <%- playerHtml(m.user_2_id, m.name2, m.sex2, m.pic2) %></td>
-                                                                <% } %>
-                                                                <td class="text-center"><%- include('../../rating-label', {v: m.delta, delta: true}).trim() %></td>
+                                                                <td rowspan="2" class="match-history-info"><%- include('../../tournament-label', {id: m.tournament_id, type_name: m.tournament_type_name, city: m.tournament_city, date: m.match_created_at}).trim() %></td>
+                                                                <td class="text-center match-history-players-name"><%- playerHtml(...pairA[0]) %></td>
+                                                                <td rowspan="2" class="match-history-score"><span class="rating-<%= mine_wins > their_wins ? 'plus' : 'minus' %> fw-bold"><%= mine_wins %>:<%= their_wins %></span></td>
+                                                                <td class="text-center match-history-players-name"><%- playerHtml(...pairB[0]) %></td>
+                                                                <td rowspan="2" class="match-history-delta-col"><%- include('../../rating-label', {v: m.delta, delta: true}).trim() %></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="text-center match-history-players-name"><%- playerHtml(...pairA[1]) %></td>
+                                                                <td class="text-center match-history-players-name"><%- playerHtml(...pairB[1]) %></td>
                                                             </tr>
                                                         <% }) %>
                                                         </tbody>

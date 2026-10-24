@@ -485,17 +485,18 @@ describe("Player page", () => {
     const d = new Date(created_at.replace(' ', 'T') + 'Z');
     const label = `#4 ${typeShort(type_name)} ${city} ${String(d.getDate()).padStart(2, '0')} ${monthShort[d.getMonth()]} ${d.getFullYear()}`;
 
-    // компактная таблица: подпись турнира, пара игрока первой (имя жирным),
-    // её счёт первым, соперники, дельта с цветом; игроки в стандартном
-    // формате (playerNameFormatter в co-player), колонки игроков и дельта
-    // по центру; дробная часть без хвостовых нулей;
+    // компактная таблица: подпись турнира, пара игрока первой (имя жирным) —
+    // в две строки, счёт и дельта объединены rowspan'ом, соперники — во второй
+    // строке; шрифты — классами таблиц матчей; игроки в стандартном формате
+    // (playerNameFormatter в co-player); дробная часть без хвостовых нулей;
     // переносы от scriptlet-тегов EJS нормализуются до одинарных пробелов
-    // нормализация даёт пробелы между </td> и <td> (переносы от scriptlet-тегов EJS)
     const deltaText = `${delta >= 0 ? '+' : ''}${Number(delta.toFixed(2))}`;
     const deltaClass = delta < 0 ? 'rating-minus' : 'rating-plus';
-    const expected = `<td>${label}</td> <td class="text-center">${playerHtml(u1, 'Фамилия1 И.', true)} / ${playerHtml(u2, 'Фамилия2 И.')}</td> ` +
-        `<td><span class="rating-plus fw-bold">2:0</span></td> <td class="text-center">${playerHtml(u3, 'Фамилия3 И.')} / ${playerHtml(u4, 'Фамилия4 И.')}</td> ` +
-        `<td class="text-center"><span class="${deltaClass}">${deltaText}</span></td>`;
+    const nameTd = (p: string) => `<td class="text-center match-history-players-name">${p}</td>`;
+    const expected = `<td rowspan="2" class="match-history-info">${label}</td> ${nameTd(playerHtml(u1, 'Фамилия1 И.', true))} ` +
+        `<td rowspan="2" class="match-history-score"><span class="rating-plus fw-bold">2:0</span></td> ${nameTd(playerHtml(u3, 'Фамилия3 И.'))} ` +
+        `<td rowspan="2" class="match-history-delta-col"><span class="${deltaClass}">${deltaText}</span></td> </tr> <tr> ` +
+        `${nameTd(playerHtml(u2, 'Фамилия2 И.'))} ${nameTd(playerHtml(u4, 'Фамилия4 И.'))}`;
     assert.ok(html.replace(/\s+/g, ' ').includes(expected), `ожидалась строка: ${expected}`);
   });
 
@@ -524,11 +525,14 @@ describe("Player page", () => {
 
     const res = await fetch(`${base}/${ids[0]}`);
     const html = await res.text();
+    const normalized = html.replace(/\s+/g, ' ');
 
-    // пара игрока первой, но имя игрока — второе в ней и по-прежнему жирное;
-    // колонки игроков по центру, имена кликабельны (co-player)
-    const row = `<td class="text-center">${playerHtml(ids[3], 'Фамилия4 И.')} / ${playerHtml(ids[0], 'Фамилия1 И.', true)}</td>`;
-    assert.ok(html.replace(/\s+/g, ' ').includes(row), `ожидалась строка: ${row}`);
+    // пара игрока первой в двух строках, имя игрока — второе в ней
+    // и по-прежнему жирное; имена кликабельны (co-player)
+    const nameTd = (p: string) => `<td class="text-center match-history-players-name">${p}</td>`;
+    assert.ok(normalized.includes(nameTd(playerHtml(ids[3], 'Фамилия4 И.'))), 'Фамилия4 в первой строке пары');
+    assert.ok(normalized.includes(nameTd(playerHtml(ids[1], 'Фамилия2 И.'))), 'Фамилия2 в первой строке соперников');
+    assert.ok(normalized.includes(`</tr> <tr> ${nameTd(playerHtml(ids[0], 'Фамилия1 И.', true))} ${nameTd(playerHtml(ids[2], 'Фамилия3 И.'))}`), 'вторая строка: жирное имя игрока и Фамилия3');
   });
 
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {
