@@ -468,6 +468,16 @@ input:focus::placeholder {
   border-bottom: 0;
 }
 
+/* напарники в паре стоят плотнее: внутренние отступы между строками пары
+   убраны, зазор даёт только межстрочный интервал */
+#player-same-type-matches tr:nth-child(odd) td.match-history-players-name {
+  padding-bottom: 0;
+}
+
+#player-same-type-matches tr:nth-child(even) td.match-history-players-name {
+  padding-top: 0;
+}
+
 .match-history-game-col {
   padding-left: 3px !important;
   padding-right: 3px !important;
