@@ -340,14 +340,17 @@
                                             <% // свёрнутые матчи турниров того же типа (#57): одна строка на матч %>
                                             <div class="mt-3">
                                                 <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#player-same-type-matches" role="button" aria-expanded="false" aria-controls="player-same-type-matches">
-                                                    <i class="bi bi-chevron-down"></i> За всё время (<%= type_matches.length %>)
+                                                    <i class="bi bi-chevron-down"></i> Остальные матчи (<%= type_matches.length %>)
                                                 </a>
                                                 <div class="collapse<%= expand_all ? ' show' : '' %>" id="player-same-type-matches">
                                                     <% // компактная таблица: подпись турнира (#id тип город дата),
                                                        // пара игрока первой (её счёт первым), имя игрока жирным,
                                                        // игроки в стандартном формате и кликабельны (открывают карточку),
-                                                       // каждая пара — в две строки, остальные колонки объединены
-                                                       // rowspan'ом; шрифты — как в таблицах матчей (match-history-*),
+                                                       // пары идут последовательно, как в таблицах матчей (match):
+                                                       // сначала пара игрока (игрок, под ним партнёр), под ней
+                                                       // пара соперников — второй игрок каждой пары сразу под
+                                                       // первым; подпись/счёт/дельта объединены rowspan'ом на 4
+                                                       // строки; шрифты — как в таблицах матчей (match-history-*),
                                                        // дельта рейтинга игрока с цветом, дробная часть — без хвостовых нулей %>
                                                     <% const playerHtml = (uid, name, sex, pic) =>
                                                         (uid === user.id ? '<strong>' : '') +
@@ -368,14 +371,18 @@
                                                                    ? [[m.user_3_id, m.name3, m.sex3, m.pic3], [m.user_4_id, m.name4, m.sex4, m.pic4]]
                                                                    : [[m.user_1_id, m.name1, m.sex1, m.pic1], [m.user_2_id, m.name2, m.sex2, m.pic2]]; %>
                                                             <tr>
-                                                                <td rowspan="2" class="match-history-info"><%- include('../../tournament-label', {id: m.tournament_id, type_name: m.tournament_type_name, city: m.tournament_city, date: m.match_created_at}).trim() %></td>
+                                                                <td rowspan="4" class="match-history-info"><%- include('../../tournament-label', {id: m.tournament_id, type_name: m.tournament_type_name, city: m.tournament_city, date: m.match_created_at}).trim() %></td>
                                                                 <td class="text-center match-history-players-name"><%- playerHtml(...pairA[0]) %></td>
-                                                                <td rowspan="2" class="match-history-score"><span class="rating-<%= mine_wins > their_wins ? 'plus' : 'minus' %> fw-bold"><%= mine_wins %>:<%= their_wins %></span></td>
-                                                                <td class="text-center match-history-players-name"><%- playerHtml(...pairB[0]) %></td>
-                                                                <td rowspan="2" class="match-history-delta-col"><%- include('../../rating-label', {v: m.delta, delta: true}).trim() %></td>
+                                                                <td rowspan="4" class="match-history-score"><span class="rating-<%= mine_wins > their_wins ? 'plus' : 'minus' %> fw-bold"><%= mine_wins %>:<%= their_wins %></span></td>
+                                                                <td rowspan="4" class="match-history-delta-col"><%- include('../../rating-label', {v: m.delta, delta: true}).trim() %></td>
                                                             </tr>
                                                             <tr>
-                                                                <td class="text-center match-history-players-name"><%- playerHtml(...pairA[1]) %></td>
+                                                                <td class="text-center match-history-players-name match-history-pair-end"><%- playerHtml(...pairA[1]) %></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="text-center match-history-players-name"><%- playerHtml(...pairB[0]) %></td>
+                                                            </tr>
+                                                            <tr>
                                                                 <td class="text-center match-history-players-name"><%- playerHtml(...pairB[1]) %></td>
                                                             </tr>
                                                         <% }) %>

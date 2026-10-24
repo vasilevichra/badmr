@@ -457,8 +457,13 @@ input:focus::placeholder {
   vertical-align: middle;
 }
 
-#player-same-type-matches tr td:not([rowspan]) {
+#player-same-type-matches tr td:not([rowspan]):not(.match-history-pair-end) {
   border-bottom: 0;
+}
+
+/* разделитель между парами (после партнёра игрока карточки) */
+#player-same-type-matches tr td.match-history-pair-end {
+  border-bottom: 1px solid var(--bs-table-border-color);
 }
 
 .match-history-game-col {
