@@ -128,7 +128,7 @@ describe("Player page", () => {
     await userService.deregisterAll();
     await userService.registerByIds(ids);
     // равные рейтинги, калибровка выключена → дельта ровно 10:
-    // верх «+10.0», низ был бы «+10» без дробной части
+    // стандартный формат без хвостовых нулей — «+10» (не «+10.0»)
     const settingsService = new SettingsService();
     await settingsService.set("calibration_matches", "0");
     await matchService.create(ids[0], ids[1], ids[2], ids[3]);
@@ -139,8 +139,8 @@ describe("Player page", () => {
 
     const html = await (await fetch(`${base}/${ids[2]}`)).text();
 
-    assert.match(html, /class="rating-[a-z]+">\+10\.0<\/td>/, "нижняя дельта без дробной части");
-    assert.doesNotMatch(html, /class="rating-[a-z]+">\+10<\/td>/);
+    assert.match(html, /class="rating-[a-z]+">\+10<\/span><\/td>/, "нижняя дельта в стандартном формате");
+    assert.doesNotMatch(html, /\+10\.0</);
   });
 
   it("должен показать номинации пользователя в карточке достижений", async () => {
@@ -252,7 +252,7 @@ describe("Player page", () => {
     assert.ok(html.indexOf('id="matches-tab"') < html.indexOf('id="win-tab"'));
     // победный матч: напарник в истории, дельта рейтинга положительная
     assert.match(html, /Фамилия2 Имя2/);
-    assert.match(html, /rating-plus">\+\d+\.\d/);
+    assert.match(html, /rating-plus">\+\d+(\.\d+)?</);
     // матч без участия игрока в историю не попал
     assert.doesNotMatch(html, /Фамилия5 Имя5/);
   });
@@ -479,13 +479,43 @@ describe("Player page", () => {
     // компактная таблица: подпись турнира, пара игрока первой (имя жирным),
     // её счёт первым, соперники, дельта с цветом; дробная часть без хвостовых нулей;
     // переносы от scriptlet-тегов EJS нормализуются до одинарных пробелов
+    // нормализация даёт пробелы между </td> и <td> (переносы от scriptlet-тегов EJS)
     const deltaText = `${delta >= 0 ? '+' : ''}${Number(delta.toFixed(2))}`;
     const deltaClass = delta < 0 ? 'rating-minus' : 'rating-plus';
-    // нормализация даёт пробелы между </td> и <td> (переносы от scriptlet-тегов EJS)
     const expected = `<td>${label}</td> <td><strong>Фамилия1 И.</strong> / Фамилия2 И.</td> ` +
         `<td><span class="rating-plus fw-bold">2:0</span></td> <td>Фамилия3 И. / Фамилия4 И.</td> ` +
-        `<td class="${deltaClass}">${deltaText}</td>`;
+        `<td><span class="${deltaClass}">${deltaText}</span></td>`;
     assert.ok(html.replace(/\s+/g, ' ').includes(expected), `ожидалась строка: ${expected}`);
+  });
+
+  it("должен показать жирным имя игрока, когда его пара в матче вторая", async () => {
+    // матч, где игрок карточки (ids[0]) в паре 2: пары (Фамилия2, Фамилия3) и (Фамилия4, Фамилия1)
+    const ids: number[] = [];
+    for (let i = 1; i <= 4; i++) {
+      const { id } = await userService.create(`Фамилия${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
+      ids.push(id);
+    }
+    await userService.deregisterAll();
+    await userService.registerByIds(ids);
+    // матч в текущем (по сиду) турнире, где игрок карточки (ids[0]) в паре 2:
+    // пары (Фамилия2, Фамилия3) и (Фамилия4, Фамилия1)
+    await matchService.create(ids[1], ids[2], ids[3], ids[0]);
+    const match = (await matchService.getAll() as { id: number }[]).at(-1)!;
+    await gameService.create(match.id, null, "15", "2026-01-01 10:00:00");
+    await gameService.create(match.id, null, "17", "2026-01-01 10:05:00");
+    // второй турнир того же типа становится current — карточка показывает
+    // матчи первого турнира в свёрнутом «За всё время»
+    new TournamentService().create(
+      1, 1, 1, 1, "Вторая лига",
+      "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+      25, 1, "200", "600", "", 1,
+    );
+
+    const res = await fetch(`${base}/${ids[0]}`);
+    const html = await res.text();
+
+    // пара игрока первой, но имя игрока — второе в ней и по-прежнему жирное
+    assert.match(html, /<td>Фамилия4 И\. \/ <strong>Фамилия1 И\.<\/strong><\/td>/);
   });
 
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {

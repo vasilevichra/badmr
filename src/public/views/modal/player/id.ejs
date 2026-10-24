@@ -348,7 +348,6 @@
                                                        // дельта его рейтинга с цветом; дробная часть — без хвостовых нулей %>
                                                     <% const esc = (s) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); %>
                                                     <% const nameHtml = (name, uid) => uid === user.id ? `<strong>${esc(name)}</strong>` : esc(name); %>
-                                                    <% const deltaText = (delta) => delta === null || delta === undefined ? '' : `${delta >= 0 ? '+' : ''}${Number(delta.toFixed(2))}`; %>
                                                     <table class="table table-sm no-selection mb-0">
                                                         <tbody>
                                                         <% type_matches.forEach((m) => { %>
@@ -361,11 +360,11 @@
                                                                     <td><span class="rating-<%= m.wins1 > m.wins2 ? 'plus' : 'minus' %> fw-bold"><%= m.wins1 %>:<%= m.wins2 %></span></td>
                                                                     <td><%= m.name3 %> / <%= m.name4 %></td>
                                                                 <% } else { %>
-                                                                    <td><%- nameHtml(m.name3, m.user_3_id) %> / <%= m.name4 %></td>
+                                                                    <td><%= m.name3 %> / <%- nameHtml(m.name4, m.user_4_id) %></td>
                                                                     <td><span class="rating-<%= m.wins2 > m.wins1 ? 'plus' : 'minus' %> fw-bold"><%= m.wins2 %>:<%= m.wins1 %></span></td>
                                                                     <td><%= m.name1 %> / <%= m.name2 %></td>
                                                                 <% } %>
-                                                                <td class="rating-<%= m.delta < 0 ? 'minus' : 'plus' %>"><%= deltaText(m.delta) %></td>
+                                                                <td><%- include('../../rating-label', {v: m.delta, delta: true}).trim() %></td>
                                                             </tr>
                                                         <% }) %>
                                                         </tbody>

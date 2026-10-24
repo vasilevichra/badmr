@@ -1,5 +1,6 @@
 <% if (achievements && Object.keys(achievements).length > 0) { %>
     <% var plural = (n, forms) => forms[(n % 10 === 1 && n % 100 !== 11) ? 0 : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 1 : 2]; %>
+    <%# rising_star и consistent — рейтинг: выводятся стандартным rating-label (со знаком и цветом) %>
     <% var units = {
         winner: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
         machine_gunner: (v) => `${v} ${plural(v, ['волан', 'волана', 'воланов'])}`,
@@ -19,8 +20,6 @@
         workhorse: (v) => `${v} ${plural(v, ['игра', 'игры', 'игр'])}`,
         turtle: (v) => `${v}'`,
         lightning: (v) => `${v}' в среднем`,
-        rising_star: (v) => `${v > 0 ? '+' : ''}${v}`,
-        consistent: (v) => `${v > 0 ? '+' : ''}${v} за матч`,
         deadline: (v) => `${v} ${plural(v, ['матч', 'матча', 'матчей'])}`,
         medalist: (v) => `${v} ${plural(v, ['достижение', 'достижения', 'достижений'])}`
     }; %>
@@ -39,7 +38,7 @@
                             <% nomination.users.forEach((u) => { %>
                                 <div class="achievement-player no-selection" data-user-id="<%= u.user_id %>" role="button"><%- playerNameFormatter(u.user_id, u.name, u.sex, u.pic) %></div>
                             <% }) %>
-                            <label class="form-label achievement-value"><%= units[key](nomination.value) %></label>
+                            <label class="form-label achievement-value"><% if (key === 'rising_star' || key === 'consistent') { %><%- include('../../rating-label', {v: nomination.value, delta: true}).trim() %><% if (key === 'consistent') { %> за матч<% } %><% } else { %><%= units[key](nomination.value) %><% } %></label>
                         </div>
                     <% } %>
                 </div>

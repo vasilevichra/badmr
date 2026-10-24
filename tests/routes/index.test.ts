@@ -133,13 +133,13 @@ describe("Время розыгрыша в футере", () => {
     assert.match(html, /<th[^>]*>Параметр<\/th>\s*<th[^>]*>Турнир<\/th>\s*<th[^>]*>За всё время<\/th>/);
     // медиана секунд на очко: текущий — 5415/57 ≈ 94.9 → 95 → «1м 35с»;
     // за всё время — медиана {94.9, 9.7} ≈ 52.3 → «52с»
-    assert.match(html, /<td[^>]*>Время розыгрыша<\/td>\s*<td[^>]*>1м 35с<\/td>\s*<td[^>]*>52с<\/td>/);
+    assert.match(html, /<td[^>]*><math><mo>overline<\/mo><mi>t<\/mi><\/math> розыгрыша<\/td>\s*<td[^>]*>1м 35с<\/td>\s*<td[^>]*>52с<\/td>/);
     // медиана времени игры: текущий — {1800, 3615} → 2707.5 с → «45м 8с»;
     // за всё время — {300, 300, 1800, 3615} → (300 + 1800) / 2 = 1050 с → «17м 30с»
-    assert.match(html, /<td[^>]*>Время игры<\/td>\s*<td[^>]*>45м 8с<\/td>\s*<td[^>]*>17м 30с<\/td>/);
+    assert.match(html, /<td[^>]*><math><mo>overline<\/mo><mi>t<\/mi><\/math> игры<\/td>\s*<td[^>]*>45м 8с<\/td>\s*<td[^>]*>17м 30с<\/td>/);
     // медиана времени матча: текущий — 5415 с → «90м 15с»;
     // за всё время — {600, 5415} → 3007.5 с → «50м 8с»
-    assert.match(html, /<td[^>]*>Время матча<\/td>\s*<td[^>]*>90м 15с<\/td>\s*<td[^>]*>50м 8с<\/td>/);
+    assert.match(html, /<td[^>]*><math><mo>overline<\/mo><mi>t<\/mi><\/math> матча<\/td>\s*<td[^>]*>90м 15с<\/td>\s*<td[^>]*>50м 8с<\/td>/);
     // игр в матче: по 2 игры в каждом матче → «2»
     assert.match(html, /<td[^>]*>Игр в матче<\/td>\s*<td[^>]*>2<\/td>\s*<td[^>]*>2<\/td>/);
     assert.ok(html.indexOf('id="achievement"') < html.indexOf('id="stats"'));
@@ -152,7 +152,7 @@ describe("Время розыгрыша в футере", () => {
     const res = await fetch(`${base}tournament/4`);
     const html = await res.text();
 
-    assert.match(html, /<td[^>]*>Время розыгрыша<\/td>\s*<td[^>]*>—<\/td>\s*<td[^>]*>—<\/td>/);
+    assert.match(html, /<td[^>]*><math><mo>overline<\/mo><mi>t<\/mi><\/math> розыгрыша<\/td>\s*<td[^>]*>—<\/td>\s*<td[^>]*>—<\/td>/);
   });
 });
 

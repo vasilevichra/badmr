@@ -1,0 +1,10 @@
+<%# Стандартный вывод рейтинга и его дельты.
+    Формат: дробная часть не длиннее 2 цифр, без хвостовых нулей («11.3», «20», «9.85»).
+    Параметры:
+      v     — значение (number|string|null|undefined);
+      delta — true, если это дельта рейтинга: добавляется знак (+ для неотрицательных)
+              и цветовой класс rating-plus/rating-minus (span);
+              иначе выводится просто число (Σ-рейтинг, разница).
+    Для null/undefined выводится пустая строка.
+    Используется в достижениях, истории матчей и карточке игрока. %>
+<% if (v !== null && v !== undefined) { const n = Number(v); const t = String(Number(n.toFixed(2))); const isDelta = typeof delta !== 'undefined' && delta === true; if (isDelta) { %><span class="<%= n < 0 ? 'rating-minus' : 'rating-plus' %>"><%= n >= 0 ? '+' : '' %><%= t %></span><% } else { %><%= t %><% } } %>
