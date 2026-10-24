@@ -514,21 +514,20 @@ describe("Player page", () => {
     const d = new Date(created_at.replace(' ', 'T') + 'Z');
     const label = `#4 ${typeShort(type_name)} ${city} ${String(d.getDate()).padStart(2, '0')} ${monthShort[d.getMonth()]} ${d.getFullYear()}`;
 
-    // компактная таблица: подпись турнира, пары последовательно в одной
-    // колонке: пара игрока (имя жирным) сверху, под ней соперники; второй
-    // игрок каждой пары сразу под первым (у партнёра — разделитель пар);
-    // счёт и дельта объединены rowspan'ом на 4 строки; шрифты — классами
-    // таблиц матчей; игроки в стандартном формате (playerNameFormatter в
-    // co-player); дробная часть без хвостовых нулей; переносы от
-    // scriptlet-тегов EJS нормализуются до одинарных пробелов
+    // компактная таблица: подпись турнира, пары колонками: пара игрока
+    // (имя жирным) слева, соперники справа; счёт и дельта объединены
+    // rowspan'ом на 2 строки; шрифты — классами таблиц матчей; игроки в
+    // стандартном формате (playerNameFormatter в co-player); дробная часть
+    // без хвостовых нулей; переносы от scriptlet-тегов EJS нормализуются
+    // до одинарных пробелов
     const deltaText = `${delta >= 0 ? '+' : ''}${Number(delta.toFixed(2))}`;
     const deltaClass = delta < 0 ? 'rating-minus' : 'rating-plus';
-    const nameTd = (p: string, extra = '') => `<td class="text-center match-history-players-name${extra}">${p}</td>`;
-    const expected = `<td rowspan="4" class="match-history-info">${label}</td> ${nameTd(playerHtml(u1, 'Фамилия1 И.', true))} ` +
-        `<td rowspan="4" class="match-history-score"><span class="rating-plus fw-bold">2:0</span></td> ` +
-        `<td rowspan="4" class="match-history-delta-col"><span class="${deltaClass}">${deltaText}</span></td> </tr> <tr> ` +
-        `${nameTd(playerHtml(u2, 'Фамилия2 И.'), ' match-history-pair-end')} </tr> <tr> ` +
-        `${nameTd(playerHtml(u3, 'Фамилия3 И.'))} </tr> <tr> ${nameTd(playerHtml(u4, 'Фамилия4 И.'))}`;
+    const nameTd = (p: string) => `<td class="text-center match-history-players-name">${p}</td>`;
+    const expected = `<td rowspan="2" class="match-history-info">${label}</td> ${nameTd(playerHtml(u1, 'Фамилия1 И.', true))} ` +
+        `<td rowspan="2" class="text-center match-history-score"><span class="rating-plus fw-bold">2:0</span></td> ` +
+        `${nameTd(playerHtml(u3, 'Фамилия3 И.'))} ` +
+        `<td rowspan="2" class="text-center match-history-delta-col"><span class="${deltaClass}">${deltaText}</span></td> </tr> <tr> ` +
+        `${nameTd(playerHtml(u2, 'Фамилия2 И.'))} ${nameTd(playerHtml(u4, 'Фамилия4 И.'))}`;
     assert.ok(html.replace(/\s+/g, ' ').includes(expected), `ожидалась строка: ${expected}`);
   });
 
@@ -559,12 +558,13 @@ describe("Player page", () => {
     const html = await res.text();
     const normalized = html.replace(/\s+/g, ' ');
 
-    // пары в одной колонке: пара игрока (Фамилия4, жирная Фамилия1) сверху,
-    // под ней соперники (Фамилия2, Фамилия3); имя игрока жирное и с
-    // разделителем пар (match-history-pair-end); имена кликабельны (co-player)
-    const nameTd = (p: string, extra = '') => `<td class="text-center match-history-players-name${extra}">${p}</td>`;
-    assert.ok(normalized.includes(`</tr> <tr> ${nameTd(playerHtml(ids[0], 'Фамилия1 И.', true), ' match-history-pair-end')}`), 'партнёр: вторая строка, над ним жирное имя игрока');
-    assert.ok(normalized.includes(`</tr> <tr> ${nameTd(playerHtml(ids[1], 'Фамилия2 И.'))} </tr> <tr> ${nameTd(playerHtml(ids[2], 'Фамилия3 И.'))}`), 'соперники — под парой игрока');
+    // пара игрока — колонка слева (Фамилия4 сверху, жирная Фамилия1 под
+    // ним), соперники — колонка справа (Фамилия2, Фамилия3); имя игрока
+    // жирное; имена кликабельны (co-player)
+    const nameTd = (p: string) => `<td class="text-center match-history-players-name">${p}</td>`;
+    assert.ok(normalized.includes(nameTd(playerHtml(ids[3], 'Фамилия4 И.'))), 'Фамилия4 в первой строке пары');
+    assert.ok(normalized.includes(nameTd(playerHtml(ids[1], 'Фамилия2 И.'))), 'Фамилия2 в первой строке соперников');
+    assert.ok(normalized.includes(`</tr> <tr> ${nameTd(playerHtml(ids[0], 'Фамилия1 И.', true))} ${nameTd(playerHtml(ids[2], 'Фамилия3 И.'))}`), 'вторая строка: жирное имя игрока и Фамилия3');
   });
 
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {
