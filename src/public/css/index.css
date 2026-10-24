@@ -461,7 +461,10 @@ input:focus::placeholder {
   vertical-align: middle;
 }
 
-#player-same-type-matches tr td:not([rowspan]) {
+/* линия-разделитель пар не должна прерываться под ячейками с игроками:
+   границу убираем только у первой строки пары (нечётные tr),
+   вторая строка (чётные tr) оставляет bootstrap-границу снизу */
+#player-same-type-matches tr:nth-child(odd) td:not([rowspan]) {
   border-bottom: 0;
 }
 
