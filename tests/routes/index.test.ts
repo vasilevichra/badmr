@@ -156,6 +156,35 @@ describe("Время розыгрыша в футере", () => {
   });
 });
 
+describe("Tournament page for guest", () => {
+  // отдельное приложение: гость (нет req.user)
+  const guestApp: App = Express();
+  guestApp.set("views", path.resolve(import.meta.dirname, "../../src/public/views"));
+  guestApp.set("view engine", "ejs");
+  guestApp.use((req, res, next) => {
+    (req as unknown as { useragent: { isDesktop: boolean } }).useragent = { isDesktop: true };
+    (req as unknown as { isAuthenticated: () => boolean }).isAuthenticated = () => false;
+    res.locals.csrfToken = "test";
+    next();
+  });
+  guestApp.use("/", IndexRouter);
+
+  const guestServer = guestApp.listen(0);
+  const guestBase = `http://127.0.0.1:${(guestServer.address() as AddressInfo).port}/`;
+
+  it("не должен показывать заголовок блока «Статистика»", async () => {
+    await clean();
+    const res = await fetch(`${guestBase}tournament/4`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    // заголовок блока — как у «Игроков» и «Истории матчей» — только авторизованным
+    assert.doesNotMatch(html, /<h1[^>]*>Статистика<\/h1>/);
+    // сама таблица статистики гостю видна
+    assert.match(html, /<th[^>]*>Параметр<\/th>\s*<th[^>]*>Турнир<\/th>\s*<th[^>]*>За всё время<\/th>/);
+  });
+});
+
 describe("Нумерация истории матчей", () => {
   const matchService = new MatchService();
   const gameService = new GameService();

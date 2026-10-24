@@ -144,7 +144,9 @@
 <div class="container">
     <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
     <div id="stats" class="stats closable">
-        <h1 class="text-center no-selection">Статистика</h1>
+        <% if (user) { %>
+            <h1 class="text-center no-selection">Статистика</h1>
+        <% } %>
         <table class="table stats-table mx-auto w-auto">
             <thead>
             <tr>

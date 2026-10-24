@@ -476,10 +476,15 @@ describe("Player page", () => {
     const d = new Date(created_at.replace(' ', 'T') + 'Z');
     const label = `#4 ${typeShort(type_name)} ${city} ${String(d.getDate()).padStart(2, '0')} ${monthShort[d.getMonth()]} ${d.getFullYear()}`;
 
-    // имя игрока карточки жирным, счёт его пары первым, в конце дельта его рейтинга;
+    // компактная таблица: подпись турнира, пара игрока первой (имя жирным),
+    // её счёт первым, соперники, дельта с цветом; дробная часть без хвостовых нулей;
     // переносы от scriptlet-тегов EJS нормализуются до одинарных пробелов
-    const deltaText = `${delta >= 0 ? '+' : ''}${Number(delta).toFixed(2)}`;
-    const expected = `${label} - <strong>Фамилия1 И.</strong> / Фамилия2 И. <span class="rating-plus fw-bold">2:0</span> Фамилия3 И. / Фамилия4 И. (${deltaText})`;
+    const deltaText = `${delta >= 0 ? '+' : ''}${Number(delta.toFixed(2))}`;
+    const deltaClass = delta < 0 ? 'rating-minus' : 'rating-plus';
+    // нормализация даёт пробелы между </td> и <td> (переносы от scriptlet-тегов EJS)
+    const expected = `<td>${label}</td> <td><strong>Фамилия1 И.</strong> / Фамилия2 И.</td> ` +
+        `<td><span class="rating-plus fw-bold">2:0</span></td> <td>Фамилия3 И. / Фамилия4 И.</td> ` +
+        `<td class="${deltaClass}">${deltaText}</td>`;
     assert.ok(html.replace(/\s+/g, ' ').includes(expected), `ожидалась строка: ${expected}`);
   });
 
