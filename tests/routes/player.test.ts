@@ -10,6 +10,7 @@ import UserService from "../../src/services/user.ts";
 import SettingsService from "../../src/services/settings.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
+import TournamentService from "../../src/services/tournament.ts";
 import { clean } from "../helpers/migration.ts";
 import type { AddressInfo } from "node:net";
 
@@ -60,6 +61,34 @@ describe("Player page", () => {
   beforeEach(async () => {
     await clean();
   });
+
+  // сид для блоков «За всё время»: доигранный матч в текущем турнире (id 4,
+  // тип 1), затем второй турнир того же типа становится текущим и в нём
+  // ещё доигранный матч; карточка в контексте второго турнира имеет
+  // и соигроков текущего турнира, и «за всё время» из первого
+  const seedTwoSameTypeTournaments = async (): Promise<number[]> => {
+    const ids: number[] = [];
+    for (let i = 1; i <= 4; i++) {
+      const { id } = await userService.create(`Фамилия${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
+      ids.push(id);
+    }
+    await userService.deregisterAll();
+    await userService.registerByIds(ids);
+    const seedFinishedMatch = async () => {
+      await matchService.create(...(ids as [number, number, number, number]));
+      const match = (await matchService.getAll() as { id: number }[]).at(-1)!;
+      await gameService.create(match.id, null, "15", "2026-01-01 10:00:00");
+      await gameService.create(match.id, null, "17", "2026-01-01 10:05:00");
+    };
+    await seedFinishedMatch();
+    new TournamentService().create(
+      1, 1, 1, 1, "Вторая лига",
+      "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+      25, 1, "200", "600", "", 1,
+    );
+    await seedFinishedMatch();
+    return ids;
+  };
 
   it("должен показать неудобных соперников с долей поражений", async () => {
     const ids: number[] = [];
@@ -385,6 +414,40 @@ describe("Player page", () => {
     res = await fetch(`${base}/${ids[0]}`);
     html = await res.text();
     assert.match(html, /class="nav-link active"[^>]*id="overview-tab"/);
+  });
+
+  it("должен назвать свёрнутые списки «За всё время» и убрать «На этом турнире» на вкладках соигроков", async () => {
+    const [u1] = await seedTwoSameTypeTournaments();
+    const res = await fetch(`${base}/${u1}`);
+    const html = await res.text();
+
+    // вкладка «Матчи»: свёрнутый список называется «За всё время»
+    assert.doesNotMatch(html, /Все матчи/);
+    assert.match(html, /За всё время \(\d+\)/);
+    // на вкладках соигроков: без «(турниры того же типа)», без подписи «На этом турнире»
+    assert.doesNotMatch(html, /турниры того же типа/);
+    assert.match(html, /<i class="bi bi-chevron-down"><\/i> За всё время/);
+    assert.doesNotMatch(html, /id="win-tab-pane"[\s\S]*?text-secondary mb-1">На этом турнире/);
+    assert.doesNotMatch(html, /id="lose-tab-pane"[\s\S]*?text-secondary mb-1">На этом турнире/);
+  });
+
+  it("должен раскрывать блок «За всё время» из параметра ?all=1", async () => {
+    const [u1] = await seedTwoSameTypeTournaments();
+
+    // с ?all=1 блоки «За всё время» раскрыты
+    let res = await fetch(`${base}/${u1}?tab=win&all=1`);
+    let html = await res.text();
+    assert.match(html, /class="collapse show" id="win-all-collapse"/);
+
+    res = await fetch(`${base}/${u1}?all=1`);
+    html = await res.text();
+    assert.match(html, /class="collapse show" id="player-same-type-matches"/);
+
+    // без параметра — свёрнуто
+    res = await fetch(`${base}/${u1}`);
+    html = await res.text();
+    assert.match(html, /class="collapse" id="player-same-type-matches"/);
+    assert.match(html, /class="collapse" id="win-all-collapse"/);
   });
 
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {

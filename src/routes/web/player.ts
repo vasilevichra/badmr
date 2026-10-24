@@ -44,6 +44,8 @@ router.get('/:id', (req, res) => {
   const knownTabs = ['matches', 'win', 'lose', 'chance', 'worst'];
   const requestedTab = String(req.query.tab ?? '');
   const activeTab = knownTabs.includes(requestedTab) ? requestedTab : 'overview';
+  // ?all=1 — раскрыть блоки «За всё время» (ссылкой с раскрытым списком можно поделиться)
+  const expandAll = req.query.all === '1';
   Promise.all([
     userService.getById(userId),              // 0
     userService.getRating(userId),            // 1
@@ -93,6 +95,7 @@ router.get('/:id', (req, res) => {
       type_matches: promises[19],
       current_tournament_finished: currentTournamentFinished,
       active_tab: activeTab,
+      expand_all: expandAll,
       achievements: achievements,
       playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
     });

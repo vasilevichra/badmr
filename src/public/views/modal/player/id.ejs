@@ -254,7 +254,6 @@
                                         <div class="tab-pane fade<%= active_tab === 'win' ? ' show active' : '' %>" id="win-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
                                             <div class="p-2">
                                                 <% if (co_winners.length) { %>
-                                                <div class="text-secondary mb-1">На этом турнире</div>
                                                 <table class="table no-selection">
                                                     <tbody>
                                                     <% co_winners.forEach((w) => { %>
@@ -264,10 +263,10 @@
                                                 </table>
                                                 <% } %>
                                                 <% if (co_winners_all.length) { %>
-                                                <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#win-all-collapse" role="button" aria-expanded="false" aria-controls="win-all-collapse">
-                                                    <i class="bi bi-chevron-down"></i> За всё время (турниры того же типа)
+                                                <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#win-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="win-all-collapse">
+                                                    <i class="bi bi-chevron-down"></i> За всё время
                                                 </a>
-                                                <div class="collapse" id="win-all-collapse">
+                                                <div class="collapse<%= expand_all ? ' show' : '' %>" id="win-all-collapse">
                                                     <table class="table no-selection">
                                                         <tbody>
                                                         <% co_winners_all.forEach((w) => { %>
@@ -282,7 +281,6 @@
                                         <div class="tab-pane fade<%= active_tab === 'lose' ? ' show active' : '' %>" id="lose-tab-pane" role="tabpanel" aria-labelledby="lose-tab" tabindex="0">
                                             <div class="p-2">
                                                 <% if (co_losers.length) { %>
-                                                <div class="text-secondary mb-1">На этом турнире</div>
                                                 <table class="table no-selection">
                                                     <tbody>
                                                     <% co_losers.forEach((l) => { %>
@@ -292,10 +290,10 @@
                                                 </table>
                                                 <% } %>
                                                 <% if (co_losers_all.length) { %>
-                                                <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#lose-all-collapse" role="button" aria-expanded="false" aria-controls="lose-all-collapse">
-                                                    <i class="bi bi-chevron-down"></i> За всё время (турниры того же типа)
+                                                <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#lose-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="lose-all-collapse">
+                                                    <i class="bi bi-chevron-down"></i> За всё время
                                                 </a>
-                                                <div class="collapse" id="lose-all-collapse">
+                                                <div class="collapse<%= expand_all ? ' show' : '' %>" id="lose-all-collapse">
                                                     <table class="table no-selection">
                                                         <tbody>
                                                         <% co_losers_all.forEach((l) => { %>
@@ -342,9 +340,9 @@
                                             <% // свёрнутые матчи турниров того же типа (#57): одна строка на матч %>
                                             <div class="mt-3">
                                                 <a class="link-dark link-underline-opacity-0" data-bs-toggle="collapse" href="#player-same-type-matches" role="button" aria-expanded="false" aria-controls="player-same-type-matches">
-                                                    <i class="bi bi-chevron-down"></i> Все матчи (<%= type_matches.length %>)
+                                                    <i class="bi bi-chevron-down"></i> За всё время (<%= type_matches.length %>)
                                                 </a>
-                                                <div class="collapse" id="player-same-type-matches">
+                                                <div class="collapse<%= expand_all ? ' show' : '' %>" id="player-same-type-matches">
                                                     <% type_matches.forEach((m) => { %>
                                                         <% // пара игрока показывается первой, её счёт — первым числом %>
                                                         <% const mine_first = m.user_1_id === user.id || m.user_2_id === user.id; %>
@@ -538,6 +536,28 @@
                 url.searchParams.set('tab', name);
             }
             history.replaceState({}, '', url);
+        });
+
+        // раскрытие блоков «За всё время» синхронизируется с адресом (?all=1),
+        // чтобы ссылкой с раскрытым списком можно было поделиться
+        const allTargets = ['win-all-collapse', 'lose-all-collapse', 'player-same-type-matches'];
+        const syncAll = () => {
+            const url = new URL(location.href);
+            const anyOpen = allTargets.some((id) => document.getElementById(id)?.classList.contains('show'));
+            if (anyOpen) {
+                url.searchParams.set('all', '1');
+            } else {
+                url.searchParams.delete('all');
+            }
+            history.replaceState({}, '', url);
+        };
+        allTargets.forEach((id) => {
+            const el = document.getElementById(id);
+            if (!el) {
+                return;
+            }
+            el.addEventListener('shown.bs.collapse', syncAll);
+            el.addEventListener('hidden.bs.collapse', syncAll);
         });
     })();
 </script>
