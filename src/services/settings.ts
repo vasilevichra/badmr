@@ -17,6 +17,7 @@ class Settings {
   // здесь они повторяются для переопределений турнира в tournament_settings
   private static readonly INTEGER_MIN: Record<string, number> = {
     delta: 0, proc: 0, matches: 0, wins: 1, game_point: 1, max_point: 1, capacity: 1, courts: 1,
+    rating_diff_limit: 0, rating_diff_divisor: 1,
   };
   private static readonly POSITIVE: Record<string, number> = {
     fee: 0, B_max: 0, C_max: 0, D_max: 0, E_max: 0, F_max: 0, G_max: 0, H_max: 0, r_min: 0,

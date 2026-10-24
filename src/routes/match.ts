@@ -2,7 +2,9 @@ import Express from 'express';
 const router = Express.Router();
 import { ensureLoggedIn } from 'connect-ensure-login';
 import MatchService from '../services/match.ts';
+import RatingService from '../services/rating.ts';
 const matchService = new MatchService();
+const ratingService = new RatingService();
 
 router.get('/unfinished', (req, res) => {
   res.promise(matchService.getAllUnfinished());
@@ -24,6 +26,18 @@ router.post('/create110', ensureLoggedIn(), (req, res) => {
 
 router.post('/delete/:id', ensureLoggedIn(), (req, res) => {
   res.promise(matchService.deleteById(Number(req.params.id)));
+});
+
+// ручной каскадный пересчёт рейтинга матча и всех последующих — в фоне
+router.post('/recalc-rating/:id', ensureLoggedIn(), (req, res) => {
+  const id = Number(req.params.id);
+  const source = ratingService.getRecalcSource(id);
+  if (!source) {
+    res.promise(Promise.reject(Object.assign(new Error('матч не найден'), {status: 404})));
+    return;
+  }
+  ratingService.scheduleRecalc(source);
+  res.promise(Promise.resolve({status: 'scheduled', match_id: id}));
 });
 
 export default router;

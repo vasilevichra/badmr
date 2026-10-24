@@ -1,5 +1,8 @@
 import MatchRepository from '../repositories/match.ts';
 import Match110Repository from '../repositories/match110.ts';
+import RatingService from './rating.ts';
+
+const ratingService = new RatingService();
 
 class Match {
   declare static _instance: Match | undefined;
@@ -33,7 +36,11 @@ class Match {
   getById = (id: number) => this.match.getById(id);
   create = (user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number) => this.match.create(user_1_id, user_2_id, user_3_id, user_4_id);
   create110 = (team_1_id: number, team_2_id: number) => this.match110.create(team_1_id, team_2_id);
-  deleteById = (id: number) => this.match.deleteById(id);
+  deleteById = (id: number) => {
+    // снапшот для каскадного пересчёта — до удаления матча
+    ratingService.scheduleRecalcAfterMatchDelete(id);
+    return this.match.deleteById(id);
+  };
 }
 
 export default Match;

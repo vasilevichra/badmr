@@ -37,6 +37,23 @@ class Game {
         [match_id, lost_1_by, lost_2_by, created_at, created_at, match_id]
     );
   }
+
+  update(id: number, lost_1_by: string | null, lost_2_by: string | null) {
+    return this.db.run(
+        `UPDATE game
+         SET lost_1_by = ?,
+             lost_2_by = ?
+         WHERE id = ?`,
+        [lost_1_by, lost_2_by, id]
+    );
+  }
+
+  deleteById(id: number) {
+    return this.db.run(
+        `DELETE FROM game WHERE id = ?`,
+        [id]
+    );
+  }
 }
 
 export default Game;

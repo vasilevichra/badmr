@@ -63,6 +63,9 @@ const seedCalibratedPlayer = async () => {
   const match = matches.filter((m) => m.finished === 0).at(-1)!;
   await gameService.create(match.id, null, "15", "2026-01-01 10:00:00");
   await gameService.create(match.id, null, "17", "2026-01-01 10:05:00");
+  // дожидаемся отложенных (setImmediate) фоновых пересчётов рейтинга,
+  // чтобы последующие ручные правки rating в тестах их не обгоняли
+  await new Promise<void>((resolve) => setImmediate(() => setImmediate(() => resolve())));
   return { id: ids[0], matchId: match.id };
 };
 

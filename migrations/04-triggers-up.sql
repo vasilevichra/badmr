@@ -7,6 +7,11 @@
 -- Guard NOT EXISTS делает начисление идемпотентным: повторная установка
 -- finished = 1 не падает с UNIQUE.
 --
+-- Параметры формулы дельты вынесены в settings: rating_diff_limit (порог
+-- разницы средних рейтингов команд, при превышении которого дельта 0) и
+-- rating_diff_divisor (делитель чувствительности, delta = (limit - diff)/k).
+-- Те же параметры читает фоновый пересчёт рейтинга (src/services/rating.ts).
+--
 -- Калибровка рейтинга: игроки с неактуальным рейтингом (последняя строка
 -- старше calibration_fresh_days от даты матча, отсутствует или является
 -- сидом — ручной установкой без матча) начинают серию из
@@ -39,7 +44,11 @@ BEGIN
         SELECT (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_matches')    AS c,
                (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_boost')      AS boost,
                (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_cap')        AS cap,
-               (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_fresh_days') AS fresh
+               (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_fresh_days') AS fresh,
+               -- параметры формулы дельты (см. settings rating_diff_limit/divisor);
+               -- coalesce — для баз без сидов этих настроек
+               coalesce((SELECT cast(value AS REAL) FROM settings WHERE name = 'rating_diff_limit'), 100.0)   AS lim,
+               coalesce((SELECT cast(value AS REAL) FROM settings WHERE name = 'rating_diff_divisor'), 10.0)  AS k
     ),
     last AS (
         SELECT (SELECT previous + coalesce(delta, 0)
@@ -149,15 +158,15 @@ BEGIN
                round(p4, 1) AS r4,
                -- дельты для обеих ролей: diff1 = avg(3,4) - avg(1,2) —
                -- на столько команда 3/4 сильнее; при её победе её игроки
-               -- получают +(100 - diff1)/10, при проигрыше — наоборот
-               CASE WHEN (p3 + p4) / 2.0 - (p1 + p2) / 2.0 >= 100 THEN 0
-                    ELSE round((100 - ((p3 + p4) / 2.0 - (p1 + p2) / 2.0)) / 10.0, 1) END  AS win34_delta,
-               CASE WHEN (p3 + p4) / 2.0 - (p1 + p2) / 2.0 >= 100 THEN 0
-                    ELSE round((100 - ((p3 + p4) / 2.0 - (p1 + p2) / 2.0)) / -10.0, 1) END AS lose12_delta,
-               CASE WHEN (p1 + p2) / 2.0 - (p3 + p4) / 2.0 >= 100 THEN 0
-                    ELSE round((100 - ((p1 + p2) / 2.0 - (p3 + p4) / 2.0)) / 10.0, 1) END  AS win12_delta,
-               CASE WHEN (p1 + p2) / 2.0 - (p3 + p4) / 2.0 >= 100 THEN 0
-                    ELSE round((100 - ((p1 + p2) / 2.0 - (p3 + p4) / 2.0)) / -10.0, 1) END AS lose34_delta,
+               -- получают +(lim - diff1)/k, при проигрыше — наоборот
+               CASE WHEN (p3 + p4) / 2.0 - (p1 + p2) / 2.0 >= lim THEN 0
+                    ELSE round((lim - ((p3 + p4) / 2.0 - (p1 + p2) / 2.0)) / k, 1) END  AS win34_delta,
+               CASE WHEN (p3 + p4) / 2.0 - (p1 + p2) / 2.0 >= lim THEN 0
+                    ELSE round((lim - ((p3 + p4) / 2.0 - (p1 + p2) / 2.0)) / -k, 1) END AS lose12_delta,
+               CASE WHEN (p1 + p2) / 2.0 - (p3 + p4) / 2.0 >= lim THEN 0
+                    ELSE round((lim - ((p1 + p2) / 2.0 - (p3 + p4) / 2.0)) / k, 1) END  AS win12_delta,
+               CASE WHEN (p1 + p2) / 2.0 - (p3 + p4) / 2.0 >= lim THEN 0
+                    ELSE round((lim - ((p1 + p2) / 2.0 - (p3 + p4) / 2.0)) / -k, 1) END AS lose34_delta,
                lost_1 = wins AS team_1_lost,
                -- калибровка игрока 1: серия начинается, если рейтинга нет,
                -- последняя строка — сид (даты нет) или она протухла

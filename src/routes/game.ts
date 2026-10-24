@@ -21,6 +21,15 @@ router.post('/create', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.create(match_id, lost_1_by || null, lost_2_by || null, created_at));
 });
 
+router.post('/update/:id', ensureLoggedIn(), (req, res) => {
+  const {lost_1_by, lost_2_by} = req.body;
+  res.promise(gameService.update(Number(req.params.id), lost_1_by ?? null, lost_2_by ?? null));
+});
+
+router.post('/delete/:id', ensureLoggedIn(), (req, res) => {
+  res.promise(gameService.deleteById(Number(req.params.id)));
+});
+
 router.post('/create110/:match_110_id', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.create110(Number(req.params.match_110_id)));
 });
