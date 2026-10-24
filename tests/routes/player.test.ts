@@ -386,6 +386,35 @@ describe("Player page", () => {
     assert.match(html, /Параметр/);
   });
 
+  it("должен скрыть блок ЛАБ когда нет аккаунта ЛАБ", async () => {
+    const { id } = await userService.create("Фамилия", "Имя", "Отчество", 500, 1, 1, "1990-01-01");
+    await userService.deregisterAll();
+    await userService.registerByIds([id]);
+
+    const res = await fetch(`${base}/${id}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.doesNotMatch(html, /bi-at/);
+    assert.doesNotMatch(html, /badminton4u\.ru/);
+  });
+
+  it("должен показать @логин без рейтинга ЛАБ когда рейтингов нет", async () => {
+    const { id } = await userService.create("Фамилия", "Имя", "Отчество", 500, 1, 1, "1990-01-01");
+    await userService.deregisterAll();
+    await userService.registerByIds([id]);
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
+    db.prepare("INSERT INTO user_lab (user_id, site_id, site_login, rating_1, rating_2) VALUES (?, 42, 'vasilevich', 0, 0)").run(id);
+
+    const res = await fetch(`${base}/${id}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.match(html, /badminton4u\.ru\/players\/42/);
+    assert.match(html, /vasilevich/);
+    assert.doesNotMatch(html, /<math class="secondary-info">/);
+  });
+
   it("должен открывать вкладку из параметра ?tab= и не активировать чужие", async () => {
     const ids: number[] = [];
     for (let i = 1; i <= 4; i++) {
