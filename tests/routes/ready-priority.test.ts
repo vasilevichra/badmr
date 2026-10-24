@@ -28,6 +28,8 @@ describe("ReadyPriority API", () => {
       { id: 2, text: "matches" },
       { id: 3, text: "diff" },
       { id: 4, text: "friends" },
+      { id: 5, text: "rematch" },
+      { id: 6, text: "balance" },
     ]);
   });
 });

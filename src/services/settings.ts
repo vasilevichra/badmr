@@ -91,6 +91,8 @@ class Settings {
       TYPE: 'type',
       PRIORITY: 'priority',
       FIFTY: 'fifty',
+      DELTA_AUTO: 'delta_auto',
+      WINS: 'wins',
     };
   }
 

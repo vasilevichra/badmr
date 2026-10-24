@@ -31,6 +31,11 @@ export interface CalculatedPair {
   // система 50%: фаворит матчапа по моментуму — 1 (players1), 2 (players2),
   // 0 (нейтральный); проставляется только при включённой fifty
   favorite?: 0 | 1 | 2;
+  // повторные встречи: сколько напарников этого матча уже играли вместе
+  // (и сколько составов совпало целиком) в последних матчах турнира
+  rematch?: number;
+  // ожидаемая конкурентность: предсказанная вероятность матча в три игры, 0..1
+  balance?: number;
 }
 
 class Common {
@@ -81,6 +86,55 @@ class Common {
            AND r.user_id NOT IN (SELECT value FROM json_each(?))
          ORDER BY r.played, r.matches DESC`,
         [tournamentId ?? null, JSON.stringify(uniqUsedUserIds)]
+    );
+  }
+
+  /** Составы последних завершённых матчей турнира — для штрафа за
+   *  повторные встречи (поля rematch подбора). */
+  recentFinished(tournamentId: number | undefined, limit: number) {
+    return this.db.all<{
+      user_1_id: number;
+      user_2_id: number;
+      user_3_id: number;
+      user_4_id: number;
+    }>(
+        `SELECT user_1_id, user_2_id, user_3_id, user_4_id
+         FROM match
+         WHERE finished = 1
+           AND tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
+         ORDER BY created_at DESC, id DESC
+         LIMIT ?`,
+        [tournamentId ?? null, limit]
+    );
+  }
+
+  /** История завершённых матчей для модели конкурентности:
+   *  previous каждой строки rating — рейтинг игрока ДО матча,
+   *  lost_1_by/lost_2_by — счёт по играм (2:1 → матч в три игры). */
+  threeGameHistory(tournamentId: number | undefined) {
+    return this.db.all<{
+      p1: number;
+      p2: number;
+      p3: number;
+      p4: number;
+      lost_1: number;
+      lost_2: number;
+    }>(
+        `SELECT r1.previous AS p1,
+                r2.previous AS p2,
+                r3.previous AS p3,
+                r4.previous AS p4,
+                (SELECT count(lost_1_by) FROM game WHERE match_id = m.id) AS lost_1,
+                (SELECT count(lost_2_by) FROM game WHERE match_id = m.id) AS lost_2
+         FROM match m
+                  JOIN rating r1 ON r1.match_id = m.id AND r1.user_id = m.user_1_id
+                  JOIN rating r2 ON r2.match_id = m.id AND r2.user_id = m.user_2_id
+                  JOIN rating r3 ON r3.match_id = m.id AND r3.user_id = m.user_3_id
+                  JOIN rating r4 ON r4.match_id = m.id AND r4.user_id = m.user_4_id
+         WHERE m.finished = 1
+           AND m.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
+         ORDER BY m.id`,
+        [tournamentId ?? null]
     );
   }
 }
