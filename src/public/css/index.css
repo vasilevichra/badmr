@@ -450,7 +450,11 @@ input:focus::placeholder {
    таблиц матчей (match-history-*); пара игроков — в две строки, остальные
    колонки объединены rowspan'ом, границы между строками пары нет */
 #player-same-type-matches td.match-history-players-name {
-  justify-content: center;
+  /* display:flex выкидывает td из табличной раскладки: обе td второй строки
+     пары попадают в одну анонимную ячейку и рендерятся в первой колонке */
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
 }
 
 #player-same-type-matches td[rowspan] {
