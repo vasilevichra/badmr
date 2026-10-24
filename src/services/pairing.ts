@@ -6,10 +6,18 @@ import type { CalculatedPair, ReadyRow } from "../repositories/common.ts";
  * Кандидаты — все допустимые матчи «пара против пары» (фильтры delta, proc,
  * fifty — как прежде). Раунд собирается целиком: жадный старт и локальный
  * поиск (замена матча, перегруппировка двух матчей, добавление матча),
- * минимизирующий агрегаты полей PRIORITY по всему набору выбранных матчей.
- * Детерминирован: никакой случайности, равные варианты разрешаются порядком
- * перечисления кандидатов.
+ * минимизирующий агрегаты полей фиксированного PRIORITY по всему набору
+ * выбранных матчей. Детерминирован: никакой случайности, равные варианты
+ * разрешаются порядком перечисления кандидатов.
  */
+
+/**
+ * Фиксированный порядок приоритетов отбора пар (первое значение — высший
+ * приоритет): сначала выравнивание числа сыгранных матчей по игрокам,
+ * затем анти-риматч и ротация отдыха, затем конкурентность, и только
+ * потом разница рейтингов и совместный винрейт напарников.
+ */
+export const PRIORITY: string[] = ['matches', 'rematch', 'played', 'balance', 'diff', 'friends'];
 
 /** Исторический матч для модели конкурентности. */
 export interface MatchSample {
@@ -100,7 +108,7 @@ export interface Candidate {
   sig: string;
 }
 
-/** Направление сортировки полей priority: 1 — минимизировать, −1 — максимизировать. */
+/** Направление сортировки полей приоритета: 1 — минимизировать, −1 — максимизировать. */
 const FIELD_DIR: Record<string, 1 | -1> = {
   played: 1,
   matches: 1,
@@ -120,17 +128,18 @@ const fieldValue = (c: Candidate, name: string): number =>
  * @param recentDuos ключи дуо недавних матчей ("min-max")
  * @param recentQuads ключи составов недавних матчей
  * @param opts delta (макс. сумма-разница), proc, fifty, модель конкурентности,
- *        priority — имена полей (rematch/balance попадают в пары только когда
- *        участвуют в отборе, чтобы не менять форму ответа без нужды)
+ * @param opts delta (макс. сумма-разница команд), proc, fifty, модель
+ *        конкурентности; rematch/balance остаются внутренними полями
+ *        кандидатов — в ответ «Подбора» они не попадают
  */
 export const buildCandidates = (
     readyRows: ReadyRow[],
     buddies: Map<number, Map<number, number>>,
     recentDuos: Set<string>,
     recentQuads: Set<string>,
-    opts: {delta: number; proc: number; fifty: boolean; model: ThreeGameModel; priority: string[]},
+    opts: {delta: number; proc: number; fifty: boolean; model: ThreeGameModel},
 ): Candidate[] => {
-  const {delta, proc, fifty, model, priority} = opts;
+  const {delta, proc, fifty, model} = opts;
   const byId = new Map(readyRows.map((u) => [u.user_id, u]));
   const chance = (id1: number, id2: number): number | null =>
       buddies.get(id1)?.get(id2) ?? null;
@@ -205,17 +214,10 @@ export const buildCandidates = (
         chance2,
         friends: (chance1 ?? 0) + (chance2 ?? 0),
       };
-      // favorite проставляется только при включённой системе 50%,
-      // rematch/balance — только когда участвуют в приоритете отбора:
-      // форма ответа «Подбора» меняется только там, где поле задействовано
+      // favorite проставляется только при включённой системе 50%;
+      // rematch/balance используются только оптимизатором и в ответ не идут
       if (fifty) {
         pair.favorite = favorite;
-      }
-      if (priority.includes("rematch")) {
-        pair.rematch = rematch;
-      }
-      if (priority.includes("balance")) {
-        pair.balance = threeGameProb(model, diff / 2, spread);
       }
 
       candidates.push({
@@ -258,10 +260,10 @@ const lexLess = (x: (string | number)[], y: (string | number)[]): boolean => {
   return false;
 };
 
-/** Агрегированный ключ решения: [−число матчей, ...поля priority, сигнатуры]. */
-const solutionKeys = (solution: Candidate[], priority: string[]): (string | number)[] => {
+/** Агрегированный ключ решения: [−число матчей, ...поля приоритета, сигнатуры]. */
+const solutionKeys = (solution: Candidate[]): (string | number)[] => {
   const keys: (string | number)[] = [-solution.length];
-  for (const name of priority) {
+  for (const name of PRIORITY) {
     const dir = FIELD_DIR[name] ?? 1;
     keys.push(dir * solution.reduce((s, c) => s + fieldValue(c, name), 0));
   }
@@ -272,8 +274,8 @@ const solutionKeys = (solution: Candidate[], priority: string[]): (string | numb
 };
 
 /** Пер-матчевое сравнение для жадного выбора (семантика прежнего calcReadyRec). */
-const matchLess = (x: Candidate, y: Candidate, priority: string[]): boolean => {
-  for (const name of priority) {
+const matchLess = (x: Candidate, y: Candidate): boolean => {
+  for (const name of PRIORITY) {
     const dir = FIELD_DIR[name] ?? 1;
     const d = (fieldValue(x, name) - fieldValue(y, name)) * dir;
     if (d !== 0) return d < 0;
@@ -285,32 +287,48 @@ const matchLess = (x: Candidate, y: Candidate, priority: string[]): boolean => {
 const disjoint = (c: Candidate, solution: Candidate[]): boolean =>
     solution.every((m) => m.ids.every((id) => !c.ids.includes(id)));
 
+/** У кандидата есть disjoint-дополнение из кандидатов (для дозаполнения раунда). */
+const extendable = (c: Candidate, taken: Candidate[], pool: Candidate[], maxMatches: number): boolean => {
+  if (taken.length + 1 >= maxMatches) return true; // раунд заполняется этим матчем
+  return pool.some((d) => d !== c && !taken.includes(d) && disjoint(d, [...taken, c]));
+};
+
 /**
  * Собирает раунд: до maxMatches непересекающихся матчей.
  * Жадный старт + локальный поиск (замена матча, перегруппировка пары
- * матчей, добавление матча) до локального оптимума агрегатов priority.
+ * матчей, добавление матча) до локального оптимума агрегатов приоритета.
  */
 export const optimize = (
     candidates: Candidate[],
-    priority: string[],
     maxMatches: number,
 ): CalculatedPair[] => {
   if (candidates.length === 0 || maxMatches <= 0) return [];
 
-  // жадный старт — как прежний посортовой подбор
+  // жадный старт — как прежний посортовой подбор; пока корты не заполнены,
+  // предпочитаются кандидаты, к которым существует disjoint-дополнение:
+  // иначе лучший по приоритету матч может заблокировать заполнение
+  // оставшихся кортов и раунд недоберёт матчи
   const solution: Candidate[] = [];
   for (let court = 0; court < maxMatches; court++) {
     let best: Candidate | undefined;
     for (const c of candidates) {
       if (!disjoint(c, solution) || solution.includes(c)) continue;
-      if (!best || matchLess(c, best, priority)) best = c;
+      if (!extendable(c, solution, candidates, maxMatches)) continue;
+      if (!best || matchLess(c, best)) best = c;
+    }
+    if (!best) {
+      // расширяемых кандидатов нет — берём любой disjoint, чтобы не терять матч
+      for (const c of candidates) {
+        if (!disjoint(c, solution) || solution.includes(c)) continue;
+        if (!best || matchLess(c, best)) best = c;
+      }
     }
     if (!best) break;
     solution.push(best);
   }
 
   const better = (trial: Candidate[]): boolean =>
-      lexLess(solutionKeys(trial, priority), solutionKeys(solution, priority));
+      lexLess(solutionKeys(trial), solutionKeys(solution));
 
   let improved = true;
   for (let guard = 0; improved && guard < 100; guard++) {
@@ -354,7 +372,7 @@ export const optimize = (
           for (let b = a + 1; b < local.length; b++) {
             if (!disjoint(local[b], [local[a]])) continue;
             const trial = [local[a], local[b]];
-            if (lexLess(solutionKeys(trial, priority), solutionKeys(current, priority))) {
+            if (lexLess(solutionKeys(trial), solutionKeys(current))) {
               solution.splice(i, 1, trial[0]);
               solution.splice(j, 1, trial[1]);
               improved = true;

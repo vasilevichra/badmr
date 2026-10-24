@@ -128,7 +128,6 @@ describe("Pairing", () => {
       await courtService.create();
       await courtService.create();
       await settingsService.set(settingsService.opt.DELTA, "100");
-      await settingsService.set(settingsService.opt.PRIORITY, "3");
 
       const pairs = await commonService.ready();
       assert.strictEqual(pairs.length, 2);
@@ -139,7 +138,7 @@ describe("Pairing", () => {
       assert.deepStrictEqual(pairs.map((p) => p.diff), [10, 0]);
     });
 
-    it("priority rematch: избегает повторных дуо из недавних матчей турнира", async () => {
+    it("rematch: избегает повторных дуо из недавних матчей турнира", async () => {
       const users = [500, 500, 500, 500].map(mkUser);
       const ids = await createAndRegister(users);
       await courtService.disableAll();
@@ -147,7 +146,6 @@ describe("Pairing", () => {
       // в последнем матче (u1,u2) победили (u3,u4): оба дуо недавние
       await seedMatch([ids[0], ids[1], ids[2], ids[3]], "2026-01-01 10:00:00");
       await settingsService.set(settingsService.opt.DELTA, "100");
-      await settingsService.set(settingsService.opt.PRIORITY, "5");
 
       const pairs = await commonService.ready();
       assert.strictEqual(pairs.length, 1);
@@ -157,10 +155,9 @@ describe("Pairing", () => {
       assert.deepStrictEqual(matchup(pairs), [
         [[ids[0], ids[2]], [ids[1], ids[3]]],
       ]);
-      assert.strictEqual(pairs[0].rematch, 1);
     });
 
-    it("priority balance: при равном diff выбирает матч с меньшим разбросом внутри пар", async () => {
+    it("balance: при равном diff выбирает матч с меньшим разбросом внутри пар", async () => {
       // (u1,u2) — разброс 200: любой их матч не конкурентен; (u3,u4) и
       // (u5,u6) — разбросы 20 и 10 при diff 0
       const users = [600, 400, 510, 490, 505, 495].map(mkUser);
@@ -168,15 +165,12 @@ describe("Pairing", () => {
       await courtService.disableAll();
       await courtService.create();
       await settingsService.set(settingsService.opt.DELTA, "30");
-      await settingsService.set(settingsService.opt.PRIORITY, "6");
 
       const pairs = await commonService.ready();
       assert.strictEqual(pairs.length, 1);
       assert.deepStrictEqual(matchup(pairs), [
         [[ids[2], ids[3]], [ids[4], ids[5]]],
       ]);
-      assert.ok(typeof pairs[0].balance === "number");
-      assert.ok(pairs[0].balance! > 0.4, "высокая предсказанная конкурентность");
     });
 
     it("delta_auto сужает дельту когда последние матчи заканчиваются в две игры", async () => {
@@ -185,7 +179,6 @@ describe("Pairing", () => {
       await courtService.disableAll();
       await courtService.create();
       await settingsService.set(settingsService.opt.DELTA, "100");
-      await settingsService.set(settingsService.opt.PRIORITY, "3");
       // любой допустимый матч здесь имеет diff 100 — по дельте проходит
       let pairs = await commonService.ready();
       assert.strictEqual(pairs.length, 1);
@@ -206,12 +199,14 @@ describe("Pairing", () => {
       pairs = await commonService.ready();
       assert.strictEqual(pairs.length, 0);
 
-      // выключили — дельта снова 100, подбор работает
+      // выключили — дельта снова 100, подбор работает; rematch-приоритет:
+      // дуо (u1,u2) и (u3,u4) недавние — выбирается перегруппировка,
+      // где оба новых дуо не встречались
       await settingsService.set("delta_auto", "0");
       pairs = await commonService.ready();
       assert.strictEqual(pairs.length, 1);
       assert.deepStrictEqual(matchup(pairs), [
-        [[ids[0], ids[1]], [ids[2], ids[3]]],
+        [[ids[0], ids[2]], [ids[1], ids[3]]],
       ]);
     });
   });

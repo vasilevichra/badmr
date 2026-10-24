@@ -99,7 +99,6 @@ app.use('/api/courts', await import('./src/routes/court.ts').then(m => m.default
 app.use('/api/games', await import('./src/routes/game.ts').then(m => m.default));
 app.use('/api/matches', await import('./src/routes/match.ts').then(m => m.default));
 app.use('/api/tournament-types', await import('./src/routes/tournament-type.ts').then(m => m.default));
-app.use('/api/ready-priorities', await import('./src/routes/ready-priority.ts').then(m => m.default));
 app.use('/api/tournaments', await import('./src/routes/tournament.ts').then(m => m.default));
 app.use('/api/users', await import('./src/routes/user.ts').then(m => m.default));
 app.use('/api/user-clubs', await import('./src/routes/user-club.ts').then(m => m.default));

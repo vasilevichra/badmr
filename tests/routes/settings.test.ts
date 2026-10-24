@@ -89,10 +89,18 @@ describe("Settings API", () => {
     assert.strictEqual(tournamentSettingsRows().length, 0);
   });
 
-  it("должен отклонить нечисловой priority", async () => {
-    const res = await post("priority", "played,matches,diff");
+  it("должен отклонить нередактируемую настройку type", async () => {
+    const res = await post("type", "2");
 
     assert.strictEqual(res.status, 400);
+    assert.match(await res.text() as string, /нередактируемая/);
+    assert.strictEqual(tournamentSettingsRows().length, 0);
+  });
+
+  it("должен принять boolean у delta_auto и отклонить прочие значения", async () => {
+    assert.strictEqual((await post("delta_auto", "1")).status, 200);
+    assert.strictEqual((await post("delta_auto", "0")).status, 200);
+    assert.strictEqual((await post("delta_auto", "2")).status, 400);
   });
 
   it("должен отклонить перекрёстное ограничение", async () => {
@@ -106,20 +114,7 @@ describe("Settings API", () => {
   it("должен принять валидные значения", async () => {
     assert.strictEqual((await post("wins", "3")).status, 200);
     assert.strictEqual((await post("max_point", "40")).status, 200);
-    assert.strictEqual((await post("priority", "2,1,3")).status, 200);
-    assert.strictEqual((await post("priority", "1,2")).status, 200); // не все поля
-  });
-
-  it("должен отклонить priority с неизвестным id", async () => {
-    const res = await post("priority", "1,9");
-
-    assert.strictEqual(res.status, 400);
-    assert.match(await res.text() as string, /неизвестный id/);
-  });
-
-  it("должен отклонить priority с повторяющимся id", async () => {
-    const res = await post("priority", "1,1");
-
-    assert.strictEqual(res.status, 400);
+    assert.strictEqual((await post("rematch_window", "5")).status, 200);
+    assert.strictEqual((await post("delta_auto_window", "30")).status, 200);
   });
 });

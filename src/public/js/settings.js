@@ -26,11 +26,10 @@ const renderSettings = () => {
     state: [],
     region: [],
     city: [],
-    // type — тип соревнований из таблицы tournament_type;
-    // priority — поля порядка подбора из таблицы ready_priority;
+    // type — тип соревнований из таблицы tournament_type (только отображение:
+    // настройка нередактируемая);
     // timezone — пояса, доступные в выбранной стране (выводятся из регионов)
     type: [],
-    priority: [],
     timezone: [],
   };
 
@@ -43,9 +42,10 @@ const renderSettings = () => {
         .sort((a, b) => a.text.localeCompare(b.text));
   };
 
-  // ограничения значений из схемы БД (CHECK нижних границ defaults
+  // ограничения значений из схемы БД (CHECK нижних границ
   // и триггеры перекрёстных ограничений); селекторы шлют валидные id
-  const integerMin = {delta: 0, proc: 0, matches: 0, wins: 1, game_point: 1, max_point: 1, capacity: 1, courts: 1};
+  const integerMin = {delta: 0, proc: 0, matches: 0, wins: 1, game_point: 1, max_point: 1, capacity: 1, courts: 1,
+    rematch_window: 0, delta_auto_window: 0, delta_auto_lower: 0, delta_auto_upper: 0};
   const positive = {fee: 0, B_max: 0, C_max: 0, D_max: 0, E_max: 0, F_max: 0, G_max: 0, H_max: 0, r_min: 0};
   const greaterThan = {max_point: 'game_point', B_max: 'C_max', C_max: 'D_max', D_max: 'E_max', E_max: 'F_max', F_max: 'G_max', G_max: 'H_max'};
   // обратные стороны тех же пар: меньшая сторона не должна подняться до большей
@@ -53,12 +53,6 @@ const renderSettings = () => {
   const notLess = {r_max: 'r_min'};
 
   const validValue = (name, value) => {
-    if (name === 'priority') {
-      // список id из ready_priority через запятую, без повторов
-      const ids = value.split(',');
-      return /^[0-9]+(,[0-9]+)*$/.test(value) && ids.length === new Set(ids).size
-          && ids.every((id) => refs.priority.some((r) => String(r.id) === id));
-    }
     if (!/^\d+$/.test(value)) {
       return false;
     }
@@ -73,19 +67,6 @@ const renderSettings = () => {
       return false;
     }
     return !(name in notLess && n < Number(values[notLess[name]]));
-  };
-
-  // порядок сортировки: по селекту на каждое поле ready_priority; разряд можно
-  // оставить пустым («—») — он выпадает из значения; выбор id, занятого другим
-  // разрядом, меняет разряды местами
-  // подписи полей в селектах — эмодзи вместо имён из ready_priority
-  const priorityEmoji = {played: '🥵', matches: '🏸', diff: '⚖️', friends: '👫'};
-  const prioritySelector = (value) => {
-    const ids = String(value).split(',');
-    const options = (selected) => `<option value=""${selected ? '' : ' selected'}>—</option>`
-        + refs.priority.map((r) => `<option value="${r.id}"${String(r.id) === String(selected) ? ' selected' : ''}>${priorityEmoji[r.text] ?? r.text}</option>`).join('');
-    return refs.priority.map((r, i) =>
-        `<select class="settings-priority-select form-select form-select-sm text-center" style="width:auto;display:inline-block;margin-right:4px">${options(ids[i])}</select>`).join('');
   };
 
   // перечитывает справочник по родителю и перерисовывает таблицу
@@ -110,13 +91,11 @@ const renderSettings = () => {
     Promise.all([
       $.getJSON('/api/states/select/'),
       $.getJSON('/api/tournament-types/select/'),
-      $.getJSON('/api/ready-priorities/select/'),
       values.state ? $.getJSON(`/api/regions/select/${values.state}`) : Promise.resolve({results: []}),
       values.region ? $.getJSON(`/api/cities/select/${values.region}`) : Promise.resolve({results: []}),
-    ]).then(([stateList, types, priorities, regions, cities]) => {
+    ]).then(([stateList, types, regions, cities]) => {
       refs.state = stateList.results;
       refs.type = types.results;
-      refs.priority = priorities.results;
       refs.region = regions.results;
       refs.city = cities.results;
       updateTimezones();
@@ -147,18 +126,17 @@ const renderSettings = () => {
               if (row.name === 'city') {
                 return referenceSelector('city', refs.city, value);
               }
-              if (row.name === 'priority') {
-                return prioritySelector(value);
-              }
               if (row.name === 'timezone') {
                 return referenceSelector('timezone', refs.timezone, value);
               }
+              // тип соревнований нередактируемый: показываем название из справочника
               if (row.name === 'type') {
-                return referenceSelector('type', refs.type, value);
+                const type = refs.type.find((r) => String(r.id) === String(value));
+                return type ? type.text : value;
               }
-              // Система 50%: выключатель вместо текстового ввода
-              if (row.name === 'fifty') {
-                return `<input type="checkbox" class="settings-fifty-input form-check-input" ${String(value) === '1' ? 'checked' : ''}/>`;
+              // выключатели (Система 50%, автоподстройка дельты) — чекбоксы
+              if (row.name === 'fifty' || row.name === 'delta_auto') {
+                return `<input type="checkbox" class="settings-boolean-input form-check-input" data-name="${row.name}" ${String(value) === '1' ? 'checked' : ''}/>`;
               }
               return value;
             },
@@ -172,6 +150,10 @@ const renderSettings = () => {
       })
       .on('click-cell.bs.table', (e, field, value, row, cell) => {
         if (field !== 'value' || $(cell).find('input, select').length) {
+          return;
+        }
+        // тип соревнований нередактируемый
+        if (row.name === 'type') {
           return;
         }
 
@@ -240,38 +222,13 @@ const renderSettings = () => {
           }
         });
       })
-      // Система 50%: переключатель влияет на расчёт подбора — после
-      // сохранения сбрасываем показанные пары
-      .on('change', '.settings-fifty-input', function () {
-        $.post('/api/settings/fifty', {value: this.checked ? '1' : '0'}, () => {
+      // выключатели (Система 50%, автоподстройка дельты) влияют на расчёт
+      // подбора — после сохранения сбрасываем показанные пары
+      .on('change', '.settings-boolean-input', function () {
+        $.post(`/api/settings/${this.dataset.name}`, {value: this.checked ? '1' : '0'}, () => {
           refresh.table.settings();
           showSelectButton(true);
         });
-      })
-      // порядок сортировки: запоминаем прежнее значение разряда для обмена
-      .on('focusin', '.settings-priority-select', function () {
-        this.dataset.prev = this.value;
-      })
-      .on('change', '.settings-priority-select', function () {
-        const selects = $(this).closest('td').find('.settings-priority-select');
-        const prev = this.dataset.prev ?? this.value;
-        // id, занятый другим разрядом, меняется с ним местами
-        selects.not(this).each((i, el) => {
-          if (el.value === this.value && this.value) {
-            el.value = prev;
-          }
-        });
-        // пустые разряды («—») выпадают из значения
-        const order = selects.map((i, el) => el.value).get().filter(Boolean).join(',');
-        if (order && validValue('priority', order)) {
-          // порядок приоритетов влияет на расчёт подбора — сбрасываем пары
-          $.post('/api/settings/priority', {value: order}, () => {
-            refresh.table.settings();
-            showSelectButton(true);
-          });
-        } else {
-          refresh.table.settings(); // вернуть исходное значение
-        }
       });
     });
   });

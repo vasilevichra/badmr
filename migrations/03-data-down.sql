@@ -15,7 +15,6 @@ DELETE FROM user;
 DELETE FROM "group";
 DELETE FROM court;
 DELETE FROM tournament_settings;
-DELETE FROM ready_priority;
 DELETE FROM defaults;
 DELETE FROM tournament_type;
 DELETE FROM tournament;

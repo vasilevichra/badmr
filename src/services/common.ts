@@ -5,8 +5,6 @@ import SettingsService from "./settings.ts";
 const settingsService = new SettingsService();
 import CourtService from "./court.ts";
 const courtService = new CourtService();
-import ReadyPriorityService from "./ready-priority.ts";
-const readyPriorityService = new ReadyPriorityService();
 import {buildCandidates, fitThreeGameModel, optimize} from "./pairing.ts";
 import type { Request } from "express";
 
@@ -66,6 +64,12 @@ const filterFifty = (candidates: CalculatedPair[]): CalculatedPair[] => {
   return result;
 };
 
+// предохранители автоподстройки дельты (не настройки): результат
+// ограничен диапазоном [DELTA_MIN, DELTA_MAX], шаг сужения/расширения ±15%
+const DELTA_MIN = 10;
+const DELTA_MAX = 300;
+const DELTA_AUTO_SHIFT = 0.15;
+
 class Common {
   declare static _instance: Common | undefined;
   repository!: Repository;
@@ -106,15 +110,15 @@ class Common {
    * Кандидаты фильтруются настройками DELTA, PROC и FIFTY (семантика
    * прежнего посортового calcReadyRec), после чего оптимизатор
    * (src/services/pairing.ts) собирает набор непересекающихся матчей:
-   * жадный старт по PRIORITY и локальный поиск, минимизирующий агрегаты
-   * полей PRIORITY по всему раунду. Универсальный тай-брейк — суммарная
-   * ожидаемая конкурентность (вероятность матча в три игры), предсказанная
-   * логистической моделью по истории турнира: разница средних рейтингов
-   * команд и разброс рейтингов внутри пар.
+   * жадный старт и локальный поиск, минимизирующий агрегаты полей
+   * фиксированного PRIORITY по всему раунду (порядок — выравнивание
+   * числа матчей, анти-риматч, ротация отдыха, конкурентность, разница
+   * рейтингов, совместный винрейт напарников).
    *
    * При включённой delta_auto дельта сужается/расширяется на 15% в
-   * зависимости от доли матчей в три игры среди последних 20 завершённых
-   * матчей турнира (меньше 30% — сузить, больше 45% — расширить).
+   * зависимости от доли матчей в три игры среди последних delta_auto_window
+   * завершённых матчей турнира (меньше delta_auto_lower% — сузить,
+   * больше delta_auto_upper% — расширить).
    * @returns Массив рассчитанных пар — до одного матча на доступный корт
    * (пустой, если доступных кортов нет или кандидатов нет).
    */
@@ -131,16 +135,6 @@ class Common {
     // максимальный процент превышения среднего рейтинга пары одним из
     // игроков; 0 — не ограничивает
     const proc = Number(settingsService.get(settingsService.opt.PROC, tournamentId));
-    // настройка priority хранит id из ready_priority ('1,2,3') — переводим
-    // их в имена полей; порядок значений задаёт приоритет отбора пар:
-    // первое значение — высший приоритет
-    const priorityMap = new Map<number, string>(
-      (await readyPriorityService.select()).map((r) => [Number(r.id), String(r.text)]),
-    );
-    const priority = String(settingsService.get(settingsService.opt.PRIORITY, tournamentId))
-      .split(",")
-      .map((id) => priorityMap.get(Number(id)))
-      .filter((field): field is string => Boolean(field));
 
     const readyRows = await this.repository.ready([], tournamentId) as ReadyRow[];
     if (readyRows.length < 4) {
@@ -159,9 +153,10 @@ class Common {
       buddies.set(row.user_id, partnerRates);
     }
 
-    // повторные встречи: составы последних 10 завершённых матчей турнира
-    const WINDOW = 10;
-    const recent = await this.repository.recentFinished(tournamentId, WINDOW);
+    // повторные встречи: составы последних завершённых матчей турнира
+    // (окно задаёт настройка rematch_window)
+    const window = Number(settingsService.get(settingsService.opt.REMATCH_WINDOW, tournamentId));
+    const recent = await this.repository.recentFinished(tournamentId, window);
     const duoKey = (a: number, b: number) => `${Math.min(a, b)}-${Math.max(a, b)}`;
     const quadKey = (ids: number[]) => [...ids].sort((x, y) => x - y).join("-");
     const recentDuos = new Set<string>();
@@ -184,28 +179,29 @@ class Common {
     const model = fitThreeGameModel(samples);
 
     const candidates = buildCandidates(readyRows, buddies, recentDuos, recentQuads,
-        {delta, proc, fifty, model, priority});
-    const pairs = optimize(candidates, priority, availableCourts);
-    console.log(
-      `Selected ${pairs.length} pairs:\n${JSON.stringify(pairs, null, 2)}`,
-    );
+        {delta, proc, fifty, model});
+    const pairs = optimize(candidates, availableCourts);
     return pairs;
   };
 
   /**
    * Эффективная дельта подбора: при выключенной delta_auto — сама дельта.
    * При включённой — сдвиг на ±15% от доли матчей в три игры среди
-   * последних 20 завершённых матчей турнира: меньше 30% — матчи слишком
-   * односторонние, дельта сужается; больше 45% — расширяется.
-   * Результат ограничен диапазоном [10, 300].
+   * последних delta_auto_window завершённых матчей турнира: меньше
+   * delta_auto_lower% — матчи слишком односторонние, дельта сужается;
+   * больше delta_auto_upper% — расширяется. Результат ограничен
+   * диапазоном [10, 300].
    */
   private async effectiveDelta(rawDelta: number, tournamentId?: number): Promise<number> {
     if (settingsService.get(settingsService.opt.DELTA_AUTO, tournamentId) !== "1") {
       return rawDelta;
     }
     const wins = Number(settingsService.get(settingsService.opt.WINS, tournamentId)) || 2;
+    const window = Number(settingsService.get(settingsService.opt.DELTA_AUTO_WINDOW, tournamentId));
+    const lower = Number(settingsService.get(settingsService.opt.DELTA_AUTO_LOWER, tournamentId)) / 100;
+    const upper = Number(settingsService.get(settingsService.opt.DELTA_AUTO_UPPER, tournamentId)) / 100;
     const history = await this.repository.threeGameHistory(tournamentId);
-    const recent = history.slice(-20);
+    const recent = history.slice(-window);
     if (recent.length === 0) {
       return rawDelta;
     }
@@ -213,12 +209,12 @@ class Common {
         h.lost_1 === wins - 1 || h.lost_2 === wins - 1).length;
     const share = threeGames / recent.length;
     let delta = rawDelta;
-    if (share < 0.3) {
-      delta = Math.ceil(rawDelta * 0.85);
-    } else if (share > 0.45) {
-      delta = Math.floor(rawDelta * 1.15);
+    if (share < lower) {
+      delta = Math.ceil(rawDelta * (1 - DELTA_AUTO_SHIFT));
+    } else if (share > upper) {
+      delta = Math.floor(rawDelta * (1 + DELTA_AUTO_SHIFT));
     }
-    return Math.min(300, Math.max(10, delta));
+    return Math.min(DELTA_MAX, Math.max(DELTA_MIN, delta));
   };
 }
 

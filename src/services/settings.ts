@@ -1,6 +1,4 @@
 import SettingsRepository from '../repositories/settings.ts';
-import ReadyPriorityService from './ready-priority.ts';
-const readyPriorityService = new ReadyPriorityService();
 
 class Settings {
   declare static _instance: Settings | undefined;
@@ -9,7 +7,6 @@ class Settings {
     DELTA: 'delta',
     PROC: 'proc',
     TYPE: 'type',
-    PRIORITY: 'priority',
   };
 
   // ограничения значений из схемы БД: CHECK нижних границ defaults
@@ -18,6 +15,7 @@ class Settings {
   private static readonly INTEGER_MIN: Record<string, number> = {
     delta: 0, proc: 0, matches: 0, wins: 1, game_point: 1, max_point: 1, capacity: 1, courts: 1,
     rating_diff_limit: 0, rating_diff_divisor: 1,
+    rematch_window: 0, delta_auto_window: 0, delta_auto_lower: 0, delta_auto_upper: 0,
   };
   private static readonly POSITIVE: Record<string, number> = {
     fee: 0, B_max: 0, C_max: 0, D_max: 0, E_max: 0, F_max: 0, G_max: 0, H_max: 0, r_min: 0,
@@ -35,6 +33,9 @@ class Settings {
     r_min: 'r_max',
   };
   private static readonly NOT_LESS: Record<string, string> = {r_max: 'r_min'};
+  // boolean-настройки: на defaults действует CHECK, здесь повторяем для
+  // переопределений турнира в tournament_settings
+  private static readonly BOOLEAN = new Set(['fifty', 'delta_auto']);
 
   private static error = (message: string) => {
     const error = new Error(message) as Error & { status?: number };
@@ -43,14 +44,13 @@ class Settings {
   };
 
   private assertValid = async (name: string, value: string) => {
-    if (name === 'priority') {
-      const ids = value.split(',');
-      if (!/^[0-9]+(,[0-9]+)*$/.test(value) || new Set(ids).size !== ids.length) {
-        throw Settings.error('priority должен быть списком уникальных id из ready_priority, разделённых запятой');
-      }
-      const known = new Set((await readyPriorityService.select()).map((r) => Number(r.id)));
-      if (!ids.every((id) => known.has(Number(id)))) {
-        throw Settings.error('priority содержит неизвестный id из ready_priority');
+    if (name === 'type') {
+      // тип соревнований задаётся при создании турнира и не редактируется
+      throw Settings.error('type — нередактируемая настройка');
+    }
+    if (Settings.BOOLEAN.has(name)) {
+      if (value !== '0' && value !== '1') {
+        throw Settings.error(`${name} должен быть 0 или 1`);
       }
       return;
     }
@@ -89,9 +89,12 @@ class Settings {
       DELTA: 'delta',
       PROC: 'proc',
       TYPE: 'type',
-      PRIORITY: 'priority',
       FIFTY: 'fifty',
       DELTA_AUTO: 'delta_auto',
+      REMATCH_WINDOW: 'rematch_window',
+      DELTA_AUTO_WINDOW: 'delta_auto_window',
+      DELTA_AUTO_LOWER: 'delta_auto_lower',
+      DELTA_AUTO_UPPER: 'delta_auto_upper',
       WINS: 'wins',
     };
   }

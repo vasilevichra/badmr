@@ -22,7 +22,6 @@ DROP TRIGGER defaults_cross_value_insert;
 DROP TRIGGER defaults_cross_value_update;
 DROP TABLE defaults;
 DROP TABLE tournament_status;
-DROP TABLE ready_priority;
 DROP TABLE tournament_type;
 DROP TABLE tournament;
 DROP TABLE unit;

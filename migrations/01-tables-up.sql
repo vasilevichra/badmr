@@ -54,13 +54,6 @@ CREATE TABLE tournament_status
     name TEXT    NOT NULL UNIQUE
 );
 
-CREATE TABLE ready_priority
-(
-    id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    name        TEXT    NOT NULL UNIQUE,
-    description TEXT    NOT NULL
-);
-
 CREATE TABLE tournament
 (
     id                   INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -87,21 +80,20 @@ CREATE TABLE defaults
 (
     id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     name        TEXT    NOT NULL UNIQUE
-                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'priority', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'fifty', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_fresh_days', 'rating_diff_limit', 'rating_diff_divisor', 'delta_auto')),
+                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'fifty', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_fresh_days', 'rating_diff_limit', 'rating_diff_divisor', 'delta_auto', 'rematch_window', 'delta_auto_window', 'delta_auto_lower', 'delta_auto_upper')),
     value       TEXT    NOT NULL,
     description TEXT    NOT NULL,
-    -- все настройки, кроме priority, хранят неотрицательные целые;
-    -- sort — непустой список id из ready_priority, разделённых запятой
-    CHECK (name = 'priority' OR (value <> '' AND value NOT GLOB '*[^0-9]*')),
-    CHECK (name <> 'priority' OR (value <> '' AND value NOT GLOB '*[^0-9,]*')),
+    -- все настройки хранят неотрицательные целые
+    CHECK (value <> '' AND value NOT GLOB '*[^0-9]*'),
     -- нижние границы значений (перекрёстные — триггерами ниже)
     CHECK (name NOT IN ('wins', 'game_point', 'max_point', 'capacity', 'courts', 'rating_diff_divisor') OR CAST(value AS INTEGER) >= 1),
-    CHECK (name NOT IN ('delta', 'proc', 'matches', 'rating_diff_limit') OR CAST(value AS INTEGER) >= 0),
+    CHECK (name NOT IN ('delta', 'proc', 'matches', 'rating_diff_limit', 'rematch_window', 'delta_auto_window') OR CAST(value AS INTEGER) >= 0),
+    CHECK (name NOT IN ('delta_auto_lower', 'delta_auto_upper') OR CAST(value AS INTEGER) BETWEEN 0 AND 100),
     CHECK (name <> 'fee' OR CAST(value AS INTEGER) > 0),
     CHECK (name <> 'H_max' OR CAST(value AS INTEGER) > 0),
     CHECK (name <> 'r_min' OR CAST(value AS INTEGER) > 0),
-    -- Система 50%: выключатель подбора
-    CHECK (name <> 'fifty' OR value IN ('0', '1'))
+    -- выключатели подбора: Система 50% и автоподстройка дельты
+    CHECK (name NOT IN ('fifty', 'delta_auto') OR value IN ('0', '1'))
 );
 
 CREATE TABLE tournament_settings

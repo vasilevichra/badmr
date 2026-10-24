@@ -137,16 +137,6 @@ const player = (u: TestUser, userId: number, tournamentId = 4): Player => ({
   tournament_id: tournamentId,
 });
 
-// игрок, сыгравший один завершённый матч (для тестов priority)
-const playedPlayer = (u: TestUser, userId: number, rating: number): Player => ({
-  ...player(u, userId),
-  rating,
-  matches: 1,
-  played: 1,
-  won: 1,
-  wins: 1,
-});
-
 const pair = (
   p11: TestUser, p12: TestUser, p21: TestUser, p22: TestUser,
   ids: [number, number, number, number],
@@ -172,13 +162,16 @@ describe("Common", () => {
     // калибровка здесь не тестируется, отключаем её
     const settingsService = new SettingsService();
     await settingsService.set("calibration_matches", "0");
-    // порядок подбора фиксирован (played, matches, diff): тесты проверяют
-    // логику подбора, а не дефолт приоритетов (в миграциях — diff, matches, played)
-    await settingsService.set(settingsService.opt.PRIORITY, "1,2,3");
+    // порядок приоритетов подбора фиксирован в коде (matches, rematch,
+    // played, balance, diff, friends) — настройкой не задаётся;
     // fifty включён по умолчанию (сид миграций): базовые тесты подбора
     // проверяют логику без фильтра 50% — выключаем явно; fifty-тесты
     // включают настройку сами
     await settingsService.set(settingsService.opt.FIFTY, "0");
+    // delta_auto включена по умолчанию (сид миграций): с историей матчей
+    // она сужала бы дельту подбора во всех тестах — выключаем явно
+    // (тесты самой автоподстройки — в pairing.test.ts)
+    await settingsService.set(settingsService.opt.DELTA_AUTO, "0");
   });
 
   describe("constructor", () => {
@@ -248,9 +241,11 @@ describe("Common", () => {
           title: "выбор из всех возможных",
           users: eightUsers,
           courts: 2,
+          // balance: при прочих равных пары с равными рейтингами
+          // (нулевой разброс) конкурентнее смешанных
           pairs: [
-            pair(eightUsers[0], eightUsers[1], eightUsers[2], eightUsers[3], [1, 2, 3, 4], 0),
-            pair(eightUsers[4], eightUsers[5], eightUsers[6], eightUsers[7], [5, 6, 7, 8], 0),
+            pair(eightUsers[0], eightUsers[2], eightUsers[4], eightUsers[6], [1, 3, 5, 7], 0),
+            pair(eightUsers[1], eightUsers[3], eightUsers[5], eightUsers[7], [2, 4, 6, 8], 0),
           ],
         },
         {
@@ -258,8 +253,8 @@ describe("Common", () => {
           users: tenUsers,
           courts: 2,
           pairs: [
-            pair(tenUsers[0], tenUsers[1], tenUsers[2], tenUsers[3], [1, 2, 3, 4], 0),
-            pair(tenUsers[4], tenUsers[5], tenUsers[6], tenUsers[7], [5, 6, 7, 8], 0),
+            pair(tenUsers[0], tenUsers[2], tenUsers[4], tenUsers[6], [1, 3, 5, 7], 0),
+            pair(tenUsers[1], tenUsers[3], tenUsers[5], tenUsers[7], [2, 4, 6, 8], 0),
           ],
         },
       ];
@@ -322,7 +317,7 @@ describe("Common", () => {
         );
       });
 
-      it("должен выбирать ещё не игравших игроков когда played первый в priority", async () => {
+      it("должен выбирать игроков с меньшим числом сыгранных матчей (выравнивание туров)", async () => {
         const courtService = new CourtService();
         await courtService.disableAll();
         await courtService.create();
@@ -345,8 +340,8 @@ describe("Common", () => {
         await gameService.create(match.id, "15", null, "2026-01-01 10:00:00");
         await gameService.create(match.id, "17", null, "2026-01-01 10:05:00");
 
-        // played-приоритет: выбираются игроки без игры в предыдущем матче,
-        // хотя у кандидатов с игравшими разница сумм минимальна
+        // matches-приоритет: выбираются игроки с нулёвым числом сыгранных
+        // матчей, хотя у кандидатов с игравшими разница сумм минимальна
         assert.deepStrictEqual<Pair[]>(
           await new CommonService().ready(),
           withIds([pair(users[0], users[1], users[2], users[3], [1, 2, 3, 4], 20)], ids),
@@ -459,23 +454,21 @@ describe("Common", () => {
         await userService.registerByIds(ids);
         const settingsService = new SettingsService();
         await settingsService.set("calibration_matches", "0");
-        await settingsService.set(settingsService.opt.PRIORITY, "1,2,3");
         // override fifty из beforeEach остался в первом турнире, а второй
         // берёт дефолт из сидов (включён) — выключаем явно, фильтр 50%
         // здесь не тестируется
         await settingsService.set(settingsService.opt.FIFTY, "0");
 
         // played считается только по матчам текущего турнира (их нет):
-        // все отдыхали, пара собирается по diff из всех игроков
+        // все отдыхали; пары собираются с нулевым разбросом — равные
+        // рейтинги вместе; friends считается по истории текущего турнира
         assert.deepStrictEqual<Pair[]>(
           await new CommonService().ready(),
           withIds([{
-            ...pair(users[0], users[1], users[2], users[3], [1, 2, 3, 4], 0, 2),
-            // (u1,u2) и (u3,u4) вместе играли матч первого турнира:
-            // винрейты совместных матчей 100% и 0%
-            chance1: 100,
-            chance2: 0,
-            friends: 100,
+            ...pair(users[0], users[2], users[4], users[6], [1, 3, 5, 7], 0, 2),
+            chance1: null,
+            chance2: null,
+            friends: 0,
           }], ids),
         );
       });
@@ -504,26 +497,27 @@ describe("Common", () => {
           [4, 660], [5, 400]] as const) {
           await userService.setRating(ids[i], rating);
         }
-        await settingsService.set(settingsService.opt.PRIORITY, "3");
         await settingsService.set(settingsService.opt.DELTA, "150");
 
-        // без системы 50% минимальный diff = 40; первым по перечислению —
-        // матчап (u6,u2) против (u3,u4): пара-фаворит (u6,u2) — u2 выиграл
-        // последний матч, а соперники — нет — играет вниз (760 < 800)
+        // matches-приоритет: минимальная сумма сыгранных матчей (2) —
+        // матчапы с отдохнувшими u5/u6; rematch отсекает варианты с
+        // недавними дуо (u1,u2) и (u3,u4); balance выбирает (u5,u4)
+        // против (u6,u1): минимальный avgDiff (30) при равном spread
         const withoutFifty: Pair = {
-          ...pair(users[5], users[1], users[2], users[3], [6, 2, 3, 4], 40),
           players1: [
-            player(users[5], ids[5]),
-            {...player(users[1], ids[1]), matches: 1, played: 1, won: 1, wins: 1},
-          ],
-          players2: [
-            {...player(users[2], ids[2]), matches: 1, played: 1, won: 0},
+            player(users[4], ids[4]),
             {...player(users[3], ids[3]), matches: 1, played: 1, won: 0},
           ],
-          matches: 3,
-          played: 3,
-          // (u3,u4) вместе проиграли последний матч: шанс 0
-          chance2: 0,
+          players2: [
+            player(users[5], ids[5]),
+            {...player(users[0], ids[0]), matches: 1, played: 1, won: 1, wins: 1},
+          ],
+          diff: 60,
+          matches: 2,
+          played: 2,
+          chance1: null,
+          chance2: null,
+          friends: 0,
         };
 
         await settingsService.set(settingsService.opt.FIFTY, "0");
@@ -532,22 +526,11 @@ describe("Common", () => {
           [withoutFifty],
         );
 
-        // система 50% отфильтровывает матчапы, где фаворит играет вниз:
-        // остаётся кандидат с тем же diff = 40, где фаворит (u2,u4) —
-        // u2 выиграл, а соперники — нет — играет вверх (760 ≤ 800)
+        // система 50%: фаворит матчапа — (u6,u1) (u1 выиграл последний
+        // матч, соперники — нет) и играет вверх (960 ≤ 1020) — матчап
+        // правильный, расстановка не меняется; favorite проставляется
         const withFifty: Pair = {
-          ...pair(users[5], users[2], users[1], users[3], [6, 3, 2, 4], 40),
-          players1: [
-            player(users[5], ids[5]),
-            {...player(users[2], ids[2]), matches: 1, played: 1, won: 0},
-          ],
-          players2: [
-            {...player(users[1], ids[1]), matches: 1, played: 1, won: 1, wins: 1},
-            {...player(users[3], ids[3]), matches: 1, played: 1, won: 0},
-          ],
-          matches: 3,
-          played: 3,
-          // фаворит — players2: u1 выиграл последний матч, соперники — нет
+          ...withoutFifty,
           favorite: 2,
         };
 
@@ -577,7 +560,6 @@ describe("Common", () => {
         for (const [i, rating] of [[0, 520], [1, 460], [2, 420], [3, 380]] as const) {
           await userService.setRating(ids[i], rating);
         }
-        await settingsService.set(settingsService.opt.PRIORITY, "3");
         await settingsService.set(settingsService.opt.DELTA, "250");
         // proc отсекает кросс-пары с фаворитом (520 против 420/380:
         // превышение среднего больше 8%), оставляя единственный кандидат
@@ -657,14 +639,48 @@ describe("Common", () => {
           [4, 190], [5, 170], [6, 20], [7, 20], [8, 800], [9, 800]] as const) {
           await userService.setRating(ids[i], rating);
         }
-        await settingsService.set(settingsService.opt.PRIORITY, "3");
         await settingsService.set(settingsService.opt.DELTA, "310");
         // proc отсекает кросс-пары (разброс рейтингов внутри любой
         // кросс-пары больше 17%), оставляя пары (u1,u2), (u3,u4), (u5,u6)
         await settingsService.set(settingsService.opt.PROC, "8");
 
-        // без системы 50% минимальный diff = 220: (u1,u2) против (u3,u4)
+        // matches-приоритет: минимальная сумма сыгранных матчей (6) —
+        // матчапы с парами (u3,u4) и (u5,u6); (u1,u2) дают сумму 8.
+        // proc 8% отсекает все кросс-пары; balance при равном diff 0
+        // предпочитает меньший разброс внутри пар
         const withoutFifty: Pair = {
+          players1: [
+            {...player(users[4], ids[4]), matches: 2, wins: 1},
+            {...player(users[5], ids[5]), matches: 2, wins: 1},
+          ],
+          players2: [
+            {...player(users[2], ids[2]), matches: 1, wins: 1},
+            {...player(users[3], ids[3]), matches: 1, wins: 1},
+          ],
+          diff: 300,
+          matches: 6,
+          played: 0,
+          // (u5,u6) вместе: выиграли X3, проиграли X2 — 50;
+          // (u3,u4) вместе: выиграли X1 — 100
+          chance1: 50,
+          chance2: 100,
+          // сумма chance1 и chance2 как она считается в ready()
+          friends: 150,
+        };
+
+        await settingsService.set(settingsService.opt.FIFTY, "0");
+        assert.deepStrictEqual<Pair[]>(
+          await new CommonService().ready(),
+          [withoutFifty],
+        );
+
+        // система 50%: в последнем матче (X5) играли только u7-u10, у пар
+        // кандидатов исход последнего матча не определён (won = null);
+        // фаворит — по проценту: (u3,u4) 100% против 67% у (u1,u2) и 50%
+        // у (u5,u6). Матчап (u5,u6) против (u3,u4) отфильтрован: там
+        // фаворит (u3,u4) играет вниз (660 > 360). Правильный матчап —
+        // против (u1,u2): фаворит играет вверх (660 ≤ 880)
+        const withFifty: Pair = {
           players1: [
             {...player(users[0], ids[0]), matches: 3, wins: 2},
             {...player(users[1], ids[1]), matches: 3, wins: 2},
@@ -680,39 +696,6 @@ describe("Common", () => {
           // (u3,u4) вместе: выиграли X1 — 100
           chance1: 66.67,
           chance2: 100,
-          // сумма chance1 и chance2 как она считается в ready()
-          friends: 66.67 + 100,
-        };
-
-        await settingsService.set(settingsService.opt.FIFTY, "0");
-        assert.deepStrictEqual<Pair[]>(
-          await new CommonService().ready(),
-          [withoutFifty],
-        );
-
-        // система 50%: в предыдущем матче (X5) играли только u7-u10, у всех
-        // пар-кандидатов исход последнего матча не определён — фаворит
-        // определяется по турнирной статистике. По количеству побед
-        // фаворит (u1,u2): 2 против 1 и 1 — и тогда (u1,u2) играет вниз
-        // (880 > 660), единственный правильный матчап — (u5,u6) против
-        // (u3,u4). По проценту фаворит (u1,u2) — 100% против 67% и 50% —
-        // и он играет вверх (660 ≤ 880): остаётся (u1,u2) против (u3,u4).
-        // Игроки сыграли разное число матчей, и прямой подсчёт побед
-        // несправедлив: 2 победы из 3 слабее 1 победы из 1
-        const withFifty: Pair = {
-          players1: [
-            {...player(users[0], ids[0]), matches: 3, wins: 2},
-            {...player(users[1], ids[1]), matches: 3, wins: 2},
-          ],
-          players2: [
-            {...player(users[2], ids[2]), matches: 1, wins: 1},
-            {...player(users[3], ids[3]), matches: 1, wins: 1},
-          ],
-          diff: 220,
-          matches: 8,
-          played: 0,
-          chance1: 66.67,
-          chance2: 100,
           friends: 66.67 + 100,
           // фаворит — players2: винрейт (u3,u4) 100% против 67% у (u1,u2)
           favorite: 2,
@@ -725,49 +708,7 @@ describe("Common", () => {
         );
       });
 
-      it("должен выбирать минимальную разницу рейтингов когда diff первый в priority", async () => {
-        const settingsService = new SettingsService();
-        const courtService = new CourtService();
-        await courtService.disableAll();
-        await courtService.create();
-        // 3 - diff, 1 - played, 2 - matches: diff перекрывает played
-        await settingsService.set(settingsService.opt.PRIORITY, "3,1,2");
-
-        const users = [
-          mkUser(1, 530),
-          mkUser(2, 480),
-          mkUser(3, 510),
-          mkUser(4, 480),
-          mkUser(5, 500),
-          mkUser(6, 510),
-          mkUser(7, 490),
-          mkUser(8, 470),
-        ];
-        const ids = await createAndRegister(new UserService(), users);
-        // u5-u8 сыграли завершённый матч (команда u7/u8 победила):
-        // у них matches = 1, played = 1; рейтинги меняются на дельту:
-        // u5 = 487.5, u6 = 497.5, u7 = 502.5, u8 = 482.5
-        const match = await new MatchService().create(ids[4], ids[5], ids[6], ids[7]);
-        const gameService = new GameService();
-        await gameService.create(match.id, "15", null, "2026-01-01 10:00:00");
-        await gameService.create(match.id, "17", null, "2026-01-01 10:05:00");
-
-        // diff-приоритет: выбирается кандидат с нулевой разницей сумм
-        // (530+482.5 против 510+502.5), хотя u7 и u8 уже играли
-        const expected: Pair = {
-          players1: [player(users[0], ids[0]), playedPlayer(users[7], ids[7], 482.5)],
-          players2: [player(users[2], ids[2]), playedPlayer(users[6], ids[6], 502.5)],
-          diff: 0,
-          matches: 2,
-          played: 2,
-          chance1: null,
-          chance2: null,
-          friends: 0,
-        };
-        assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
-      });
-
-      it("должен выбирать пару с максимальным совместным винрейтом когда friends первый в priority", async () => {
+      it("не должен учитывать совместный винрейт напарников", async () => {
         const settingsService = new SettingsService();
         const courtService = new CourtService();
         const userService = new UserService();
@@ -775,82 +716,6 @@ describe("Common", () => {
         const gameService = new GameService();
         await courtService.disableAll();
         await courtService.create();
-        // 4 - friends: только совместный винрейт напарников
-        await settingsService.set(settingsService.opt.PRIORITY, "4");
-        await settingsService.set(settingsService.opt.DELTA, "40");
-
-        const users = [
-          mkUser(1, 500),   // u1, u2 — напарники с винрейтом 100
-          mkUser(2, 460),
-          mkUser(3, 500),   // u3, u4 — напарники с винрейтом 0
-          mkUser(4, 460),
-          mkUser(5, 500),   // u5, u6 — винрейт 50 (поражение и победа)
-          mkUser(6, 460),
-          mkUser(7, 500),   // u7, u8 — винрейт 100, но сумма рейтингов
-          mkUser(8, 500),   // выводит их за дельту из кандидатов с (u1,u2)
-          mkUser(9, 500),   // u9, u10 — винрейт 0
-          mkUser(10, 500),
-        ];
-        const ids = await createAndRegister(new UserService(), users);
-        // история совместных матчей: null во втором аргументе игры —
-        // команда 1 не проиграла ни одной игры, "15" у второй — проиграла
-        // со счётом 15 (wins = 2 — матч доигран сразу)
-        // матч 1: (u1,u2) побеждают (u3,u4)
-        const match1 = await matchService.create(ids[0], ids[1], ids[2], ids[3]);
-        await gameService.create(match1.id, null, "15", "2026-01-01 10:00:00");
-        await gameService.create(match1.id, null, "15", "2026-01-01 10:05:00");
-        // матч 2: (u7,u8) побеждают (u5,u6)
-        const match2 = await matchService.create(ids[6], ids[7], ids[4], ids[5]);
-        await gameService.create(match2.id, null, "15", "2026-01-01 10:10:00");
-        await gameService.create(match2.id, null, "15", "2026-01-01 10:15:00");
-        // матч 3 (последний — played только у его участников):
-        // (u5,u6) побеждают (u9,u10) → винрейт (u5,u6) = 50
-        const match3 = await matchService.create(ids[4], ids[5], ids[8], ids[9]);
-        await gameService.create(match3.id, null, "15", "2026-01-01 10:20:00");
-        await gameService.create(match3.id, null, "15", "2026-01-01 10:25:00");
-        // рейтинги выставляются заново — ожидания не зависят от
-        // пересчёта рейтингов историей матчей
-        for (const [i, rating] of [[0, 500], [1, 460], [2, 500], [3, 460], [4, 500], [5, 460], [6, 750], [7, 300], [8, 600], [9, 400]] as const) {
-          await userService.setRating(ids[i], rating);
-        }
-
-        // friends-приоритет: уникальный максимум суммы шансов 150 —
-        // пары (u5,u6) и (u1,u2); у остальных кандидатов с парой (u1,u2)
-        // сумма 100, пары (u7,u8) отсечены дельтой. Порядок пар и игроков
-        // внутри них — по перечислению готовых игроков (played по
-        // возрастанию, matches по убыванию): u1,u2 отдыхали в последнем
-        // матче (played = 0) и перечисляются раньше u5,u6
-        const expected: Pair = {
-          players1: [
-            // won = null: сами они выигрывали матч 1, но последний матч
-            // (матч 3) не играли — played = 0
-            {...player(users[0], ids[0]), matches: 1, played: 0, rating: 500, won: null, wins: 1},
-            {...player(users[1], ids[1]), matches: 1, played: 0, rating: 460, won: null, wins: 1},
-          ],
-          players2: [
-            {...player(users[4], ids[4]), matches: 2, played: 1, rating: 500, won: 1, wins: 1},
-            {...player(users[5], ids[5]), matches: 2, played: 1, rating: 460, won: 1, wins: 1},
-          ],
-          diff: 0,
-          matches: 6,
-          played: 2,
-          chance1: 100,
-          chance2: 50,
-          friends: 150,
-        };
-        assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
-      });
-
-      it("не должен учитывать совместный винрейт когда diff приоритетнее friends", async () => {
-        const settingsService = new SettingsService();
-        const courtService = new CourtService();
-        const userService = new UserService();
-        const matchService = new MatchService();
-        const gameService = new GameService();
-        await courtService.disableAll();
-        await courtService.create();
-        // 3 - diff, 4 - friends: diff перекрывает friends
-        await settingsService.set(settingsService.opt.PRIORITY, "3,4");
         await settingsService.set(settingsService.opt.DELTA, "40");
 
         const users = [
@@ -870,9 +735,11 @@ describe("Common", () => {
           await userService.setRating(ids[i], rating);
         }
 
-        // diff-приоритет: кандидат с нулевой разницей сумм (520+460 против
-        // 480+500) выбирается, хотя шанс обеих его пар — null; кандидаты
-        // с парой (u1,u2) и её шансом 100 имеют разницу 40
+        // matches-приоритет: минимальная сумма сыгранных матчей (2) — только
+        // матчапы, где u5/u6 играют вместе с парой из u1-u4; played отсекает
+        // матчапы с (u5,u6) (2 игравших), balance среди diff-равных
+        // выбирает разбиение с меньшим внутри-парным разбросом;
+        // совместный винрейт (u1,u2) = 100 не участвует в отборе
         const expected: Pair = {
           players1: [
             player(users[4], ids[4]),
