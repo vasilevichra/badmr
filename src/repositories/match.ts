@@ -25,6 +25,14 @@ export interface SameTypeMatchRow {
   name2: string;
   name3: string;
   name4: string;
+  sex1: number;
+  sex2: number;
+  sex3: number;
+  sex4: number;
+  pic1: string | null;
+  pic2: string | null;
+  pic3: string | null;
+  pic4: string | null;
   /** выигранных игр у пары 1 (user_1/user_2) */
   wins1: number;
   /** выигранных игр у пары 2 (user_3/user_4) */
@@ -244,6 +252,14 @@ class Match {
               u2.lastname || ' ' || substr(u2.firstname, 1, 1) || '.'             AS name2,
               u3.lastname || ' ' || substr(u3.firstname, 1, 1) || '.'             AS name3,
               u4.lastname || ' ' || substr(u4.firstname, 1, 1) || '.'             AS name4,
+              u1.sex                                                              AS sex1,
+              u2.sex                                                              AS sex2,
+              u3.sex                                                              AS sex3,
+              u4.sex                                                              AS sex4,
+              (SELECT pic FROM user_pic WHERE user_id = m.user_1_id)              AS pic1,
+              (SELECT pic FROM user_pic WHERE user_id = m.user_2_id)              AS pic2,
+              (SELECT pic FROM user_pic WHERE user_id = m.user_3_id)              AS pic3,
+              (SELECT pic FROM user_pic WHERE user_id = m.user_4_id)              AS pic4,
               (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_2_by IS NOT NULL) AS wins1,
               (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_1_by IS NOT NULL) AS wins2,
               (SELECT r.delta FROM rating r WHERE r.match_id = m.id AND r.user_id = $user_id)   AS delta

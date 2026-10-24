@@ -345,9 +345,14 @@
                                                 <div class="collapse<%= expand_all ? ' show' : '' %>" id="player-same-type-matches">
                                                     <% // компактная таблица: подпись турнира (#id тип город дата),
                                                        // пара игрока первой (её счёт первым), имя игрока жирным,
-                                                       // дельта его рейтинга с цветом; дробная часть — без хвостовых нулей %>
-                                                    <% const esc = (s) => String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;'); %>
-                                                    <% const nameHtml = (name, uid) => uid === user.id ? `<strong>${esc(name)}</strong>` : esc(name); %>
+                                                       // игроки в стандартном формате и кликабельны (открывают карточку),
+                                                       // колонки игроков и дельта по центру,
+                                                       // дельта рейтинга игрока с цветом, дробная часть — без хвостовых нулей %>
+                                                    <% const playerHtml = (uid, name, sex, pic) =>
+                                                        (uid === user.id ? '<strong>' : '') +
+                                                        `<span class="co-player" data-user-id="${uid}" role="button">` +
+                                                        playerNameFormatter(uid, name, sex, pic) + '</span>' +
+                                                        (uid === user.id ? '</strong>' : ''); %>
                                                     <table class="table table-sm no-selection mb-0">
                                                         <tbody>
                                                         <% type_matches.forEach((m) => { %>
@@ -356,15 +361,15 @@
                                                             <tr>
                                                                 <td><%- include('../../tournament-label', {id: m.tournament_id, type_name: m.tournament_type_name, city: m.tournament_city, date: m.match_created_at}).trim() %></td>
                                                                 <% if (mine_first) { %>
-                                                                    <td><%- nameHtml(m.name1, m.user_1_id) %> / <%= m.name2 %></td>
+                                                                    <td class="text-center"><%- playerHtml(m.user_1_id, m.name1, m.sex1, m.pic1) %> / <%- playerHtml(m.user_2_id, m.name2, m.sex2, m.pic2) %></td>
                                                                     <td><span class="rating-<%= m.wins1 > m.wins2 ? 'plus' : 'minus' %> fw-bold"><%= m.wins1 %>:<%= m.wins2 %></span></td>
-                                                                    <td><%= m.name3 %> / <%= m.name4 %></td>
+                                                                    <td class="text-center"><%- playerHtml(m.user_3_id, m.name3, m.sex3, m.pic3) %> / <%- playerHtml(m.user_4_id, m.name4, m.sex4, m.pic4) %></td>
                                                                 <% } else { %>
-                                                                    <td><%= m.name3 %> / <%- nameHtml(m.name4, m.user_4_id) %></td>
+                                                                    <td class="text-center"><%- playerHtml(m.user_3_id, m.name3, m.sex3, m.pic3) %> / <%- playerHtml(m.user_4_id, m.name4, m.sex4, m.pic4) %></td>
                                                                     <td><span class="rating-<%= m.wins2 > m.wins1 ? 'plus' : 'minus' %> fw-bold"><%= m.wins2 %>:<%= m.wins1 %></span></td>
-                                                                    <td><%= m.name1 %> / <%= m.name2 %></td>
+                                                                    <td class="text-center"><%- playerHtml(m.user_1_id, m.name1, m.sex1, m.pic1) %> / <%- playerHtml(m.user_2_id, m.name2, m.sex2, m.pic2) %></td>
                                                                 <% } %>
-                                                                <td><%- include('../../rating-label', {v: m.delta, delta: true}).trim() %></td>
+                                                                <td class="text-center"><%- include('../../rating-label', {v: m.delta, delta: true}).trim() %></td>
                                                             </tr>
                                                         <% }) %>
                                                         </tbody>

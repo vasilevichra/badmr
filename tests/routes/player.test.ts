@@ -32,6 +32,15 @@ const userService = new UserService();
 const matchService = new MatchService();
 const gameService = new GameService();
 
+/** Стандартная разметка игрока в компактной таблице «За всё время»:
+ *  playerNameFormatter (аватар, имя, #id) в оболочке co-player —
+ *  клик открывает карточку игрока. sex=1 (сид) → pepe.svg, pic → null. */
+const playerHtml = (uid: number, name: string, bold = false) =>
+    (bold ? "<strong>" : "") +
+    `<span class="co-player" data-user-id="${uid}" role="button">` +
+    `<span class="no-selection text-nowrap"><img class="no-selection" src="/assets/images/pepe.svg" alt="${name}" width="20" height="20"/>&nbsp;${name}<span class="secondary-info">&nbsp;#<span class="user-id">${uid}</span></span></span>` +
+    "</span>" + (bold ? "</strong>" : "");
+
 after(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
 });
@@ -451,7 +460,7 @@ describe("Player page", () => {
   });
 
   it("должен показать матчи «За всё время» в стандартном формате подписи турнира с дельтой и жирным именем игрока", async () => {
-    const [u1] = await seedTwoSameTypeTournaments();
+    const [u1, u2, u3, u4] = await seedTwoSameTypeTournaments();
     const res = await fetch(`${base}/${u1}`);
     const html = await res.text();
 
@@ -477,14 +486,16 @@ describe("Player page", () => {
     const label = `#4 ${typeShort(type_name)} ${city} ${String(d.getDate()).padStart(2, '0')} ${monthShort[d.getMonth()]} ${d.getFullYear()}`;
 
     // компактная таблица: подпись турнира, пара игрока первой (имя жирным),
-    // её счёт первым, соперники, дельта с цветом; дробная часть без хвостовых нулей;
+    // её счёт первым, соперники, дельта с цветом; игроки в стандартном
+    // формате (playerNameFormatter в co-player), колонки игроков и дельта
+    // по центру; дробная часть без хвостовых нулей;
     // переносы от scriptlet-тегов EJS нормализуются до одинарных пробелов
     // нормализация даёт пробелы между </td> и <td> (переносы от scriptlet-тегов EJS)
     const deltaText = `${delta >= 0 ? '+' : ''}${Number(delta.toFixed(2))}`;
     const deltaClass = delta < 0 ? 'rating-minus' : 'rating-plus';
-    const expected = `<td>${label}</td> <td><strong>Фамилия1 И.</strong> / Фамилия2 И.</td> ` +
-        `<td><span class="rating-plus fw-bold">2:0</span></td> <td>Фамилия3 И. / Фамилия4 И.</td> ` +
-        `<td><span class="${deltaClass}">${deltaText}</span></td>`;
+    const expected = `<td>${label}</td> <td class="text-center">${playerHtml(u1, 'Фамилия1 И.', true)} / ${playerHtml(u2, 'Фамилия2 И.')}</td> ` +
+        `<td><span class="rating-plus fw-bold">2:0</span></td> <td class="text-center">${playerHtml(u3, 'Фамилия3 И.')} / ${playerHtml(u4, 'Фамилия4 И.')}</td> ` +
+        `<td class="text-center"><span class="${deltaClass}">${deltaText}</span></td>`;
     assert.ok(html.replace(/\s+/g, ' ').includes(expected), `ожидалась строка: ${expected}`);
   });
 
@@ -514,8 +525,10 @@ describe("Player page", () => {
     const res = await fetch(`${base}/${ids[0]}`);
     const html = await res.text();
 
-    // пара игрока первой, но имя игрока — второе в ней и по-прежнему жирное
-    assert.match(html, /<td>Фамилия4 И\. \/ <strong>Фамилия1 И\.<\/strong><\/td>/);
+    // пара игрока первой, но имя игрока — второе в ней и по-прежнему жирное;
+    // колонки игроков по центру, имена кликабельны (co-player)
+    const row = `<td class="text-center">${playerHtml(ids[3], 'Фамилия4 И.')} / ${playerHtml(ids[0], 'Фамилия1 И.', true)}</td>`;
+    assert.ok(html.replace(/\s+/g, ' ').includes(row), `ожидалась строка: ${row}`);
   });
 
   it("должен показать номер матча в серии по настройке calibration_matches", async () => {
