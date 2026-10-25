@@ -169,7 +169,7 @@
             <div class="panel panel-default" style="font-size: 0.8rem;">
                 <div class="panel-heading text-center"><%= tournamentName %></div>
                 <div class="list-group">
-                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge bg-badmr float-start"><%- getRegEndPhoneStr() %></span></span>
+                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : 'bg-danger' %> float-start"><%- getRegEndPhoneStr() %></span></span>
                     <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge bg-badmr float-start"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
                     <% if (current_tournament.map_url) { %>
                         <span class="list-group-item text-center"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>

@@ -542,3 +542,33 @@ const calendarPartsSince = (datetime) => {
   if (days > 0) { parts.push(`${days} д.`); }
   return parts;
 };
+
+/** Компактное «1сек»/«1мин»/«5ч»/«3д»/«4мес»/«3г» для красного бейджа
+ *  телефона — только старшая единица. Календарные месяцы/годы считаются
+ *  заимствованием дней, как в calendarPartsSince, плюс часы/минуты/секунды. */
+const sinceCompact = (datetime) => {
+  const end = new Date(datetime);
+  if (isNaN(end.getTime())) {
+    return '';
+  }
+  const now = new Date();
+
+  let secs = now.getSeconds() - end.getSeconds();
+  let mins = now.getMinutes() - end.getMinutes();
+  let hours = now.getHours() - end.getHours();
+  let days = now.getDate() - end.getDate();
+  let months = now.getMonth() - end.getMonth();
+  let years = now.getFullYear() - end.getFullYear();
+  if (secs < 0) { mins--; secs += 60; }
+  if (mins < 0) { hours--; mins += 60; }
+  if (hours < 0) { days--; hours += 24; }
+  if (days < 0) { months--; days += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+  if (months < 0) { years--; months += 12; }
+
+  if (years > 0) { return `${years}г`; }
+  if (months > 0) { return `${months}мес`; }
+  if (days > 0) { return `${days}д`; }
+  if (hours > 0) { return `${hours}ч`; }
+  if (mins > 0) { return `${mins}мин`; }
+  return `${secs}сек`;
+};

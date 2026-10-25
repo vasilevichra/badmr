@@ -61,20 +61,22 @@ $(document).ready(() => {
     if ($('#game').find('input:focus, select:focus').length === 0) {
       renderGames();
     }
+    fillRegEndSince();
   }, 30000);
 
-  // заполнение «закончилась N назад» на клиенте: при рендере страницы
-  // строка всегда устаревает, клиентский пересчёт этого не допускает
-  $('.reg-end-since').each((i, el) => {
-    const parts = calendarPartsSince($(el).attr('datetime'));
-    $(el).text(parts.length ? `${parts.join(' ')} назад` : 'сегодня');
-  });
-  $('.reg-end-since-badge').each((i, el) => {
-    const parts = calendarPartsSince($(el).attr('datetime'));
-    // компактный бейдж: только старшая единица (д/мес/г)
-    const [num, unit] = parts.length ? parts[0].split(' ') : ['сегодня', ''];
-    $(el).text(parts.length ? `${num}${unit.replace('.', '')}` : 'сегодня');
-  });
+  // заполнение «закончилась N назад» и красного бейджа телефона на клиенте:
+  // при рендере страницы строка всегда устаревает, клиентский пересчёт
+  // этого не допускает
+  const fillRegEndSince = () => {
+    $('.reg-end-since').each((i, el) => {
+      const parts = calendarPartsSince($(el).attr('datetime'));
+      $(el).text(parts.length ? `${parts.join(' ')} назад` : 'сегодня');
+    });
+    $('.reg-end-since-badge').each((i, el) => {
+      $(el).text(sinceCompact($(el).attr('datetime')) || 'сегодня');
+    });
+  };
+  fillRegEndSince();
 
   // выравнивание перелистывания страниц по центру для всех таблиц
   $('.fixed-table-pagination').addClass('d-flex justify-content-center');
