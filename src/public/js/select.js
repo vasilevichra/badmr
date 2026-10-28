@@ -164,6 +164,7 @@ const bindMergedCellHover = (table) => {
 
 // подсказки над сокращёнными на телефоне названиями колонок; там же —
 // паддинги заголовков вдвое меньше исходных (bootstrap 0.75rem = 12px → 6px)
+// и адаптивный шрифт, как в числовых ячейках
 const addPhoneColumnHints = (table) => {
   if (!isPhone()) {
     return;
@@ -172,13 +173,17 @@ const addPhoneColumnHints = (table) => {
   for (const [field, hint] of Object.entries(hints)) {
     const thInner = table.find(`thead th[data-field="${field}"] .th-inner`);
     thInner.attr('title', hint);
-    thInner.css({'padding-left': '6px', 'padding-right': '6px'});
+    thInner.css({'font-size': 'clamp(0.7rem, 3.8vw, 1rem)', 'padding-left': '6px', 'padding-right': '6px'});
   }
 };
 
-// числовые колонки подбора: на телефоне цифры мельче, а паддинги ячеек
-// вдвое меньше исходных (bootstrap 0.5rem = 8px → 4px) — таблица компактнее
-const numberCellStyle = () => isPhone() ? {css: {'font-size': '80%', 'padding-left': '4px', 'padding-right': '4px'}} : {};
+// числовые колонки подбора: на телефоне шрифт адаптивный — тянется от
+// ширины экрана: максимум 1rem (как в колонке «Имя»), на узких экранах
+// сжимается (минимум 0.7rem) — таблица умещается без прокрутки; паддинги —
+// половина исходных (bootstrap 0.5rem = 8px → 4px)
+const numberCellStyle = () => isPhone()
+    ? {css: {'font-size': 'clamp(0.7rem, 3.8vw, 1rem)', 'padding-left': '4px', 'padding-right': '4px'}}
+    : {};
 
 const selectColumns = [
   {
