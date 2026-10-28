@@ -142,6 +142,11 @@ const renderSelect = () => {
             showSelectButton();
           });
         });
+
+        if (isPhone()) {
+          fitSelectTables();
+          $(window).off('resize.selectFit').on('resize.selectFit', fitSelectTables);
+        }
       } else {
         $('#select-info').show();
       }
@@ -162,28 +167,43 @@ const bindMergedCellHover = (table) => {
   .on('mouseleave', () => table.removeClass('cell-hover-only'));
 };
 
-// подсказки над сокращёнными на телефоне названиями колонок; там же —
-// паддинги заголовков вдвое меньше исходных (bootstrap 0.75rem = 12px → 6px)
-// и адаптивный шрифт, как в числовых ячейках
+// подсказки над сокращёнными на телефоне названиями колонок; паддинги
+// заголовков переключает CSS-класс .select-compact на таблице
 const addPhoneColumnHints = (table) => {
   if (!isPhone()) {
     return;
   }
   const hints = {rating: 'Рейтинг', matches: 'Сыграно', chance: 'Шанс', excess: 'Разница'};
   for (const [field, hint] of Object.entries(hints)) {
-    const thInner = table.find(`thead th[data-field="${field}"] .th-inner`);
-    thInner.attr('title', hint);
-    thInner.css({'font-size': 'clamp(0.7rem, 3.8vw, 1rem)', 'padding-left': '6px', 'padding-right': '6px'});
+    table.find(`thead th[data-field="${field}"] .th-inner`).attr('title', hint);
   }
 };
 
 // числовые колонки подбора: на телефоне шрифт адаптивный — тянется от
 // ширины экрана: максимум 1rem (как в колонке «Имя»), на узких экранах
-// сжимается (минимум 0.7rem) — таблица умещается без прокрутки; паддинги —
-// половина исходных (bootstrap 0.5rem = 8px → 4px)
-const numberCellStyle = () => isPhone()
-    ? {css: {'font-size': 'clamp(0.7rem, 3.8vw, 1rem)', 'padding-left': '4px', 'padding-right': '4px'}}
-    : {};
+// сжимается (минимум 0.7rem); паддинги и дробная часть чисел переключаются
+// CSS-классом .select-compact — его вешает fitSelectTables(), когда таблица
+// не умещается на экране
+const numberCellStyle = () => isPhone() ? {css: {'font-size': 'clamp(0.7rem, 3.8vw, 1rem)'}} : {};
+
+// число в числовых колонках на телефоне: пока таблица умещается на экране —
+// с дробной частью (.select-full), когда не умещается — целое (.select-int);
+// видимость вариантов переключает CSS
+const phoneNumber = (value) => {
+  const full = (Math.round(value * 10) / 10).toFixed(1);
+  if (full.endsWith('.0')) {
+    return `${Math.round(value)}`;
+  }
+  return `<span class="select-full">${full}</span><span class="select-int">${Math.round(value)}</span>`;
+};
+
+// экран: таблицы подбора не умещаются — компактный режим на всех (паддинги
+// вдвое меньше исходных, дробные части скрыты); перепроверяем при повороте
+// экрана и изменении размеров окна
+const fitSelectTables = () => {
+  const tight = document.body.scrollWidth > document.documentElement.clientWidth;
+  $('.select-form-table-1, .select-form-table-2').toggleClass('select-compact', tight);
+};
 
 const selectColumns = [
   {
@@ -201,14 +221,16 @@ const selectColumns = [
     field: 'rating',
     title: isPhone() ? 'Р.' : 'Рейтинг',
     align: 'center',
-    // на телефоне рейтинг целочисленный — без дробной части
-    formatter: (value) => isPhone() ? Math.round(value) : value,
+    class: 'select-num',
+    // на телефоне дробная часть видна, пока таблица умещается на экране
+    formatter: (value) => isPhone() ? phoneNumber(value) : value,
     cellStyle: numberCellStyle
   },
   {
     field: 'matches',
     title: isPhone() ? 'И.' : 'Сыграно',
     align: 'center',
+    class: 'select-num',
     cellStyle: numberCellStyle,
     // выигранные матчи — зелёным, проигранные (всего минус выигранные) —
     // красным; когда есть и те и другие — с суммой сыгранных матчей,
@@ -237,21 +259,23 @@ const selectColumns = [
     field: 'chance',
     title: isPhone() ? 'Ш.' : 'Шанс',
     align: 'center',
+    class: 'select-num',
     cellStyle: numberCellStyle,
     // винрейт совместных доигранных матчей пары в процентах (из ответа
     // ready()); напарники ни разу не игравшие вместе — null, показываем «—»;
-    // на телефоне — целочисленный, без дробной части, со знаком % мельче
+    // на телефоне дробная часть видна, пока таблица умещается на экране
     formatter: (value) => value != null
-        ? `${isPhone() ? Math.round(value) : value}${isPhone() ? '<span class="select-pct">%</span>' : '%'}`
+        ? `${isPhone() ? phoneNumber(value) : value}${isPhone() ? '<span class="select-pct">%</span>' : '%'}`
         : '—'
   },
   {
     field: 'excess',
     title: isPhone() ? 'Δ' : 'Разница',
     align: 'center',
+    class: 'select-num',
     cellStyle: numberCellStyle,
     formatter: (value) => isPhone()
-        ? `${Math.round(value)}<span class="select-pct">%</span>`
+        ? `${phoneNumber(value)}<span class="select-pct">%</span>`
         : `${value.toFixed(1)}%`
   }
 ];
