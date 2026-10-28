@@ -162,19 +162,23 @@ const bindMergedCellHover = (table) => {
   .on('mouseleave', () => table.removeClass('cell-hover-only'));
 };
 
-// подсказки над сокращёнными на телефоне названиями колонок
+// подсказки над сокращёнными на телефоне названиями колонок; там же —
+// минимальные горизонтальные паддинги заголовков (кроме «Имя»)
 const addPhoneColumnHints = (table) => {
   if (!isPhone()) {
     return;
   }
   const hints = {rating: 'Рейтинг', matches: 'Сыграно', chance: 'Шанс', excess: 'Разница'};
   for (const [field, hint] of Object.entries(hints)) {
-    table.find(`thead th[data-field="${field}"] .th-inner`).attr('title', hint);
+    const thInner = table.find(`thead th[data-field="${field}"] .th-inner`);
+    thInner.attr('title', hint);
+    thInner.css({'padding-left': '2px', 'padding-right': '2px'});
   }
 };
 
-// числовые колонки подбора: на телефоне цифры мельче — таблица компактнее
-const numberCellStyle = () => isPhone() ? {css: {'font-size': '80%'}} : {};
+// числовые колонки подбора: на телефоне цифры мельче и паддинги ячеек
+// минимальные — таблица умещается на экране без прокрутки
+const numberCellStyle = () => isPhone() ? {css: {'font-size': '80%', 'padding-left': '2px', 'padding-right': '2px'}} : {};
 
 const selectColumns = [
   {
