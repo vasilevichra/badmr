@@ -53,6 +53,7 @@ const renderSelect = () => {
           table1.bootstrapTable('mergeCells', {index: 0, field: 'chance', rowspan: 2});
           table1.bootstrapTable('mergeCells', {index: 0, field: 'excess', rowspan: 2});
           bindMergedCellHover(table1);
+          addPhoneColumnHints(table1);
           table1.on('click-cell.bs.table', (e, field, row, element) => {
             if (field === 'name') {
               openPlayerWindow(element.user_id);
@@ -70,6 +71,7 @@ const renderSelect = () => {
           table2.bootstrapTable('mergeCells', {index: 0, field: 'chance', rowspan: 2});
           table2.bootstrapTable('mergeCells', {index: 0, field: 'excess', rowspan: 2});
           bindMergedCellHover(table2);
+          addPhoneColumnHints(table2);
           table2.on('click-cell.bs.table', (e, field, row, element) => {
             if (field === 'name') {
               openPlayerWindow(element.user_id);
@@ -91,7 +93,8 @@ const renderSelect = () => {
           // дельта сильнейшей пары (+1.6) и значок фаворита; если обе в одном
           // заголовке — сначала дельта, через пробел значок
           const marks = {};
-          marks[stronger] = `<span class="select-delta">+${field.diff.toFixed(1)}</span>`;
+          // дельта сильнейшей пары в заголовке: на телефоне — целочисленная
+          marks[stronger] = `<span class="select-delta">+${isPhone() ? Math.round(field.diff) : field.diff.toFixed(1)}</span>`;
           if (field.favorite === 1 || field.favorite === 2) {
             marks[field.favorite] = `${marks[field.favorite] ?? ''}<i class="bi bi-trophy-fill select-favorite"></i>`;
           }
@@ -159,6 +162,17 @@ const bindMergedCellHover = (table) => {
   .on('mouseleave', () => table.removeClass('cell-hover-only'));
 };
 
+// подсказки над сокращёнными на телефоне названиями колонок
+const addPhoneColumnHints = (table) => {
+  if (!isPhone()) {
+    return;
+  }
+  const hints = {rating: 'Рейтинг', matches: 'Сыграно', chance: 'Шанс', excess: 'Разница'};
+  for (const [field, hint] of Object.entries(hints)) {
+    table.find(`thead th[data-field="${field}"] .th-inner`).attr('title', hint);
+  }
+};
+
 const selectColumns = [
   {
     field: 'name',
@@ -174,7 +188,9 @@ const selectColumns = [
   {
     field: 'rating',
     title: isPhone() ? 'Р.' : 'Рейтинг',
-    align: 'center'
+    align: 'center',
+    // на телефоне рейтинг целочисленный — без дробной части
+    formatter: (value) => isPhone() ? Math.round(value) : value
   },
   {
     field: 'matches',
@@ -189,6 +205,16 @@ const selectColumns = [
       }
       const wins = row.wins ?? 0;
       const lost = value - wins;
+      if (isPhone()) {
+        // компактный формат «победы/поражения/всего»
+        if (!lost) {
+          return `<span class="rating-plus">${wins}</span>/${value}`;
+        }
+        if (!wins) {
+          return `<span class="rating-minus">${lost}</span>/${value}`;
+        }
+        return `<span class="rating-plus">${wins}</span>/<span class="rating-minus">${lost}</span>/${value}`;
+      }
       if (!lost) {
         return `<span class="rating-plus">${value}</span>`;
       }
@@ -203,14 +229,15 @@ const selectColumns = [
     title: isPhone() ? 'Ш.' : 'Шанс',
     align: 'center',
     // винрейт совместных доигранных матчей пары в процентах (из ответа
-    // ready()); напарники ни разу не игравшие вместе — null, показываем «—»
-    formatter: (value) => value != null ? `${value}%` : '—'
+    // ready()); напарники ни разу не игравшие вместе — null, показываем «—»;
+    // на телефоне — целочисленный, без дробной части
+    formatter: (value) => value != null ? `${isPhone() ? Math.round(value) : value}%` : '—'
   },
   {
     field: 'excess',
     title: isPhone() ? 'Разн.' : 'Разница',
     align: 'center',
-    formatter: (value) => `${value.toFixed(1)}%`
+    formatter: (value) => isPhone() ? `${Math.round(value)}%` : `${value.toFixed(1)}%`
   }
 ];
 
