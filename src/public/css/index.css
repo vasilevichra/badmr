@@ -60,7 +60,7 @@
   --badmr-sex-border: #9e9fa1;
 }
 
-[data-bs-theme=dark] {
+[data-bs-theme="dark"] {
   --badmr-bg: #212529;
   --badmr-card-bg: #2b3035;
   --badmr-card-border: #495057;
@@ -482,7 +482,6 @@ input:focus::placeholder {
    вертикальный формат — подпись турнира сверху, затем два блока пар,
    у каждого своя часть счёта; дельта — в блоке пары с игроком карточки */
 .same-type-mobile {
-  table-layout: fixed;
   width: 100%;
 }
 
@@ -500,6 +499,12 @@ input:focus::placeholder {
 .same-type-mobile td.same-type-name {
   font-size: 85%;
   vertical-align: middle;
+  /* вся ширина, кроме счёта и дельты, — имени: одна строка,
+     при нехватке места — обрезка с многоточием */
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* аватарки в мобильном формате не показываются — экономят ширину экрана */
@@ -511,19 +516,24 @@ input:focus::placeholder {
   text-align: center;
   vertical-align: middle;
   font-size: 105%;
-  width: 12%;
+  /* ширина по содержимому: остальное место уходит имени */
+  width: 1%;
+  white-space: nowrap;
 }
 
 .same-type-mobile td.same-type-delta {
   text-align: center;
   vertical-align: middle;
   font-size: 65%;
-  width: 14%;
+  width: 1%;
+  white-space: nowrap;
 }
 
 /* линии-разделители: внутри пары строка без границы,
    между парами и между матчами — bootstrap-граница */
-.same-type-mobile tr:not(.same-type-divider) td:not(.same-type-tournament-cell) {
+.same-type-mobile
+  tr:not(.same-type-divider)
+  td:not(.same-type-tournament-cell) {
   border-bottom: 0;
 }
 
@@ -537,18 +547,20 @@ input:focus::placeholder {
 
 /* на телефоне таблица «Остальные матчи» должна умещаться в экран:
    аватарки скрыты (съедают ~25px в каждой из 4 ячеек игроков),
-   подпись турнира и счёт — мельче, отступы ячеек — минимальные */
+   подпись турнира и счёт — мельче, отступы ячеек — минимальные.
+   Правила не должны задевать мобильный вертикальный формат
+   (.same-type-mobile), у него своя раскладка */
 @media (max-width: 575.98px) {
   /* фиксированная раскладка: колонки в заданных долях ширины экрана,
      иначе длинные фамилии выталкивают правую пару и дельту за экран */
-  #player-same-type-matches table {
+  #player-same-type-matches table:not(.same-type-mobile) {
     table-layout: fixed;
     width: 100%;
   }
 
   /* доли колонок: подпись турнира — 30%, игроки — по 25%,
      счёт — 10%, дельта — 10% */
-  #player-same-type-matches td {
+  #player-same-type-matches table:not(.same-type-mobile) td {
     padding-left: 2px;
     padding-right: 2px;
   }
@@ -577,7 +589,7 @@ input:focus::placeholder {
   }
 
   /* длинные фамилии переносятся: nowrap не даёт таблице уложиться в экран */
-  #player-same-type-matches .no-selection {
+  #player-same-type-matches table:not(.same-type-mobile) .no-selection {
     white-space: normal !important;
   }
 }
@@ -672,7 +684,11 @@ input:focus::placeholder {
   display: block;
   float: left;
   padding: 5px 10px;
-  background-image: linear-gradient(to bottom, var(--badmr-sex-top), var(--badmr-sex-bottom));
+  background-image: linear-gradient(
+    to bottom,
+    var(--badmr-sex-top),
+    var(--badmr-sex-bottom)
+  );
   border: 1px solid var(--badmr-sex-border);
   cursor: pointer;
 }
@@ -683,7 +699,11 @@ input:focus::placeholder {
 
 .sex label[id="male"]:hover,
 .sex label[id="female"]:hover {
-  background-image: linear-gradient(to bottom, var(--badmr-sex-top), var(--badmr-sex-hover-bottom));
+  background-image: linear-gradient(
+    to bottom,
+    var(--badmr-sex-top),
+    var(--badmr-sex-hover-bottom)
+  );
 }
 
 .secondary-info {
@@ -998,24 +1018,36 @@ body > #footer:not(.fixed-bottom) {
 
 /* select2-bootstrap-5-theme жёстко светлое и про темы bootstrap не знает —
    в ночной теме перекрашиваем поверхности (#56) */
-[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-selection,
-[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown,
-[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field {
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection,
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown,
+[data-bs-theme="dark"]
+  .select2-container--bootstrap-5
+  .select2-dropdown
+  .select2-search
+  .select2-search__field {
   color: var(--bs-body-color);
   background-color: var(--bs-body-bg);
 }
 
-[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-selection,
-[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown .select2-search .select2-search__field {
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection,
+[data-bs-theme="dark"]
+  .select2-container--bootstrap-5
+  .select2-dropdown
+  .select2-search
+  .select2-search__field {
   border-color: var(--bs-border-color);
 }
 
-[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown {
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown {
   /* рамка дропдауна в светлой теме — светло-голубая (#86b7fe), сохраняем тон */
   border-color: var(--bs-primary);
 }
 
-[data-bs-theme=dark] .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option.select2-results__option--highlighted {
+[data-bs-theme="dark"]
+  .select2-container--bootstrap-5
+  .select2-dropdown
+  .select2-results__options
+  .select2-results__option.select2-results__option--highlighted {
   color: var(--bs-body-color);
   background-color: var(--bs-border-color);
 }
