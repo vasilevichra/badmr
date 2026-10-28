@@ -156,6 +156,44 @@ describe("Achievement", () => {
     assert.strictEqual(result.medalist.value, 15);
   });
 
+  it("должен исключить матчи калибровки из номинаций и дельт", async () => {
+    // один калибровочный матч (множитель boost), затем обычный
+    await settingsService.set("calibration_matches", "1");
+    await settingsService.set("calibration_boost", "3");
+    await settingsService.set("calibration_cap", "0");
+
+    const ids: number[] = [];
+    for (let i = 1; i <= 4; i++) {
+      const { id } = await userService.create(`Игрок${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
+      ids.push(id);
+    }
+    const [u1, u2, u3, u4] = ids;
+    const seed = async (games: [string | null, string | null, number][]) => {
+      await matchService.create(u1, u2, u3, u4);
+      const matchId = (await matchService.getAll() as { id: number }[]).slice(-1)[0].id;
+      for (const [l1, l2, offset] of games) {
+        await gameService.create(matchId, l1, l2, at(offset));
+      }
+    };
+    await seed([[null, "5", 10], [null, "25", 40]]); // M1 — калибровочный (серия 1)
+    await seed([[null, "5", 10], [null, "25", 40]]); // M2 — обычный (серия 2)
+
+    const result = achievementService.getByTournament(4) as Record<string, Nomination>;
+
+    // M1 для всех игроков калибровочный и не учитывается:
+    // у каждого — одна победа/поражение и 2 игры вместо двух матчей
+    assert.deepStrictEqual(userIds(result.winner), [u1, u2].sort((a, b) => a - b));
+    assert.strictEqual(result.winner.value, 1);
+    assert.deepStrictEqual(userIds(result.workhorse), [u1, u2, u3, u4].sort((a, b) => a - b));
+    assert.strictEqual(result.workhorse.value, 2);
+    // дельты — только из M2: после калибровки 530/470, разница средних 60,
+    // база (100 - 60) / 10 = 4 (без исключения было бы 4 + 30 = 34)
+    assert.deepStrictEqual(userIds(result.rising_star), [u1, u2].sort((a, b) => a - b));
+    assert.strictEqual(result.rising_star.value, 4);
+    // стабильный: учтён только 1 матч (< 3) — не показывается
+    assert.strictEqual(result.consistent, undefined);
+  });
+
   it("должен разделить номинацию между игроками с одинаковым результатом", async () => {
     const [u1, u2] = await seedMatches();
     const result = achievementService.getByTournament(4) as Record<string, Nomination>;

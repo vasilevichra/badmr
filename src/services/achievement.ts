@@ -150,7 +150,10 @@ class Achievement {
   getByTournament = (tournament_id: number): Record<string, Nomination> => {
     const max_point = Number(this.settingsService.get('max_point'));
     const game_point = Number(this.settingsService.get('game_point'));
-    const rows = this.achievement.getGamesByTournament(tournament_id, max_point, game_point);
+    // матчи калибровочной серии игроков не участвуют в номинациях:
+    // усиленные K дельты искажают «спортивную» картину
+    const calibration_matches = Number(this.settingsService.get('calibration_matches', tournament_id)) || 0;
+    const rows = this.achievement.getGamesByTournament(tournament_id, max_point, game_point, calibration_matches);
     if (rows.length === 0) {
       return {};
     }
@@ -158,7 +161,7 @@ class Achievement {
     const stats = Achievement.accumulate(rows, game_point, max_point);
 
     const deltas = new Map<number, number>();
-    for (const { user_id, delta } of this.achievement.getDeltasByTournament(tournament_id)) {
+    for (const { user_id, delta } of this.achievement.getDeltasByTournament(tournament_id, calibration_matches)) {
       deltas.set(user_id, delta);
     }
     const withDelta = (user_id: number) => deltas.get(user_id) ?? 0;

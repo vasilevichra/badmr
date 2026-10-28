@@ -31,6 +31,7 @@ const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/web/pla
 const userService = new UserService();
 const matchService = new MatchService();
 const gameService = new GameService();
+const settingsService = new SettingsService();
 
 /** Стандартная разметка игрока в компактной таблице «Остальные матчи»:
  *  playerNameFormatter (аватар, имя, #id) в оболочке co-player —
@@ -229,6 +230,9 @@ describe("Player page", () => {
   });
 
   it("должен показать историю матчей игрока на текущем турнире", async () => {
+    // дельты калибровки здесь не тестируются — отключаем, чтобы дельты
+    // свежих игроков показывались
+    await settingsService.set("calibration_matches", "0");
     const ids: number[] = [];
     for (let i = 1; i <= 6; i++) {
       const { id } = await userService.create(`Фамилия${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
@@ -493,6 +497,9 @@ describe("Player page", () => {
 
   it("должен показать матчи «За всё время» в стандартном формате подписи турнира с дельтой и жирным именем игрока", async () => {
     const [u1, u2, u3, u4] = await seedTwoSameTypeTournaments();
+    // дельты калибровки здесь не тестируются — отключаем; сеттинг пишется
+    // в текущий (второй) турнир, карточка рендерится в его контексте
+    await settingsService.set("calibration_matches", "0");
     const res = await fetch(`${base}/${u1}`);
     const html = await res.text();
 
@@ -581,5 +588,34 @@ describe("Player page", () => {
     assert.strictEqual(res.status, 200);
     assert.match(html, /Калибровка \(1 из 2\)/);
     assert.match(html, /aria-valuenow="50"/);
+  });
+
+  it("должен скрыть дельту матча калибровки в истории матчей", async () => {
+    // калибровка включена (дефолт сида 3): первый матч свежих игроков —
+    // калибровочный, его усиленная дельта не показывается
+    const settingsService = new SettingsService();
+    await settingsService.set("calibration_matches", "2");
+    const { id, matchId } = await seedCalibratedPlayer();
+
+    const res = await fetch(`${base}/${id}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    // дельта есть в БД, но не показывается ни в истории матчей,
+    // ни в компактной таблице «Остальные матчи»
+    const db = new DatabaseSync(testDbPath(), { enableForeignKeyConstraints: false });
+    const { delta } = db.prepare(
+      "SELECT delta FROM rating WHERE user_id = ? AND match_id = ?",
+    ).get(id, matchId) as { delta: number };
+    assert.ok(delta !== 0);
+    assert.doesNotMatch(html, /match-history-delta-col[^>]*><span class="rating-(plus|minus)">[+-]/);
+
+    // после выключения калибровки дельта того же матча показывается
+    await settingsService.set("calibration_matches", "0");
+    const res2 = await fetch(`${base}/${id}`);
+    const html2 = await res2.text();
+    const deltaText = `${delta > 0 ? '+' : ''}${Number(delta.toFixed(2))}`;
+    const deltaPattern = deltaText.replace(/\./g, '\\.').replace(/\+/g, '\\+');
+    assert.match(html2, new RegExp(`match-history-delta-col[^>]*><span class="rating-(plus|minus)">${deltaPattern}<`));
   });
 });

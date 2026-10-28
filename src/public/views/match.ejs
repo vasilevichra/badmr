@@ -24,15 +24,16 @@
     <% var score_duration_minutes = total_scores / duration; %>
     <% var rating1 = Number(games[0].rating1); %>
     <% var rating2 = Number(games[0].rating2); %>
-    <% var delta1 = Number(games.map(g => Number(g.delta1))[0]); %>
-    <% // нижняя дельта — зеркальная верхней
-        var delta2 = -delta1; %>
+    <% var raw_delta1 = games.map(g => g.delta1)[0]; %>
+    <% var delta1 = raw_delta1 === null || raw_delta1 === undefined ? null : Number(raw_delta1); %>
+    <% // нижняя дельта — зеркальная верхней; у матча калибровки дельты нет (null) %>
+    <% var delta2 = delta1 === null ? null : -delta1; %>
 
     <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %>, корт №<%= court %></nobr></label>
     <table class="match-history-players table" style="margin-bottom: 3em;">
         <tbody>
         <tr>
-            <td class="match-history-delta-col<%= delta1 < 0 ? ' rating-minus' : ' rating-plus' %>"><%- include('rating-label', {v: delta1, delta: true}).trim() %></td>
+            <td class="match-history-delta-col<%= delta1 === null ? '' : delta1 < 0 ? ' rating-minus' : ' rating-plus' %>"><%- include('rating-label', {v: delta1, delta: true}).trim() %></td>
             <td class="match-history-delta-col<% if( delta1 > 0) { %> win<% } %>">〈Σ〉<%- include('rating-label', {v: rating1}).trim() %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
                 <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
@@ -40,10 +41,10 @@
         </tr>
         <tr>
             <td rowspan="2" class="match-history-score<% if( total_scores_1 > total_scores_2) { %> win<% } %>"><%= total_scores_1 %></td>
-            <td class="match-history-players-name<% if( delta1 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[0] %>" role="button"><%- playerNameFormatter(user_ids[0], names[0], sexes[0], pics[0]) %></td>
+            <td class="match-history-players-name<% if( delta1 === null) { %><% } else if( delta1 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[0] %>" role="button"><%- playerNameFormatter(user_ids[0], names[0], sexes[0], pics[0]) %></td>
         </tr>
         <tr>
-            <td class="match-history-players-name<% if( delta1 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[1] %>" role="button"><%- playerNameFormatter(user_ids[1], names[1], sexes[1], pics[1]) %></td>
+            <td class="match-history-players-name<% if( delta1 === null) { %><% } else if( delta1 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[1] %>" role="button"><%- playerNameFormatter(user_ids[1], names[1], sexes[1], pics[1]) %></td>
         </tr>
         <tr class="match-history-duration">
             <td class="win"><%= duration %>'</td>
@@ -54,17 +55,17 @@
         </tr>
         <tr>
             <td rowspan="2" class="match-history-score<% if( total_scores_2 > total_scores_1) { %> win<% } %>"><%= total_scores_2 %></td>
-            <td class="match-history-players-name<% if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[2] %>" role="button"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
+            <td class="match-history-players-name<% if( delta2 === null) { %><% } else if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[2] %>" role="button"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
                 <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_2_by[i] > losses_1_by[i]) { %> win<% } %>"><%= losses_2_by[i] %></td>
             <% } %>
         </tr>
         <tr>
-            <td class="match-history-players-name<% if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[3] %>" role="button"><%- playerNameFormatter(user_ids[3], names[3], sexes[3], pics[3]) %></td>
+            <td class="match-history-players-name<% if( delta2 === null) { %><% } else if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[3] %>" role="button"><%- playerNameFormatter(user_ids[3], names[3], sexes[3], pics[3]) %></td>
         </tr>
         <tr class="match-history-delta-col">
-            <td class="<%= delta2 < 0 ? 'rating-minus' : 'rating-plus' %>"><%- include('rating-label', {v: delta2, delta: true}).trim() %></td>
-            <td<% if( delta2 > 0) { %> class="win"<% } %>>〈Σ〉<%- include('rating-label', {v: rating2}).trim() %></td>
+            <td class="<%= delta2 === null ? '' : delta2 < 0 ? 'rating-minus' : 'rating-plus' %>"><%- include('rating-label', {v: delta2, delta: true}).trim() %></td>
+            <td<% if( delta2 !== null && delta2 > 0) { %> class="win"<% } %>>〈Σ〉<%- include('rating-label', {v: rating2}).trim() %></td>
         </tr>
         </tbody>
     </table>

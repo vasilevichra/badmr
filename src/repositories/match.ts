@@ -47,6 +47,12 @@ class Match {
   declare static _instance: Match | undefined;
   db!: DB;
 
+  /** Порог калибровки для фильтра дельт: матчи калибровочной серии
+   *  (stale=1, series 1..calibration_matches) не показывают дельту. */
+  private calibrationMatches(tournamentId?: number): number {
+    return Number(settingsService.get('calibration_matches', tournamentId)) || 0;
+  }
+
   constructor() {
     if (Match._instance) {
       return Match._instance;
@@ -166,7 +172,11 @@ class Match {
               g.created_at                                                                                                        AS game_created_at,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_1_id, m.user_2_id) AND match_id = m.id) AS rating1,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_3_id, m.user_4_id) AND match_id = m.id) AS rating2,
-              (SELECT coalesce(delta, 0) FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1 -- delta2 вычисляется сменой знака
+              -- дельта матча калибровки не показывается (NULL — пустая ячейка):
+              -- усиленный K не отражает спортивный результат
+              (SELECT CASE WHEN stale = 1 AND series BETWEEN 1 AND $calibration_matches THEN NULL
+                           ELSE delta END
+               FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1 -- delta2 вычисляется сменой знака
        FROM match m
                 JOIN user u1 on u1.id = m.user_1_id
                 JOIN user u2 on u2.id = m.user_2_id
@@ -178,7 +188,7 @@ class Match {
          AND m.finished = 1
          AND date(m.created_at) = (SELECT date(created_at) AS date FROM match WHERE tournament_id = coalesce($tid, (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)) ORDER BY id DESC LIMIT 1)
        ORDER BY date(m.created_at) DESC, m.id DESC`,
-      { $game_point: game_point, $max_point: max_point, $tid: tournament_id ?? null }
+      { $game_point: game_point, $max_point: max_point, $tid: tournament_id ?? null, $calibration_matches: this.calibrationMatches(tournament_id) }
   )
 
   getAllByUserRequest = (max_point: number, game_point: number, user_id: number, tournament_id?: number) => this.db.all<GetInfoRow>(
@@ -215,7 +225,9 @@ class Match {
               g.created_at                                                                                                        AS game_created_at,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_1_id, m.user_2_id) AND match_id = m.id) AS rating1,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_3_id, m.user_4_id) AND match_id = m.id) AS rating2,
-              (SELECT coalesce(delta, 0) FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1 -- delta2 вычисляется сменой знака
+              (SELECT CASE WHEN stale = 1 AND series BETWEEN 1 AND $calibration_matches THEN NULL
+                           ELSE delta END
+               FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1 -- delta2 вычисляется сменой знака
        FROM match m
                 JOIN user u1 on u1.id = m.user_1_id
                 JOIN user u2 on u2.id = m.user_2_id
@@ -228,7 +240,7 @@ class Match {
          AND m.finished = 1
          AND (u1.id = $user_id OR u2.id = $user_id OR u3.id = $user_id OR u4.id = $user_id)
        ORDER BY m.id DESC`,
-      { $game_point: game_point, $max_point: max_point, $user_id: user_id, $tournament_id: tournament_id ?? null }
+      { $game_point: game_point, $max_point: max_point, $user_id: user_id, $tournament_id: tournament_id ?? null, $calibration_matches: this.calibrationMatches(tournament_id) }
   )
 
   /**
@@ -262,7 +274,10 @@ class Match {
               (SELECT pic FROM user_pic WHERE user_id = m.user_4_id)              AS pic4,
               (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_2_by IS NOT NULL) AS wins1,
               (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_1_by IS NOT NULL) AS wins2,
-              (SELECT r.delta FROM rating r WHERE r.match_id = m.id AND r.user_id = $user_id)   AS delta
+              -- дельта матча калибровки не показывается (NULL — пустая ячейка)
+              (SELECT CASE WHEN r.stale = 1 AND r.series BETWEEN 1 AND $calibration_matches THEN NULL
+                           ELSE r.delta END
+               FROM rating r WHERE r.match_id = m.id AND r.user_id = $user_id)   AS delta
        FROM match m
                 JOIN tournament t ON t.id = m.tournament_id
                 JOIN gym g ON g.id = t.gym_id
@@ -277,7 +292,7 @@ class Match {
          AND t.tournament_type_id = $type_id
          AND t.id != coalesce($exclude, -1)
        ORDER BY m.created_at DESC, m.id DESC`,
-      { $user_id: user_id, $type_id: type_id, $exclude: excludeTournamentId ?? null }
+      { $user_id: user_id, $type_id: type_id, $exclude: excludeTournamentId ?? null, $calibration_matches: this.calibrationMatches() }
   )
 
   /** Медиана времени (секунд) на зарабатывание одного очка по завершённым

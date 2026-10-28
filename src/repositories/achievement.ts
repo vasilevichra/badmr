@@ -48,7 +48,8 @@ class Achievement {
    * @param max_point Максимальное количество очков для победы в игре.
    * @param game_point Минимальное количество очков для победы в игре.
    */
-  getGamesByTournament = (tournament_id: number, max_point: number, game_point: number): AchievementGameRow[] => this.db.all<AchievementGameRow>(
+  getGamesByTournament = (tournament_id: number, max_point: number, game_point: number,
+                          calibration_matches: number): AchievementGameRow[] => this.db.all<AchievementGameRow>(
       `WITH g AS (SELECT g.match_id,
                          g.id                                     AS game_id,
                          g.created_at                             AS game_created_at,
@@ -131,11 +132,18 @@ class Achievement {
              ug.opp_1_id,
              ug.opp_2_id
       FROM ug
+      WHERE NOT EXISTS (SELECT 1
+                        FROM rating r
+                        WHERE r.match_id = ug.match_id
+                          AND r.user_id = ug.user_id
+                          AND r.stale = 1
+                          AND r.series BETWEEN 1 AND $calibration_matches)
       ORDER BY ug.user_id, ug.match_created_at, ug.game_id`,
       {
         $tournament_id: tournament_id,
         $max_point: max_point,
-        $game_point: game_point
+        $game_point: game_point,
+        $calibration_matches: calibration_matches
       }
   );
 
@@ -143,16 +151,18 @@ class Achievement {
    * Суммарное изменение рейтинга по игрокам за завершённые матчи турнира.
    * В rating по 4 строки на матч (по игроку), delta у партнёров одинаковая.
    */
-  getDeltasByTournament = (tournament_id: number): AchievementDeltaRow[] => this.db.all<AchievementDeltaRow>(
+  getDeltasByTournament = (tournament_id: number, calibration_matches: number): AchievementDeltaRow[] => this.db.all<AchievementDeltaRow>(
       `SELECT r.user_id, sum(r.delta) AS delta
        FROM rating r
                 JOIN match m ON m.id = r.match_id
        WHERE m.tournament_id = $tournament_id
          AND m.finished = 1
          AND r.delta IS NOT NULL
+         AND NOT (r.stale = 1 AND r.series BETWEEN 1 AND $calibration_matches)
        GROUP BY r.user_id`,
       {
-        $tournament_id: tournament_id
+        $tournament_id: tournament_id,
+        $calibration_matches: calibration_matches
       }
   );
 }
