@@ -345,9 +345,11 @@ input:focus::placeholder {
   font-size: 70%;
 }
 
-/* паддинги числовых колонок подбора на телефоне: по умолчанию — bootstrap
-   (td 0.5rem, .th-inner 0.75rem); в компактном режиме (таблица не умещается,
-   класс вешает JS) — минимальные (td 2px, .th-inner 3px) */
+/* числовые колонки подбора на телефоне: по умолчанию шрифт как в «Имени»
+   (1rem) и паддинги bootstrap (td 0.5rem, .th-inner 0.75rem). Ступени
+   включает JS (fitSelectTables), когда таблица не умещается на экране:
+   .select-compact — минимальные паддинги (шрифт ещё полный),
+   .select-tight — вдобавок минимальный шрифт */
 @media (max-width: 575.98px) {
   .select-compact td.select-num {
     padding-left: 2px;
@@ -357,6 +359,11 @@ input:focus::placeholder {
   .select-compact th.select-num .th-inner {
     padding-left: 3px;
     padding-right: 3px;
+  }
+
+  .select-tight td.select-num,
+  .select-tight th.select-num .th-inner {
+    font-size: 0.7rem;
   }
 }
 

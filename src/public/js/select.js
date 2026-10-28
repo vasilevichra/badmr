@@ -179,18 +179,23 @@ const addPhoneColumnHints = (table) => {
   }
 };
 
-// числовые колонки подбора: на телефоне шрифт адаптивный — тянется от
-// ширины экрана: максимум 1rem (как в колонке «Имя»), на узких экранах
-// сжимается (минимум 0.7rem); паддинги переключает CSS-класс .select-compact —
-// его вешает fitSelectTables(), когда таблица не умещается на экране
-const numberCellStyle = () => isPhone() ? {css: {'font-size': 'clamp(0.7rem, 3.8vw, 1rem)'}} : {};
+// числовые колонки подбора на телефоне помечаются классом .select-num —
+// шрифт и паддинги переключает CSS по классам .select-compact/.select-tight,
+// которые выставляет fitSelectTables()
 
-// экран: таблицы подбора не умещаются — компактный режим на всех (паддинги
-// вдвое меньше исходных); перепроверяем при повороте экрана и изменении
-// размеров окна
+// экран: адаптация таблиц подбора ступенями — сперва минимальные паддинги
+// (.select-compact), шрифт ещё полный; если и после этого не умещается —
+// минимальный шрифт (.select-tight); перепроверяем при повороте экрана
 const fitSelectTables = () => {
-  const tight = document.body.scrollWidth > document.documentElement.clientWidth;
-  $('.select-form-table-1, .select-form-table-2').toggleClass('select-compact', tight);
+  const tables = $('.select-form-table-1, .select-form-table-2');
+  const tight = () => document.body.scrollWidth > document.documentElement.clientWidth;
+  tables.removeClass('select-compact select-tight');
+  if (tight()) {
+    tables.addClass('select-compact');
+    if (tight()) {
+      tables.addClass('select-tight');
+    }
+  }
 };
 
 const selectColumns = [
@@ -211,15 +216,13 @@ const selectColumns = [
     align: 'center',
     class: 'select-num',
     // на телефоне рейтинг целочисленный — без дробной части
-    formatter: (value) => isPhone() ? Math.round(value) : value,
-    cellStyle: numberCellStyle
+    formatter: (value) => isPhone() ? Math.round(value) : value
   },
   {
     field: 'matches',
     title: isPhone() ? 'И.' : 'Сыграно',
     align: 'center',
     class: 'select-num',
-    cellStyle: numberCellStyle,
     // выигранные матчи — зелёным, проигранные (всего минус выигранные) —
     // красным; когда есть и те и другие — с суммой сыгранных матчей,
     // при одной составляющей — только она, без матчей — «0»
@@ -248,7 +251,6 @@ const selectColumns = [
     title: isPhone() ? 'Ш.' : 'Шанс',
     align: 'center',
     class: 'select-num',
-    cellStyle: numberCellStyle,
     // винрейт совместных доигранных матчей пары в процентах (из ответа
     // ready()); напарники ни разу не игравшие вместе — null, показываем «—»;
     // на телефоне — целочисленный, без дробной части
@@ -261,7 +263,6 @@ const selectColumns = [
     title: isPhone() ? 'Δ' : 'Разница',
     align: 'center',
     class: 'select-num',
-    cellStyle: numberCellStyle,
     formatter: (value) => isPhone()
         ? `${Math.round(value)}<span class="select-pct">%</span>`
         : `${value.toFixed(1)}%`
