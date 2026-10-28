@@ -173,6 +173,9 @@ const addPhoneColumnHints = (table) => {
   }
 };
 
+// числовые колонки подбора: на телефоне цифры мельче — таблица компактнее
+const numberCellStyle = () => isPhone() ? {css: {'font-size': '80%'}} : {};
+
 const selectColumns = [
   {
     field: 'name',
@@ -190,12 +193,14 @@ const selectColumns = [
     title: isPhone() ? 'Р.' : 'Рейтинг',
     align: 'center',
     // на телефоне рейтинг целочисленный — без дробной части
-    formatter: (value) => isPhone() ? Math.round(value) : value
+    formatter: (value) => isPhone() ? Math.round(value) : value,
+    cellStyle: numberCellStyle
   },
   {
     field: 'matches',
     title: isPhone() ? 'И.' : 'Сыграно',
     align: 'center',
+    cellStyle: numberCellStyle,
     // выигранные матчи — зелёным, проигранные (всего минус выигранные) —
     // красным; когда есть и те и другие — с суммой сыгранных матчей,
     // при одной составляющей — только она, без матчей — «0»
@@ -223,6 +228,7 @@ const selectColumns = [
     field: 'chance',
     title: isPhone() ? 'Ш.' : 'Шанс',
     align: 'center',
+    cellStyle: numberCellStyle,
     // винрейт совместных доигранных матчей пары в процентах (из ответа
     // ready()); напарники ни разу не игравшие вместе — null, показываем «—»;
     // на телефоне — целочисленный, без дробной части, со знаком % мельче
@@ -234,6 +240,7 @@ const selectColumns = [
     field: 'excess',
     title: isPhone() ? 'Δ' : 'Разница',
     align: 'center',
+    cellStyle: numberCellStyle,
     formatter: (value) => isPhone()
         ? `${Math.round(value)}<span class="select-pct">%</span>`
         : `${value.toFixed(1)}%`
