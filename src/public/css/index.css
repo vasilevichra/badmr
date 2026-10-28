@@ -349,14 +349,16 @@ input:focus::placeholder {
    bootstrap (td 4px, .th-inner 6px), шрифт как в «Имени» (1rem). Ступени
    включает JS (fitSelectTables), когда таблица не умещается на экране:
    .select-compact — минимальные паддинги (шрифт ещё полный),
-   .select-tight — вдобавок минимальный шрифт */
+   .select-tight — вдобавок минимальный шрифт. Селекторы с .bootstrap-table
+   .fixed-table-container — перебивают специфичность bootstrap-table */
 @media (max-width: 575.98px) {
   td.select-num {
     padding-left: 4px;
     padding-right: 4px;
   }
 
-  th.select-num .th-inner {
+  .bootstrap-table .fixed-table-container .select-form-table-1 th.select-num .th-inner,
+  .bootstrap-table .fixed-table-container .select-form-table-2 th.select-num .th-inner {
     padding-left: 6px;
     padding-right: 6px;
   }
@@ -366,13 +368,14 @@ input:focus::placeholder {
     padding-right: 2px;
   }
 
-  .select-compact th.select-num .th-inner {
+  .bootstrap-table .fixed-table-container .select-compact.select-form-table-1 th.select-num .th-inner,
+  .bootstrap-table .fixed-table-container .select-compact.select-form-table-2 th.select-num .th-inner {
     padding-left: 3px;
     padding-right: 3px;
   }
 
   .select-tight td.select-num,
-  .select-tight th.select-num .th-inner {
+  .bootstrap-table .fixed-table-container .select-tight th.select-num .th-inner {
     font-size: 0.7rem;
   }
 }
