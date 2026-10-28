@@ -345,23 +345,9 @@ input:focus::placeholder {
   font-size: 70%;
 }
 
-/* числа в таблицах подбора на телефоне: пока таблица умещается на экране —
-   с дробной частью (.select-full), когда не умещается (JS вешает
-   .select-compact) — целые (.select-int) */
-.select-num .select-int {
-  display: none;
-}
-
-.select-compact .select-full {
-  display: none;
-}
-
-.select-compact .select-int {
-  display: inline;
-}
-
 /* паддинги числовых колонок подбора на телефоне: по умолчанию — bootstrap
-   (td 0.5rem, .th-inner 0.75rem); в компактном режиме — половина исходных */
+   (td 0.5rem, .th-inner 0.75rem); в компактном режиме (таблица не умещается,
+   класс вешает JS) — половина исходных */
 @media (max-width: 575.98px) {
   .select-compact td.select-num {
     padding-left: 4px;

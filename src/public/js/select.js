@@ -181,25 +181,13 @@ const addPhoneColumnHints = (table) => {
 
 // числовые колонки подбора: на телефоне шрифт адаптивный — тянется от
 // ширины экрана: максимум 1rem (как в колонке «Имя»), на узких экранах
-// сжимается (минимум 0.7rem); паддинги и дробная часть чисел переключаются
-// CSS-классом .select-compact — его вешает fitSelectTables(), когда таблица
-// не умещается на экране
+// сжимается (минимум 0.7rem); паддинги переключает CSS-класс .select-compact —
+// его вешает fitSelectTables(), когда таблица не умещается на экране
 const numberCellStyle = () => isPhone() ? {css: {'font-size': 'clamp(0.7rem, 3.8vw, 1rem)'}} : {};
 
-// число в числовых колонках на телефоне: пока таблица умещается на экране —
-// с дробной частью (.select-full), когда не умещается — целое (.select-int);
-// видимость вариантов переключает CSS
-const phoneNumber = (value) => {
-  const full = (Math.round(value * 10) / 10).toFixed(1);
-  if (full.endsWith('.0')) {
-    return `${Math.round(value)}`;
-  }
-  return `<span class="select-full">${full}</span><span class="select-int">${Math.round(value)}</span>`;
-};
-
 // экран: таблицы подбора не умещаются — компактный режим на всех (паддинги
-// вдвое меньше исходных, дробные части скрыты); перепроверяем при повороте
-// экрана и изменении размеров окна
+// вдвое меньше исходных); перепроверяем при повороте экрана и изменении
+// размеров окна
 const fitSelectTables = () => {
   const tight = document.body.scrollWidth > document.documentElement.clientWidth;
   $('.select-form-table-1, .select-form-table-2').toggleClass('select-compact', tight);
@@ -222,8 +210,8 @@ const selectColumns = [
     title: isPhone() ? 'Р.' : 'Рейтинг',
     align: 'center',
     class: 'select-num',
-    // на телефоне дробная часть видна, пока таблица умещается на экране
-    formatter: (value) => isPhone() ? phoneNumber(value) : value,
+    // на телефоне рейтинг целочисленный — без дробной части
+    formatter: (value) => isPhone() ? Math.round(value) : value,
     cellStyle: numberCellStyle
   },
   {
@@ -263,9 +251,9 @@ const selectColumns = [
     cellStyle: numberCellStyle,
     // винрейт совместных доигранных матчей пары в процентах (из ответа
     // ready()); напарники ни разу не игравшие вместе — null, показываем «—»;
-    // на телефоне дробная часть видна, пока таблица умещается на экране
+    // на телефоне — целочисленный, без дробной части
     formatter: (value) => value != null
-        ? `${isPhone() ? phoneNumber(value) : value}${isPhone() ? '<span class="select-pct">%</span>' : '%'}`
+        ? `${isPhone() ? Math.round(value) : value}${isPhone() ? '<span class="select-pct">%</span>' : '%'}`
         : '—'
   },
   {
@@ -275,7 +263,7 @@ const selectColumns = [
     class: 'select-num',
     cellStyle: numberCellStyle,
     formatter: (value) => isPhone()
-        ? `${phoneNumber(value)}<span class="select-pct">%</span>`
+        ? `${Math.round(value)}<span class="select-pct">%</span>`
         : `${value.toFixed(1)}%`
   }
 ];
