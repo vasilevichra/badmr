@@ -97,7 +97,10 @@ router.get('/:id', (req, res) => {
       active_tab: activeTab,
       expand_all: expandAll,
       achievements: achievements,
-      playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
+      playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false),
+      // мобильная версия карточки: таблица «Остальные матчи» рендерится
+      // в вертикальном формате (пары блоками, счёт и дельта по парам)
+      is_mobile: (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false
     });
   });
 

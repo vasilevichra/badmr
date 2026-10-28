@@ -478,6 +478,63 @@ input:focus::placeholder {
   padding-top: 0;
 }
 
+/* мобильная таблица «Остальные матчи» (рендерится только с мобильного UA):
+   вертикальный формат — подпись турнира сверху, затем два блока пар,
+   у каждого своя часть счёта; дельта — в блоке пары с игроком карточки */
+.same-type-mobile {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.same-type-mobile td {
+  padding: 1px 3px;
+}
+
+/* подпись турнира: мелко, отделяет один матч от другого */
+.same-type-mobile td.same-type-tournament-cell {
+  font-size: 65%;
+  color: var(--bs-secondary-color);
+  padding-top: 7px;
+}
+
+.same-type-mobile td.same-type-name {
+  font-size: 85%;
+  vertical-align: middle;
+}
+
+/* аватарки в мобильном формате не показываются — экономят ширину экрана */
+.same-type-mobile td.same-type-name img {
+  display: none;
+}
+
+.same-type-mobile td.same-type-score {
+  text-align: center;
+  vertical-align: middle;
+  font-size: 105%;
+  width: 12%;
+}
+
+.same-type-mobile td.same-type-delta {
+  text-align: center;
+  vertical-align: middle;
+  font-size: 65%;
+  width: 14%;
+}
+
+/* линии-разделители: внутри пары строка без границы,
+   между парами и между матчами — bootstrap-граница */
+.same-type-mobile tr:not(.same-type-divider) td:not(.same-type-tournament-cell) {
+  border-bottom: 0;
+}
+
+.same-type-mobile tr.same-type-divider td {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.same-type-mobile tr.same-type-tournament td {
+  border-bottom: 0;
+}
+
 /* на телефоне таблица «Остальные матчи» должна умещаться в экран:
    аватарки скрыты (съедают ~25px в каждой из 4 ячеек игроков),
    подпись турнира и счёт — мельче, отступы ячеек — минимальные */
