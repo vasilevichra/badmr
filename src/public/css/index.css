@@ -339,6 +339,12 @@ input:focus::placeholder {
   opacity: 0.2;
 }
 
+/* в «Подборе» на телефоне знак процента мельче числа: колонки
+   «Шанс» и «Разница» занимают меньше ширины */
+.select-pct {
+  font-size: 70%;
+}
+
 /* смёрженная ячейка колонки превышения среднего рейтинга */
 .select-form-table-1 td[rowspan],
 .select-form-table-2 td[rowspan] {

@@ -206,14 +206,9 @@ const selectColumns = [
       const wins = row.wins ?? 0;
       const lost = value - wins;
       if (isPhone()) {
-        // компактный формат «победы/поражения/всего»
-        if (!lost) {
-          return `<span class="rating-plus">${wins}</span>/${value}`;
-        }
-        if (!wins) {
-          return `<span class="rating-minus">${lost}</span>/${value}`;
-        }
-        return `<span class="rating-plus">${wins}</span>/<span class="rating-minus">${lost}</span>/${value}`;
+        // компактный формат «победы поражения всего» с уменьшенным
+        // пробелом-разделителем (thin space)
+        return `<span class="rating-plus">${wins}</span>&#8201;<span class="rating-minus">${lost}</span>&#8201;${value}`;
       }
       if (!lost) {
         return `<span class="rating-plus">${value}</span>`;
@@ -230,14 +225,18 @@ const selectColumns = [
     align: 'center',
     // винрейт совместных доигранных матчей пары в процентах (из ответа
     // ready()); напарники ни разу не игравшие вместе — null, показываем «—»;
-    // на телефоне — целочисленный, без дробной части
-    formatter: (value) => value != null ? `${isPhone() ? Math.round(value) : value}%` : '—'
+    // на телефоне — целочисленный, без дробной части, со знаком % мельче
+    formatter: (value) => value != null
+        ? `${isPhone() ? Math.round(value) : value}${isPhone() ? '<span class="select-pct">%</span>' : '%'}`
+        : '—'
   },
   {
     field: 'excess',
-    title: isPhone() ? 'Разн.' : 'Разница',
+    title: isPhone() ? 'Δ' : 'Разница',
     align: 'center',
-    formatter: (value) => isPhone() ? `${Math.round(value)}%` : `${value.toFixed(1)}%`
+    formatter: (value) => isPhone()
+        ? `${Math.round(value)}<span class="select-pct">%</span>`
+        : `${value.toFixed(1)}%`
   }
 ];
 
