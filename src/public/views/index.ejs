@@ -77,6 +77,8 @@
     <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
     <div id="tournament-info" class="row d-flex closable p-3">
         <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; %>
+        <%# турнир завершился — бейджи телефона становятся серыми (архивными) %>
+        <% const tournamentFinished = current_tournament.tournament_status_id === 3; %>
         <% const startedAt = new Date(current_tournament.started_at + 'Z'); %>
         <% const endedAt = new Date(current_tournament.ended_at + 'Z'); %>
         <% const regEndedAt = new Date(current_tournament.reg_ended_at + 'Z'); %>
@@ -169,8 +171,8 @@
             <div class="panel panel-default" style="font-size: 0.8rem;">
                 <div class="panel-heading text-center"><%= tournamentName %></div>
                 <div class="list-group">
-                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : 'bg-danger' %> float-start"><%- getRegEndPhoneStr() %></span></span>
-                    <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge bg-badmr float-start"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
+                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span></span>
+                    <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge <%= tournamentFinished ? 'bg-secondary' : 'bg-badmr' %> float-start me-2"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
                     <% if (current_tournament.map_url) { %>
                         <span class="list-group-item text-center"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>
                     <% } else { %>
