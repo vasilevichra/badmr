@@ -366,8 +366,11 @@
                                                             const mine_first = m.user_1_id === user.id || m.user_2_id === user.id;
                                                             const scoreA = mine_first ? m.wins1 : m.wins2;
                                                             const scoreB = mine_first ? m.wins2 : m.wins1;
-                                                            const deltaA = mine_first ? m.delta : null;
-                                                            const deltaB = mine_first ? null : m.delta;
+                                                            // дельта — всегда дельта игрока карточки и всегда в его
+                                                            // блоке: pairA — это пара игрока карточки независимо
+                                                            // от того, user_1/2 он или user_3/4 в матче
+                                                            const deltaA = m.delta;
+                                                            const deltaB = null;
                                                             const pairA = mine_first
                                                                 ? [[m.user_1_id, m.name1, m.sex1, m.pic1], [m.user_2_id, m.name2, m.sex2, m.pic2]]
                                                                 : [[m.user_3_id, m.name3, m.sex3, m.pic3], [m.user_4_id, m.name4, m.sex4, m.pic4]];
