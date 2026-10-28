@@ -478,6 +478,53 @@ input:focus::placeholder {
   padding-top: 0;
 }
 
+/* на телефоне таблица «Остальные матчи» должна умещаться в экран:
+   аватарки скрыты (съедают ~25px в каждой из 4 ячеек игроков),
+   подпись турнира и счёт — мельче, отступы ячеек — минимальные */
+@media (max-width: 575.98px) {
+  /* фиксированная раскладка: колонки в заданных долях ширины экрана,
+     иначе длинные фамилии выталкивают правую пару и дельту за экран */
+  #player-same-type-matches table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  /* доли колонок: подпись турнира — 30%, игроки — по 25%,
+     счёт — 10%, дельта — 10% */
+  #player-same-type-matches td {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  #player-same-type-matches td.match-history-info {
+    width: 30%;
+    font-size: 65%;
+  }
+
+  #player-same-type-matches td.match-history-players-name {
+    width: 25%;
+  }
+
+  #player-same-type-matches td.match-history-score {
+    width: 10%;
+    font-size: 95%;
+  }
+
+  #player-same-type-matches td.match-history-delta-col {
+    width: 10%;
+    font-size: 65%;
+  }
+
+  #player-same-type-matches td.match-history-players-name img {
+    display: none;
+  }
+
+  /* длинные фамилии переносятся: nowrap не даёт таблице уложиться в экран */
+  #player-same-type-matches .no-selection {
+    white-space: normal !important;
+  }
+}
+
 .match-history-game-col {
   padding-left: 3px !important;
   padding-right: 3px !important;
