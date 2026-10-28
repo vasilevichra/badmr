@@ -163,7 +163,7 @@ const bindMergedCellHover = (table) => {
 };
 
 // подсказки над сокращёнными на телефоне названиями колонок; там же —
-// минимальные горизонтальные паддинги заголовков (кроме «Имя»)
+// паддинги заголовков вдвое меньше исходных (bootstrap 0.75rem = 12px → 6px)
 const addPhoneColumnHints = (table) => {
   if (!isPhone()) {
     return;
@@ -172,13 +172,13 @@ const addPhoneColumnHints = (table) => {
   for (const [field, hint] of Object.entries(hints)) {
     const thInner = table.find(`thead th[data-field="${field}"] .th-inner`);
     thInner.attr('title', hint);
-    thInner.css({'padding-left': '2px', 'padding-right': '2px'});
+    thInner.css({'padding-left': '6px', 'padding-right': '6px'});
   }
 };
 
-// числовые колонки подбора: на телефоне цифры мельче и паддинги ячеек
-// минимальные — таблица умещается на экране без прокрутки
-const numberCellStyle = () => isPhone() ? {css: {'font-size': '80%', 'padding-left': '2px', 'padding-right': '2px'}} : {};
+// числовые колонки подбора: на телефоне цифры мельче, а паддинги ячеек
+// вдвое меньше исходных (bootstrap 0.5rem = 8px → 4px) — таблица компактнее
+const numberCellStyle = () => isPhone() ? {css: {'font-size': '80%', 'padding-left': '4px', 'padding-right': '4px'}} : {};
 
 const selectColumns = [
   {
