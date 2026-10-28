@@ -378,6 +378,20 @@ input:focus::placeholder {
   .bootstrap-table .fixed-table-container .select-tight th.select-num .th-inner {
     font-size: 0.7rem;
   }
+
+  /* таблица «Игроки»: если не умещается на экране без прокрутки (класс
+     .player-compact вешает fitPlayerTable) — паддинги рейтинга и дельты
+     вдвое меньше исходных (bootstrap 0.5rem = 8px → 4px, .th-inner
+     0.75rem = 12px → 6px) */
+  .player-compact td.player-num {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .bootstrap-table .fixed-table-container .player-compact th.player-num .th-inner {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
 }
 
 /* смёрженная ячейка колонки превышения среднего рейтинга */

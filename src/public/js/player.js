@@ -101,6 +101,7 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         title: isPhone() ? 'Р.' : '<span class="no-selection">Рейтинг</span>',
         align: 'center',
         sortable: true,
+        class: 'player-num',
         formatter: (value, row) => playerRatingGroupsFormatter(row.rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
         cellStyle: (value, row) => playerRatingGroupsStyle(row.rating, B_max, C_max, D_max, E_max, F_max, G_max, H_max),
       },
@@ -119,6 +120,7 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         visible: hasGames,
         align: 'center',
         sortable: true,
+        class: 'player-num',
         formatter: value => value > 0 ? '+' + value : value,
         cellStyle: value => playerDeltaCss(value),
       },
@@ -157,6 +159,9 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
     .filter(column => loggedInUser ? true : !['enabled'].includes(column.field))
     .filter(column => isPhone() ? ['enabled', 'name', 'paid', 'rating', 'delta_today'].includes(column.field) : true)
   })
+  // тело таблицы перерисовывается при каждой загрузке/сортировке —
+  // перепроверяем умещение на экране после каждой перерисовки
+  .on('post-body.bs.table', fitPlayerTable)
   .on('check-all.bs.table', (rowsAfter, rowsBefore) => {
     $.post(`/api/users/enable/${rowsBefore.map(r => r.id).join('%2C')}`, {}, () => {
       refresh.table.player();
@@ -216,6 +221,19 @@ const playerDeltaCss = value => {
   }
   return {};
 }
+
+// таблица «Игроки» на телефоне не умещается на экране без прокрутки —
+// класс .player-compact включает CSS с паддингами рейтинга и дельты вдвое
+// меньше исходных; перепроверяем и при изменении размеров экрана
+const fitPlayerTable = () => {
+  if (!isPhone()) {
+    return;
+  }
+  $('#player-table').toggleClass('player-compact',
+      document.body.scrollWidth > document.documentElement.clientWidth);
+};
+
+$(window).off('resize.playerFit').on('resize.playerFit', fitPlayerTable);
 
 const archiveUser = (id, name) => {
   if (confirm(`Сделать игрока ${name} неактивным?`)) {
