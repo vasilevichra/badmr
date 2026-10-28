@@ -347,16 +347,16 @@ input:focus::placeholder {
 
 /* паддинги числовых колонок подбора на телефоне: по умолчанию — bootstrap
    (td 0.5rem, .th-inner 0.75rem); в компактном режиме (таблица не умещается,
-   класс вешает JS) — половина исходных */
+   класс вешает JS) — минимальные (td 2px, .th-inner 3px) */
 @media (max-width: 575.98px) {
   .select-compact td.select-num {
-    padding-left: 4px;
-    padding-right: 4px;
+    padding-left: 2px;
+    padding-right: 2px;
   }
 
   .select-compact th.select-num .th-inner {
-    padding-left: 6px;
-    padding-right: 6px;
+    padding-left: 3px;
+    padding-right: 3px;
   }
 }
 
