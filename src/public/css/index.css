@@ -587,13 +587,12 @@ input:focus::placeholder {
   cursor: pointer;
 }
 
-/* телефон: первая строка матча (дельта/〈Σ〉 и иконки) — той же высоты,
-   что и последняя строка дельты/〈Σ〉: её вертикальные паддинги (3px/6px)
-   и естественная высота строки контента */
+/* телефон: первая строка матча (дельта/〈Σ〉 и иконки) — паддинги 6px/3px,
+   как было исходно; распорка ячейки иконок подавлена отдельно */
 @media (max-width: 575.98px) {
   .match-history-players tr:first-child td:not([rowspan]) {
-    padding-top: 3px;
-    padding-bottom: 6px;
+    padding-top: 6px;
+    padding-bottom: 3px;
   }
 
   /* ячейка иконок наследует bootstrap line-height 1.5 (24px) —
