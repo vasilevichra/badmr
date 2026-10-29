@@ -90,4 +90,33 @@ describe("Game routes", () => {
       assert.deepStrictEqual(unfinished, []);
     });
   });
+
+  describe("POST /bulk/:match_id (редактирование матча из истории)", () => {
+    it("должен применить пачку игр к матчу", async () => {
+      const matchId = await seedMatch();
+      const g1 = ((await (await post(`${base}/create`, {
+        match_id: matchId, lost_1_by: "15", lost_2_by: null, created_at: "2026-01-01 10:00:00",
+      })).json()) as { id: number }).id;
+      const g2 = ((await (await post(`${base}/create`, {
+        match_id: matchId, lost_1_by: "18", lost_2_by: null, created_at: "2026-01-01 10:10:00",
+      })).json()) as { id: number }).id;
+
+      const res = await post(`${base}/bulk/${matchId}`, {
+        games: [
+          {id: g1, lost_1_by: "8", lost_2_by: null},
+          {id: g2, lost_1_by: null, lost_2_by: null},
+          {lost_1_by: null, lost_2_by: "19"},
+        ],
+      });
+      assert.strictEqual(res.status, 200);
+
+      const games = db.all<{id: number; lost_1_by: number | null; lost_2_by: number | null}>(
+          "SELECT id, lost_1_by, lost_2_by FROM game WHERE match_id = ? ORDER BY created_at, id", [matchId]);
+      // очищенная g2 удалена, новая создана с новым id
+      assert.deepStrictEqual(games.map(g => [g.id, g.lost_1_by, g.lost_2_by]), [
+        [g1, 8, null],
+        [games[1].id, null, 19],
+      ]);
+    });
+  });
 });

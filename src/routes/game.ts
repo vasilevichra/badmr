@@ -30,6 +30,13 @@ router.post('/delete/:id', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.deleteById(Number(req.params.id)));
 });
 
+// редактирование матча из истории (карандаш): пачка игр одним запросом —
+// обновить изменённые, удалить очищенные, создать новые с экстраполированным
+// временем; пересчёт рейтинга — один каскад внутри applyMatchGames
+router.post('/bulk/:match_id', ensureLoggedIn(), (req, res) => {
+  res.promise(gameService.applyMatchGames(Number(req.params.match_id), req.body.games ?? []));
+});
+
 router.post('/create110/:match_110_id', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.create110(Number(req.params.match_110_id)));
 });

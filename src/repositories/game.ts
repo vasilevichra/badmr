@@ -23,6 +23,16 @@ class Game {
     );
   }
 
+  getAllByMatchId(match_id: number) {
+    return this.db.all(
+        `SELECT *
+         FROM game
+         WHERE match_id = ?
+         ORDER BY created_at, id`,
+        [match_id]
+    );
+  }
+
   create(match_id: number, lost_1_by: string | null, lost_2_by: string | null, created_at: string) {
     // время приходит из печенек клиента (момент ввода счёта) и может быть
     // старше уже записанных игр матча: длительности в истории матчей

@@ -192,4 +192,86 @@ describe("Game", () => {
       assert.strictEqual(game.score_2, 2);
     });
   });
+
+  // редактирование матча по карандашу в истории: применение пачки игр
+  // одним запросом — обновить изменённые, удалить очищенные, создать
+  // новые с экстраполированным временем, один каскадный пересчёт в конце
+  describe("applyMatchGames", () => {
+    const flushRecalc = () => new Promise(r => setImmediate(() => setImmediate(r)));
+
+    const gamesOf = (matchId: number) =>
+      db.all<GameRow>("SELECT * FROM game WHERE match_id = ? ORDER BY created_at, id", [matchId]);
+
+    it("должен обновить изменённые игры", async () => {
+      const { matchId } = await seedUnfinishedMatch();
+      const g1 = await gameService.create(matchId, "15", null, "2026-01-01 10:00:00") as { id: number };
+      const g2 = await gameService.create(matchId, "18", null, "2026-01-01 10:10:00") as { id: number };
+
+      await gameService.applyMatchGames(matchId, [
+        {id: g1.id, lost_1_by: "8", lost_2_by: null},
+        {id: g2.id, lost_1_by: null, lost_2_by: "19"},
+      ]);
+
+      assert.deepStrictEqual(gamesOf(matchId).map(g => [g.id, g.lost_1_by, g.lost_2_by]), [
+        [g1.id, 8, null],
+        [g2.id, null, 19],
+      ]);
+    });
+
+    it("должен удалить существующую игру с очищенным счётом", async () => {
+      const { matchId } = await seedUnfinishedMatch();
+      const g1 = await gameService.create(matchId, "15", null, "2026-01-01 10:00:00") as { id: number };
+      const g2 = await gameService.create(matchId, "18", null, "2026-01-01 10:10:00") as { id: number };
+
+      await gameService.applyMatchGames(matchId, [
+        {id: g1.id, lost_1_by: null, lost_2_by: null},
+        {id: g2.id, lost_1_by: "18", lost_2_by: null},
+      ]);
+
+      assert.deepStrictEqual(gamesOf(matchId).map(g => g.id), [g2.id]);
+    });
+
+    it("должен создать новую игру с экстраполированным created_at", async () => {
+      const { matchId } = await seedUnfinishedMatch();
+      // g1: 15+21=36 очков; g2: 18+21=39 очков — интервал 600с покрывает
+      // игры после первой; 600/39 ≈ 15.38 с/очко; новая игра 19+21=40
+      // очков → +615.38с → округление до 615с
+      await gameService.create(matchId, "15", null, "2026-01-01 10:00:00");
+      await gameService.create(matchId, "18", null, "2026-01-01 10:10:00");
+
+      await gameService.applyMatchGames(matchId, [
+        {lost_1_by: null, lost_2_by: "19"},
+      ]);
+
+      const games = gamesOf(matchId);
+      assert.strictEqual(games.length, 3);
+      assert.deepStrictEqual([games[2].lost_1_by, games[2].lost_2_by], [null, 19]);
+      assert.strictEqual(games[2].created_at, "2026-01-01 10:20:15");
+    });
+
+    it("не должен создавать игру из пустой новой колонки", async () => {
+      const { matchId } = await seedUnfinishedMatch();
+      await gameService.create(matchId, "15", null, "2026-01-01 10:00:00");
+
+      await gameService.applyMatchGames(matchId, [
+        {lost_1_by: null, lost_2_by: null},
+      ]);
+
+      assert.strictEqual(gamesOf(matchId).length, 1);
+    });
+
+    it("должен снять finished у матча 2:0 после удаления игры (каскадный пересчёт)", async () => {
+      const { matchId } = await seedUnfinishedMatch();
+      const g1 = await gameService.create(matchId, null, "15", "2026-01-01 10:00:00") as { id: number };
+      await gameService.create(matchId, null, "18", "2026-01-01 10:10:00");
+      assert.strictEqual(db.get<{finished: number}>("SELECT finished FROM match WHERE id = ?", [matchId])!.finished, 1);
+
+      await gameService.applyMatchGames(matchId, [
+        {id: g1.id, lost_1_by: null, lost_2_by: null},
+      ]);
+      await flushRecalc();
+
+      assert.strictEqual(db.get<{finished: number}>("SELECT finished FROM match WHERE id = ?", [matchId])!.finished, 0);
+    });
+  });
 });
