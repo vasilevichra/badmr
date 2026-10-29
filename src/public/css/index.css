@@ -538,6 +538,8 @@ input:focus::placeholder {
 
 .match-history-players tr:first-child td:not([rowspan]) {
   padding-bottom: 3px;
+  /* линия под строкой дельты/〈Σ〉 не нужна */
+  border-bottom: 0;
 }
 
 .match-history-players tr:nth-child(7) td {
@@ -564,7 +566,7 @@ input:focus::placeholder {
 
 /* иконки редактирования/удаления матча — только для авторизованных:
    ячейка на всю ширину счёта игр в первой строке, иконки прижаты
-   вправо (над последней игрой); размер текста заголовка (85%) */
+   вправо (над последней игрой); размер — как у кубка фаворита (0.8em) */
 .match-history-actions-cell {
   padding: 0 2px;
   text-align: right;
@@ -573,7 +575,7 @@ input:focus::placeholder {
 }
 
 .match-history-actions {
-  font-size: 85%;
+  font-size: 0.8em;
   line-height: 1.2;
 }
 
