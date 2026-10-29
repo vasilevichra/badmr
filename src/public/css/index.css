@@ -208,6 +208,14 @@ input:focus::placeholder {
   white-space: nowrap;
 }
 
+/* иконка описания в настройках на телефоне: текст описания переехал
+   в подсказку — иконка приглушённая, чуть крупнее текста */
+.settings-description {
+  font-size: 1.1em;
+  opacity: 0.6;
+  cursor: help;
+}
+
 [data-field="paid"] .th-inner,
 [data-field="enabled"] .th-inner {
   padding-right: 0 !important;
@@ -379,10 +387,10 @@ input:focus::placeholder {
     font-size: 0.7rem;
   }
 
-  /* таблица «Игроки»: если не умещается на экране без прокрутки (класс
-     .player-compact вешает fitPlayerTable) — паддинги рейтинга и дельты
-     вдвое меньше исходных (bootstrap 0.5rem = 8px → 4px, .th-inner
-     0.75rem = 12px → 6px) */
+  /* таблица «Игроки»: паддинги рейтинга и дельты вдвое меньше исходных,
+     когда колонка оплаты видна или таблица не умещается на экране без
+     прокрутки (класс .player-compact вешает fitPlayerTable): td
+     0.5rem = 8px → 4px, .th-inner 0.75rem = 12px → 6px */
   .player-compact td.player-num {
     padding-left: 4px;
     padding-right: 4px;

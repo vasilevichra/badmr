@@ -144,7 +144,19 @@ const renderSettings = () => {
           },
           {
             field: 'description',
-            title: 'Описание'
+            // на телефоне название короче, а текст описания — в подсказке
+            // у иконки с информацией
+            title: isPhone() ? 'Опис.' : 'Описание',
+            formatter: (value) => {
+              if (!isPhone()) {
+                return value;
+              }
+              return value
+                  ? `<i class="bi bi-info-circle settings-description" title="${
+                      String(value).replaceAll('"', '&quot;')
+                  }"></i>`
+                  : '';
+            }
           }
         ]
       })

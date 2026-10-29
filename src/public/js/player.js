@@ -222,15 +222,17 @@ const playerDeltaCss = value => {
   return {};
 }
 
-// таблица «Игроки» на телефоне не умещается на экране без прокрутки —
-// класс .player-compact включает CSS с паддингами рейтинга и дельты вдвое
-// меньше исходных; перепроверяем и при изменении размеров экрана
+// таблица «Игроки» на телефоне: паддинги рейтинга и дельты вдвое меньше
+// исходных (.player-compact включает CSS), когда колонка оплаты видна —
+// таблице теснее — или не умещается на экране без прокрутки; перепроверяем
+// при перерисовке тела (post-body) и при изменении размеров экрана
 const fitPlayerTable = () => {
   if (!isPhone()) {
     return;
   }
-  $('#player-table').toggleClass('player-compact',
-      document.body.scrollWidth > document.documentElement.clientWidth);
+  const paidVisible = $('#player-table thead th[data-field="paid"]').is(':visible');
+  const tight = document.body.scrollWidth > document.documentElement.clientWidth;
+  $('#player-table').toggleClass('player-compact', paidVisible || tight);
 };
 
 $(window).off('resize.playerFit').on('resize.playerFit', fitPlayerTable);
