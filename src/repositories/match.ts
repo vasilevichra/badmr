@@ -186,7 +186,9 @@ class Match {
                 JOIN game g on m.id = g.match_id
        WHERE m.tournament_id = coalesce($tid, (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1))
          AND m.finished = 1
-         AND date(m.created_at) = (SELECT date(created_at) AS date FROM match WHERE tournament_id = coalesce($tid, (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)) ORDER BY id DESC LIMIT 1)
+         -- «последняя сессия» — день последнего ЗАВЕРШЁННОГО матча: начатая
+         -- позже сессия с незавершёнными матчами не должна скрывать историю
+         AND date(m.created_at) = (SELECT date(created_at) AS date FROM match WHERE tournament_id = coalesce($tid, (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)) AND finished = 1 ORDER BY id DESC LIMIT 1)
        ORDER BY date(m.created_at) DESC, m.id DESC`,
       { $game_point: game_point, $max_point: max_point, $tid: tournament_id ?? null, $calibration_matches: this.calibrationMatches(tournament_id) }
   )

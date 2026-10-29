@@ -197,6 +197,24 @@ describe("Match", () => {
   };
 
   describe("getAllFinishedAtLastSession", () => {
+    it("должен показывать историю последней сессии с завершёнными матчами, даже если позже начата новая сессия с незавершёнными матчами", async () => {
+      const ids = await seedMatchUsers();
+      await matchService.create(...(ids as [number, number, number, number]));
+      const finishedId = (await matchService.getAll() as unknown as MatchRow[])[0].id;
+      await finishMatch(finishedId, [["15", null], ["17", null]]);
+      // завершённый матч — «вчера» относительно начатой позже сессии
+      db.run("UPDATE match SET created_at = '2026-01-05 10:00:00' WHERE id = ?", [finishedId]);
+
+      // новая сессия: незавершённый матч создан днём позже — «сегодня»
+      await matchService.create(...(ids as [number, number, number, number]));
+      const unfinishedId = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
+      db.run("UPDATE match SET created_at = '2026-01-06 10:00:00' WHERE id = ?", [unfinishedId]);
+
+      const protocol = await matchService.getAllFinishedAtLastSession() as unknown as Protocol;
+      assert.strictEqual(protocol.length, 1);
+      assert.ok(protocol[0][String(finishedId)], "история последней сессии с завершёнными матчами не должна пропадать");
+    });
+
     it("должен вернуть протокол завершённого матча, сгруппированный по играм", async () => {
       const ids = await seedMatchUsers();
       await matchService.create(...(ids as [number, number, number, number]));
