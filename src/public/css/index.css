@@ -367,8 +367,16 @@ input:focus::placeholder {
     padding-right: 4px;
   }
 
-  .bootstrap-table .fixed-table-container .select-form-table-1 th.select-num .th-inner,
-  .bootstrap-table .fixed-table-container .select-form-table-2 th.select-num .th-inner {
+  .bootstrap-table
+    .fixed-table-container
+    .select-form-table-1
+    th.select-num
+    .th-inner,
+  .bootstrap-table
+    .fixed-table-container
+    .select-form-table-2
+    th.select-num
+    .th-inner {
     padding-left: 6px;
     padding-right: 6px;
   }
@@ -378,14 +386,26 @@ input:focus::placeholder {
     padding-right: 2px;
   }
 
-  .bootstrap-table .fixed-table-container .select-compact.select-form-table-1 th.select-num .th-inner,
-  .bootstrap-table .fixed-table-container .select-compact.select-form-table-2 th.select-num .th-inner {
+  .bootstrap-table
+    .fixed-table-container
+    .select-compact.select-form-table-1
+    th.select-num
+    .th-inner,
+  .bootstrap-table
+    .fixed-table-container
+    .select-compact.select-form-table-2
+    th.select-num
+    .th-inner {
     padding-left: 3px;
     padding-right: 3px;
   }
 
   .select-tight td.select-num,
-  .bootstrap-table .fixed-table-container .select-tight th.select-num .th-inner {
+  .bootstrap-table
+    .fixed-table-container
+    .select-tight
+    th.select-num
+    .th-inner {
     font-size: 0.7rem;
   }
 
@@ -398,7 +418,11 @@ input:focus::placeholder {
     padding-right: 4px;
   }
 
-  .bootstrap-table .fixed-table-container .player-compact th.player-num .th-inner {
+  .bootstrap-table
+    .fixed-table-container
+    .player-compact
+    th.player-num
+    .th-inner {
     padding-left: 6px;
     padding-right: 6px;
   }
@@ -492,12 +516,19 @@ input:focus::placeholder {
   border-bottom: 0;
 }
 
+/* подчёркивание между игроками пары не нужно: убираем границу снизу
+   у верхнего игрока каждой пары (строки 2 и 5 tbody); нижний игрок
+   оставляет границу — она отделяет пару от строки длительности */
+.match-history-players tr:nth-child(2) td.match-history-players-name,
+.match-history-players tr:nth-child(5) td.match-history-players-name {
+  border-bottom: 0;
+}
+
 /* кубок фаворита в истории матчей у 〈Σ〉 — высотой в текст,
    ненавязчивый; разница сумм рядом — приглушённая (secondary-info) */
 .match-history-favorite {
-  font-size: 1em;
+  font-size: 0.85em;
   line-height: 1;
-  vertical-align: -0.125em;
   opacity: 0.2;
   pointer-events: none;
 }

@@ -38,7 +38,7 @@
         <tbody>
         <tr>
             <td class="match-history-delta-col<%= delta1 === null ? '' : delta1 < 0 ? ' rating-minus' : ' rating-plus' %>"><%- include('rating-label', {v: delta1, delta: true}).trim() %></td>
-            <td class="match-history-delta-col<% if( delta1 > 0) { %> win<% } %>">〈Σ〉<%- include('rating-label', {v: rating1}).trim() %><% if( rating1 > rating2) { %> <i class="bi bi-trophy-fill match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
+            <td class="match-history-delta-col<% if( delta1 > 0) { %> win<% } %>">〈Σ〉<%- include('rating-label', {v: rating1}).trim() %><% if( rating1 > rating2) { %> <i class="bi bi-trophy match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
                 <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
             <% } %>
@@ -69,7 +69,7 @@
         </tr>
         <tr class="match-history-delta-col">
             <td class="<%= delta2 === null ? '' : delta2 < 0 ? 'rating-minus' : 'rating-plus' %>"><%- include('rating-label', {v: delta2, delta: true}).trim() %></td>
-            <td<% if( delta2 !== null && delta2 > 0) { %> class="win"<% } %>>〈Σ〉<%- include('rating-label', {v: rating2}).trim() %><% if( rating2 > rating1) { %> <i class="bi bi-trophy-fill match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
+            <td<% if( delta2 !== null && delta2 > 0) { %> class="win"<% } %>>〈Σ〉<%- include('rating-label', {v: rating2}).trim() %><% if( rating2 > rating1) { %> <i class="bi bi-trophy match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
         </tr>
         </tbody>
     </table>
