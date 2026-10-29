@@ -34,17 +34,24 @@
     <% var sum_diff = String(Number(Math.abs(rating1 - rating2).toFixed(2))); %>
 
     <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}).replace(/:\d\d$/, '') %></nobr></label>
-    <table class="match-history-players table" style="margin-bottom: 3em;">
+    <% // параметры редактирования (карандаш): максимум игр 2×wins−1 и
+        // правила бадминтона для валидации счёта — пробрасываются из роутов %>
+    <% var games_max = Number(locals.games_max || 3); %>
+    <% var game_point_setting = Number(locals.game_point || 21); %>
+    <% var max_point_setting = Number(locals.max_point || 30); %>
+    <table class="match-history-players table" style="margin-bottom: 3em;" data-match-id="<%= match_id %>" data-games-max="<%= games_max %>" data-game-point="<%= game_point_setting %>" data-max-point="<%= max_point_setting %>">
         <tbody>
         <tr>
             <td class="match-history-delta-col<%= delta1 === null ? '' : delta1 < 0 ? ' rating-minus' : ' rating-plus' %>"><%- include('rating-label', {v: delta1, delta: true}).trim() %></td>
             <td class="match-history-delta-col<% if( delta1 > 0) { %> win<% } %>">〈Σ〉<%- include('rating-label', {v: rating1}).trim() %><% if( rating1 > rating2) { %> <i class="bi bi-trophy match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
             <% // правый конец первой строки пуст над счётом игр: одна
                 // распорка на все игры, в ней — иконки редактирования/удаления
-                // матча (только для авторизованных; в истории турниров
-                // local — user, в модалке игрока — login; locals — чтобы
-                // отсутствие обоих не бросало ReferenceError) %>
-            <% if (locals.user || locals.login) { %>
+                // матча (только для авторизованных: в истории турниров
+                // viewer — user, в модалке игрока — login; locals — чтобы
+                // отсутствие обоих не бросало ReferenceError. В модалке
+                // user — просматриваемый игрок, а не зритель, поэтому
+                // там значим только login) %>
+            <% if (locals.login !== undefined ? Boolean(locals.login) : Boolean(locals.user)) { %>
                 <td colspan="<%= losses_1_by.length %>" class="match-history-actions-cell">
                     <div class="match-history-actions no-selection">
                         <i class="bi bi-pencil match-history-edit" role="button" tabindex="0" title="Редактировать"></i>
@@ -59,7 +66,7 @@
             <td rowspan="2" class="match-history-score<% if( total_scores_1 > total_scores_2) { %> win<% } %>"><%= total_scores_1 %></td>
             <td class="match-history-players-name<% if( delta1 === null) { %><% } else if( delta1 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[0] %>" role="button"><%- playerNameFormatter(user_ids[0], names[0], sexes[0], pics[0]) %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
-                <td rowspan="2" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
+                <td rowspan="2" data-game-id="<%= games[i].game_id %>" data-original="<%= losses_1_by[i] %>" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
             <% } %>
         </tr>
         <tr>
@@ -76,7 +83,7 @@
             <td rowspan="2" class="match-history-score<% if( total_scores_2 > total_scores_1) { %> win<% } %>"><%= total_scores_2 %></td>
             <td class="match-history-players-name<% if( delta2 === null) { %><% } else if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[2] %>" role="button"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
-                <td rowspan="2" class="match-history-game-col match-history-score<% if(losses_2_by[i] > losses_1_by[i]) { %> win<% } %>"><%= losses_2_by[i] %></td>
+                <td rowspan="2" data-game-id="<%= games[i].game_id %>" data-original="<%= losses_2_by[i] %>" class="match-history-game-col match-history-score<% if(losses_2_by[i] > losses_1_by[i]) { %> win<% } %>"><%= losses_2_by[i] %></td>
             <% } %>
         </tr>
         <tr>

@@ -34,7 +34,8 @@ router.post('/delete/:id', ensureLoggedIn(), (req, res) => {
 // обновить изменённые, удалить очищенные, создать новые с экстраполированным
 // временем; пересчёт рейтинга — один каскад внутри applyMatchGames
 router.post('/bulk/:match_id', ensureLoggedIn(), (req, res) => {
-  res.promise(gameService.applyMatchGames(Number(req.params.match_id), req.body.games ?? []));
+  const games = typeof req.body.games === 'string' ? JSON.parse(req.body.games) : req.body.games;
+  res.promise(gameService.applyMatchGames(Number(req.params.match_id), games ?? []));
 });
 
 router.post('/create110/:match_110_id', ensureLoggedIn(), (req, res) => {

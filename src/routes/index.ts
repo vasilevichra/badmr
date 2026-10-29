@@ -95,6 +95,10 @@ const renderTournamentPage = (
         matches: promises[8],
         achievements: promises[9],
         achievementMeta: AchievementService.META,
+        // параметры редактирования матча из истории (карандаш)
+        games_max: 2 * settingsService.get('wins', t.id) - 1,
+        game_point: settingsService.get('game_point', t.id),
+        max_point: settingsService.get('max_point', t.id),
         playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, isPhone())
       });
       break;

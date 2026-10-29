@@ -104,6 +104,147 @@ $(document).ready(() => {
     });
   });
 
+  // ----- редактирование матча из истории (карандаш) -----
+  // счёт выигравшей пары по правилам бадминтона (те же CASE-выражения,
+  // что в getMedianSecondsPerPoint): до game_point−2 — game_point,
+  // до max_point−2 — lost+2, дальше — max_point
+  const matchHistoryWinPoints = (lost, gamePoint, maxPoint) =>
+      lost < gamePoint - 1 ? gamePoint : (lost < maxPoint - 1 ? lost + 2 : maxPoint);
+
+  // счёт игр карточки: по колонкам — id игры (если есть), исходные и
+  // текущие значения обеих пар
+  const matchHistoryColumns = ($table) => {
+    const gamePoint = Number($table.data('game-point'));
+    const maxPoint = Number($table.data('max-point'));
+    const $row1 = $table.find('tr:eq(1)');
+    const $row2 = $table.find('tr:eq(4)');
+    return $row1.find('td.match-history-game-col').map((i, el) => {
+      const $c1 = $(el);
+      const $c2 = $row2.find('td.match-history-game-col').eq(i);
+      const value = ($c) => {
+        const v = $c.find('input').val();
+        return v === '' || v === undefined ? null : Number(v);
+      };
+      return {
+        id: $c1.data('game-id'),
+        v1: value($c1), v2: value($c2),
+        orig1: Number($c1.data('original')), orig2: Number($c2.data('original')),
+        $c1, $c2, gamePoint, maxPoint,
+      };
+    }).get();
+  };
+
+  // колонка валидна: пустая (удаление существующей) или полный счёт,
+  // где больший равен счёту победителя по формуле
+  const matchHistoryColumnValid = (c) => {
+    if (c.v1 === null && c.v2 === null) return true;
+    if (c.v1 === null || c.v2 === null) return false;
+    return c.v1 === matchHistoryWinPoints(c.v2, c.gamePoint, c.maxPoint)
+        || c.v2 === matchHistoryWinPoints(c.v1, c.gamePoint, c.maxPoint);
+  };
+
+  // галочка активна только при реальных изменениях и валидном счёте
+  const matchHistoryUpdateCheck = ($table) => {
+    const columns = matchHistoryColumns($table);
+    const changed = columns.some(c => c.v1 !== c.orig1 || c.v2 !== c.orig2);
+    columns.forEach(c => {
+      const valid = matchHistoryColumnValid(c);
+      c.$c1.find('input').toggleClass('is-invalid', !valid);
+      c.$c2.find('input').toggleClass('is-invalid', !valid);
+    });
+    $table.find('.match-history-check').toggleClass('disabled-check', !(changed && columns.every(matchHistoryColumnValid)));
+  };
+
+  const matchHistoryInput = (value) =>
+      `<input type="number" inputmode="numeric" min="0" class="match-history-score-input form-control form-control-sm" value="${value ?? ''}">`;
+
+  // карандаш: счёт игр становится редактируемым, при недоборе до максимума
+  // добавляются пустые колонки; карандаш → галочка, корзина → крестик
+  $(document).on('click', '.match-history-edit', function () {
+    const $table = $(this).closest('table.match-history-players');
+    if ($table.data('editing')) return;
+    $table.data('original', $table.clone(true, true));
+    $table.data('editing', true);
+
+    const gamesMax = Number($table.data('games-max'));
+    const $rows = $table.find('tbody tr');
+    const $scores1 = $rows.eq(1).find('td.match-history-game-col');
+    const count = $scores1.length;
+
+    // существующие ячейки → инпуты
+    [$rows.eq(1), $rows.eq(4)].forEach($row => {
+      $row.find('td.match-history-game-col').each(function () {
+        const $cell = $(this);
+        $cell.html(matchHistoryInput($cell.data('original')));
+      });
+    });
+
+    // новые колонки до максимума: colspan строк дельты/〈Σ〉, инпуты,
+    // длительности «—»
+    for (let i = count; i < gamesMax; i++) {
+      $rows.eq(0).find('.match-history-actions-cell').attr('colspan', i + 1);
+      $rows.eq(6).find('.match-history-empty-col').attr('colspan', i + 1);
+      $rows.eq(1).append(`<td rowspan="2" class="match-history-game-col match-history-score">${matchHistoryInput(null)}</td>`);
+      $rows.eq(4).append(`<td rowspan="2" class="match-history-game-col match-history-score">${matchHistoryInput(null)}</td>`);
+      $rows.eq(3).append('<td class="match-history-game-col">—</td>');
+    }
+
+    // карандаш → галочка (Подтвердить, неактивна без изменений),
+    // корзина → крестик (Отменить); те же размеры и opacity
+    $(this).removeClass('bi-pencil match-history-edit')
+        .addClass('bi-check match-history-check disabled-check')
+        .attr('title', 'Подтвердить');
+    $table.find('.match-history-delete').removeClass('bi-trash3 match-history-delete')
+        .addClass('bi-x match-history-cancel')
+        .attr('title', 'Отменить');
+  });
+
+  // крестик: откат к исходному виду без запросов
+  $(document).on('click', '.match-history-cancel', function () {
+    const $table = $(this).closest('table.match-history-players');
+    const $original = $table.data('original');
+    if ($original) $table.replaceWith($original);
+  });
+
+  // активность галочки пересматривается на каждый ввод
+  $(document).on('input', '.match-history-players .match-history-score-input', function () {
+    matchHistoryUpdateCheck($(this).closest('table.match-history-players'));
+  });
+
+  // Enter в инпуте — подтвердить, Escape — отменить
+  $(document).on('keydown', '.match-history-players .match-history-score-input', function (event) {
+    const $table = $(this).closest('table.match-history-players');
+    if (event.key === 'Enter') $table.find('.match-history-check').trigger('click');
+    if (event.key === 'Escape') $table.find('.match-history-cancel').trigger('click');
+  });
+
+  // галочка: изменённые игры переписываются, новые создаются
+  // (время экстраполируется на сервере), пустые колонки исчезают;
+  // очищенный счёт существующей игры удаляет игру; пересчёт рейтинга —
+  // один каскад на сервере
+  $(document).on('click', '.match-history-check', function () {
+    if ($(this).hasClass('disabled-check')) return;
+    const $table = $(this).closest('table.match-history-players');
+    const matchId = $table.data('match-id');
+    // raw-значения: в БД хранится только счёт проигравшей пары
+    const raw = (c) => {
+      if (c.v1 === null && c.v2 === null) return {lost_1_by: null, lost_2_by: null};
+      if (c.v1 > c.v2) return {lost_1_by: null, lost_2_by: c.v2};
+      return {lost_1_by: c.v1, lost_2_by: null};
+    };
+    const games = matchHistoryColumns($table).map(c => c.id
+        ? {id: c.id, ...raw(c)}
+        : (c.v1 !== null && c.v2 !== null ? raw(c) : null)).filter(Boolean);
+
+    $.post(`/api/games/bulk/${matchId}`, {games: JSON.stringify(games)}, () => {
+      const $block = $table.closest('div[id$="match-history-block"]');
+      if ($block.length) $block.load(location.href + ` #${$block.attr('id')}>*`, '');
+      refresh.table.player();
+      refresh.table.court();
+    });
+  });
+  // ----- конец редактирования матча -----
+
   // обработчики событий для табло
   ["board-score-l", "board-score-r"].map(id => document.getElementById(id)).map(el => addScoreBoardHandlers(el));
 

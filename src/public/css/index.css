@@ -594,6 +594,31 @@ input:focus::placeholder {
   cursor: pointer;
 }
 
+/* неактивная галочка (нет изменений или невалидный счёт) — блёклая,
+   клик дополнительно игнорируется в обработчике */
+.match-history-actions .bi.disabled-check {
+  opacity: 0.15;
+  cursor: default;
+}
+
+/* редактирование счёта игр: компактные инпуты вместо чисел в ячейках */
+.match-history-score-input {
+  width: 2.8em;
+  padding: 0 2px;
+  text-align: center;
+}
+
+.match-history-score-input::-webkit-outer-spin-button,
+.match-history-score-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.match-history-score-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* телефон: первая строка матча (дельта/〈Σ〉 и иконки) — паддинги 6px/3px */
 @media (max-width: 575.98px) {
   .match-history-players tr:first-child td:not([rowspan]) {

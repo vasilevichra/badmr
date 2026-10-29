@@ -93,6 +93,10 @@ router.get('/:id', (req, res) => {
       co_winners_all: promises[17],
       co_losers_all: promises[18],
       type_matches: promises[19],
+      // параметры редактирования матча из истории (карандаш)
+      games_max: 2 * settingsService.get('wins') - 1,
+      game_point: settingsService.get('game_point'),
+      max_point: settingsService.get('max_point'),
       current_tournament_finished: currentTournamentFinished,
       active_tab: activeTab,
       expand_all: expandAll,
