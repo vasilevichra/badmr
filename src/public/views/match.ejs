@@ -40,12 +40,17 @@
             <td class="match-history-delta-col<%= delta1 === null ? '' : delta1 < 0 ? ' rating-minus' : ' rating-plus' %>"><%- include('rating-label', {v: delta1, delta: true}).trim() %></td>
             <td class="match-history-delta-col<% if( delta1 > 0) { %> win<% } %>">〈Σ〉<%- include('rating-label', {v: rating1}).trim() %><% if( rating1 > rating2) { %> <i class="bi bi-trophy match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
-                <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
+                <td rowspan="2" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
             <% } %>
-            <% // иконки редактирования/удаления матча — последняя ячейка
-                // первой строки, только для авторизованных (в истории турниров
-                // local — user, в модалке игрока — login); locals — чтобы
-                // отсутствие обоих не бросало ReferenceError %>
+            <% // счёт игр — на двух строках напротив пары игроков (2–3);
+                // в первой строке правый конец пуст: распорка над всеми
+                // играми, кроме последней, а в последней ячейке — иконки
+                // редактирования/удаления матча (только для авторизованных;
+                // в истории турниров local — user, в модалке игрока — login;
+                // locals — чтобы отсутствие обоих не бросало ReferenceError) %>
+            <% if (losses_1_by.length > 1) { %>
+                <td colspan="<%= losses_1_by.length - 1 %>" class="match-history-empty-col"></td>
+            <% } %>
             <% if (locals.user || locals.login) { %>
                 <td class="match-history-actions-cell">
                     <div class="match-history-actions no-selection">
@@ -53,6 +58,8 @@
                         <i class="bi bi-trash3 match-history-delete" role="button" tabindex="0" title="Удалить" data-id="<%= match_id %>" data-index="<%= match_index %>"></i>
                     </div>
                 </td>
+            <% } else { %>
+                <td class="match-history-empty-col"></td>
             <% } %>
         </tr>
         <tr>
@@ -73,7 +80,7 @@
             <td rowspan="2" class="match-history-score<% if( total_scores_2 > total_scores_1) { %> win<% } %>"><%= total_scores_2 %></td>
             <td class="match-history-players-name<% if( delta2 === null) { %><% } else if( delta2 > 0) { %> rating-plus<% } else { %> rating-minus<% } %>" data-user-id="<%= user_ids[2] %>" role="button"><%- playerNameFormatter(user_ids[2], names[2], sexes[2], pics[2]) %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
-                <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_2_by[i] > losses_1_by[i]) { %> win<% } %>"><%= losses_2_by[i] %></td>
+                <td rowspan="2" class="match-history-game-col match-history-score<% if(losses_2_by[i] > losses_1_by[i]) { %> win<% } %>"><%= losses_2_by[i] %></td>
             <% } %>
         </tr>
         <tr>
@@ -82,6 +89,9 @@
         <tr class="match-history-delta-col">
             <td class="<%= delta2 === null ? '' : delta2 < 0 ? 'rating-minus' : 'rating-plus' %>"><%- include('rating-label', {v: delta2, delta: true}).trim() %></td>
             <td<% if( delta2 !== null && delta2 > 0) { %> class="win"<% } %>>〈Σ〉<%- include('rating-label', {v: rating2}).trim() %><% if( rating2 > rating1) { %> <i class="bi bi-trophy match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
+            <% // правый конец нижней строки дельты/〈Σ〉 пуст — над счётом игр
+                // его больше нет %>
+            <td colspan="<%= losses_1_by.length %>" class="match-history-empty-col"></td>
         </tr>
         </tbody>
     </table>
