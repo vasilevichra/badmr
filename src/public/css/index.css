@@ -486,16 +486,18 @@ input:focus::placeholder {
 }
 
 /* линия между строкой дельты/〈Σ〉 и счётом/игроками не нужна:
-   bootstrap-граница снизу ячеек первой строки убрана */
-.match-history-players tr:first-child td {
+   bootstrap-граница снизу ячеек первой строки убрана; rowspan-ячейки
+   счёта не трогаем — их нижняя граница отделяет счёт игр от длительности */
+.match-history-players tr:first-child td:not([rowspan]) {
   border-bottom: 0;
 }
 
-/* кубок фаворита в истории матчей у 〈Σ〉 — ненавязчивый,
-   разница сумм рядом — приглушённая (secondary-info) */
+/* кубок фаворита в истории матчей у 〈Σ〉 — высотой в текст,
+   ненавязчивый; разница сумм рядом — приглушённая (secondary-info) */
 .match-history-favorite {
-  font-size: 0.9rem;
+  font-size: 1em;
   line-height: 1;
+  vertical-align: -0.125em;
   opacity: 0.2;
   pointer-events: none;
 }
