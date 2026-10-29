@@ -566,25 +566,41 @@ input:focus::placeholder {
 
 /* иконки редактирования/удаления матча — только для авторизованных:
    ячейка на всю ширину счёта игр в первой строке, иконки прижаты
-   вправо (над последней игрой); размер — как у кубка фаворита (0.8em) */
+   вправо (над последней игрой); размер — меньше кубка (0.7em) */
 .match-history-actions-cell {
-  padding: 0 2px;
   text-align: right;
   vertical-align: middle;
   white-space: nowrap;
 }
 
+/* карандаш перед корзиной, в одну строку без переноса */
 .match-history-actions {
-  font-size: 0.8em;
-  line-height: 1.2;
+  font-size: 0.7em;
+  opacity: 0.2;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .match-history-actions .bi {
   cursor: pointer;
 }
 
-.match-history-actions .bi + .bi {
-  margin-left: 6px;
+/* телефон: первая строка матча (дельта/〈Σ〉 и иконки) — той же высоты,
+   что и последняя строка дельты/〈Σ〉: её вертикальные паддинги (3px/6px)
+   и естественная высота строки контента */
+@media (max-width: 575.98px) {
+  .match-history-players tr:first-child td:not([rowspan]) {
+    padding-top: 3px;
+    padding-bottom: 6px;
+  }
+
+  /* ячейка иконок наследует bootstrap line-height 1.5 (24px) —
+     распорка строки бокса раздувает первую строку до 33px */
+  .match-history-actions-cell {
+    line-height: 0;
+  }
 }
 
 .match-history-players-name {
