@@ -524,10 +524,18 @@ input:focus::placeholder {
   border-bottom: 0;
 }
 
+/* нижняя пара не отделяется линией от нижней строки дельты/〈Σ〉 —
+   зеркально верхней паре: без границ под её сводным счётом (rowspan)
+   и под нижним игроком пары */
+.match-history-players tr:nth-child(5) td[rowspan],
+.match-history-players tr:nth-child(6) td.match-history-players-name {
+  border-bottom: 0;
+}
+
 /* кубок фаворита в истории матчей у 〈Σ〉 — высотой в текст,
    ненавязчивый; разница сумм рядом — приглушённая (secondary-info) */
 .match-history-favorite {
-  font-size: 0.85em;
+  font-size: 0.8em;
   line-height: 1;
   opacity: 0.2;
   pointer-events: none;
