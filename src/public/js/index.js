@@ -89,6 +89,21 @@ $(document).ready(() => {
     }
   });
 
+  // удаление матча из истории (иконка корзины у карточки матча,
+  // только для авторизованных): после удаления матч исчезает из истории,
+  // а игроки возвращаются в подбор
+  $(document).on('click', '.match-history-delete', function () {
+    const id = $(this).data('id');
+    const index = $(this).data('index');
+    confirmAction(`Удалить матч №${index}?`, () => {
+      $.post(`/api/matches/delete/${id}`, {}, () => {
+        refresh.block.by.id('match-history-block');
+        refresh.table.player();
+        refresh.table.court();
+      });
+    });
+  });
+
   // обработчики событий для табло
   ["board-score-l", "board-score-r"].map(id => document.getElementById(id)).map(el => addScoreBoardHandlers(el));
 

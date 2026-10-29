@@ -507,12 +507,9 @@ input:focus::placeholder {
   border-radius: 0.5rem;
 }
 
-/* линия между строкой дельты/〈Σ〉 и счётом/игроками не нужна:
-   bootstrap-граница снизу ячеек первой строки убрана; rowspan-ячейки
+/* линия между строкой дельты/〈Σ〉 (и ячейкой иконок) и счётом игр:
+   возвращена bootstrap-граница снизу ячеек первой строки; rowspan-ячейки
    счёта не трогаем — их нижняя граница отделяет счёт игр от длительности */
-.match-history-players tr:first-child td:not([rowspan]) {
-  border-bottom: 0;
-}
 
 /* подчёркивание между игроками пары не нужно: убираем границу снизу
    у верхнего игрока каждой пары (строки 2 и 5 tbody); нижний игрок
@@ -563,6 +560,28 @@ input:focus::placeholder {
 
 .match-history-info {
   font-size: 85%;
+}
+
+/* иконки редактирования/удаления матча — только для авторизованных:
+   отдельная ячейка в конце первой строки таблицы, размер текста
+   заголовка (85%); граница снизу — общая с первой строкой */
+.match-history-actions-cell {
+  padding: 0 2px 0 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.match-history-actions {
+  font-size: 85%;
+  line-height: 1.2;
+}
+
+.match-history-actions .bi {
+  cursor: pointer;
+}
+
+.match-history-actions .bi + .bi {
+  margin-left: 6px;
 }
 
 .match-history-players-name {

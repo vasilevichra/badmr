@@ -1,4 +1,4 @@
-<div class="col-auto text-center">
+    <div class="col-auto text-center">
     <% // номер хронологический: старейший матч сессии — №1 (внизу списка)
         var match_index = total - index; %>
     <% var match_id = Object.keys(match)[0]; %>
@@ -33,7 +33,7 @@
         // 2 знаков без хвостовых нулей — как в rating-label) %>
     <% var sum_diff = String(Number(Math.abs(rating1 - rating2).toFixed(2))); %>
 
-    <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %></nobr></label>
+    <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}).replace(/:\d\d$/, '') %></nobr></label>
     <table class="match-history-players table" style="margin-bottom: 3em;">
         <tbody>
         <tr>
@@ -41,6 +41,18 @@
             <td class="match-history-delta-col<% if( delta1 > 0) { %> win<% } %>">〈Σ〉<%- include('rating-label', {v: rating1}).trim() %><% if( rating1 > rating2) { %> <i class="bi bi-trophy match-history-favorite" title="Фаворит"></i> <span class="secondary-info">+<%= sum_diff %></span><% } %></td>
             <% for (let i = 0; i < losses_1_by.length; i++) { %>
                 <td rowspan="3" class="match-history-game-col match-history-score<% if(losses_1_by[i] > losses_2_by[i]) { %> win<% } %>"><%= losses_1_by[i] %></td>
+            <% } %>
+            <% // иконки редактирования/удаления матча — последняя ячейка
+                // первой строки, только для авторизованных (в истории турниров
+                // local — user, в модалке игрока — login); locals — чтобы
+                // отсутствие обоих не бросало ReferenceError %>
+            <% if (locals.user || locals.login) { %>
+                <td class="match-history-actions-cell">
+                    <div class="match-history-actions no-selection">
+                        <i class="bi bi-pencil match-history-edit" role="button" tabindex="0" title="Редактировать"></i>
+                        <i class="bi bi-trash3 match-history-delete" role="button" tabindex="0" title="Удалить" data-id="<%= match_id %>" data-index="<%= match_index %>"></i>
+                    </div>
+                </td>
             <% } %>
         </tr>
         <tr>
