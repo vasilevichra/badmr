@@ -532,21 +532,19 @@ input:focus::placeholder {
   border-bottom: 0;
 }
 
-/* вертикальные отступы внутри блока пары — вдвое меньше базовых
-   (6px → 3px): между игроками пары и между игроками/сводным счётом
-   и их строкой дельты/〈Σ〉; отступы пары со строкой длительности
-   не меняются */
-.match-history-players tr:first-child td:not([rowspan]),
-.match-history-players tr:nth-child(2) td.match-history-players-name,
-.match-history-players tr:nth-child(3) td.match-history-players-name,
-.match-history-players tr:nth-child(5) td,
-.match-history-players tr:nth-child(6) td.match-history-players-name {
+/* вертикальные отступы у игроков, их сводного счёта и строк дельты/〈Σ〉 —
+   вдвое меньше базовых (3px вместо 6px); отступы со строкой длительности
+   выровнены по колонкам */
+.match-history-players td.match-history-players-name,
+.match-history-players td[rowspan="2"] {
+  padding-top: 3px;
   padding-bottom: 3px;
 }
 
-.match-history-players tr:nth-child(2) td,
-.match-history-players tr:nth-child(3) td.match-history-players-name,
-.match-history-players tr:nth-child(6) td.match-history-players-name,
+.match-history-players tr:first-child td:not([rowspan]) {
+  padding-bottom: 3px;
+}
+
 .match-history-players tr:nth-child(7) td {
   padding-top: 3px;
 }
