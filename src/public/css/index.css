@@ -573,14 +573,18 @@ input:focus::placeholder {
   white-space: nowrap;
 }
 
-/* карандаш перед корзиной, в одну строку без переноса */
+/* карандаш перед корзиной, в одну строку без переноса; поднят на
+   1.5px: центр иконок совпадает с центром строки дельты/〈Σ⟩ —
+   иначе глиф иконки висит ниже середины текста */
 .match-history-actions {
-  font-size: 0.7em;
-  opacity: 0.2;
+  font-size: 0.5em;
+  opacity: 0.5;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  position: relative;
+  top: -1.5px;
 }
 
 .match-history-actions .bi {
