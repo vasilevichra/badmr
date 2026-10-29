@@ -147,6 +147,7 @@ const renderSettings = () => {
             // на телефоне название короче, а текст описания — в подсказке
             // у иконки с информацией
             title: isPhone() ? 'Опис.' : 'Описание',
+            align: 'center',
             formatter: (value) => {
               if (!isPhone()) {
                 return value;
