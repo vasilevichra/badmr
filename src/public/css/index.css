@@ -417,13 +417,12 @@ input:focus::placeholder {
     padding-right: 4px;
   }
 
-  .bootstrap-table
-    .fixed-table-container
-    .player-compact
-    th.player-num
-    .th-inner {
-    padding-left: 6px;
-    padding-right: 6px;
+  /* заголовки «Р.»/«∆» сортируемые и центрированные — bootstrap-table
+     вешает .sortable.sortable-center c padding 20px !important; для
+     уменьшения вдвое нужны большая специфичность и !important */
+  .bootstrap-table .fixed-table-container .player-compact.table thead th.player-num .th-inner {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 }
 
