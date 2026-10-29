@@ -619,6 +619,13 @@ input:focus::placeholder {
   appearance: textfield;
 }
 
+/* ошибка валидации: Bootstrap навешивает padding-right под значок
+   (calc(1.5em + 0.75rem)) — расширяем поле на ту же величину, иначе
+   цифра уходит под значок и обрезается */
+.match-history-score-input.is-invalid {
+  width: calc(2.8em + 1.5em + 0.75rem);
+}
+
 /* телефон: первая строка матча (дельта/〈Σ〉 и иконки) — паддинги 6px/3px */
 @media (max-width: 575.98px) {
   .match-history-players tr:first-child td:not([rowspan]) {
