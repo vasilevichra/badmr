@@ -33,7 +33,7 @@
         // 2 знаков без хвостовых нулей — как в rating-label) %>
     <% var sum_diff = String(Number(Math.abs(rating1 - rating2).toFixed(2))); %>
 
-    <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %>, корт №<%= court %></nobr></label>
+    <label class="form-label match-history-info">№<%= match_index %> (<%= match_id %>) <nobr class="secondary-info"><%= match_start_date.toLocaleString('ru', {timeZone: 'Europe/Moscow'}) %></nobr></label>
     <table class="match-history-players table" style="margin-bottom: 3em;">
         <tbody>
         <tr>
@@ -52,7 +52,7 @@
         </tr>
         <tr class="match-history-duration">
             <td class="win"><%= duration %>'</td>
-            <td>〈Δ〉<%- include('rating-label', {v: Math.abs(rating1 - rating2)}).trim() %></td>
+            <td class="secondary-info">корт №<%= court %></td>
             <% game_durations_minutes.forEach(d => { %>
                 <td class="match-history-game-col"><%= d === 0 || d === duration ? Math.round(duration / games.length) : d %>'</td>
             <% }) %>
