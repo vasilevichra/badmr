@@ -48,15 +48,10 @@ $(document).ready(() => {
   renderArchive();
   renderGroups();
 
-  // периодическое обновление данных зала: пока вкладка видима и в блоке
-  // игр нет фокуса в полях ввода (иначе перезагрузка потеряла бы ввод)
+  // периодический тик: только перерисовка блока игр и пересчёт «закончилась
+  // N назад» — таблицы и историю игрок обновляет вручную (периодический
+  // refresh затирал режим редактирования истории и дёргал сервер зря)
   setInterval(() => {
-    if (document.hidden) {
-      return;
-    }
-    refresh.table.player();
-    refresh.table.court();
-    refresh.block.by.id('match-history-block');
     // блок игр перерисовывается целиком из данных сервера
     if ($('#game').find('input:focus, select:focus').length === 0) {
       renderGames();
