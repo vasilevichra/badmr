@@ -189,7 +189,7 @@
             клиент при клике из обратного отсчёта (datetime атрибут <time>) %>
         <% const shareRegStr = `Регистрация до: ${regEndDateStr}{REG_LEFT}`; %>
         <% const shareLines = [
-              `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»`,
+              `Турнир: «${current_tournament.name} / ${current_tournament.type_name}» https://badmr.ru/tournament/${current_tournament.id}`,
               `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
               shareRegStr,
               'Адрес:',
