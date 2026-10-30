@@ -1,10 +1,12 @@
 import UserRepository from '../repositories/user.ts';
+import SettingsService from './settings.ts';
 import { JSDOM } from 'jsdom';
 import Bluebird from 'bluebird';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
+const settingsService = new SettingsService();
 
 interface BuddyStatRow {
   user_id: number;
@@ -215,8 +217,13 @@ class User {
    * @returns Данные игрока либо undefined, если игрок не найден или не уникален.
    */
   async labSearch(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabPlayer | undefined> {
-    // пауза перед каждым запросом, чтобы не походить на бота
-    const pause = (base = 0) => Bluebird.delay(Math.random() * 1000 + 500 + base);
+    // пауза перед каждым запросом, чтобы не походить на бота:
+    // случайное значение между crawl_min_ms и crawl_max_ms (настройки)
+    const pause = (base = 0) => {
+      const min = Number(settingsService.get('crawl_min_ms'));
+      const max = Number(settingsService.get('crawl_max_ms'));
+      return Bluebird.delay(Math.random() * (max - min) + min + base);
+    };
     // сайт иногда сбрасывает соединение (ECONNRESET) — повторяем попытки
     const retry = async <T>(request: () => Promise<T>): Promise<T> => {
       for (let attempt = 1; ; attempt++) {
@@ -311,10 +318,16 @@ class User {
   }
 
   labCrawl = async () => {
-    const users = this.getAll() as unknown as { id: number; name: string; city: string | null }[];
-    const labSites = await this.user.getLabSites() as unknown as { user_id: number; site_id: number }[];
-    const siteIds = new Map(labSites.map(row => [row.user_id, row.site_id]));
-    const responses = await Bluebird.map(users, user => this.labSearch(user.name, user.city, user.id, siteIds.get(user.id) ?? null), {concurrency: 1});
+    // только участники текущего турнира и только с устаревшим кешем
+    // (crawl_cache_m минут) — свежие данные уже в user_lab
+    const users = await this.user.getLabCrawlUsers(Number(settingsService.get('crawl_cache_m')));
+    const responses = await Bluebird.map(users, async user => {
+      const response = await this.labSearch(user.name, user.city, user.user_id, user.site_id);
+      // время обхода отмечается даже при пустом результате — иначе
+      // ненайденный игрок запрашивался бы при каждой загрузке страницы
+      await this.user.touchLabCrawled(user.user_id);
+      return response;
+    }, {concurrency: 1});
     const players = responses.filter(r => r);
     return Bluebird.all(players.map(p => this.user.setLabInfo(p!.user_id, p!.id, p!.login ?? '', p!.name, p!.r1 === null ? '' : String(p!.r1), p!.r2 === null ? '' : String(p!.r2), p!.img ?? '', p!.city ?? '', p!.club ?? '', p!.year === null ? '' : String(p!.year))));
   };

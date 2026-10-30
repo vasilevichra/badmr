@@ -51,7 +51,8 @@ describe("Settings", () => {
       // + 2 параметра формулы дельты (rating_diff_limit, rating_diff_divisor)
       // + delta_auto с тремя её параметрами (window, lower, upper)
       // + rematch_window
-      assert.strictEqual(all.length, 35);
+      // + кеш обхода badminton4u (crawl_cache_m) и границы паузы (crawl_min_ms, crawl_max_ms)
+      assert.strictEqual(all.length, 38);
       assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s));
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "delta"),
@@ -68,7 +69,7 @@ describe("Settings", () => {
     it("должен вернуть объект настроек текущего турнира", async () => {
       const settings = await settingsService.getSettings() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(settings).length, 35);
+      assert.strictEqual(Object.keys(settings).length, 38);
       assert.strictEqual(settings.delta, "100");
       assert.strictEqual(settings.state, "1");
       assert.strictEqual(settings.type, "1");
@@ -88,7 +89,7 @@ describe("Settings", () => {
     it("должен вернуть объект значений по умолчанию без переопределений", async () => {
       const defaults = await settingsService.getDefaults() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(defaults).length, 35);
+      assert.strictEqual(Object.keys(defaults).length, 38);
       assert.strictEqual(defaults.delta, "50");
       assert.strictEqual(defaults.state, "1");
     });

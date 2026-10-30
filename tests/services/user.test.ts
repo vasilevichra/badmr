@@ -901,6 +901,8 @@ describe("User", () => {
 
   describe("labCrawl", () => {
     it("должен сохранить найденные данные по всем игрокам", async () => {
+      await new SettingsService().set("crawl_min_ms", "0");
+      await new SettingsService().set("crawl_max_ms", "0");
       mockFetch(siteRow());
       const ids = await seedUsers();
 
@@ -915,6 +917,8 @@ describe("User", () => {
     });
 
     it("должен использовать сохранённую привязку к id без поиска по имени", async () => {
+      await new SettingsService().set("crawl_min_ms", "0");
+      await new SettingsService().set("crawl_max_ms", "0");
       mockFetch(noRows, playerPage({ id: "99999", login: "ivanov" }));
       const ids = await seedUsers([500]);
       await db.run(
@@ -929,6 +933,55 @@ describe("User", () => {
       const user = await userService.getById(ids[0]) as UserRow;
       assert.strictEqual(user.site_id, 99999);
       assert.strictEqual(user.site_login, "ivanov");
+    });
+
+    it("должен пропускать игроков, обновлённых в пределах crawl_cache_m минут", async () => {
+      const settings = new SettingsService();
+      await settings.set("crawl_min_ms", "0");
+      await settings.set("crawl_max_ms", "0");
+      mockFetch(siteRow());
+      await seedUsers();
+
+      await userService.labCrawl();
+      assert.ok(fetchedUrls.filter(url => url.includes("/ajax?search=rating")).length > 0);
+
+      // второй прогон сразу после первого — кеш свеж, запросов к сайту нет
+      fetchedUrls.length = 0;
+      await userService.labCrawl();
+      assert.strictEqual(fetchedUrls.length, 0);
+    });
+
+    it("должен обходить игрока, обновлённого раньше crawl_cache_m минут назад", async () => {
+      const settings = new SettingsService();
+      await settings.set("crawl_min_ms", "0");
+      await settings.set("crawl_max_ms", "0");
+      mockFetch(siteRow());
+      const [id] = await seedUsers();
+
+      await userService.labCrawl();
+      await db.run("UPDATE user_lab SET crawled_at = datetime('now', '-31 minutes')");
+      fetchedUrls.length = 0;
+
+      await userService.labCrawl();
+      // у игрока есть привязка site_id — запрос идёт напрямую на страницу игрока
+      assert.ok(fetchedUrls.filter(url => url.includes("badminton4u.ru/players/")).length > 0);
+      const row = await db.get<{ crawled_at: string }>("SELECT crawled_at FROM user_lab WHERE user_id = ?", [id]);
+      // после обхода время обновления свежее
+      assert.ok(row!.crawled_at > new Date(Date.now() - 60_000).toISOString().replace('T', ' ').slice(0, 19));
+    });
+
+    it("должен брать паузу между запросами из crawl_min_ms и crawl_max_ms", async () => {
+      const settings = new SettingsService();
+      await settings.set("crawl_min_ms", "0");
+      await settings.set("crawl_max_ms", "0");
+      mockFetch(siteRow());
+      const started = Date.now();
+      await seedUsers();
+
+      await userService.labCrawl();
+
+      // паузы из настроек = 0 мс: 4 игрока × 2 запроса без ожиданий
+      assert.ok(Date.now() - started < 2000, `краул занял ${Date.now() - started} мс — паузы не из настроек`);
     });
   });
 });
