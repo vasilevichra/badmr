@@ -171,8 +171,8 @@
             <div class="panel panel-default" style="font-size: 0.8rem;">
                 <div class="panel-heading text-center"><%= tournamentName %></div>
                 <div class="list-group">
-                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span></span>
                     <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge <%= tournamentFinished ? 'bg-secondary' : 'bg-badmr' %> float-start me-2"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
+                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span></span>
                     <% if (current_tournament.map_url) { %>
                         <span class="list-group-item text-center"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>
                     <% } else { %>
@@ -190,8 +190,8 @@
         <% const shareRegStr = `Регистрация до: ${regEndDateStr}{REG_LEFT}`; %>
         <% const shareLines = [
               `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»`,
-              shareRegStr,
               `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
+              shareRegStr,
               'Адрес:',
               `${current_tournament.city}, ${current_tournament.address}`,
            ];
@@ -203,11 +203,11 @@
                 <div><%= tournamentName %>
                     <button class="btn btn-xs bi-share tournament-name-copy" data-share="<%= shareLines.join('\n') %>" title="Скопировать информацию о турнире" aria-label="Скопировать информацию о турнире"></button>
                 </div>
-                <div>Регистрация до: <%= regEndDateStr %><%- regEndUntilStr %></div>
                 <div>Дата: <%= getDateStr() %>
                     <% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
                     <button class="btn btn-xs bi-calendar tournament-calendar" data-name="<%= current_tournament.name %>" data-start="<%= current_tournament.started_at %>" data-end="<%= current_tournament.ended_at %>" data-location="<%= current_tournament.city %>, <%= current_tournament.address %>" title="Добавить событие в календарь" aria-label="Добавить событие турнира в календарь"></button>
                 </div>
+                <div>Регистрация до: <%= regEndDateStr %><%- regEndUntilStr %></div>
             </div>
             <div class="col-6 justify-content-end align-items-end">
                 <div class="row text-start">
