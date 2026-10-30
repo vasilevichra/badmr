@@ -1,127 +1,55 @@
-import { VK, CallbackService } from 'vk-io';
-import * as auth from '@vk-io/authorization';
+/** Интеграция с VK: чаты турниров в сообществе «Бадминтон в Доброграде».
+ *
+ * Используется ключ доступа сообщества (process.env.VK_TOKEN, права messages).
+ * messages.createChat создаёт чат от имени сообщества, участники заходят
+ * по ссылке-приглашению (messages.getInviteLink), ссылка хранится
+ * в tournament.chat. Чат, созданный ключом сообщества, не отображается
+ * во вкладке «Чаты» интерфейса сообщества (ограничение VK API). */
+const API_URL = "https://api.vk.com/method/";
+const API_VERSION = "5.199";
+const CHAT_PEER_BASE = 2000000000;
 
-// const direct = new DirectAuthorization({
-//   callbackService,
-//
-//   scope: 'all',
-//
-//   // Direct authorization is only available for official applications
-//   ...officialAppCredentials.android, // { clientId: string; clientSecret: string; }
-//
-//   // Or manually provide app credentials
-//   // clientId: process.env.CLIENT_ID,
-//   // clientSecret: process.env.CLIENT_SECRET,
-//
-//   login: process.env.LOGIN,
-//   password: process.env.PASSWORD,
-//
-//   apiVersion: '5.199'
-// });
-//
-// async function run() {
-//   const response = await direct.run();
-//
-//   console.log('Token:', response.token);
-//   console.log('Expires:', response.expires);
-//
-//   console.log('Email:', response.email);
-//   console.log('User ID:', response.userId);
-// }
-//
-// run().catch(console.error);
+interface VkResponse<T> {
+  response?: T;
+  error?: { error_msg: string };
+}
 
 class Vk {
   declare static _instance: Vk | undefined;
-  options!: {
-    callbackService: InstanceType<typeof CallbackService>;
-    scope: string;
-    clientId: string;
-    clientSecret: string;
-    login: string;
-    password: string;
-    apiVersion: string;
-  };
-  direct!: auth.ImplicitFlowUser;
 
   constructor() {
     if (Vk._instance) {
       return Vk._instance;
     }
     Vk._instance = this;
-
-    // this.auth = new DirectAuthorization({
-    //   callbackService: new CallbackService(),
-    //
-    //   scope: 'all',
-    //
-    //   // Direct authorization is only available for official applications
-    //   // ...officialAppCredentials.android, // { clientId: string; clientSecret: string; }
-    //
-    //   // Or manually provide app credentials
-    //   // clientId: process.env.CLIENT_ID,
-    //   // clientSecret: process.env.CLIENT_SECRET,
-    //   //
-    //   // login: process.env.LOGIN,
-    //   // password: process.env.PASSWORD,
-    //
-    //
-    //   apiVersion: '5.199'
-    // });
-
-    // this.vk = new VK({
-    //   appId: 54484897,
-    //   appSecret: 'RoJc5QCutQwN5el2j2m8',
-    //   login: 651677,
-    //   password: 'hjvfirf123V7',
-    //   authScope: 'all'
-    // });
-
-    this.options = {
-      callbackService: new CallbackService(),
-      scope: 'all',
-      clientId: '54484897',
-      clientSecret: 'fb1b1a74fb1b1a74fb1b1a7435f82445d5ffb1bfb1b1a7492adc624e3c90c50fafc526c',
-      login: 'vasilevich@gmail.com',
-      password: 'hjvfirf123V7',
-      apiVersion: '5.131'
-    };
-
-    this.direct = new auth.ImplicitFlowUser(this.options);
-
   }
 
-  // run = () => this.direct.run().then((response) => {
-  //   console.log(response.token); // выводится, все супер
-  // })
-  // .then(r => {
-  //   console.log(vk.token); // null !!!
-  // })
-  // .catch(error => console.log(error));
+  private call = async <T>(method: string, params: Record<string, string> = {}): Promise<T> => {
+    const token = process.env.VK_TOKEN;
+    if (!token) {
+      throw new Error("VK_TOKEN не задан — создание чата недоступно");
+    }
+    const res = await fetch(API_URL + method, {
+      method: "POST",
+      body: new URLSearchParams({ ...params, access_token: token, v: API_VERSION }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const data = await res.json() as VkResponse<T>;
+    if (data.error) {
+      throw new Error(`VK ${method}: ${data.error.error_msg}`);
+    }
+    return data.response as T;
+  };
 
-  async run() {
-
-  }
-
-  // {
-  //   const response = this.auth.run();
-  //
-  //   console.log('Token:', response.token);
-  //   console.log('Expires:', response.expires);
-  //
-  //   console.log('Email:', response.email);
-  //   console.log('User ID:', response.userId);
-  // }
-
-  // async function run() {
-  //   const response = await direct.run();
-  //
-  //   console.log('Token:', response.token);
-  //   console.log('Expires:', response.expires);
-  //
-  //   console.log('Email:', response.email);
-  //   console.log('User ID:', response.userId);
-  // }
+  /** Создаёт чат с названием турнира и возвращает ссылку-приглашение. */
+  createChat = async (title: string): Promise<string | undefined> => {
+    const created = await this.call<{ chat_id: number }>("messages.createChat", { title });
+    const invite = await this.call<{ link: string }>("messages.getInviteLink", {
+      peer_id: String(CHAT_PEER_BASE + created.chat_id),
+      reset: "0",
+    });
+    return invite.link;
+  };
 }
 
 export default Vk;

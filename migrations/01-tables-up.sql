@@ -70,6 +70,7 @@ CREATE TABLE tournament
     started_at           DATETIME NOT NULL,
     ended_at             DATETIME,
     rules                TEXT,
+    chat                 TEXT,
     CHECK (current IN (0, 1)),
     CHECK (available IN (0, 1)),
     CHECK (reg_ended_at <= started_at),

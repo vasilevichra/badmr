@@ -19,6 +19,7 @@ interface TournamentRow {
   tournament_status_id: number;
   unit_id: number;
   rules: string;
+  chat: string | null;
 }
 
 const tournamentService = new TournamentService();
@@ -133,6 +134,68 @@ describe("Tournament", () => {
       await tournamentService.setStatus(4);
 
       assert.strictEqual((await tournamentService.getById(4) as unknown as TournamentRow).tournament_status_id, 4);
+    });
+  });
+
+  describe("чат турнира (VK)", () => {
+    const link = "https://vk.me/join/testlink";
+    const vkMock = () => tournamentService.tournament as unknown as {
+      vk: { createChat: (title: string) => Promise<string | undefined> };
+    };
+    let calls: string[];
+
+    beforeEach(() => {
+      // clean() не трогает строку турнира 1 — сбрасываем chat явно
+      db.run(`UPDATE tournament SET chat = NULL WHERE id = 1`);
+      calls = [];
+      (vkMock() as { vk: unknown }).vk = {
+        createChat: async (title: string) => {
+          calls.push(title);
+          return link;
+        },
+      };
+    });
+
+    it("при старте турнира должен создать чат и сохранить ссылку-приглашение", async () => {
+      await tournamentService.setStatus(2, 1);
+
+      assert.deepStrictEqual(calls, ["Рейтинг"]);
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).chat, link);
+    });
+
+    it("не должен создавать чат, если ссылка уже сохранена", async () => {
+      db.run(`UPDATE tournament SET chat = ? WHERE id = 1`, [link]);
+
+      await tournamentService.setStatus(2, 1);
+
+      assert.deepStrictEqual(calls, []);
+    });
+
+    it("не должен создавать чат при статусе, отличном от «Идёт»", async () => {
+      await tournamentService.setStatus(4, 1);
+
+      assert.deepStrictEqual(calls, []);
+    });
+
+    it("при ошибке VK должен сменить статус и не сохранить ссылку", async () => {
+      (vkMock() as { vk: unknown }).vk = {
+        createChat: async () => {
+          throw new Error("VK down");
+        },
+      };
+
+      await tournamentService.setStatus(2, 1);
+
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).tournament_status_id, 2);
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).chat, null);
+    });
+
+    it("не должен сохранять ссылку, если VK не вернул её", async () => {
+      (vkMock() as { vk: unknown }).vk = { createChat: async () => undefined };
+
+      await tournamentService.setStatus(2, 1);
+
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).chat, null);
     });
   });
 

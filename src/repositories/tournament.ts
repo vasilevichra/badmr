@@ -3,6 +3,7 @@ import DB, { type RunResult, type SqliteParam } from "../db.ts";
 import CourtRepository from './court.ts';
 const courtRepository = new CourtRepository();
 import SettingsRepository from './settings.ts';
+import VkService from '../services/vk.ts';
 import schedule from 'node-schedule';
 
 class Tournament {
@@ -10,6 +11,7 @@ class Tournament {
   db!: DB;
   id: number | undefined;
   settingsRepository!: SettingsRepository;
+  vk!: VkService;
 
   constructor() {
     if (Tournament._instance) {
@@ -18,6 +20,7 @@ class Tournament {
     Tournament._instance = this;
 
     this.db = new Repository().db;
+    this.vk = new VkService();
     this.settingsRepository = new SettingsRepository();
   }
 
@@ -103,7 +106,7 @@ class Tournament {
   }
 
   setStatus(status_id: number, id?: number) {
-    return id ? this.db.run(
+    const result = id ? this.db.run(
             `UPDATE tournament
              SET tournament_status_id = ?
              WHERE id = ?`,
@@ -115,6 +118,39 @@ class Tournament {
              WHERE current = 1`,
             [status_id]
         );
+    // старт турнира (2 «Идёт») — создаём чат VK, если его ещё нет;
+    // ошибка VK не влияет на смену статуса
+    if (status_id === 2) {
+      this.createChatIfAbsent(id);
+    }
+    return result;
+  }
+
+  /** Создаёт чат VK для турнира и сохраняет ссылку-приглашение в tournament.chat. */
+  createChatIfAbsent(id?: number) {
+    const tournament = (id
+        ? this.db.get(`SELECT id, name, chat FROM tournament WHERE id = ?`, [id])
+        : this.db.get(`SELECT id, name, chat FROM tournament WHERE current = 1`)) as
+        { id: number; name: string; chat: string | null } | undefined;
+    if (!tournament || tournament.chat) {
+      return;
+    }
+    this.vk.createChat(tournament.name)
+        .then((link) => {
+          if (link) {
+            this.setChat(tournament.id, link);
+          }
+        })
+        .catch((e: Error) => console.error(`чат VK турнира ${tournament.id}:`, e.message));
+  }
+
+  setChat(id: number, link: string) {
+    return this.db.run(
+        `UPDATE tournament
+         SET chat = ?
+         WHERE id = ?`,
+        [link, id]
+    );
   }
 
   setLostStatuses() {
