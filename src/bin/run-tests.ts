@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import {DatabaseSync} from "node:sqlite";
 import {spawn, spawnSync} from "node:child_process";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -73,6 +74,14 @@ const migrate = spawnSync("node", ["--experimental-strip-types", "src/bin/migrat
 if (migrate.status !== 0) {
   process.exit(migrate.status ?? 1);
 }
+
+// Нормализация тестового фикстура поверх миграций (migrations/fixture-for-tests.sql):
+// дамп 05-specific перегенерируется из живой базы и уводит «текущий» турнир
+// и справочники клубов/спортзалов от фиксированного тестового набора.
+// clean() применяет тот же файл при каждом сбросе (tests/helpers/migration.ts).
+const fixtureDb = new DatabaseSync(testDbPath);
+fixtureDb.exec(fs.readFileSync(path.join(root, "migrations/fixture-for-tests.sql"), "utf-8"));
+fixtureDb.close();
 
 // Вывод тестов течёт в терминал сразу (иначе на весь прогон терминал молчит
 // и запуск выглядит зависшим), параллельно дописываем его в лог.

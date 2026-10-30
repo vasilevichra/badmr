@@ -13,6 +13,9 @@ const resetSqlFiles = [
   "05-specific-down.sql",
   "05-specific-up.sql",
   "06-indexes-up.sql",
+  // нормализация фикстура: дамп 05-specific перегенерируется из живой базы
+  // (новый «текущий» турнир, клубы, спортзалы не входят в тестовый набор)
+  "fixture-for-tests.sql",
   // сиды вставляют строки с явными id; без сброса sqlite_sequence
   // автоинкремент продолжает расти между тестами (новый корт — id 46 вместо 14)
   "reset-sequences-for-tests.sql",
