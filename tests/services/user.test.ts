@@ -983,5 +983,22 @@ describe("User", () => {
       // паузы из настроек = 0 мс: 4 игрока × 2 запроса без ожиданий
       assert.ok(Date.now() - started < 2000, `краул занял ${Date.now() - started} мс — паузы не из настроек`);
     });
+
+    it("должен выдерживать паузу из настроек перед запросом страницы отдельного игрока", async () => {
+      // дефолтные настройки 500..3000 мс; игрок с известной привязкой site_id —
+      // два запроса (страница + аватар), перед каждым пауза ≥ crawl_min_ms
+      mockFetch(noRows, playerPage({ id: "99999", login: "ivanov" }));
+      const ids = await seedUsers([500]);
+      await db.run(
+        "INSERT INTO user_lab (user_id, site_id, rating_2) VALUES (?, 99999, 0)",
+        [ids[0]],
+      );
+
+      const started = Date.now();
+      await userService.labCrawl();
+
+      const elapsed = Date.now() - started;
+      assert.ok(elapsed >= 950, `labSearch занял ${elapsed} мс — пауза перед запросом страницы игрока не выдерживается`);
+    });
   });
 });
