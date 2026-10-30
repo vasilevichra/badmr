@@ -110,7 +110,9 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
                       type: 'POST',
                       success: () => {
                         hide.register.all();
-                        refresh.table.player();
+                        // блока «Игроки» могло не быть (не было зарегистрированных) — тогда страница перезагрузится и блок отрисуется
+                        if ($('#player-table').length) refresh.table.player();
+                        else location.reload();
                         $('.tournament-new-registration-input').val('').trigger('input');
                         $.removeCookie(cookieName);
                       },
@@ -263,7 +265,9 @@ const tournamentNewRegistrationAddHandler = (city) => {
           method: 'POST',
           async: false,
           success: () => {
-            refresh.table.player();
+            // блока «Игроки» могло не быть (не было зарегистрированных) — тогда страница перезагрузится и блок отрисуется
+            if ($('#player-table').length) refresh.table.player();
+            else location.reload();
             show.register.search();
             $('.tournament-new-registration-input').val('').trigger('input');
             $.removeCookie('registration-input');

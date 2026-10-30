@@ -5,6 +5,7 @@ import path from "node:path";
 import IndexRouter from "../../src/routes/index.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
+import TournamentService from "../../src/services/tournament.ts";
 import UserService from "../../src/services/user.ts";
 import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
@@ -53,6 +54,24 @@ describe("Tournament page", () => {
     assert.strictEqual(res.status, 200);
     assert.match(html, /Новая Лига/);
     assert.match(html, /<template id="select-form-template">/);
+    // на турнире есть зарегистрированные — блок «Игроки» на месте
+    assert.match(html, /id="player-table"/);
+  });
+
+  it("не должен показывать блок «Игроки», когда на турнире нет зарегистрированных игроков", async () => {
+    const tournamentService = new TournamentService();
+    const id = await tournamentService.create(
+        1, 1, 1, 1, "Тест без игроков",
+        "2026-01-01 00:00:00", "2026-01-02 00:00:00", "2026-01-03 00:00:00",
+        100, 1, "0", "100", null, 0,
+    );
+
+    const res = await fetch(`${base}tournament/${id}`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.doesNotMatch(html, /id="player-table"/);
+    assert.match(html, /id="registration"/); // регистрация остаётся — иначе некому добавить первого игрока
   });
 
   it("должен открыть не текущий турнир по ссылке", async () => {
