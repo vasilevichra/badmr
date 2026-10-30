@@ -165,7 +165,7 @@
             return `${startedAt.getDate()}.${startMonthNumStr}.${startedAt.getFullYear()} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr}.${endedAt.getFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
         }
         %>
-        <% const tournamentName = `Турнир: «${current_tournament.name}»` %>
+        <% const tournamentName = `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»` %>
 
         <% if (device === 'phone') { %>
             <div class="panel panel-default" style="font-size: 0.8rem;">
