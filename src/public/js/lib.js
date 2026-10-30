@@ -427,8 +427,11 @@ $(document).on('click', '.tournament-name-copy', function () {
   let text = String($(this).data('share'));
   const unitMillis = {d: 864e5, h: 36e5, m: 6e4, s: 1e3};
   const countdown = String($('#tournament-info time').not('.reg-end-since, .reg-end-since-badge').attr('datetime') || '');
-  const units = countdown.match(/\d+[dhms]/g) || [];
-  const millis = units.reduce((acc, u) => acc + parseInt(u, 10) * unitMillis[u.slice(-1)], 0);
+  // datetime у отсчёта перезаписывается плагином countDown в ISO 8601
+  // duration («P2DT23H25M8S»), пока не тикнуло — серверный формат
+  // («2d 23h 25m 8s»); парсим оба, регистр не важен
+  const units = countdown.match(/\d+[dhms]/gi) || [];
+  const millis = units.reduce((acc, u) => acc + parseInt(u, 10) * unitMillis[u.slice(-1).toLowerCase()], 0);
   const days = Math.floor(millis / 864e5);
   const regLeft = countdown
       ? (days > 0 ? ` (осталось: ${days}д)` : ' (сегодня)')
