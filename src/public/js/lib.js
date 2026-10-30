@@ -421,7 +421,15 @@ const copyToClipboard = (text, onDone) => {
 };
 
 $(document).on('click', '.tournament-name-copy', function () {
-  copyToClipboard(String($(this).data('name')), () => showToast('Название скопировано', 'success'));
+  // текст шеры собран в data-share; {REMAIN} — остаток регистрации,
+  // берётся из обратного отсчёта (старшая ненулевая единица: «2д», «5ч», «30м»)
+  let text = String($(this).data('share'));
+  const unitLabels = {d: 'д', h: 'ч', m: 'м'};
+  const units = String($('#tournament-info time').not('.reg-end-since, .reg-end-since-badge').attr('datetime') || '')
+      .match(/\d+[dhm]/g) || [];
+  const remain = units.map((u) => ({n: parseInt(u, 10), u: u.slice(-1)})).find((p) => p.n > 0);
+  text = text.replace('{REMAIN}', remain ? `${remain.n}${unitLabels[remain.u]}` : '');
+  copyToClipboard(text, () => showToast('Информация о турнире скопирована', 'success'));
 });
 
 $(document).on('click', '.coords-copy', function () {

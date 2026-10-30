@@ -179,15 +179,31 @@
                         <span class="list-group-item text-center"><%= current_tournament.address %></span>
                     <% } %>
                     <% if (current_tournament.chat) { %>
-                        <span class="list-group-item text-center"><i class="bi bi-chat-dots"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></span>
+                        <span class="list-group-item text-center"><i class="bi bi-chat-dots btn-xs"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></span>
                     <% } %>
                     <span class="list-group-item text-center"><i class="bi bi-people"></i> <%= registered_count %>/<%= settings.capacity %> | <i class="bi bi-journal-text"></i> <%- current_tournament.rules %> | <i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
                 </div>
             </div>
         <% } else { %>
+        <%# текст кнопки «поделиться»: остаток регистрации ({REMAIN}) подставляет
+            клиент при клике из обратного отсчёта (datetime атрибут <time>) %>
+        <% const shareRegStr = current_tournament.tournament_status_id === 1
+              ? `Регистрация до: ${regEndDateStr} (осталось: {REMAIN})`
+              : `Регистрация до: ${regEndDateStr} (закончилась)`; %>
+        <% const shareLines = [
+              `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»`,
+              `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
+              shareRegStr,
+              'Адрес:',
+              `${current_tournament.city}, ${current_tournament.address}`,
+           ];
+           if (current_tournament.map_url) { shareLines.push(current_tournament.map_url); }
+           if (current_tournament.latitude && current_tournament.longitude) { shareLines.push(`${current_tournament.latitude}, ${current_tournament.longitude}`); }
+           if (current_tournament.chat) { shareLines.push('', `Чат турнира: ${current_tournament.chat}`); }
+        %>
             <div class="col-6">
                 <div><%= tournamentName %>
-                    <button class="btn btn-xs bi-copy tournament-name-copy" data-name="<%= current_tournament.name %>" title="Скопировать название" aria-label="Скопировать название турнира"></button>
+                    <button class="btn btn-xs bi-share tournament-name-copy" data-share="<%= shareLines.join('\n') %>" title="Скопировать информацию о турнире" aria-label="Скопировать информацию о турнире"></button>
                 </div>
                 <div>Регистрация до: <%= regEndDateStr %><%- regEndUntilStr %></div>
                 <div>Дата: <%= getDateStr() %>

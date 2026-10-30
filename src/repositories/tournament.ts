@@ -96,10 +96,11 @@ class Tournament {
 
   getById(id: number) {
     return this.db.get(
-        `SELECT t.*, c.name AS city, g.city_id, g.latitude, g.longitude, g.address, g.map_url
+        `SELECT t.*, c.name AS city, g.city_id, g.latitude, g.longitude, g.address, g.map_url, tt.name AS type_name
          FROM tournament t
                   JOIN gym g on g.id = t.gym_id
                   JOIN city c ON c.id = g.city_id
+                  JOIN tournament_type tt ON tt.id = t.tournament_type_id
          WHERE t.id = ?`,
         [id]
     );
