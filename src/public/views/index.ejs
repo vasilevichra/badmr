@@ -197,6 +197,11 @@
             </div>
             <div class="col-6 justify-content-end align-items-end">
                 <div class="row text-start">
+                    <% if (current_tournament.chat) { %>
+                        <div class="text-end"><i class="bi bi-chat-dots"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></div>
+                    <% } %>
+                </div>
+                <div class="row text-start">
                     <% if (current_tournament.latitude && current_tournament.longitude) { %>
                         <div class="text-end"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
                             <button class="btn btn-xs bi-copy coords-copy" data-coords="<%= current_tournament.latitude %>, <%= current_tournament.longitude %>" title="Скопировать координаты" aria-label="Скопировать координаты"></button>
@@ -216,13 +221,6 @@
                             <span class="me-1"><i class="bi bi-people"></i> <%= registered_count %>/<%= settings.capacity %></span>
                             <span class="me-1"><i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
                             <%- current_tournament.rules %>
-                        </div>
-                    </div>
-                <% } %>
-                <% if (current_tournament.chat) { %>
-                    <div class="row text-start">
-                        <div class="col text-end">
-                            <i class="bi bi-chat-dots"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a>
                         </div>
                     </div>
                 <% } %>
