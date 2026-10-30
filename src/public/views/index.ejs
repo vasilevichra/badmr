@@ -169,19 +169,19 @@
 
         <% if (device === 'phone') { %>
             <div class="panel panel-default" style="font-size: 0.8rem;">
-                <div class="panel-heading text-center"><%= tournamentName %></div>
                 <div class="list-group">
+                    <span class="list-group-item text-center bg-body-tertiary"><%= tournamentName %></span>
                     <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge <%= tournamentFinished ? 'bg-secondary' : 'bg-badmr' %> float-start me-2"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
                     <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span></span>
                     <% if (current_tournament.map_url) { %>
-                        <span class="list-group-item text-center"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>
+                        <span class="list-group-item text-center text-truncate"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>
                     <% } else { %>
-                        <span class="list-group-item text-center"><%= current_tournament.address %></span>
+                        <span class="list-group-item text-center text-truncate"><%= current_tournament.address %></span>
                     <% } %>
                     <% if (current_tournament.chat) { %>
                         <span class="list-group-item text-center"><i class="bi bi-chat-dots btn-xs"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></span>
                     <% } %>
-                    <span class="list-group-item text-center"><i class="bi bi-people"></i> <%= registered_count %>/<%= settings.capacity %> | <i class="bi bi-journal-text"></i> <%- current_tournament.rules %> | <i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
+                    <span class="list-group-item text-center"><i class="bi bi-people"></i> <%= registered_count %>/<%= settings.capacity %><% if (current_tournament.rules) { %> | <i class="bi bi-journal-text"></i> <%- current_tournament.rules %><% } %> | <i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
                 </div>
             </div>
         <% } else { %>
