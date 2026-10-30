@@ -6,7 +6,18 @@
 -- Применяется после миграций мастера (src/bin/run-tests.ts) и в clean()
 -- (tests/helpers/migration.ts), т.к. clean() заново накатывает дамп.
 
--- «Шаг вперёд» и его данные не входят в тестовый фикстур
+-- «Шаг вперёд» и его данные не входят в тестовый фикстур. Порядок — от
+-- зависимых таблиц к турниру: живой дамп непредсказуемо обрастает данными
+-- текущего турнира (настройки, матчи, игры, команды), чистим всё каскадом.
+DELETE FROM rating WHERE match_id IN (SELECT id FROM match WHERE tournament_id > 4);
+DELETE FROM game WHERE match_id IN (SELECT id FROM match WHERE tournament_id > 4);
+DELETE FROM match WHERE tournament_id > 4;
+DELETE FROM game_110 WHERE match_110_id IN (SELECT id FROM match_110 WHERE tournament_id > 4);
+DELETE FROM team_order_110 WHERE team_id IN (SELECT id FROM team WHERE tournament_id > 4);
+DELETE FROM team_user WHERE team_id IN (SELECT id FROM team WHERE tournament_id > 4);
+DELETE FROM team WHERE tournament_id > 4;
+DELETE FROM match_110 WHERE tournament_id > 4;
+DELETE FROM tournament_settings WHERE tournament_id > 4;
 DELETE FROM tournament_user WHERE tournament_id > 4;
 DELETE FROM court WHERE tournament_id > 4;
 DELETE FROM tournament WHERE id > 4;
