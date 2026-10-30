@@ -421,14 +421,19 @@ const copyToClipboard = (text, onDone) => {
 };
 
 $(document).on('click', '.tournament-name-copy', function () {
-  // текст шеры собран в data-share; {REMAIN} — остаток регистрации,
-  // берётся из обратного отсчёта (старшая ненулевая единица: «2д», «5ч», «30м»)
+  // текст шеры собран в data-share; {REG_LEFT} — скобка про регистрацию:
+  // есть отсчёт (статус «Регистрация») → остаток в полных сутках или
+  // «(сегодня)», если меньше суток; отсчёта нет → «(закончилась)»
   let text = String($(this).data('share'));
-  const unitLabels = {d: 'д', h: 'ч', m: 'м'};
-  const units = String($('#tournament-info time').not('.reg-end-since, .reg-end-since-badge').attr('datetime') || '')
-      .match(/\d+[dhm]/g) || [];
-  const remain = units.map((u) => ({n: parseInt(u, 10), u: u.slice(-1)})).find((p) => p.n > 0);
-  text = text.replace('{REMAIN}', remain ? `${remain.n}${unitLabels[remain.u]}` : '');
+  const unitMillis = {d: 864e5, h: 36e5, m: 6e4, s: 1e3};
+  const countdown = String($('#tournament-info time').not('.reg-end-since, .reg-end-since-badge').attr('datetime') || '');
+  const units = countdown.match(/\d+[dhms]/g) || [];
+  const millis = units.reduce((acc, u) => acc + parseInt(u, 10) * unitMillis[u.slice(-1)], 0);
+  const days = Math.floor(millis / 864e5);
+  const regLeft = countdown
+      ? (days > 0 ? ` (осталось: ${days}д)` : ' (сегодня)')
+      : ' (закончилась)';
+  text = text.replace('{REG_LEFT}', regLeft);
   copyToClipboard(text, () => showToast('Информация о турнире скопирована', 'success'));
 });
 

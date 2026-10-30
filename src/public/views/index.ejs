@@ -187,9 +187,7 @@
         <% } else { %>
         <%# текст кнопки «поделиться»: остаток регистрации ({REMAIN}) подставляет
             клиент при клике из обратного отсчёта (datetime атрибут <time>) %>
-        <% const shareRegStr = current_tournament.tournament_status_id === 1
-              ? `Регистрация до: ${regEndDateStr} (осталось: {REMAIN})`
-              : `Регистрация до: ${regEndDateStr} (закончилась)`; %>
+        <% const shareRegStr = `Регистрация до: ${regEndDateStr}{REG_LEFT}`; %>
         <% const shareLines = [
               `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»`,
               `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
