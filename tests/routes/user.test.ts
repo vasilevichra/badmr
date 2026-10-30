@@ -105,7 +105,7 @@ describe("User routes", () => {
       assert.strictEqual(fresh.find((u) => u.id === u1)!.calibrating, 0);
       assert.strictEqual(fresh.find((u) => u.id === u1)!.calibration_series, 0);
 
-      // протухший рейтинг: матчу больше calibration_fresh_days —
+      // протухший рейтинг: матчу больше calibration_days —
       // калибровка впереди, серия начнётся заново с нуля (красная точка)
       db.exec(`UPDATE match SET created_at = datetime('now', '-70 days') WHERE id = ${match.id}`);
       const stale = await (await fetch(`${base}/`)).json() as Record<string, number>[];
