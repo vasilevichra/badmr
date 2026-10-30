@@ -332,15 +332,27 @@ class User {
     // только участники текущего турнира и только с устаревшим кешем
     // (crawl_cache_m минут) — свежие данные уже в user_lab
     const users = await this.user.getLabCrawlUsers(Number(settingsService.get('crawl_cache_m')));
-    const responses = await Bluebird.map(users, async user => {
-      const response = await this.labSearch(user.name, user.city, user.user_id, user.site_id);
+    const found: LabPlayer[] = [];
+    for (const [index, user] of users.entries()) {
+      try {
+        const player = await this.searchLab(user.name, user.city, user.user_id, user.site_id);
+        if (player) {
+          found.push(player);
+        }
+      } catch {
+        // сайт недоступен: остальные упали бы с той же сетевой ошибкой —
+        // обход прекращается, попытка отмечается сразу у всех оставшихся,
+        // иначе недоступный сайт долбился бы при каждой загрузке страницы
+        for (const rest of users.slice(index)) {
+          await this.user.touchLabCrawled(rest.user_id);
+        }
+        break;
+      }
       // время обхода отмечается даже при пустом результате — иначе
       // ненайденный игрок запрашивался бы при каждой загрузке страницы
       await this.user.touchLabCrawled(user.user_id);
-      return response;
-    }, {concurrency: 1});
-    const players = responses.filter(r => r);
-    return Bluebird.all(players.map(p => this.user.setLabInfo(p!.user_id, p!.id, p!.login ?? '', p!.name, p!.r1 === null ? '' : String(p!.r1), p!.r2 === null ? '' : String(p!.r2), p!.img ?? '', p!.city ?? '', p!.club ?? '', p!.year === null ? '' : String(p!.year))));
+    }
+    return Bluebird.all(found.map(p => this.user.setLabInfo(p.user_id, p.id, p.login ?? '', p.name, p.r1 === null ? '' : String(p.r1), p.r2 === null ? '' : String(p.r2), p.img ?? '', p.city ?? '', p.club ?? '', p.year === null ? '' : String(p.year))));
   };
 }
 

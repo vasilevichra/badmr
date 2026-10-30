@@ -1036,5 +1036,33 @@ describe("User", () => {
         globalThis.fetch = realFetch;
       }
     });
+
+    it("должен прекратить обход и отметить оставшихся после первой сетевой ошибки", async () => {
+      await new SettingsService().set("crawl_min_ms", "0");
+      await new SettingsService().set("crawl_max_ms", "0");
+      const realFetch = globalThis.fetch;
+      let attempts = 0;
+      globalThis.fetch = (async () => {
+        attempts++;
+        throw new TypeError('fetch failed');
+      }) as unknown as typeof fetch;
+
+      try {
+        const ids = await seedUsers();
+
+        await userService.labCrawl();
+
+        // 3 повтора первого игрока — остальных не запрашиваем: сайт недоступен,
+        // каждый следующий упал бы с той же ошибкой
+        assert.strictEqual(attempts, 3);
+        for (const id of ids) {
+          const row = await db.get<{ crawled_at: string | null }>(
+            "SELECT crawled_at FROM user_lab WHERE user_id = ?", [id]);
+          assert.ok(row!.crawled_at, `игрок ${id} не отмечен`);
+        }
+      } finally {
+        globalThis.fetch = realFetch;
+      }
+    });
   });
 });
