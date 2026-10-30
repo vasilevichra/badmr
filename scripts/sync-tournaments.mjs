@@ -21,12 +21,14 @@ const DEV_DB = path.join(ROOT, ".data", "badmr.sqlite3");
 const DUMP = path.join(ROOT, "migrations", "05-specific-up.sql");
 const REMOTE = "box:/home/r/badmr/.data/badmr.sqlite3";
 
-/** Таблицы, переносимые с прода (список владельца проекта). */
+/** Таблицы, переносимые с прода (список владельца проекта).
+ *  team_order_110 не переносится: живые данные нарушают CHECK (ms1 != ms2,
+ *  ws1 != ws2), с ними дамп перестаёт накатываться на чистую базу. */
 const SYNC_TABLES = [
   "user", "user_lab", "tournament", "tournament_settings", "gym",
   "user_club_gym", "court", "group", "user_pic", "user_club",
   "tournament_user", "match", "match_110", "game", "game_100", "game_type",
-  "rating", "team_color", "team", "team_user", "team_order_110",
+  "rating", "team_color", "team", "team_user",
 ];
 
 /** Порядок секций дампа 05-specific: сначала то, что переносится,
@@ -35,7 +37,7 @@ const DUMP_TABLES = [
   "unit", "user_club", "gym", "user_club_gym", "tournament",
   "tournament_settings", "tournament_user", "court", "user", "user_pic",
   "user_id_type", "user_id", "user_sizes", "match", "game", "game_100",
-  "rating", "team", "team_user", "match_110", "team_order_110", "game_110",
+  "rating", "team", "team_user", "match_110", "game_110",
   "user_lab",
 ];
 

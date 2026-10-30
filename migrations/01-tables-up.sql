@@ -330,7 +330,13 @@ CREATE TABLE team_order_110
     wd22    INTEGER NULL CONSTRAINT wd22 REFERENCES team_user,
     xd21    INTEGER NULL CONSTRAINT xd21 REFERENCES team_user,
     xd22    INTEGER NULL CONSTRAINT xd22 REFERENCES team_user,
-    UNIQUE (team_id)
+    UNIQUE (team_id),
+    CHECK (md11 != md12),
+    CHECK (wd11 != wd12),
+    CHECK (md21 != md22),
+    CHECK (wd21 != wd22),
+    CHECK (ms1 != ms2),
+    CHECK (ws1 != ws2)
 );
 
 -- перекрёстные ограничения значений defaults (CHECK не видит другие строки):
