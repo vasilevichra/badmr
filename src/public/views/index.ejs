@@ -170,7 +170,7 @@
         <% if (device === 'phone') { %>
             <div class="panel panel-default" style="font-size: 0.8rem;">
                 <div class="list-group">
-                    <span class="list-group-item text-center bg-body-tertiary"><%= tournamentName %></span>
+                    <span class="list-group-item text-center bg-body-tertiary">«<%= current_tournament.name %> / <%= current_tournament.type_name %>»</span>
                     <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge <%= tournamentFinished ? 'bg-secondary' : 'bg-badmr' %> float-start me-2"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
                     <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span></span>
                     <% if (current_tournament.map_url) { %>
