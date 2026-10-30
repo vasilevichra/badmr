@@ -85,6 +85,14 @@ class User {
   }
 
   findBy(lastname: string, firstname: string, patronymic: string) {
+    // сравнение без учёта замены ё/е: «Соловьёва» должна находиться
+    // и по запросу «Соловьева», и наоборот; нормализуем обе стороны к «е»
+    const yo = (expr: string) => `REPLACE(REPLACE(${expr}, 'Ё', 'Е'), 'ё', 'е')`;
+    const norm = (s: string) => s.replaceAll('Ё', 'Е').replaceAll('ё', 'е');
+    lastname = norm(lastname);
+    firstname = norm(firstname);
+    patronymic = norm(patronymic);
+
     if (patronymic) {
       return this.db.all(
           `SELECT u.id, u.lastname, u.firstname, u.patronymic, u.sex, coalesce(up.pic, ul.img) AS pic, c.name AS city
@@ -92,9 +100,9 @@ class User {
                     JOIN city c on c.id = u.city_id
                     LEFT OUTER JOIN user_pic up ON u.id = up.user_id
                     LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
-           WHERE u.lastname = ?
-             AND u.firstname = ?
-             AND u.patronymic LIKE ?`,
+           WHERE ${yo('u.lastname')} = ?
+             AND ${yo('u.firstname')} = ?
+             AND ${yo('u.patronymic')} LIKE ?`,
           [lastname, firstname, patronymic + '%']
       );
     }
@@ -106,8 +114,8 @@ class User {
                     JOIN city c on c.id = u.city_id
                     LEFT OUTER JOIN user_pic up ON u.id = up.user_id
                     LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
-           WHERE u.lastname = ?
-             AND u.firstname LIKE ?`,
+           WHERE ${yo('u.lastname')} = ?
+             AND ${yo('u.firstname')} LIKE ?`,
           [lastname, firstname + '%']
       );
     }
@@ -118,7 +126,7 @@ class User {
                   JOIN city c on c.id = u.city_id
                   LEFT OUTER JOIN user_pic up ON u.id = up.user_id
                   LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
-         WHERE u.lastname LIKE ?`,
+         WHERE ${yo('u.lastname')} LIKE ?`,
         [lastname + '%']
     );
   }

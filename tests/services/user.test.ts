@@ -337,6 +337,38 @@ describe("User", () => {
       const found = await userService.findBy("Фамилия", "", "") as unknown as FoundRow[];
       assert.strictEqual(found.length, 4);
     });
+
+    it("должен найти по фамилии с ё в базе при запросе с е", async () => {
+      const { id } = await userService.create("Соловьёва", "Виктория", "", 500, 1, 1, "1990-01-01");
+
+      const found = await userService.findBy("Соловьева", "", "") as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
+
+    it("должен найти по фамилии с е в базе при запросе с ё", async () => {
+      const { id } = await userService.create("Соловьева", "Виктория", "", 500, 1, 1, "1990-01-01");
+
+      const found = await userService.findBy("Соловьёва", "", "") as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
+
+    it("должен найти по фамилии с ё при частичном запросе", async () => {
+      const { id } = await userService.create("Соловьёва", "Виктория", "", 500, 1, 1, "1990-01-01");
+
+      const found = await userService.findBy("Соловь", "", "") as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
+
+    it("должен найти по имени с ё при запросе с е", async () => {
+      const { id } = await userService.create("Фамилия1", "Пётр", "", 500, 1, 1, "1990-01-01");
+
+      const found = await userService.findBy("Фамилия1", "Петр", "") as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
   });
 
   describe("registerAll, registerByIds, isRegistered", () => {
