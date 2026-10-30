@@ -13,7 +13,7 @@
 -- Те же параметры читает фоновый пересчёт рейтинга (src/services/rating.ts).
 --
 -- Калибровка рейтинга: игроки с неактуальным рейтингом (последняя строка
--- старше calibration_days от даты матча, отсутствует или является
+-- старше calibration_fresh_days от даты матча, отсутствует или является
 -- сидом — ручной установкой без матча) начинают серию из
 -- calibration_matches матчей с повышенным K. Множитель линейно затухает
 -- от calibration_boost до 1, дельта ограничена calibration_cap. Состояние
@@ -44,7 +44,7 @@ BEGIN
         SELECT (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_matches')    AS c,
                (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_boost')      AS boost,
                (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_cap')        AS cap,
-               (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_days') AS fresh,
+               (SELECT cast(value AS REAL) FROM settings WHERE name = 'calibration_fresh_days') AS fresh,
                -- параметры формулы дельты (см. settings rating_diff_limit/divisor);
                -- coalesce — для баз без сидов этих настроек
                coalesce((SELECT cast(value AS REAL) FROM settings WHERE name = 'rating_diff_limit'), 100.0)   AS lim,

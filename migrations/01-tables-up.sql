@@ -81,7 +81,7 @@ CREATE TABLE defaults
 (
     id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     name        TEXT    NOT NULL UNIQUE
-                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'fifty', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_days', 'rating_diff_limit', 'rating_diff_divisor', 'delta_auto', 'rematch_window', 'delta_auto_window', 'delta_auto_lower', 'delta_auto_upper')),
+                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'fifty', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_fresh_days', 'rating_diff_limit', 'rating_diff_divisor', 'delta_auto', 'rematch_window', 'delta_auto_window', 'delta_auto_lower', 'delta_auto_upper')),
     value       TEXT    NOT NULL,
     description TEXT    NOT NULL,
     -- все настройки хранят неотрицательные целые

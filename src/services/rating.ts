@@ -94,7 +94,7 @@ class Rating {
       c: Number(settingsService.get('calibration_matches')),
       boost: Number(settingsService.get('calibration_boost')),
       cap: Number(settingsService.get('calibration_cap')),
-      fresh: Number(settingsService.get('calibration_days')),
+      fresh: Number(settingsService.get('calibration_fresh_days')),
     };
   }
 

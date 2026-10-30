@@ -460,7 +460,7 @@ class User {
    *  stale — серия началась с неактуального рейтинга, series — номер матча в серии;
    *  is_seed — последняя строка является сидом (ручная установка без матча);
    *  outdated — рейтинг неактуален: сид или дата последнего матча
-   *  старше calibration_days. Свежая строка с stale=0 — актуальный рейтинг. */
+   *  старше calibration_fresh_days. Свежая строка с stale=0 — актуальный рейтинг. */
   getCalibration(id: number) {
     return this.db.get(
         `SELECT r.stale,
@@ -470,7 +470,7 @@ class User {
                      WHEN julianday('now') - julianday(m.created_at) >
                           (SELECT CAST(value AS REAL)
                            FROM settings
-                           WHERE name = 'calibration_days')
+                           WHERE name = 'calibration_fresh_days')
                      THEN 1 ELSE 0 END AS outdated
          FROM rating r
                   LEFT JOIN match m ON m.id = r.match_id

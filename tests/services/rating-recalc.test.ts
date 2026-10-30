@@ -249,7 +249,7 @@ describe("Rating recalc", () => {
       await settingsService.set("calibration_matches", "3");
       await settingsService.set("calibration_boost", "3");
       await settingsService.set("calibration_cap", "20");
-      await settingsService.set("calibration_days", "60");
+      await settingsService.set("calibration_fresh_days", "60");
 
       const ids = await seedCoreUsers();
       const extra = await seedExtraUsers();

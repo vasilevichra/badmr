@@ -137,7 +137,7 @@ FROM (SELECT u.id                                                       AS id,
              max(m.id)                                                  AS last_match_id,
              -- игрок под критериями калибровки: рейтинга нет,
              -- он сид (ручная установка без матча), начата серия (stale = 1)
-             -- или рейтинг не обновлялся дольше calibration_days;
+             -- или рейтинг не обновлялся дольше calibration_fresh_days;
              -- настройки калибровки — с приоритетом override'а турнира строки
              CASE WHEN coalesce((SELECT ts.value
                                  FROM tournament_settings ts
@@ -150,9 +150,9 @@ FROM (SELECT u.id                                                       AS id,
                             OR julianday('now') - julianday(rm.created_at) >
                                coalesce((SELECT ts.value
                                          FROM tournament_settings ts
-                                                  JOIN defaults _d ON ts.defaults_id = _d.id AND _d.name = 'calibration_days'
+                                                  JOIN defaults _d ON ts.defaults_id = _d.id AND _d.name = 'calibration_fresh_days'
                                          WHERE ts.tournament_id = t.id),
-                                        (SELECT value FROM defaults WHERE name = 'calibration_days')) + 0)
+                                        (SELECT value FROM defaults WHERE name = 'calibration_fresh_days')) + 0)
                   THEN 1 ELSE 0 END                                     AS calibrating,
              -- сыграно матчей в текущей серии калибровки; у сида и протухшего
              -- серия начнётся заново — отображается 0
@@ -160,9 +160,9 @@ FROM (SELECT u.id                                                       AS id,
                        AND julianday('now') - julianday(rm.created_at) <=
                            coalesce((SELECT ts.value
                                      FROM tournament_settings ts
-                                              JOIN defaults _d ON ts.defaults_id = _d.id AND _d.name = 'calibration_days'
+                                              JOIN defaults _d ON ts.defaults_id = _d.id AND _d.name = 'calibration_fresh_days'
                                      WHERE ts.tournament_id = t.id),
-                                    (SELECT value FROM defaults WHERE name = 'calibration_days')) + 0
+                                    (SELECT value FROM defaults WHERE name = 'calibration_fresh_days')) + 0
                   THEN r.series ELSE 0 END                              AS calibration_series,
              t.id                                                       AS tournament_id
       FROM user u
