@@ -190,8 +190,8 @@
         <% const shareRegStr = `Регистрация до: ${regEndDateStr}{REG_LEFT}`; %>
         <% const shareLines = [
               `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»`,
-              `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
               shareRegStr,
+              `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
               'Адрес:',
               `${current_tournament.city}, ${current_tournament.address}`,
            ];
@@ -212,7 +212,7 @@
             <div class="col-6 justify-content-end align-items-end">
                 <div class="row text-start">
                     <% if (current_tournament.chat) { %>
-                        <div class="text-end"><i class="bi bi-chat-dots"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></div>
+                        <div class="text-end"><i class="bi bi-chat-dots btn-xs"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></div>
                     <% } %>
                 </div>
                 <div class="row text-start">
