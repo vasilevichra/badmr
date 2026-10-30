@@ -85,7 +85,31 @@ class User {
   select = (city_id: number) => this.user.select(city_id);
   getArchived = (tournamentId?: number) => this.user.getArchived(tournamentId);
   getById = (id: number) => this.user.getById(id);
-  findBy = (lastname: string, firstname: string, patronymic: string) => this.user.findBy(lastname, firstname, patronymic);
+  /** Поиск при регистрации.
+   *
+   *  city_id — город проведения турнира:
+   *  - отчество не введено и найдено несколько вариантов → оставляем
+   *    совпадающих по городу (если такие есть);
+   *  - отчество введено, но точных совпадений нет → ищем по фамилии,
+   *    имени и городу (отчество отбрасываем). */
+  findBy = async (lastname: string, firstname: string, patronymic: string, city_id?: number) => {
+    if (patronymic) {
+      const exact = await this.user.findBy(lastname, firstname, patronymic);
+      if (exact.length > 0 || !city_id) {
+        return exact;
+      }
+      return this.user.findBy(lastname, firstname, '', city_id);
+    }
+
+    const found = await this.user.findBy(lastname, firstname, '');
+    if (found.length > 1 && city_id) {
+      const inCity = await this.user.findBy(lastname, firstname, '', city_id);
+      if (inCity.length > 0) {
+        return inCity;
+      }
+    }
+    return found;
+  };
   registerAll = () => this.user.registerAll();
   enable = (ids: number[]) => this.user.enable(ids);
   disable = (ids: number[]) => this.user.disable(ids);

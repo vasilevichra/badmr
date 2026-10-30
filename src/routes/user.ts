@@ -3,8 +3,10 @@ const router = Express.Router();
 // const csrf = require('csurf');
 import { ensureLoggedIn } from 'connect-ensure-login';
 import UserService from '../services/user.ts';
+import TournamentService from '../services/tournament.ts';
 import requestedTournament from '../tournament-request.ts';
 const userService = new UserService();
+const tournamentService = new TournamentService();
 
 // const csrfProtection = csrf({ cookie: true });
 // const parseForm = Express.urlencoded({ extended: false });
@@ -16,7 +18,11 @@ router.post('/create', (req, res) => {
 });
 
 router.get('/find', (req, res) => {
-  res.promise(userService.findBy(String(req.query.lastname), String(req.query.firstname), String(req.query.patronymic)));
+  // город проведения турнира — для приоритезации вариантов при поиске
+  const tid = requestedTournament(req);
+  const tournament = tid ? tournamentService.getById(tid) : tournamentService.getCurrent();
+  const city_id = (tournament as { city_id?: number } | undefined)?.city_id;
+  res.promise(userService.findBy(String(req.query.lastname), String(req.query.firstname), String(req.query.patronymic), city_id));
 });
 
 router.post('/enable/:ids', ensureLoggedIn(), (req, res) => {

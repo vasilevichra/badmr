@@ -86,7 +86,7 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
 
       // поиск зарегистрированных — асинхронно (sync-запрос блокировал ввод)
       const self = this;
-      $.getJSON(`/api/users/find?lastname=${ln}&firstname=${fn}&patronymic=${pn}`, (users) => {
+      $.getJSON(`/api/users/find?lastname=${ln}&firstname=${fn}&patronymic=${pn}&tournament=${$('body').data('tournament')}`, (users) => {
       if (users.length >= 1) {
         if (users.length === 1) {
           const u = users[0];

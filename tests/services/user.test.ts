@@ -369,6 +369,55 @@ describe("User", () => {
       assert.strictEqual(found.length, 1);
       assert.strictEqual(found[0].id, id);
     });
+
+    it("без отчества при нескольких вариантах должен вернуть совпадающих по городу", async () => {
+      const { id } = await userService.create("Соловьева", "Виктория", "", 500, 1, 1, "1990-01-01");
+      await userService.create("Соловьева", "Виктория", "", 500, 0, 2, "1990-01-01");
+
+      const found = await userService.findBy("Соловьева", "Виктория", "", 1) as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
+
+    it("без отчества, если в этом городе нет совпадений, должен вернуть все варианты", async () => {
+      await userService.create("Соловьева", "Виктория", "", 500, 1, 2, "1990-01-01");
+      await userService.create("Соловьева", "Виктория", "", 500, 0, 2, "1990-01-01");
+
+      const found = await userService.findBy("Соловьева", "Виктория", "", 1) as unknown as FoundRow[];
+      assert.strictEqual(found.length, 2);
+    });
+
+    it("без отчества единственный вариант должен вернуть без учёта города", async () => {
+      const { id } = await userService.create("Соловьева", "Виктория", "", 500, 1, 2, "1990-01-01");
+
+      const found = await userService.findBy("Соловьева", "Виктория", "", 1) as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
+
+    it("с отчеством при пустом результате должен искать по фамилии, имени и городу", async () => {
+      const { id } = await userService.create("Соловьева", "Виктория", "Геннадьевна", 500, 1, 2, "1990-01-01");
+
+      const found = await userService.findBy("Соловьева", "Виктория", "Ивановна", 2) as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
+
+    it("с отчеством точное совпадение должно иметь приоритет над городом", async () => {
+      const { id } = await userService.create("Соловьева", "Виктория", "Геннадьевна", 500, 1, 2, "1990-01-01");
+      await userService.create("Соловьева", "Виктория", "", 500, 0, 1, "1990-01-01");
+
+      const found = await userService.findBy("Соловьева", "Виктория", "Геннадьевна", 1) as unknown as FoundRow[];
+      assert.strictEqual(found.length, 1);
+      assert.strictEqual(found[0].id, id);
+    });
+
+    it("с отчеством без города fallback не должен выполняться", async () => {
+      await userService.create("Соловьева", "Виктория", "Геннадьевна", 500, 1, 2, "1990-01-01");
+
+      const found = await userService.findBy("Соловьева", "Виктория", "Ивановна") as unknown as FoundRow[];
+      assert.strictEqual(found.length, 0);
+    });
   });
 
   describe("registerAll, registerByIds, isRegistered", () => {

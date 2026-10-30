@@ -84,7 +84,7 @@ class User {
     );
   }
 
-  findBy(lastname: string, firstname: string, patronymic: string) {
+  findBy(lastname: string, firstname: string, patronymic: string, city_id?: number) {
     // сравнение без учёта замены ё/е: «Соловьёва» должна находиться
     // и по запросу «Соловьева», и наоборот; нормализуем обе стороны к «е»
     const yo = (expr: string) => `REPLACE(REPLACE(${expr}, 'Ё', 'Е'), 'ё', 'е')`;
@@ -92,6 +92,10 @@ class User {
     lastname = norm(lastname);
     firstname = norm(firstname);
     patronymic = norm(patronymic);
+
+    // необязательный фильтр по городу пользователя (город проведения турнира)
+    const cityFilter = city_id ? ' AND u.city_id = ?' : '';
+    const cityParams = city_id ? [city_id] : [];
 
     if (patronymic) {
       return this.db.all(
@@ -102,8 +106,8 @@ class User {
                     LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
            WHERE ${yo('u.lastname')} = ?
              AND ${yo('u.firstname')} = ?
-             AND ${yo('u.patronymic')} LIKE ?`,
-          [lastname, firstname, patronymic + '%']
+             AND ${yo('u.patronymic')} LIKE ?${cityFilter}`,
+          [lastname, firstname, patronymic + '%', ...cityParams]
       );
     }
 
@@ -115,8 +119,8 @@ class User {
                     LEFT OUTER JOIN user_pic up ON u.id = up.user_id
                     LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
            WHERE ${yo('u.lastname')} = ?
-             AND ${yo('u.firstname')} LIKE ?`,
-          [lastname, firstname + '%']
+             AND ${yo('u.firstname')} LIKE ?${cityFilter}`,
+          [lastname, firstname + '%', ...cityParams]
       );
     }
 
@@ -126,8 +130,8 @@ class User {
                   JOIN city c on c.id = u.city_id
                   LEFT OUTER JOIN user_pic up ON u.id = up.user_id
                   LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
-         WHERE ${yo('u.lastname')} LIKE ?`,
-        [lastname + '%']
+         WHERE ${yo('u.lastname')} LIKE ?${cityFilter}`,
+        [lastname + '%', ...cityParams]
     );
   }
 
