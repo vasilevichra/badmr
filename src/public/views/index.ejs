@@ -203,8 +203,7 @@
                 </div>
                 <div class="row text-start">
                     <% if (current_tournament.latitude && current_tournament.longitude) { %>
-                        <div class="text-end"><%= current_tournament.latitude %>, <%= current_tournament.longitude %>
-                            <button class="btn btn-xs bi-copy coords-copy" data-coords="<%= current_tournament.latitude %>, <%= current_tournament.longitude %>" title="Скопировать координаты" aria-label="Скопировать координаты"></button>
+                        <div class="text-end"><button class="btn btn-xs bi-copy coords-copy" data-coords="<%= current_tournament.latitude %>, <%= current_tournament.longitude %>" title="Скопировать координаты" aria-label="Скопировать координаты"></button> <%= current_tournament.latitude %>, <%= current_tournament.longitude %>
                         </div>
                     <% } %>
                 </div>
