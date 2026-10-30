@@ -180,17 +180,17 @@ CREATE TABLE user_lab
 (
     id         INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     user_id    INTEGER NOT NULL CONSTRAINT user REFERENCES user,
-    site_id    INTEGER NOT NULL,
+    site_id    INTEGER,
     site_login TEXT,
     site_name  TEXT,
     rating_1   INTEGER,
-    rating_2   INTEGER NOT NULL,
+    rating_2   INTEGER,
     img        TEXT,
     city       TEXT,
     club       TEXT,
     year       INTEGER,
     crawled_at TEXT,
-    UNIQUE (user_id, site_id)
+    UNIQUE (user_id)
 );
 
 CREATE TABLE tournament_user

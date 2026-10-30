@@ -849,6 +849,20 @@ describe("User", () => {
       assert.strictEqual(await userService.labSearch("Иванов", null, 7), undefined);
     });
 
+    it("должен вернуть undefined без ошибки когда сайт недоступен (fetch failed)", async () => {
+      // сайт забанил IP: соединение отбивается на уровне TCP, fetch бросает TypeError
+      const realFetch = globalThis.fetch;
+      globalThis.fetch = (async () => {
+        throw new TypeError('fetch failed');
+      }) as unknown as typeof fetch;
+
+      try {
+        assert.strictEqual(await userService.labSearch("Иванов", null, 7), undefined);
+      } finally {
+        globalThis.fetch = realFetch;
+      }
+    });
+
     it("должен повторить поиск по фамилии и имени когда полное ФИО не найдено", async () => {
       mockFetch(noRows, playerPage(), {"Иванов Иван": siteRow()});
 
@@ -999,6 +1013,28 @@ describe("User", () => {
 
       const elapsed = Date.now() - started;
       assert.ok(elapsed >= 950, `labSearch занял ${elapsed} мс — пауза перед запросом страницы игрока не выдерживается`);
+    });
+
+    it("должен завершиться без ошибки и отметить время обхода когда сайт недоступен (fetch failed)", async () => {
+      await new SettingsService().set("crawl_min_ms", "0");
+      await new SettingsService().set("crawl_max_ms", "0");
+      const realFetch = globalThis.fetch;
+      globalThis.fetch = (async () => {
+        throw new TypeError('fetch failed');
+      }) as unknown as typeof fetch;
+
+      try {
+        const ids = await seedUsers();
+
+        await userService.labCrawl();
+
+        // попытки отмечаются — недоступный сайт не долбится при каждой загрузке страницы
+        const row = await db.get<{ crawled_at: string | null }>(
+          "SELECT crawled_at FROM user_lab WHERE user_id = ?", [ids[0]]);
+        assert.ok(row!.crawled_at);
+      } finally {
+        globalThis.fetch = realFetch;
+      }
     });
   });
 });

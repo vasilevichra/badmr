@@ -214,9 +214,20 @@ class User {
    * @param city Город для уточнения неуникальных совпадений.
    * @param user_id Id пользователя в приложении.
    * @param site_id Привязка к профилю badminton4u.ru, если известна.
-   * @returns Данные игрока либо undefined, если игрок не найден или не уникален.
+   * @returns Данные игрока либо undefined, если игрок не найден, не уникален или сайт недоступен.
    */
   async labSearch(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabPlayer | undefined> {
+    // недоступный сайт (бан IP, таймаут, сброс соединения) — не ошибка для
+    // вызывающих: тихо считаем игрока ненайденным, а время попытки
+    // отмечается в labCrawl, чтобы не долбить сайт при каждой загрузке
+    try {
+      return await this.searchLab(name, city, user_id, site_id);
+    } catch {
+      return undefined;
+    }
+  }
+
+  private async searchLab(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabPlayer | undefined> {
     // пауза перед каждым запросом, чтобы не походить на бота:
     // случайное значение между crawl_min_ms и crawl_max_ms (настройки)
     const pause = (base = 0) => {

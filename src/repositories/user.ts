@@ -512,10 +512,13 @@ class User {
     );
   }
 
-  /** Отметка времени последней попытки обхода игрока на badminton4u.ru. */
+  /** Отметка времени последней попытки обхода игрока на badminton4u.ru.
+   *  Строка заводится даже для ещё не найденного на сайте игрока — иначе
+   *  он запрашивался бы при каждой загрузке страницы. */
   touchLabCrawled(user_id: number) {
     return this.db.run(
-        `UPDATE user_lab SET crawled_at = datetime('now') WHERE user_id = ?`,
+        `INSERT INTO user_lab (user_id, crawled_at) VALUES (?, datetime('now'))
+         ON CONFLICT (user_id) DO UPDATE SET crawled_at = datetime('now')`,
         [user_id]
     );
   }
@@ -523,7 +526,7 @@ class User {
   setLabInfo(user_id: number, site_id: number, site_login: string, site_name: string, rating_1: string, rating_2: string, img: string, city: string, club: string, year: string) {    return this.db.run(
         `INSERT INTO user_lab (user_id, site_id, site_login, site_name, rating_1, rating_2, img, city, club, year, crawled_at)
          VALUES ($user_id, $site_id, $site_login, $site_name, $rating_1, $rating_2, $img, $city, $club, $year, datetime('now'))
-         ON CONFLICT DO UPDATE SET site_id    = $site_id,
+         ON CONFLICT (user_id) DO UPDATE SET site_id    = $site_id,
                                    site_login = $site_login,
                                    site_name  = $site_name,
                                    rating_1   = $rating_1,
