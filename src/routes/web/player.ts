@@ -23,7 +23,7 @@ import share from '../../share.cjs';
 router.get('/:id', (req, res) => {
   const userId = Number(req.params.id);
   // личный просмотр: матчи карточки — по турниру из ?tournament=<id>
-  // (ссылки вида /tournament/3?player=1), без параметра — по глобальному current
+  // (ссылки вида /t/3?player=1), без параметра — по глобальному current
   const tournamentId = requestedTournament(req);
   // номинации пользователя — по текущему турниру «Новая Лига»
   const tournament = tournamentService.getCurrent() as { id: number } | undefined;

@@ -44,11 +44,18 @@ describe("Tournament page", () => {
     const res = await fetch(base, {redirect: "manual"});
 
     assert.strictEqual(res.status, 302);
-    assert.strictEqual(res.headers.get("location"), "/tournament/4");
+    assert.strictEqual(res.headers.get("location"), "/t/4");
+  });
+
+  it("должен перенаправить старую ссылку /tournament/:id на /t/:id", async () => {
+    const res = await fetch(`${base}tournament/4`, {redirect: "manual"});
+
+    assert.strictEqual(res.status, 301);
+    assert.strictEqual(res.headers.get("location"), "/t/4");
   });
 
   it("должен открыть турнир по id из адресной строки", async () => {
-    const res = await fetch(`${base}tournament/4`);
+    const res = await fetch(`${base}t/4`);
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
@@ -66,7 +73,7 @@ describe("Tournament page", () => {
         100, 1, "0", "100", null, 0,
     );
 
-    const res = await fetch(`${base}tournament/${id}`);
+    const res = await fetch(`${base}t/${id}`);
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
@@ -76,7 +83,7 @@ describe("Tournament page", () => {
 
   it("должен открыть не текущий турнир по ссылке", async () => {
     // турнир 3 «ДЗР-Д» — тип «Рейтинг», не текущий
-    const res = await fetch(`${base}tournament/3`);
+    const res = await fetch(`${base}t/3`);
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
@@ -87,13 +94,13 @@ describe("Tournament page", () => {
 
   it("должен открыть турнир типа 110 по ссылке", async () => {
     // турнир 2 «110-1» — тип «110»
-    const res = await fetch(`${base}tournament/2`);
+    const res = await fetch(`${base}t/2`);
 
     assert.strictEqual(res.status, 200);
   });
 
   it("должен отдать 404 для неизвестного турнира", async () => {
-    const res = await fetch(`${base}tournament/999`);
+    const res = await fetch(`${base}t/999`);
     const html = await res.text();
 
     assert.strictEqual(res.status, 404);
@@ -143,7 +150,7 @@ describe("Время розыгрыша в футере", () => {
     db.exec(`UPDATE match SET created_at = '2026-01-01 10:00:00' WHERE id = ${a}`);
     db.exec(`UPDATE match SET created_at = '2026-01-01 12:00:00', tournament_id = 1 WHERE id = ${b}`);
 
-    const res = await fetch(`${base}tournament/4`);
+    const res = await fetch(`${base}t/4`);
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
@@ -168,7 +175,7 @@ describe("Время розыгрыша в футере", () => {
 
   it("должен показывать прочерк без подходящих матчей", async () => {
     await clean();
-    const res = await fetch(`${base}tournament/4`);
+    const res = await fetch(`${base}t/4`);
     const html = await res.text();
 
     assert.match(html, /<td[^>]*><math><mover accent="true"><mi>t<\/mi><mo>‾<\/mo><\/mover><\/math> розыгрыша<\/td>\s*<td[^>]*>—<\/td>\s*<td[^>]*>—<\/td>/);
@@ -193,7 +200,7 @@ describe("Tournament page for guest", () => {
 
   it("не должен показывать заголовок блока «Статистика»", async () => {
     await clean();
-    const res = await fetch(`${guestBase}tournament/4`);
+    const res = await fetch(`${guestBase}t/4`);
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
@@ -234,7 +241,7 @@ describe("Нумерация истории матчей", () => {
     }
     const [a, b] = created;
 
-    const res = await fetch(`${base}tournament/4`);
+    const res = await fetch(`${base}t/4`);
     const html = await res.text();
 
     // список сверху вниз: новейший (b) первым с номером №2, старейший (a) — №1

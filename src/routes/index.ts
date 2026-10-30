@@ -149,17 +149,23 @@ router.get(
         return renderTournamentPage(req, res, undefined);
       }
 
-      res.redirect(`/tournament/${t.id}`);
+      res.redirect(`/t/${t.id}`);
     }
 );
 
 router.get(
-    '/tournament/:id',
+    '/t/:id',
     (req, res) => {
       res.locals.filter = null;
 
       renderTournamentPage(req, res, tournamentService.getById(Number(req.params.id)) as { id: number; tournament_type_id: number } | undefined);
     }
+);
+
+// старые ссылки (шера, чаты) живут долго — не рвём их
+router.get(
+    '/tournament/:id',
+    (req, res) => res.redirect(301, `/t/${req.params.id}`)
 );
 
 export default router;

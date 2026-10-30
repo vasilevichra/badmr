@@ -7,7 +7,7 @@ const tournamentService = new TournamentService();
  *  Параметр принимается только если это число и турнир существует;
  *  иначе возвращается undefined — вызывающий использует глобальный
  *  current (старое поведение). Личный выбор турнира по ссылке
- *  /tournament/:id не меняет глобальный current. */
+ *  /t/:id не меняет глобальный current. */
 export default (req: { query: { tournament?: unknown } }): number | undefined => {
   const raw = req.query.tournament;
   if (raw === undefined) {
