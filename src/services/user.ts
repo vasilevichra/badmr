@@ -345,6 +345,25 @@ class User {
     return {status: 'ok', matches, player};
   }
 
+  /** Фоновый запуск обхода: ответ роута не ждёт окончания обхода,
+   *  повторные вызовы во время идущего обхода не создают параллельный. */
+  labCrawlBackground = async (): Promise<void> => {
+    if (this.crawling) {
+      return;
+    }
+    this.crawling = true;
+    try {
+      await this.labCrawl();
+    } catch (error) {
+      // фоновая задача — некому отдать ошибку, только лог
+      console.error('labCrawl:', error);
+    } finally {
+      this.crawling = false;
+    }
+  };
+
+  crawling = false;
+
   labCrawl = async () => {
     // только участники текущего турнира и только с устаревшим кешем
     // (crawl_cache_m минут) — свежие данные уже в user_lab

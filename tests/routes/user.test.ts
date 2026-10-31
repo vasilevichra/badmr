@@ -247,6 +247,37 @@ describe("User routes", () => {
     });
   });
 
+  describe("POST /lab", () => {
+    it("должен ответить не дожидаясь краула — обход идёт в фоне", async () => {
+      const realFetch = globalThis.fetch;
+      const pending: Array<(v: Response) => void> = [];
+      // fetch «висит», пока тест не отпустит — краул не может завершиться
+      const hangingFetch = (): Promise<Response> => new Promise((resolve) => pending.push(resolve));
+
+      try {
+        // пользователь создаётся до мока: мок перехватывает и этот fetch тоже
+        await createUser("Фонов", "Краул");
+        globalThis.fetch = hangingFetch as unknown as typeof fetch;
+
+        const res = await Promise.race([
+          realFetch(`${base}/lab`, {method: "POST"}),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
+        ]);
+
+        assert.ok(res, "POST /lab не ответил за 2 с — краул блокирует запрос");
+        assert.strictEqual((res as Response).status, 200);
+      } finally {
+        // отпускаем висящий краул («ничего не найдено»), чтобы обработчик
+        // запроса завершился и сервер смог закрыться
+        for (const resolve of pending) {
+          const noRows = {json: async () => ({html: '<p class="no-found">По вашему запросу ничего не найдено</p>'})};
+          resolve(noRows as unknown as Response);
+        }
+        globalThis.fetch = realFetch;
+      }
+    });
+  });
+
   describe("lab/search", () => {
     const originalFetch = globalThis.fetch;
 

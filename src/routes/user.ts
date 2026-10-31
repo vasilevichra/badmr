@@ -103,7 +103,10 @@ router.post('/rating/:id', ensureLoggedIn(), (req, res) => {
 });
 
 router.post('/lab', (req, res) => {
-  res.promise(userService.labCrawl());
+  // краул идёт в фоне — ответ не ждёт обхода (он может длиться минуты),
+  // иначе браузер абортит запрос и таблица висит «идёт загрузка»
+  void userService.labCrawlBackground();
+  res.promise(Promise.resolve());
 });
 
 export default router;

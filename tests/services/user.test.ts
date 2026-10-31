@@ -1055,5 +1055,35 @@ describe("User", () => {
         globalThis.fetch = realFetch;
       }
     });
+
+    it("labCrawlBackground не должен запускать параллельный обход, пока предыдущий идёт", async () => {
+      await new SettingsService().set("crawl_min_ms", "0");
+      await new SettingsService().set("crawl_max_ms", "0");
+      const realFetch = globalThis.fetch;
+      let attempts = 0;
+      let release: () => void = () => {};
+      const gate = new Promise<void>((resolve) => { release = resolve; });
+      globalThis.fetch = (async () => {
+        attempts++;
+        await gate; // первый краул висит, пока тест не отпустит
+        throw new TypeError('fetch failed');
+      }) as unknown as typeof fetch;
+
+      try {
+        await seedUsers();
+
+        // второй запуск во время первого — не должен начать свой обход
+        const first = userService.labCrawlBackground();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        const second = userService.labCrawlBackground();
+        release();
+        await Promise.all([first, second]);
+
+        // один обход: 3 повтора первого игрока (сайт «недоступен»)
+        assert.strictEqual(attempts, 3);
+      } finally {
+        globalThis.fetch = realFetch;
+      }
+    });
   });
 });
