@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it, beforeEach, after } from "node:test";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { testDbPath } from "../../src/test-db.ts";
@@ -170,6 +171,7 @@ const playerPage = (overrides: Record<string, string> = {}): string => {
 const noRows = `<p class="no-found">По вашему запросу ничего не найдено</p>`;
 
 const fetchedUrls: string[] = [];
+const fetchedHeaders: (Record<string, string> | null)[] = [];
 
 // поиск возвращает searchHtml (или вариант из searchByTitle по значению title),
 // любая другая ссылка считается страницей игрока и возвращает playerHtml
@@ -181,9 +183,11 @@ const mockFetch = (
   avatarBytes: Uint8Array | null = new Uint8Array([1, 2, 3, 4]),
 ): void => {
   fetchedUrls.length = 0;
+  fetchedHeaders.length = 0;
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const url = String(input);
     fetchedUrls.push(url);
+    fetchedHeaders.push(init?.headers ?? null);
     if (url.includes("/badm/users/")) {
       if (!avatarBytes) {
         return {ok: false, status: 404} as unknown as Response;
@@ -812,6 +816,34 @@ describe("User", () => {
   });
 
   describe("labSearch", () => {
+    it("должен взять куку из BADM4U_COOKIE, если переменная задана", async () => {
+      process.env.BADM4U_COOKIE = "env_cookie=1; another=2";
+      try {
+        mockFetch(siteRow());
+
+        await userService.labSearch("Иванов", "Доброград", 7);
+        const headers = fetchedHeaders.find(h => h && "Cookie" in h);
+        assert.deepStrictEqual(headers?.["Cookie"], "env_cookie=1; another=2");
+      } finally {
+        delete process.env.BADM4U_COOKIE;
+      }
+    });
+
+    it("должен взять куку из .data/badm4u-cookies.txt, если переменной нет", async () => {
+      mockFetch(siteRow());
+
+      let expected: string | undefined;
+      try {
+        expected = readFileSync(path.join(import.meta.dirname, "../../.data/badm4u-cookies.txt"), "utf8").trim();
+      } catch {
+        expected = undefined; // файла нет (CI) — заголовка быть не должно
+      }
+
+      await userService.labSearch("Иванов", "Доброград", 7);
+      const headers = fetchedHeaders.find(h => h && "Cookie" in h);
+      assert.deepStrictEqual(headers?.["Cookie"], expected);
+    });
+
     it("должен распарсить единственный ответ сайта", async () => {
       mockFetch(siteRow());
 

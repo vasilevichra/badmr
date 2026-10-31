@@ -17,6 +17,7 @@
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
     "csurf": "^1.2.2",
+    "dotenv": "^18.0.9",
     "ejs": "^7.0.2",
     "express": "^5.1.0",
     "express-promise-json-router": "^1.0.8",
@@ -86,7 +87,7 @@
     "open": "concurrently \"npm run compile\" \"sleep 3 && open http://localhost:3000/\"",
     "test": "node --experimental-strip-types src/bin/run-tests.ts",
     "dev": "npm run test && (lsof -ti tcp:3000 | xargs kill 2>/dev/null || true) && sleep 1 && (lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true) && (rm -f .data/badmr.sqlite3 || true) && npm run migrate && export NODE_ENV=dev && npm run open | tee -a .log/dev.log",
-    "prod": "npm install && npm run migrate && (cp ~/badm4u-cookies.txt .data/ 2>/dev/null || echo 'no badm4u-cookies.txt in ~ — lab search will work without cookies') && export NODE_ENV=prod && node src/bin/start.ts | tee -a .log/prod.log",
+    "prod": "npm install && npm run migrate && export NODE_ENV=prod && node src/bin/start.ts | tee -a .log/prod.log",
     "release": "npm run test && rsync --info=progress2 --ignore-times --delete --delete-after --recursive --exclude-from='/Users/r/Projects.localized/badmr/.gitignore' /Users/r/Projects.localized/badmr box:~/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/migrations/ box:~/badmr/migrations/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/src/repositories/ box:~/badmr/src/repositories/ && rsync --info=progress2 --ignore-times --delete --delete-after --recursive /Users/r/Projects.localized/badmr/.data/badm4u-cookies.txt box:~/badmr/.data/ && ssh box 'sudo /home/r/badmr/etc/scripts/release.sh'",
     "typecheck": "tsc --noEmit"
   },

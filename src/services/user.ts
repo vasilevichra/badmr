@@ -51,10 +51,14 @@ interface LabSearchResult {
   player?: LabPlayer;
 }
 
-// строка Cookie для запросов к badminton4u.ru берётся из файла
-// .data/badm4u-cookies.txt; если сайт перестанет отвечать данными —
-// обнови файл: DevTools (F12) → Network → любой запрос → заголовок Cookie
+// строка Cookie для запросов к badminton4u.ru берётся из переменной
+// окружения BADM4U_COOKIE (файл .env на проде); запасной источник — файл
+// .data/badm4u-cookies.txt. Если сайт перестанет отвечать данными —
+// обнови куку: DevTools (F12) → Network → любой запрос → заголовок Cookie
 const siteCookie = (): string | null => {
+  if (process.env.BADM4U_COOKIE) {
+    return process.env.BADM4U_COOKIE.trim() || null;
+  }
   try {
     return readFileSync(path.join(ROOT, '.data/badm4u-cookies.txt'), 'utf8').trim() || null;
   } catch {
