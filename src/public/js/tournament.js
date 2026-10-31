@@ -71,7 +71,8 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
   setClearState(null);
 
   if (input.length > 2) {
-    const names = input.match(/(?<lastname>[а-яА-Я]+)?(\s+)?(?<firstname>[а-яА-Я]+)?(\s+)?(?<patronymic>[а-яА-Я]+)?/).groups;
+    // [а-яёА-ЯЁ]: «ё» (U+0451) вне диапазона а-я — иначе «Семён» режется до «Сем»
+    const names = input.match(/(?<lastname>[а-яёА-ЯЁ]+)?(\s+)?(?<firstname>[а-яёА-ЯЁ]+)?(\s+)?(?<patronymic>[а-яёА-ЯЁ]+)?/).groups;
     if (names.lastname) {
       const ln = capitalizeFirstLetter(names.lastname);
       const fn = names.firstname ? capitalizeFirstLetter(names.firstname) : '';

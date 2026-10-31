@@ -377,7 +377,8 @@ const capitalizeFirstLetter = (string) => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-const parseName = (name) => name.match(/(?<lastname>[а-яА-Я]+)?(\s+)?(?<firstname>[а-яА-Я]+)?(\s+)?(?<patronymic>[а-яА-Я]+)?/).groups;
+// [а-яёА-ЯЁ]: «ё» (U+0451) вне диапазона а-я — без него «Семён» режется до «Сем»
+const parseName = (name) => name.match(/(?<lastname>[а-яёА-ЯЁ]+)?(\s+)?(?<firstname>[а-яёА-ЯЁ]+)?(\s+)?(?<patronymic>[а-яёА-ЯЁ]+)?/).groups;
 
 /** Показывает всплывающее уведомление (Bootstrap-тост) в правом нижнем углу.
  *  Используется глобальным обработчиком ajaxError для сообщений об ошибках. */
