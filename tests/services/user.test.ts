@@ -852,6 +852,19 @@ describe("User", () => {
       }
     });
 
+    it("должен вернуть blocked когда поиск отдаёт страницу блокировки (200 без результатов и без маркера «не найдено»)", async () => {
+      // WAF отдаёт 200 с HTML-заглушкой: ни ссылок на игроков, ни p.no-found
+      mockFetch("<html><body><h1>Access denied</h1></body></html>");
+
+      assert.deepStrictEqual(await userService.labSearch("Иванов", null, 7), {status: "blocked", matches: 0});
+    });
+
+    it("должен вернуть blocked когда страница игрока — заглушка блокировки (200 без данных игрока)", async () => {
+      mockFetch(siteRow(), "<html><body><h1>Access denied</h1></body></html>");
+
+      assert.deepStrictEqual(await userService.labSearch("Иванов", null, 7), {status: "blocked", matches: 0});
+    });
+
     it("должен повторить поиск по фамилии и имени когда полное ФИО не найдено", async () => {
       mockFetch(noRows, playerPage(), {"Иванов Иван": siteRow()});
 

@@ -287,13 +287,20 @@ class User {
       }
       const searchRows = async (title: string): Promise<SitePlayer[]> => {
         const document = new JSDOM(await fetchHtml('https://badminton4u.ru/ajax?search=rating&s=d', `title=${encodeURIComponent(title)}&s=d`)).window.document;
-        return [...document.querySelectorAll('a[href*="/players/"]')].map(row => {
+        const rows = [...document.querySelectorAll('a[href*="/players/"]')].map(row => {
           const href = row.getAttribute('href') ?? '';
           return {
             id: Number((href.match(/(\d+)/) ?? [])[1]),
             city: [...row.querySelectorAll('span')].map(span => span.textContent ?? '').find(text => text.startsWith('г. ')) ?? null,
           };
         });
+        // нормальный пустой ответ содержит маркер «ничего не найдено»;
+        // HTML без ссылок и без маркера — страница блокировки (WAF, бан):
+        // отдаём наверх как сетевую ошибку, а не «совпадений нет»
+        if (rows.length === 0 && !document.querySelector('.no-found')) {
+          throw new Error('badminton4u: ответ поиска без результатов и без маркера «не найдено» — блокировка?');
+        }
+        return rows;
       };
 
       let players = await searchRows(name);
@@ -313,6 +320,12 @@ class User {
 
     // страница игрока: оба рейтинга, логин, клуб, город, год рождения, аватар
     const document = new JSDOM(await fetchHtml(`https://badminton4u.ru/players/${id}`, 'only=main&theme=light')).window.document;
+    // страница игрока всегда содержит секцию #info (адрес, дата рождения);
+    // ответ без неё — заглушка блокировки: считаем сайт недоступным,
+    // а не «игрок найден»
+    if (!document.querySelector('#info')) {
+      throw new Error(`badminton4u: страница игрока ${id} без данных — блокировка?`);
+    }
     const dfn = (type: string) => document.querySelector(`dfn[data-type="${type}"]`);
     const avatarUrl = (document.querySelector('header bdo[style]')?.getAttribute('style') ?? '')
       .match(/url\(['"]?([^'")]+)/)?.[1] ?? null;
