@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { describe, it, beforeEach, after } from "node:test";
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { testDbPath } from "../../src/test-db.ts";
@@ -829,19 +828,13 @@ describe("User", () => {
       }
     });
 
-    it("должен взять куку из .data/badm4u-cookies.txt, если переменной нет", async () => {
+    it("не должен слать Cookie, если BADM4U_COOKIE не задан", async () => {
+      delete process.env.BADM4U_COOKIE;
       mockFetch(siteRow());
-
-      let expected: string | undefined;
-      try {
-        expected = readFileSync(path.join(import.meta.dirname, "../../.data/badm4u-cookies.txt"), "utf8").trim();
-      } catch {
-        expected = undefined; // файла нет (CI) — заголовка быть не должно
-      }
 
       await userService.labSearch("Иванов", "Доброград", 7);
       const headers = fetchedHeaders.find(h => h && "Cookie" in h);
-      assert.deepStrictEqual(headers?.["Cookie"], expected);
+      assert.strictEqual(headers, undefined);
     });
 
     it("должен распарсить единственный ответ сайта", async () => {

@@ -2,10 +2,7 @@ import UserRepository from '../repositories/user.ts';
 import SettingsService from './settings.ts';
 import { JSDOM } from 'jsdom';
 import Bluebird from 'bluebird';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 
-const ROOT = path.resolve(import.meta.dirname, '../..');
 const settingsService = new SettingsService();
 
 interface BuddyStatRow {
@@ -52,18 +49,11 @@ interface LabSearchResult {
 }
 
 // строка Cookie для запросов к badminton4u.ru берётся из переменной
-// окружения BADM4U_COOKIE (файл .env на проде); запасной источник — файл
-// .data/badm4u-cookies.txt. Если сайт перестанет отвечать данными —
-// обнови куку: DevTools (F12) → Network → любой запрос → заголовок Cookie
+// окружения BADM4U_COOKIE (файл .env). Если сайт перестанет отвечать
+// данными — обнови куку: DevTools (F12) → Network → любой запрос →
+// заголовок Cookie
 const siteCookie = (): string | null => {
-  if (process.env.BADM4U_COOKIE) {
-    return process.env.BADM4U_COOKIE.trim() || null;
-  }
-  try {
-    return readFileSync(path.join(ROOT, '.data/badm4u-cookies.txt'), 'utf8').trim() || null;
-  } catch {
-    return null;
-  }
+  return process.env.BADM4U_COOKIE?.trim() || null;
 };
 
 // заголовки — как у браузера, чтобы запросы не отличались от настоящих
