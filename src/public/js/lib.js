@@ -380,6 +380,10 @@ const capitalizeFirstLetter = (string) => {
 // [а-яёА-ЯЁ]: «ё» (U+0451) вне диапазона а-я — без него «Семён» режется до «Сем»
 const parseName = (name) => name.match(/(?<lastname>[а-яёА-ЯЁ]+)?(\s+)?(?<firstname>[а-яёА-ЯЁ]+)?(\s+)?(?<patronymic>[а-яёА-ЯЁ]+)?/).groups;
 
+/** Сброс query-параметров адреса без перезагрузки страницы
+ *  (?player=<id>, ?tab=<имя>, ?all=1 после действий, их исчерпавших). */
+const resetQuery = () => history.replaceState({}, '', location.pathname);
+
 /** Показывает всплывающее уведомление (Bootstrap-тост) в правом нижнем углу.
  *  Используется глобальным обработчиком ajaxError для сообщений об ошибках. */
 const showToast = (message, variant = 'danger') => {

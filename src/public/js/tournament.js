@@ -125,6 +125,9 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
                       type: 'POST',
                       success: () => {
                         hide.register.all();
+                        // параметры адреса исчерпаны — до reload, чтобы
+                        // перезагрузка шла уже без query-параметров
+                        resetQuery();
                         // блока «Игроки» могло не быть (не было зарегистрированных) — тогда страница перезагрузится и блок отрисуется
                         if ($('#player-table').length) refresh.table.player();
                         else location.reload();
@@ -282,6 +285,9 @@ const tournamentNewRegistrationAddHandler = (city) => {
           method: 'POST',
           async: false,
           success: () => {
+            // параметры адреса исчерпаны — до reload, чтобы
+            // перезагрузка шла уже без query-параметров
+            resetQuery();
             // блока «Игроки» могло не быть (не было зарегистрированных) — тогда страница перезагрузится и блок отрисуется
             if ($('#player-table').length) refresh.table.player();
             else location.reload();
