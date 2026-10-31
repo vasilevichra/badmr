@@ -243,14 +243,15 @@ $(document).ready(() => {
   // обработчики событий для табло
   ["board-score-l", "board-score-r"].map(id => document.getElementById(id)).map(el => addScoreBoardHandlers(el));
 
-  // обновить рейтинг ЛАБ в фоне
+  // обновить рейтинг ЛАБ в фоне: ответ данных не несёт (краул идёт
+  // на сервере сам), таблицу не трогаем — иначе refresh абортит ещё
+  // летящий запрос инициализации таблицы → ложное «нет связи с сервером»
   if (window.navigator.onLine) {
     $.ajax({
       url: '/api/users/lab',
       type: 'POST',
       cache: false,
       async: true,
-      success: () => refresh.table.player(),
       error: () => {
       },
     });

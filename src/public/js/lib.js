@@ -490,10 +490,14 @@ $(document).on('click', '.tournament-calendar', function () {
 });
 
 // одна точка обработки ошибок AJAX: сервер отдаёт тело вида {error: message}
-// (promise-мидлвара), при статусе 0 соединения не было вовсе
-$(document).ajaxError((event, xhr) => {
-  if (xhr.status === 0) {
+// (promise-мидлвара), при статусе 0 соединения не было вовсе.
+// textStatus приходит 4-м аргументом; 'abort' — это не потеря связи, а
+// осознанный обрыв запроса (перезагрузка страницы, refresh bootstrap-table)
+$(document).ajaxError((event, xhr, settings, errorThrown) => {
+  if (xhr.status === 0 && errorThrown !== 'abort') {
     showToast('Нет связи с сервером');
+    return;
+  } else if (xhr.status === 0) {
     return;
   }
   let message;
