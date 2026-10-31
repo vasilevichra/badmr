@@ -209,6 +209,21 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
     $('#player-settings').off('click').click(() => {
       turnPlayerSettings(!isPlayerSettingsOn());
     });
+
+    // краул ЛАБ — по требованию, при нажатии кнопки обновления таблицы
+    // (штатная showRefresh bootstrap-table, других showRefresh в приложении нет).
+    // Автозапуск при загрузке страницы убран: ответ данных не несёт (краул идёт
+    // на сервере сам), таблицу не трогаем — иначе refresh абортит ещё летящий
+    // запрос инициализации таблицы → ложное «нет связи с сервером»
+    $(document).on('click', '.fixed-table-toolbar button[name="refresh"]', () => {
+      $.ajax({
+        url: '/api/users/lab',
+        type: 'POST',
+        cache: false,
+        error: () => {
+        },
+      });
+    });
   }
 }
 
