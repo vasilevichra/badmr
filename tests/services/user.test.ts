@@ -84,19 +84,6 @@ interface SelectRow {
   text: string;
 }
 
-interface LabPlayer {
-  user_id: number;
-  id: number;
-  img: string | null;
-  r1: number | null;
-  r2: number | null;
-  name: string;
-  login: string | null;
-  club: string | null;
-  city: string | null;
-  year: number | null;
-}
-
 const userService = new UserService();
 const userRepository = new UserRepository();
 const matchService = new MatchService();
@@ -828,8 +815,10 @@ describe("User", () => {
     it("должен распарсить единственный ответ сайта", async () => {
       mockFetch(siteRow());
 
-      const player = await userService.labSearch("Иванов", "Доброград", 7) as LabPlayer;
-      assert.deepStrictEqual<LabPlayer>(player, {
+      const outcome = await userService.labSearch("Иванов", "Доброград", 7);
+      assert.strictEqual(outcome.status, "ok");
+      assert.strictEqual(outcome.matches, 1);
+      assert.deepStrictEqual(outcome.player, {
         user_id: 7,
         id: 12345,
         img: "data:image/webp;base64,AQIDBA==",
@@ -843,13 +832,13 @@ describe("User", () => {
       });
     });
 
-    it("должен вернуть undefined когда пользователь не найден", async () => {
+    it("должен вернуть пустой результат когда пользователь не найден", async () => {
       mockFetch(noRows);
 
-      assert.strictEqual(await userService.labSearch("Иванов", null, 7), undefined);
+      assert.deepStrictEqual(await userService.labSearch("Иванов", null, 7), {status: "ok", matches: 0});
     });
 
-    it("должен вернуть undefined без ошибки когда сайт недоступен (fetch failed)", async () => {
+    it("должен вернуть blocked без ошибки когда сайт недоступен (fetch failed)", async () => {
       // сайт забанил IP: соединение отбивается на уровне TCP, fetch бросает TypeError
       const realFetch = globalThis.fetch;
       globalThis.fetch = (async () => {
@@ -857,7 +846,7 @@ describe("User", () => {
       }) as unknown as typeof fetch;
 
       try {
-        assert.strictEqual(await userService.labSearch("Иванов", null, 7), undefined);
+        assert.deepStrictEqual(await userService.labSearch("Иванов", null, 7), {status: "blocked", matches: 0});
       } finally {
         globalThis.fetch = realFetch;
       }
@@ -866,34 +855,35 @@ describe("User", () => {
     it("должен повторить поиск по фамилии и имени когда полное ФИО не найдено", async () => {
       mockFetch(noRows, playerPage(), {"Иванов Иван": siteRow()});
 
-      const player = await userService.labSearch("Иванов Иван Отчество", null, 7) as LabPlayer;
-      assert.strictEqual(player.id, 12345);
+      const outcome = await userService.labSearch("Иванов Иван Отчество", null, 7);
+      assert.strictEqual(outcome.player?.id, 12345);
     });
 
     it("должен собрать данные напрямую со страницы игрока когда известна привязка к id", async () => {
       mockFetch(siteRow(), playerPage({ id: "99999", login: "ivanov" }));
 
-      const player = await userService.labSearch("Иванов", "Доброград", 7, 99999) as LabPlayer;
+      const outcome = await userService.labSearch("Иванов", "Доброград", 7, 99999);
       assert.deepStrictEqual(fetchedUrls, [
         "https://badminton4u.ru/players/99999",
         // аватар скачивается следом за страницей игрока (с cache-buster'ом сайта)
         "https://badminton4u.ru/badm/users/12345/mini-avatar.webp?1788129740",
       ]);
-      assert.strictEqual(player.id, 99999);
-      assert.strictEqual(player.login, "ivanov");
+      assert.strictEqual(outcome.matches, 1);
+      assert.strictEqual(outcome.player?.id, 99999);
+      assert.strictEqual(outcome.player?.login, "ivanov");
     });
 
     it("должен вернуть img null когда аватар недоступен", async () => {
       mockFetch(siteRow(), playerPage(), {}, null);
 
-      const player = await userService.labSearch("Иванов", "Доброград", 7) as LabPlayer;
-      assert.strictEqual(player.img, null);
+      const outcome = await userService.labSearch("Иванов", "Доброград", 7);
+      assert.strictEqual(outcome.player?.img, null);
     });
 
-    it("должен вернуть undefined когда пользователь не уникальный", async () => {
+    it("должен вернуть число совпадений когда пользователь не уникальный", async () => {
       mockFetch(siteRow() + siteRow({ id: "99999" }));
 
-      assert.strictEqual(await userService.labSearch("Иванов", null, 7), undefined);
+      assert.deepStrictEqual(await userService.labSearch("Иванов", null, 7), {status: "ok", matches: 2});
     });
 
     it("должен оставить единственного подходящего при фильтре по городу", async () => {
@@ -902,14 +892,15 @@ describe("User", () => {
         siteRow({ id: "99999", name: "Петров Пётр", city: "г. Москва" }),
       );
 
-      const player = await userService.labSearch("Иванов", "Доброград", 7) as LabPlayer;
-      assert.strictEqual(player.id, 12345);
+      const outcome = await userService.labSearch("Иванов", "Доброград", 7);
+      assert.strictEqual(outcome.matches, 1);
+      assert.strictEqual(outcome.player?.id, 12345);
     });
 
-    it("должен вернуть undefined когда по городу совпадают несколько", async () => {
+    it("должен вернуть число совпадений когда по городу совпадают несколько", async () => {
       mockFetch(siteRow() + siteRow({ id: "99999" }));
 
-      assert.strictEqual(await userService.labSearch("Иванов", "Доброград", 7), undefined);
+      assert.deepStrictEqual(await userService.labSearch("Иванов", "Доброград", 7), {status: "ok", matches: 2});
     });
   });
 

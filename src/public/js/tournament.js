@@ -54,6 +54,13 @@ if (loggedInUser) {
   $('#tournament-add input[name=user]').attr('value', loggedInUser.id);
 }
 
+// цвет кружка очистки (✕) поисковой строки регистрации отражает результат
+// поиска по badminton4u.ru: found — один игрок, many — несколько,
+// blocked — сайт недоступен; без состояния — родной серый кружок
+const setClearState = (state) => $('.tournament-new-registration-input')
+    .removeClass('search-clear-found search-clear-many search-clear-blocked')
+    .toggleClass('search-clear-' + state, Boolean(state));
+
 const tournamentNewRegistrationHandler = _.debounce(function(input) {
   const cookieName = 'registration-input';
   $.cookie(cookieName, input);
@@ -61,6 +68,7 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
   const hintSection = $('#tournament-new-registration-hint');
 
   hide.register.all();
+  setClearState(null);
 
   if (input.length > 2) {
     const names = input.match(/(?<lastname>[а-яА-Я]+)?(\s+)?(?<firstname>[а-яА-Я]+)?(\s+)?(?<patronymic>[а-яА-Я]+)?/).groups;
@@ -125,10 +133,12 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
         }
       } else {
         $.ajax({
-          url: `/api/users/lab/search?name=${[ln, fn, pn].join(' ').trim()}`,
+          url: withTournament(`/api/users/lab/search?name=${[ln, fn, pn].join(' ').trim()}`),
           method: 'GET',
           async: true,
-          success: user => {
+          success: result => {
+            setClearState(result.status === 'blocked' ? 'blocked' : result.player ? 'found' : result.matches > 1 ? 'many' : null);
+            const user = result.player;
             if (user) {
               const {lastname, firstname, patronymic} = parseName(user.name);
               show.register.lastname(lastname);

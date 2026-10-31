@@ -73,9 +73,12 @@ router.get('/buddies/:id', (req, res) => {
 });
 
 router.get('/lab/search', (req, res) => {
-  // город необязателен: без параметра фильтр по городу не применяется
-  // (String(undefined) дал бы строку "undefined" и отсёк все результаты)
-  const city = req.query.city ? String(req.query.city) : null;
+  // город турнира (явно указанного ?tournament= либо текущего) — отсекает
+  // однофамильцев из других городов; явный ?city= имеет приоритет
+  const tid = requestedTournament(req);
+  const tournament = tid ? tournamentService.getById(tid) : tournamentService.getCurrent();
+  const tournamentCity = (tournament as { city?: string } | undefined)?.city ?? null;
+  const city = req.query.city ? String(req.query.city) : tournamentCity;
   res.promise(userService.labSearch(String(req.query.name), city, Number(req.query.user_id)));
 });
 

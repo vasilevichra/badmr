@@ -254,9 +254,10 @@ describe("User routes", () => {
       globalThis.fetch = originalFetch;
     });
 
-    it("должен найти игрока без указания города", async () => {
-      // сайт отвечает JSON-объектом с разметкой в поле html; запросы
-      // к тестируемому express-серверу идут в оригинальный fetch
+    it("должен найти игрока с фильтром по городу текущего турнира", async () => {
+      // город не передан явно — берётся из текущего турнира (в сиде
+      // fixture-for-tests это турнир 4, Доброград); запросы к тестируемому
+      // express-серверу идут в оригинальный fetch
       globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
         const url = String(input);
         if (!url.startsWith("https://badminton4u.ru")) {
@@ -271,8 +272,10 @@ describe("User routes", () => {
       const res = await fetch(`${base}/lab/search?name=${encodeURIComponent("Иванов Иван Отчество")}`);
       assert.strictEqual(res.status, 200);
       const text = await res.text();
-      const player = text ? JSON.parse(text) as {id: number} : null;
-      assert.strictEqual(player?.id, 12345);
+      const result = text ? JSON.parse(text) as {status: string; matches: number; player?: {id: number}} : null;
+      assert.strictEqual(result?.status, "ok");
+      assert.strictEqual(result?.matches, 1);
+      assert.strictEqual(result?.player?.id, 12345);
     });
   });
 });

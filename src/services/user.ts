@@ -39,6 +39,18 @@ interface LabPlayer {
   year: number | null;
 }
 
+/** Результат поиска для формы регистрации: фронту нужно различать
+ * недоступный сайт (blocked), неуникальный поиск (matches > 1) и
+ * единственного найденного игрока (player). */
+interface LabSearchResult {
+  /** ok — сайт ответил; blocked — недоступен (бан IP, таймаут). */
+  status: 'ok' | 'blocked';
+  /** Сколько игроков нашлось после фильтра по городу. */
+  matches: number;
+  /** Данные единственного найденного игрока — только при matches === 1. */
+  player?: LabPlayer;
+}
+
 // строка Cookie для запросов к badminton4u.ru берётся из файла
 // .data/badm4u-cookies.txt; если сайт перестанет отвечать данными —
 // обнови файл: DevTools (F12) → Network → любой запрос → заголовок Cookie
@@ -214,20 +226,21 @@ class User {
    * @param city Город для уточнения неуникальных совпадений.
    * @param user_id Id пользователя в приложении.
    * @param site_id Привязка к профилю badminton4u.ru, если известна.
-   * @returns Данные игрока либо undefined, если игрок не найден, не уникален или сайт недоступен.
+   * @returns Результат поиска: status blocked, если сайт недоступен; иначе
+   *          число совпадений и данные игрока, когда совпадение единственное.
    */
-  async labSearch(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabPlayer | undefined> {
+  async labSearch(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabSearchResult> {
     // недоступный сайт (бан IP, таймаут, сброс соединения) — не ошибка для
-    // вызывающих: тихо считаем игрока ненайденным, а время попытки
+    // вызывающих: считаем сайт заблокированным, а время попытки
     // отмечается в labCrawl, чтобы не долбить сайт при каждой загрузке
     try {
       return await this.searchLab(name, city, user_id, site_id);
     } catch {
-      return undefined;
+      return {status: 'blocked', matches: 0};
     }
   }
 
-  private async searchLab(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabPlayer | undefined> {
+  private async searchLab(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabSearchResult> {
     // пауза перед каждым запросом, чтобы не походить на бота:
     // случайное значение между crawl_min_ms и crawl_max_ms (настройки)
     const pause = (base = 0) => {
@@ -264,7 +277,9 @@ class User {
           return bytes.length > 0 ? bytes : null;
         });
 
+    // прямая выборка по известной привязке — совпадение всегда одно
     let id = site_id;
+    let matches = 1;
     if (!id) {
       interface SitePlayer {
         id: number;
@@ -289,8 +304,9 @@ class User {
         }
       }
       const site_users = city ? players.filter(player => player.city?.includes(`г. ${city}`)) : players;
+      matches = site_users.length;
       if (site_users.length !== 1) {
-        return undefined;
+        return {status: 'ok', matches: site_users.length};
       }
       id = site_users[0].id;
     }
@@ -314,7 +330,7 @@ class User {
       }
     }
 
-    return {
+    const player: LabPlayer = {
       user_id: user_id,
       id: id,
       img: img,
@@ -326,6 +342,7 @@ class User {
       city: (document.querySelector('#info .address')?.textContent ?? '').replace(/^г\. /, '').trim() || null,
       year: year ? Number(year[0]) : null,
     };
+    return {status: 'ok', matches, player};
   }
 
   labCrawl = async () => {
@@ -335,9 +352,9 @@ class User {
     const found: LabPlayer[] = [];
     for (const [index, user] of users.entries()) {
       try {
-        const player = await this.searchLab(user.name, user.city, user.user_id, user.site_id);
-        if (player) {
-          found.push(player);
+        const outcome = await this.searchLab(user.name, user.city, user.user_id, user.site_id);
+        if (outcome.player) {
+          found.push(outcome.player);
         }
       } catch {
         // сайт недоступен: остальные упали бы с той же сетевой ошибкой —

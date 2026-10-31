@@ -67,9 +67,10 @@ class Tournament {
 
   getCurrent(): { tournament_type_id: number } | undefined {
     return this.db.get(
-        `SELECT t.*, g.city_id, g.latitude, g.longitude, g.address, g.map_url
+        `SELECT t.*, g.city_id, c.name AS city, g.latitude, g.longitude, g.address, g.map_url
          FROM tournament t
                   JOIN gym g on g.id = t.gym_id
+                  JOIN city c ON c.id = g.city_id
          WHERE t.current = 1`
     );
   }
