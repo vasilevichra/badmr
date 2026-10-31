@@ -944,28 +944,43 @@ input:focus::placeholder {
   color: rgba(220, 53, 69) !important;
 }
 
-/* кружок очистки (✕) поисковой строки регистрации: цвет отражает результат
-   поиска по badminton4u.ru — found: один игрок, many: несколько, blocked:
-   сайт недоступен; без класса остаётся родной серый кружок браузера */
-.tournament-new-registration-input[class*="search-clear-"]::-webkit-search-cancel-button {
+/* ✕ очистки поисковой строки регистрации: цвет отражает результат поиска
+   по badminton4u.ru — found: один игрок, many: несколько, blocked: сайт
+   недоступен; без состояния — серый. Родной ::-webkit-search-cancel-button
+   не используется: Safari запрещает стилизовать элементы UA shadow DOM */
+.tournament-new-registration-input::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;
-  width: 1em;
-  height: 1em;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z'/%3E%3C/svg%3E") center / contain no-repeat;
+  display: none;
 }
 
-.tournament-new-registration-input.search-clear-found::-webkit-search-cancel-button {
-  background-color: rgba(25, 135, 84);
+.form-floating .registration-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  display: none;
+  cursor: pointer;
+  z-index: 5;
+  color: rgba(108, 117, 125);
+  pointer-events: auto;
 }
 
-.tournament-new-registration-input.search-clear-many::-webkit-search-cancel-button {
-  background-color: rgba(255, 193, 7);
+/* значок виден, только когда в поле есть текст (placeholder пустым не бывает) */
+.tournament-new-registration-input:not(:placeholder-shown) ~ .registration-clear {
+  display: block;
 }
 
-.tournament-new-registration-input.search-clear-blocked::-webkit-search-cancel-button {
-  background-color: rgba(220, 53, 69);
+.tournament-new-registration-input.search-clear-found ~ .registration-clear {
+  color: rgba(25, 135, 84);
+}
+
+.tournament-new-registration-input.search-clear-many ~ .registration-clear {
+  color: rgba(255, 193, 7);
+}
+
+.tournament-new-registration-input.search-clear-blocked ~ .registration-clear {
+  color: rgba(220, 53, 69);
 }
 
 .win {

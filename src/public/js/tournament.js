@@ -54,12 +54,18 @@ if (loggedInUser) {
   $('#tournament-add input[name=user]').attr('value', loggedInUser.id);
 }
 
-// цвет кружка очистки (✕) поисковой строки регистрации отражает результат
+// цвет значка очистки (✕) поисковой строки регистрации отражает результат
 // поиска по badminton4u.ru: found — один игрок, many — несколько,
-// blocked — сайт недоступен; без состояния — родной серый кружок
+// blocked — сайт недоступен; без состояния — серый
 const setClearState = (state) => $('.tournament-new-registration-input')
     .removeClass('search-clear-found search-clear-many search-clear-blocked')
     .toggleClass('search-clear-' + state, Boolean(state));
+
+// клик по значку очистки: сброс поля и состояния — триггер input запускает
+// tournamentNewRegistrationHandler(''), который сам всё откатит
+$(document).on('click', '.registration-clear', () => {
+  $('.tournament-new-registration-input').val('').trigger('input').trigger('focus');
+});
 
 const tournamentNewRegistrationHandler = _.debounce(function(input) {
   const cookieName = 'registration-input';
