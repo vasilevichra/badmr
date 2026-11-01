@@ -25,5 +25,22 @@ DELETE FROM user_club_gym WHERE user_club_id > 3;
 DELETE FROM gym WHERE id > 3;
 DELETE FROM user_club WHERE id > 3;
 
+-- живой дамп приносит и пользователей прода (сид тестового фикстура —
+-- 1–127); реальные фамилии попадают в выборки findBy и ломают тесты,
+-- ожидающие единственность («Соловьёва»/«Соловьева» ё/е). Убираем
+-- всё, что на них ссылается, и самих, порядок — от зависимых таблиц
+DELETE FROM rating WHERE user_id > 127;
+DELETE FROM game WHERE match_id IN (
+    SELECT id FROM match
+    WHERE user_1_id > 127 OR user_2_id > 127 OR user_3_id > 127 OR user_4_id > 127
+);
+DELETE FROM match WHERE user_1_id > 127 OR user_2_id > 127 OR user_3_id > 127 OR user_4_id > 127;
+DELETE FROM team_user WHERE user_id > 127;
+DELETE FROM tournament_user WHERE user_id > 127;
+DELETE FROM user_pic WHERE user_id > 127;
+DELETE FROM user_lab WHERE user_id > 127;
+DELETE FROM tournament WHERE user_id > 127;
+DELETE FROM user WHERE id > 127;
+
 -- текущим остаётся тестовый турнир 4
 UPDATE tournament SET current = CASE WHEN id = 4 THEN 1 ELSE 0 END;
