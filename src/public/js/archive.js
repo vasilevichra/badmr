@@ -4,6 +4,15 @@ const renderArchive = () => {
   // загрузке данных (в т.ч. silent-обновлении после архивирования)
   const archiveContainer = $('#player-archive').closest('.container').addClass('d-none');
 
+  // ширина поисковой строки следует за шириной таблицы (w-auto — зависит
+  // от содержимого): пересчитывается после каждой отрисовки тела таблицы
+  // и на resize окна
+  const syncSearchWidth = () => {
+    $('#player-archive .fixed-table-toolbar .search')
+      .css('width', $('#player-archive-table').outerWidth());
+  };
+  $(window).on('resize', syncSearchWidth);
+
   $('#player-archive-table')
   .bootstrapTable({
     url: '/api/users/archived',
@@ -39,7 +48,8 @@ const renderArchive = () => {
   })
   .on('load-success.bs.table', (event, data) => {
     archiveContainer.toggleClass('d-none', data.length === 0);
-  });
+  })
+  .on('post-body.bs.table', syncSearchWidth);
 
   $('#player-archive div.fixed-table-toolbar').addClass('d-flex justify-content-center');
 }
