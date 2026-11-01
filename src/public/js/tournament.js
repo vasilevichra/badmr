@@ -314,13 +314,15 @@ $('#tournament-add form').submit(() => {
   });
 });
 
-// статус проверяем асинхронно: зарегистрировано меньше, чем capacity —
-// закрываем регистрацию (без блокирующих запросов)
+// статус проверяем асинхронно: мест не осталось (зарегистрировано не меньше
+// capacity) — закрываем регистрацию переводом в «Идёт» (без блокирующих
+// запросов); раньше условие было инвертировано (< вместо >=), и статус
+// переключался после каждой успешной регистрации, пока места ещё были
 const closeRegistrationIfNeed = () => {
   $.when($.getJSON(withTournament('/api/tournaments/registered/count')), $.getJSON(withTournament('/api/settings/')))
   .done((count, settings) => {
     const capacity = Number(settings[0].find((row) => row.name === 'capacity')?.value ?? 0);
-    if (count[0] < capacity) {
+    if (capacity > 0 && count[0] >= capacity) {
       $.post('/api/tournaments/status/2');
     }
   });
