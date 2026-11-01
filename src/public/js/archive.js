@@ -6,8 +6,12 @@ const renderArchive = () => {
 
   // ширина поисковой строки следует за шириной таблицы (w-auto — зависит
   // от содержимого): пересчитывается после каждой отрисовки тела таблицы
-  // и на resize окна
+  // и на resize окна; пока контейнер скрыт (d-none), ширина таблицы нулевая —
+  // не меряем, иначе поиск сжимается до минимума
   const syncSearchWidth = () => {
+    if (archiveContainer.hasClass('d-none')) {
+      return;
+    }
     $('#player-archive .fixed-table-toolbar .search')
       .css('width', $('#player-archive-table').outerWidth());
   };
@@ -48,6 +52,9 @@ const renderArchive = () => {
   })
   .on('load-success.bs.table', (event, data) => {
     archiveContainer.toggleClass('d-none', data.length === 0);
+    // post-body срабатывает раньше load-success (внутри load()), когда
+    // контейнер ещё скрыт, — поэтому ширина подгоняется здесь, после показа
+    syncSearchWidth();
   })
   .on('post-body.bs.table', syncSearchWidth);
 
