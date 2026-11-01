@@ -304,7 +304,12 @@ class User {
           players = await searchRows(words.slice(0, 2).join(' '));
         }
       }
-      const site_users = city ? players.filter(player => player.city?.includes(`г. ${city}`)) : players;
+      let site_users = city ? players.filter(player => player.city?.includes(`г. ${city}`)) : players;
+      if (site_users.length === 0 && players.length > 0) {
+        // город отсёк всех результатов — совпадение с городом не помогает
+        // отсечь однофамильцев (игрок из другого города), ищем без него
+        site_users = players;
+      }
       matches = site_users.length;
       if (site_users.length !== 1) {
         return {status: 'ok', matches: site_users.length};

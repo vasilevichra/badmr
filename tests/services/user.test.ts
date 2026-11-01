@@ -924,6 +924,14 @@ describe("User", () => {
       assert.deepStrictEqual(await userService.labSearch("Иванов", null, 7), {status: "ok", matches: 2});
     });
 
+    it("должен найти единственный результат из другого города", async () => {
+      mockFetch(siteRow({ city: "г. Москва" }));
+
+      const outcome = await userService.labSearch("Иванов", "Доброград", 7);
+      assert.strictEqual(outcome.matches, 1);
+      assert.strictEqual(outcome.player?.id, 12345);
+    });
+
     it("должен оставить единственного подходящего при фильтре по городу", async () => {
       mockFetch(
         siteRow() +
