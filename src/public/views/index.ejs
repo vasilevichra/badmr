@@ -93,8 +93,12 @@
         <% const regEndUntilSecs = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24 - regEndUntilHours * 1000 * 60 * 60 - regEndUntilMinutes * 1000 * 60) / 1000); %>
         <%# сколько прошло с окончания регистрации — считает клиент (calendarPartsSince из lib.js) %>
         <% let regEndUntilStr = '';
+        // <time> отсчёта — источник datetime для {REG_LEFT} в шере (lib.js);
+        // в мобильной версии он скрыт (d-none), остаток там рисует бейдж
+        let regEndTimeTag = '';
         if (current_tournament.tournament_status_id === 1) {
-            regEndUntilStr = ` (осталось: <time datetime="${regEndUntilDays}d ${regEndUntilHours}h ${regEndUntilMinutes}m ${regEndUntilSecs}s"></time>)`;
+            regEndTimeTag = `<time datetime="${regEndUntilDays}d ${regEndUntilHours}h ${regEndUntilMinutes}m ${regEndUntilSecs}s"></time>`;
+            regEndUntilStr = ` (осталось: ${regEndTimeTag})`;
         } else {
             // «закончилась N назад» досчитывает клиент (calendarPartsSince из lib.js):
             // серверная строка устаревает сразу после рендера
@@ -171,7 +175,9 @@
             клиент при клике из обратного отсчёта (datetime атрибут <time>) %>
         <% const shareRegStr = `Регистрация до: ${regEndDateStr}{REG_LEFT}`; %>
         <% const shareLines = [
-              `Турнир: «${current_tournament.name} / ${current_tournament.type_name}» https://badmr.ru/t/${current_tournament.id}`,
+              `https://badmr.ru/t/${current_tournament.id}`,
+              '',
+              `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»`,
               `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
               shareRegStr,
               'Адрес:',
@@ -189,7 +195,7 @@
                         <button class="btn btn-xs bi-share tournament-name-copy" data-share="<%= shareLines.join('\n') %>" title="Скопировать информацию о турнире" aria-label="Скопировать информацию о турнире"></button>
                     </span>
                     <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge <%= tournamentFinished ? 'bg-secondary' : 'bg-badmr' %> float-start me-2"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
-                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span></span>
+                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span><span class="d-none"><%- regEndTimeTag %></span></span>
                     <% if (current_tournament.map_url) { %>
                         <span class="list-group-item text-center text-truncate"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>
                     <% } else { %>
