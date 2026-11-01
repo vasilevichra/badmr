@@ -156,6 +156,17 @@ describe("Tournament", () => {
       };
     });
 
+    it("при создании турнира должен создать чат и сохранить ссылку-приглашение", async () => {
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, "Чат при создании",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+      ))!;
+
+      assert.deepStrictEqual(calls, ["Чат при создании"]);
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).chat, link);
+    });
+
     it("при старте турнира должен создать чат и сохранить ссылку-приглашение", async () => {
       await tournamentService.setStatus(2, 1);
 

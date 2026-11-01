@@ -53,6 +53,8 @@ class Tournament {
       for (let i = 0; i < courts; i++) {
         courtRepository.create(this.id);
       }
+      // чат VK создаём сразу при создании турнира; ошибка VK не влияет на создание
+      this.createChatIfAbsent(this.id);
       return this.id;
     } catch {
       this.db.run(
