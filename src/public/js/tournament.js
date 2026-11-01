@@ -262,6 +262,9 @@ const tournamentNewRegistrationAddHandler = (city) => {
 
   // добавляю форму для проверки required полей
   $('#tournament-new-registration-hint .row').wrap('<form></form>');
+  // reg-btn — type="submit": после click-обработчика нативный сабмит
+  // перезагружал страницу с данными формы в query, затирая resetQuery
+  $('#tournament-new-registration-hint form').on('submit', (e) => e.preventDefault());
 
   $('#tournament-new-registration-hint-reg-btn')
   .removeClass('mb-2').addClass('mb-1') // опускаю кнопку пониже
