@@ -162,7 +162,7 @@ describe("Время розыгрыша в футере", () => {
     assert.match(html, /<td[^>]*><math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*розыгрыша<\/td>\s*<td[^>]*>\s*1м 3с\s*<\/td>\s*<td[^>]*>\s*36с\s*<\/td>/);
     // среднее времени игры: текущий — {1200, 2399} → 1799.5 с → «30м»;
     // за всё время — {300, 300, 1200, 2399} → 1049.75 с → «17м 30с»
-    assert.match(html, /<td[^>]*><math>\s*<msub>\s*<mi>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/mi>\s*<mi>1<\/mi>\s*<\/msub>\s*<\/math>\s*игры<\/td>\s*<td[^>]*>\s*30м 0с\s*<\/td>\s*<td[^>]*>\s*17м 30с\s*<\/td>/);
+    assert.match(html, /<td[^>]*>\s*<math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*<math>\s*<msub>\s*<mi>\s*игры\s*<\/mi>\s*<mi>666<\/mi>\s*<\/msub>\s*<\/math>(?:\s*<\/msub>)?\s*<\/td>\s*<td[^>]*>\s*30м 0с\s*<\/td>\s*<td[^>]*>\s*17м 30с\s*<\/td>/);
     // среднее времени матча: текущий — 3599 с → «59м 59с»;
     // за всё время — {600, 3599} → 2099.5 с → «35м 0с»
     assert.match(html, /<td[^>]*><math>\s*<mover accent="true">\s*<mi>матч<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*<\/td>\s*<td[^>]*>\s*59м 59с\s*<\/td>\s*<td[^>]*>\s*35м 0с\s*<\/td>/);
