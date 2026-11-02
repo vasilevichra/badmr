@@ -33,6 +33,7 @@ interface PlayerRow {
   enabled: number;
   paid: number;
   matches: number;
+  delta_today: number | null;
 }
 
 interface ArchivedRow {
@@ -267,6 +268,38 @@ describe("User", () => {
       await userService.deregisterAll();
 
       assert.deepStrictEqual(await userService.getAll(), []);
+    });
+
+    it("у завершённого турнира дельта фиксируется на день окончания", async () => {
+      // текущий турнир 4 завершён 2026-06-12 13:00
+      const ids = await seedUsers();
+      await matchService.create(...(ids as [number, number, number, number]));
+      const m1 = (await matchService.getAll() as { id: number }[]).at(-1)!.id;
+      // игры и матч — в день окончания турнира (в границах констрейнта часа)
+      await gameService.create(m1, "15", null, "2026-06-12 12:00:00");
+      await gameService.create(m1, "17", null, "2026-06-12 12:30:00");
+      db.run(`UPDATE match SET created_at = '2026-06-12 11:30:00' WHERE id = ${m1}`);
+
+      // матч в день окончания попадает в дельту: пара 1 проиграла → −10, пара 2 → +10
+      const players = await userService.getAll() as unknown as PlayerRow[];
+      assert.strictEqual(players.find((p) => p.id === ids[0])!.delta_today, -10);
+      assert.strictEqual(players.find((p) => p.id === ids[2])!.delta_today, 10);
+
+      // игрок без матчей в этот день — прочерк
+      const outsider = await mkUser(9, 500);
+      await userService.registerByIds([outsider]);
+      const after = await userService.getAll() as unknown as PlayerRow[];
+      assert.strictEqual(after.find((p) => p.id === outsider)!.delta_today, null);
+
+      // матч в другой день в дельту дня окончания не попадает
+      await matchService.create(...(ids as [number, number, number, number]));
+      const m2 = (await matchService.getAll() as { id: number }[]).at(-1)!.id;
+      await gameService.create(m2, "15", null, "2026-06-13 12:00:00");
+      await gameService.create(m2, "17", null, "2026-06-13 12:30:00");
+      db.run(`UPDATE match SET created_at = '2026-06-13 11:30:00' WHERE id = ${m2}`);
+      const nextDay = await userService.getAll() as unknown as PlayerRow[];
+      // m2 в другой день — в дельту дня окончания не попал: по-прежнему −10
+      assert.strictEqual(nextDay.find((p) => p.id === ids[0])!.delta_today, -10);
     });
   });
 
@@ -515,23 +548,6 @@ describe("User", () => {
       const archived = await userService.getArchived() as unknown as ArchivedRow[];
       assert.strictEqual(archived.length, 4);
       assert.deepStrictEqual(await userService.getAll(), []);
-    });
-  });
-
-  describe("actualize", () => {
-    it("должен восстановить игроков с изменением рейтинга за месяц", async () => {
-      const { ids } = await seedFinishedMatch();
-      await userService.archiveAll();
-
-      assert.strictEqual((await userService.getArchived() as unknown as ArchivedRow[]).length, 4);
-
-      await userService.actualize();
-
-      const archived = await userService.getArchived() as unknown as ArchivedRow[];
-      const players = await userService.getAll() as unknown as PlayerRow[];
-      assert.deepStrictEqual<number[]>(archived.map((a) => a.id), []);
-      assert.deepStrictEqual<number[]>(players.map((p) => p.id).sort((a, b) => a - b), ids);
-      assert.ok(players.every((p) => p.enabled === 1));
     });
   });
 

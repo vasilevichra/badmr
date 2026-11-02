@@ -172,7 +172,7 @@ FROM (SELECT u.id                                                       AS id,
                LEFT JOIN match m ON u.id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id) AND m.tournament_id = t.id
                LEFT OUTER JOIN (SELECT max(id) AS id, user_id, previous, delta, stale, series, match_id FROM rating GROUP BY user_id) AS r ON r.user_id = u.id
                LEFT OUTER JOIN match rm ON rm.id = r.match_id
-               LEFT OUTER JOIN delta_today dt ON dt.user_id = u.id
+               LEFT OUTER JOIN delta_today dt ON dt.user_id = u.id AND dt.tournament_id = t.id
                LEFT OUTER JOIN delta_week dw ON dw.user_id = u.id
                LEFT OUTER JOIN delta_month dm ON dm.user_id = u.id
                LEFT OUTER JOIN user_pic up ON up.user_id = u.id
@@ -190,11 +190,16 @@ FROM user u
 WHERE tu.archived = 1;
 
 CREATE VIEW delta_today AS
-SELECT u.id AS user_id, u.lastname || ' ' || u.firstname AS name, round(sum(r.delta), 1) AS sum
+-- у завершённого турнира дельта фиксируется на день окончания:
+-- точка отсчёта — ended_at прошедшего турнира, иначе текущий день
+SELECT u.id AS user_id, u.lastname || ' ' || u.firstname AS name, round(sum(r.delta), 1) AS sum,
+       m.tournament_id                                                                                         AS tournament_id
 FROM rating r
-         JOIN match m ON m.id = r.match_id AND date(m.created_at) = date('now')
+         JOIN match m ON m.id = r.match_id AND date(m.created_at) = date(coalesce(
+                 (SELECT ended_at FROM tournament WHERE id = m.tournament_id AND ended_at <= datetime('now')),
+                 'now'))
          JOIN user u ON u.id = r.user_id
-GROUP BY r.user_id
+GROUP BY r.user_id, m.tournament_id
 ORDER BY sum DESC;
 
 CREATE VIEW delta_week AS
