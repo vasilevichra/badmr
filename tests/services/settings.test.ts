@@ -7,6 +7,7 @@ import { clean } from "../helpers/migration.ts";
 interface Setting {
   name: string;
   value: string;
+  default_value: string;
   description: string;
 }
 
@@ -56,11 +57,11 @@ describe("Settings", () => {
       assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s));
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "delta"),
-        [{ name: "delta", value: "100", description: "Максимальная разница в сумме рейтингов пар при их формировании" }]
+        [{ name: "delta", value: "100", default_value: "50", description: "Максимальная разница в сумме рейтингов пар при их формировании" }]
       );
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "state"),
-        [{ name: "state", value: "1", description: "Страна по умолчанию при добавлении новых игроков" }]
+        [{ name: "state", value: "1", default_value: "1", description: "Страна по умолчанию при добавлении новых игроков" }]
       );
     });
   });

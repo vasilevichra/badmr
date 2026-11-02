@@ -107,7 +107,10 @@ const renderSettings = () => {
           {
             field: 'name',
             title: isPhone() ? 'Наз.' : 'Название',
-            align: 'center'
+            align: 'center',
+            // настройка, отличающаяся от значения по умолчанию, — жирным
+            formatter: (value, row) =>
+                String(row.value) !== String(row.default_value) ? `<b>${value}</b>` : value
           },
           {
             field: 'value',
