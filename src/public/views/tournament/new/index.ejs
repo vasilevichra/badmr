@@ -159,6 +159,36 @@
             </thead>
             <tbody>
             <tr>
+                <td>Городов</td>
+                <td class="text-center"><%= cities_current %></td>
+                <td class="text-center"><%= cities_all %></td>
+            </tr>
+            <tr>
+                <td>Участников</td>
+                <td class="text-center"><%= participants_current %></td>
+                <td class="text-center"><%= participants_all %></td>
+            </tr>
+            <tr>
+                <td>Средний рейтинг</td>
+                <td class="text-center"><%= avg_rating_current %></td>
+                <td class="text-center"><%= avg_rating_all %></td>
+            </tr>
+            <tr>
+                <td>Новичков: кто впервые на турнире такого типа</td>
+                <td class="text-center"><%= newcomers_current %></td>
+                <td class="text-center"><%= newcomers_all %></td>
+            </tr>
+            <tr>
+                <td>Игр</td>
+                <td class="text-center"><%= games_current %></td>
+                <td class="text-center"><%= games_all %></td>
+            </tr>
+            <tr>
+                <td>Матчей</td>
+                <td class="text-center"><%= matches_current %></td>
+                <td class="text-center"><%= matches_all %></td>
+            </tr>
+            <tr>
                 <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math> розыгрыша</td>
                 <td class="text-center"><%= seconds_per_point_current %></td>
                 <td class="text-center"><%= seconds_per_point_all %></td>
@@ -174,9 +204,47 @@
                 <td class="text-center"><%= match_seconds_all %></td>
             </tr>
             <tr>
-                <td>Игр в матче</td>
+                <td>Самая продолжительная игра</td>
+                <td class="text-center"><%= longest_game_current %></td>
+                <td class="text-center"><%= longest_game_all %></td>
+            </tr>
+            <tr>
+                <td>Самый продолжительный матч</td>
+                <td class="text-center"><%= longest_match_current %></td>
+                <td class="text-center"><%= longest_match_all %></td>
+            </tr>
+            <% if (games_in_match_wins > 1) { %>
+            <tr>
+                <!-- матчи длятся от wins до 2×wins−1 игр -->
+                <td>Игр в матче (<%= games_in_match_wins %>-<%= games_in_match_wins * 2 - 1 %>)</td>
                 <td class="text-center"><%= games_per_match_current %></td>
                 <td class="text-center"><%= games_per_match_all %></td>
+            </tr>
+            <% } %>
+            <tr>
+                <td>Дельта рейтинга: топ прироста</td>
+                <td class="text-center"><%= rating_delta_rise_current %></td>
+                <td class="text-center"><%= rating_delta_rise_all %></td>
+            </tr>
+            <tr>
+                <td>Дельта рейтинга: топ падения</td>
+                <td class="text-center"><%= rating_delta_fall_current %></td>
+                <td class="text-center"><%= rating_delta_fall_all %></td>
+            </tr>
+            <tr>
+                <td>Топ винрейта</td>
+                <td class="text-center"><%= winrate_current %></td>
+                <td class="text-center"><%= winrate_all %></td>
+            </tr>
+            <tr>
+                <td>Повторные пары: количество кто играл вместе не в первый раз</td>
+                <td class="text-center"><%= repeat_pairs_current %></td>
+                <td class="text-center"><%= repeat_pairs_all %></td>
+            </tr>
+            <tr>
+                <td>Как быстро набивается capacity по типам турниров</td>
+                <td class="text-center"><%= capacity_fill_current %></td>
+                <td class="text-center"><%= capacity_fill_all %></td>
             </tr>
             </tbody>
         </table>

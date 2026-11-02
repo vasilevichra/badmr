@@ -202,6 +202,7 @@ CREATE TABLE tournament_user
     archived      BOOLEAN NOT NULL DEFAULT 0, -- Игрок не отображается в основном списке участников турнира
     confirmed      BOOLEAN NOT NULL DEFAULT 0, -- Подтверждена ли предварительная регистрация
     paid          BOOLEAN NOT NULL DEFAULT 0, -- Оплата турнирного взноса
+    created_at    DATETIME, -- момент регистрации; NULL у исторических строк до появления поля
     CHECK (available IN (0, 1)),
     CHECK (archived IN (0, 1)),
     CHECK (confirmed IN (0, 1)),

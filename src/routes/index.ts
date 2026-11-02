@@ -10,6 +10,8 @@ import UnitService from '../services/unit.ts';
 const unitService = new UnitService();
 import MatchService from '../services/match.ts';
 const matchService = new MatchService();
+import StatsService from '../services/stats.ts';
+const statsService = new StatsService();
 import AchievementService from '../services/achievement.ts';
 const achievementService = new AchievementService();
 import GroupService from '../services/group.ts';
@@ -28,16 +30,62 @@ const formatSeconds = (value: number | null): string => {
 const formatAvg = (value: number | null): string =>
   value === null ? '—' : String(Math.round(value * 10) / 10).replace('.', ',');
 
-const stats = (tournamentId?: number) => ({
-  seconds_per_point_current: formatSeconds(matchService.getMedianSecondsPerPointCurrent(tournamentId)),
-  seconds_per_point_all: formatSeconds(matchService.getMedianSecondsPerPoint()),
-  game_seconds_current: formatSeconds(matchService.getMedianGameSecondsCurrent(tournamentId)),
-  game_seconds_all: formatSeconds(matchService.getMedianGameSeconds()),
-  match_seconds_current: formatSeconds(matchService.getMedianMatchSecondsCurrent(tournamentId)),
-  match_seconds_all: formatSeconds(matchService.getMedianMatchSeconds()),
-  games_per_match_current: formatAvg(matchService.getAverageGamesPerMatchCurrent(tournamentId)),
-  games_per_match_all: formatAvg(matchService.getAverageGamesPerMatch()),
-});
+/** Число или «—» без данных. */
+const formatNum = (value: number | null): string => value === null ? '—' : String(value);
+
+const stats = (tournamentId?: number) => {
+  const wins = Number(settingsService.get('wins', tournamentId) ?? 2);
+  const cities = statsService.cities(tournamentId);
+  const participants = statsService.participants(tournamentId);
+  const avgRating = statsService.avgRating(tournamentId);
+  const newcomers = statsService.newcomers(tournamentId);
+  const games = statsService.games(tournamentId);
+  const matches = statsService.matches(tournamentId);
+  const longestGame = statsService.longestGameSeconds(tournamentId);
+  const longestMatch = statsService.longestMatchSeconds(tournamentId);
+  const delta = statsService.ratingDelta(tournamentId);
+  const winrate = statsService.topWinrate(tournamentId);
+  const repeatPairs = statsService.repeatPairs(tournamentId);
+  const capacityFill = statsService.capacityFillSeconds(tournamentId);
+  return {
+    seconds_per_point_current: formatSeconds(matchService.getMedianSecondsPerPointCurrent(tournamentId)),
+    seconds_per_point_all: formatSeconds(matchService.getMedianSecondsPerPoint()),
+    game_seconds_current: formatSeconds(matchService.getMedianGameSecondsCurrent(tournamentId)),
+    game_seconds_all: formatSeconds(matchService.getMedianGameSeconds()),
+    match_seconds_current: formatSeconds(matchService.getMedianMatchSecondsCurrent(tournamentId)),
+    match_seconds_all: formatSeconds(matchService.getMedianMatchSeconds()),
+    games_per_match_current: formatAvg(matchService.getAverageGamesPerMatchCurrent(tournamentId)),
+    games_per_match_all: formatAvg(statsService.avgGamesPerMatchAll(tournamentId)),
+    // «Игр в матче (2-3)»: матчи длятся от wins до 2×wins−1 игр
+    games_in_match_wins: wins,
+    cities_current: formatNum(cities.current),
+    cities_all: formatNum(cities.all),
+    participants_current: formatNum(participants.current),
+    participants_all: formatNum(participants.all),
+    avg_rating_current: formatAvg(avgRating.current),
+    avg_rating_all: formatAvg(avgRating.all),
+    newcomers_current: formatNum(newcomers.current),
+    newcomers_all: formatNum(newcomers.all),
+    games_current: formatNum(games.current),
+    games_all: formatNum(games.all),
+    matches_current: formatNum(matches.current),
+    matches_all: formatNum(matches.all),
+    longest_game_current: formatSeconds(longestGame.current),
+    longest_game_all: formatSeconds(longestGame.all),
+    longest_match_current: formatSeconds(longestMatch.current),
+    longest_match_all: formatSeconds(longestMatch.all),
+    rating_delta_rise_current: formatNum(delta.riseCurrent),
+    rating_delta_rise_all: formatNum(delta.riseAll),
+    rating_delta_fall_current: formatNum(delta.fallCurrent),
+    rating_delta_fall_all: formatNum(delta.fallAll),
+    winrate_current: winrate.current === null ? '—' : `${winrate.current}%`,
+    winrate_all: winrate.all === null ? '—' : `${winrate.all}%`,
+    repeat_pairs_current: formatNum(repeatPairs.current),
+    repeat_pairs_all: formatNum(repeatPairs.all),
+    capacity_fill_current: formatSeconds(capacityFill.current),
+    capacity_fill_all: formatSeconds(capacityFill.all),
+  };
+};
 
 const renderTournamentPage = (
     req: Express.Request,

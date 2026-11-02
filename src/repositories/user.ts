@@ -334,8 +334,8 @@ class User {
 
   registerAll() {
     return this.db.run(
-        `INSERT INTO tournament_user (tournament_id, user_id, available)
-         SELECT (SELECT t.id FROM tournament t WHERE t.current = 1), u.id, 1
+        `INSERT INTO tournament_user (tournament_id, user_id, available, created_at)
+         SELECT (SELECT t.id FROM tournament t WHERE t.current = 1), u.id, 1, datetime('now')
          FROM user u
          WHERE true
          ON CONFLICT DO NOTHING`
@@ -344,8 +344,8 @@ class User {
 
   registerByIds(ids: number[]) {
     return this.db.run(
-        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
-         SELECT (SELECT t.id FROM tournament t WHERE t.current = 1), u.id, 1, 0
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
+         SELECT (SELECT t.id FROM tournament t WHERE t.current = 1), u.id, 1, 0, datetime('now')
          FROM user u
          WHERE u.id IN (SELECT value FROM json_each(?))
          ON CONFLICT DO UPDATE SET available = 1,
@@ -384,8 +384,8 @@ class User {
   actualize() {
     this.archiveAll();
     return this.db.run(
-        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
-         SELECT (SELECT id FROM tournament WHERE current = 1), user_id, 1, 0
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
+         SELECT (SELECT id FROM tournament WHERE current = 1), user_id, 1, 0, datetime('now')
          FROM delta_month
          WHERE true
          ON CONFLICT DO UPDATE SET available = 1,
@@ -395,8 +395,8 @@ class User {
 
   archive(id: number) {
     return this.db.run(
-        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
-         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 0, 1)
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
+         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 0, 1, datetime('now'))
          ON CONFLICT DO UPDATE SET archived  = 1,
                                    available = 0`,
         [id]
@@ -405,8 +405,8 @@ class User {
 
   archiveAll() {
     return this.db.run(
-        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
-         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
+         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1, datetime('now')
          FROM players
          WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
          ON CONFLICT DO UPDATE SET available = 0,
@@ -416,8 +416,8 @@ class User {
 
   unarchive(id: number) {
     return this.db.run(
-        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
-         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 1, 0)
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
+         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 1, 0, datetime('now'))
          ON CONFLICT DO UPDATE SET available = 1,
                                    archived  = 0`,
         [id]
@@ -426,8 +426,8 @@ class User {
 
   unarchiveAll() {
     return this.db.run(
-        `INSERT INTO tournament_user (tournament_id, user_id, available, archived)
-         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1
+        `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
+         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1, datetime('now')
          FROM players
          WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
          ON CONFLICT DO UPDATE SET available = 1,
