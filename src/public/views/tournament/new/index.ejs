@@ -194,7 +194,7 @@
                 <td class="text-center"><%= seconds_per_point_all %></td>
             </tr>
             <tr>
-                <td><math><mover accent="true"><mi>игра</mi><mo>‾</mo></mover></math></td>
+                <td><math><msub><mi><mover accent="true"><mi>t</mi><mo>‾</mo></mover></mi><mi>1</mi></msub></math></td>
                 <td class="text-center"><%= game_seconds_current %></td>
                 <td class="text-center"><%= game_seconds_all %></td>
             </tr>
@@ -204,12 +204,12 @@
                 <td class="text-center"><%= match_seconds_all %></td>
             </tr>
             <tr>
-                <td>Самая продолжительная игра</td>
+                <td>max(t) игры</td>
                 <td class="text-center"><%= longest_game_current %></td>
                 <td class="text-center"><%= longest_game_all %></td>
             </tr>
             <tr>
-                <td>Самый продолжительный матч</td>
+                <td>max(t) матча</td>
                 <td class="text-center"><%= longest_match_current %></td>
                 <td class="text-center"><%= longest_match_all %></td>
             </tr>
