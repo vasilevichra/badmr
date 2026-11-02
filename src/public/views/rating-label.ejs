@@ -5,6 +5,8 @@
       delta — true, если это дельта рейтинга: добавляется знак (+ для неотрицательных)
               и цветовой класс rating-plus/rating-minus (span);
               иначе выводится просто число (Σ-рейтинг, разница).
+      calibration — true (вместе с delta): дельта матча калибровки — класс
+              rating-calibration вместо plus/minus (знак сохраняется).
     Для null/undefined выводится пустая строка.
     Используется в достижениях, истории матчей и карточке игрока. %>
-<% if (v !== null && v !== undefined) { const n = Number(v); const t = String(Number(n.toFixed(2))); const isDelta = typeof delta !== 'undefined' && delta === true; if (isDelta) { %><span class="<%= n < 0 ? 'rating-minus' : 'rating-plus' %>"><%= n >= 0 ? '+' : '' %><%= t %></span><% } else { %><%= t %><% } } %>
+<% if (v !== null && v !== undefined) { const n = Number(v); const t = String(Number(n.toFixed(2))); const isDelta = typeof delta !== 'undefined' && delta === true; if (isDelta) { const cls = typeof calibration !== 'undefined' && calibration === true ? 'rating-calibration' : (n < 0 ? 'rating-minus' : 'rating-plus'); %><span class="<%= cls %>"><%= n >= 0 ? '+' : '' %><%= t %></span><% } else { %><%= t %><% } } %>

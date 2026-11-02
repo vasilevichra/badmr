@@ -950,6 +950,11 @@ input:focus::placeholder {
   color: rgba(220, 53, 69) !important;
 }
 
+/* дельта матча калибровки (усиленный K) — нейтральный жёлтый */
+.rating-calibration {
+  color: rgba(255, 193, 7) !important;
+}
+
 /* ✕ очистки поисковой строки регистрации: цвет отражает результат поиска
    по badminton4u.ru — found: один игрок, many: несколько, blocked: сайт
    недоступен; без состояния — серый. Родной ::-webkit-search-cancel-button

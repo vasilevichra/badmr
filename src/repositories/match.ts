@@ -39,6 +39,8 @@ export interface SameTypeMatchRow {
   wins2: number;
   /** дельта рейтинга игрока карточки в этом матче */
   delta: number | null;
+  /** матч из калибровочной серии — дельта рисуется нейтрально (rating-calibration) */
+  calibrated: number;
 }
 
 type GetInfoRequest = (max_point: number, game_point: number, user_id: number, tournament_id?: number) => GetInfoRow[];
@@ -47,8 +49,9 @@ class Match {
   declare static _instance: Match | undefined;
   db!: DB;
 
-  /** Порог калибровки для фильтра дельт: матчи калибровочной серии
-   *  (stale=1, series 1..calibration_matches) не показывают дельту. */
+  /** Порог калибровки для флага дельт: матчи калибровочной серии
+   *  (stale=1, series 1..calibration_matches) помечаются calibrated=1 —
+   *  их дельта рисуется нейтральным цветом (rating-calibration). */
   private calibrationMatches(tournamentId?: number): number {
     return Number(settingsService.get('calibration_matches', tournamentId)) || 0;
   }
@@ -172,11 +175,11 @@ class Match {
               g.created_at                                                                                                        AS game_created_at,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_1_id, m.user_2_id) AND match_id = m.id) AS rating1,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_3_id, m.user_4_id) AND match_id = m.id) AS rating2,
-              -- дельта матча калибровки не показывается (NULL — пустая ячейка):
-              -- усиленный K не отражает спортивный результат
-              (SELECT CASE WHEN stale = 1 AND series BETWEEN 1 AND $calibration_matches THEN NULL
-                           ELSE delta END
-               FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1 -- delta2 вычисляется сменой знака
+              (SELECT delta FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1, -- delta2 вычисляется сменой знака
+              -- признак калибровки: усиленный K не отражает спортивный результат,
+              -- дельта показывается нейтральным цветом (rating-calibration)
+              (SELECT CASE WHEN stale = 1 AND series BETWEEN 1 AND $calibration_matches THEN 1 ELSE 0 END
+               FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS calibrated
        FROM match m
                 JOIN user u1 on u1.id = m.user_1_id
                 JOIN user u2 on u2.id = m.user_2_id
@@ -227,9 +230,10 @@ class Match {
               g.created_at                                                                                                        AS game_created_at,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_1_id, m.user_2_id) AND match_id = m.id) AS rating1,
               (SELECT sum(coalesce(previous, 0)) / 2 FROM rating WHERE user_id IN (m.user_3_id, m.user_4_id) AND match_id = m.id) AS rating2,
-              (SELECT CASE WHEN stale = 1 AND series BETWEEN 1 AND $calibration_matches THEN NULL
-                           ELSE delta END
-               FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1 -- delta2 вычисляется сменой знака
+              (SELECT delta FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS delta1, -- delta2 вычисляется сменой знака
+              -- признак калибровки: дельта рисуется rating-calibration
+              (SELECT CASE WHEN stale = 1 AND series BETWEEN 1 AND $calibration_matches THEN 1 ELSE 0 END
+               FROM rating WHERE user_id = m.user_1_id AND match_id = m.id)                             AS calibrated
        FROM match m
                 JOIN user u1 on u1.id = m.user_1_id
                 JOIN user u2 on u2.id = m.user_2_id
@@ -276,10 +280,10 @@ class Match {
               (SELECT pic FROM user_pic WHERE user_id = m.user_4_id)              AS pic4,
               (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_2_by IS NOT NULL) AS wins1,
               (SELECT count(*) FROM game g WHERE g.match_id = m.id AND g.lost_1_by IS NOT NULL) AS wins2,
-              -- дельта матча калибровки не показывается (NULL — пустая ячейка)
-              (SELECT CASE WHEN r.stale = 1 AND r.series BETWEEN 1 AND $calibration_matches THEN NULL
-                           ELSE r.delta END
-               FROM rating r WHERE r.match_id = m.id AND r.user_id = $user_id)   AS delta
+              (SELECT r.delta FROM rating r WHERE r.match_id = m.id AND r.user_id = $user_id)   AS delta,
+              -- признак калибровки: дельта рисуется rating-calibration
+              (SELECT CASE WHEN r.stale = 1 AND r.series BETWEEN 1 AND $calibration_matches THEN 1 ELSE 0 END
+               FROM rating r WHERE r.match_id = m.id AND r.user_id = $user_id)   AS calibrated
        FROM match m
                 JOIN tournament t ON t.id = m.tournament_id
                 JOIN gym g ON g.id = t.gym_id
