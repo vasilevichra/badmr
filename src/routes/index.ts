@@ -52,12 +52,12 @@ const stats = (tournamentId?: number) => {
   const winrate = statsService.topWinrate(tournamentId);
   const capacityFill = statsService.capacityFillSeconds(tournamentId);
   return {
-    seconds_per_point_current: formatSeconds(matchService.getMedianSecondsPerPointCurrent(tournamentId)),
-    seconds_per_point_all: formatSeconds(matchService.getMedianSecondsPerPoint()),
-    game_seconds_current: formatSeconds(matchService.getMedianGameSecondsCurrent(tournamentId)),
-    game_seconds_all: formatSeconds(matchService.getMedianGameSeconds()),
-    match_seconds_current: formatSeconds(matchService.getMedianMatchSecondsCurrent(tournamentId)),
-    match_seconds_all: formatSeconds(matchService.getMedianMatchSeconds()),
+    seconds_per_point_current: formatSeconds(matchService.getMeanSecondsPerPointCurrent(tournamentId)),
+    seconds_per_point_all: formatSeconds(matchService.getMeanSecondsPerPoint()),
+    game_seconds_current: formatSeconds(matchService.getMeanGameSecondsCurrent(tournamentId)),
+    game_seconds_all: formatSeconds(matchService.getMeanGameSeconds()),
+    match_seconds_current: formatSeconds(matchService.getMeanMatchSecondsCurrent(tournamentId)),
+    match_seconds_all: formatSeconds(matchService.getMeanMatchSeconds()),
     games_per_match_current: formatAvg(matchService.getAverageGamesPerMatchCurrent(tournamentId)),
     games_per_match_all: formatAvg(statsService.avgGamesPerMatchAll(tournamentId)),
     // «Игр в матче (2-3)»: матчи длятся от wins до 2×wins−1 игр

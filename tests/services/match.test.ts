@@ -393,8 +393,8 @@ describe("Match", () => {
     });
   });
 
-  describe("медианное время на очко", () => {
-    it("должен считать медиану времени на очко по всем турнирам и по текущему", async () => {
+  describe("среднее время на очко", () => {
+    it("должен считать среднее время на очко по всем турнирам и по текущему", async () => {
       const ids = await seedMatchUsers();
       const createMatch = async () => {
         await matchService.create(...(ids as [number, number, number, number]));
@@ -423,20 +423,20 @@ describe("Match", () => {
       db.exec(`UPDATE match SET created_at = '2026-01-01 12:00:00', tournament_id = 1 WHERE id = ${c}`);
       db.exec(`UPDATE match SET created_at = '2026-01-01 13:00:00' WHERE id = ${d}`);
 
-      // медиана секунд на очко по матчам: {300/73, 600/62} → среднее двух средних
-      assert.ok(Math.abs(matchService.getMedianSecondsPerPoint()! - (300 / 73 + 600 / 62) / 2) < 1e-3);
+      // среднее секунд на очко по матчам: (300/73 + 600/62) / 2
+      assert.ok(Math.abs(matchService.getMeanSecondsPerPoint()! - (300 / 73 + 600 / 62) / 2) < 1e-3);
       // текущий турнир: один матч → 300 / 73 с/очко
-      assert.ok(Math.abs(matchService.getMedianSecondsPerPointCurrent()! - 300 / 73) < 1e-3);
+      assert.ok(Math.abs(matchService.getMeanSecondsPerPointCurrent()! - 300 / 73) < 1e-3);
     });
 
     it("должен вернуть null без подходящих матчей", async () => {
-      assert.strictEqual(matchService.getMedianSecondsPerPoint(), null);
-      assert.strictEqual(matchService.getMedianSecondsPerPointCurrent(), null);
+      assert.strictEqual(matchService.getMeanSecondsPerPoint(), null);
+      assert.strictEqual(matchService.getMeanSecondsPerPointCurrent(), null);
     });
   });
 
-  describe("медианные длительности игры и матча, игр в матче", () => {
-    it("должен считать медианную длительность игры, матча и число игр по всем турнирам и по текущему", async () => {
+  describe("средние длительности игры и матча, игр в матче", () => {
+    it("должен считать среднюю длительность игры, матча и число игр по всем турнирам и по текущему", async () => {
       const ids = await seedMatchUsers();
       const createMatch = async () => {
         await matchService.create(...(ids as [number, number, number, number]));
@@ -469,22 +469,22 @@ describe("Match", () => {
       db.exec(`UPDATE match SET created_at = '2026-01-01 12:00:00', tournament_id = 1 WHERE id = ${c}`);
       db.exec(`UPDATE match SET created_at = '2026-01-01 14:00:00' WHERE id = ${e}`);
 
-      // медиана длительности матча: все — {300, 420, 600} → 420 с; текущий — {300, 420} → 360 с
-      assert.ok(Math.abs(matchService.getMedianMatchSeconds()! - 420) < 1e-3);
-      assert.ok(Math.abs(matchService.getMedianMatchSecondsCurrent()! - 360) < 1e-3);
-      // медиана длительности игры: все — {120×3, 180×2, 300×2} → 180 с; текущий — {120×3, 180×2} → 120 с
-      assert.ok(Math.abs(matchService.getMedianGameSeconds()! - 180) < 1e-3);
-      assert.ok(Math.abs(matchService.getMedianGameSecondsCurrent()! - 120) < 1e-3);
+      // средняя длительность матча: все — {300, 420, 600} → 440 с; текущий — {300, 420} → 360 с
+      assert.ok(Math.abs(matchService.getMeanMatchSeconds()! - 440) < 1e-3);
+      assert.ok(Math.abs(matchService.getMeanMatchSecondsCurrent()! - 360) < 1e-3);
+      // средняя длительность игры: все — {120×3, 180×2, 300×2} → 1320/7 с; текущий — {120×3, 180×2} → 144 с
+      assert.ok(Math.abs(matchService.getMeanGameSeconds()! - 1320 / 7) < 1e-3);
+      assert.ok(Math.abs(matchService.getMeanGameSecondsCurrent()! - 144) < 1e-3);
       // игр в матче — среднее (показатель как float): все — (2 + 2 + 3) / 3; текущий — (2 + 3) / 2
       assert.ok(Math.abs(matchService.getAverageGamesPerMatch()! - 7 / 3) < 1e-3);
       assert.ok(Math.abs(matchService.getAverageGamesPerMatchCurrent()! - 2.5) < 1e-3);
     });
 
     it("должен вернуть null без подходящих матчей", async () => {
-      assert.strictEqual(matchService.getMedianMatchSeconds(), null);
-      assert.strictEqual(matchService.getMedianMatchSecondsCurrent(), null);
-      assert.strictEqual(matchService.getMedianGameSeconds(), null);
-      assert.strictEqual(matchService.getMedianGameSecondsCurrent(), null);
+      assert.strictEqual(matchService.getMeanMatchSeconds(), null);
+      assert.strictEqual(matchService.getMeanMatchSecondsCurrent(), null);
+      assert.strictEqual(matchService.getMeanGameSeconds(), null);
+      assert.strictEqual(matchService.getMeanGameSecondsCurrent(), null);
       assert.strictEqual(matchService.getAverageGamesPerMatch(), null);
       assert.strictEqual(matchService.getAverageGamesPerMatchCurrent(), null);
     });

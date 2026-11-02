@@ -25,12 +25,12 @@ class Match {
   getAllFinishedAtLastSession = (tournamentId?: number) => this.match.getAllFinishedAtLastSession(tournamentId);
   getAllByUser = (user_id: number, tournamentId?: number) => this.match.getAllByUser(user_id, tournamentId);
   getAllByUserSameType = (user_id: number, type_id: number, excludeTournamentId?: number) => this.match.getAllByUserSameType(user_id, type_id, excludeTournamentId);
-  getMedianSecondsPerPoint = () => this.match.getMedianSecondsPerPoint(false);
-  getMedianSecondsPerPointCurrent = (tournamentId?: number) => this.match.getMedianSecondsPerPoint(true, tournamentId);
-  getMedianMatchSeconds = () => this.match.getMedianMatchSeconds(false);
-  getMedianMatchSecondsCurrent = (tournamentId?: number) => this.match.getMedianMatchSeconds(true, tournamentId);
-  getMedianGameSeconds = () => this.match.getMedianGameSeconds(false);
-  getMedianGameSecondsCurrent = (tournamentId?: number) => this.match.getMedianGameSeconds(true, tournamentId);
+  getMeanSecondsPerPoint = () => this.match.getMeanSecondsPerPoint(false);
+  getMeanSecondsPerPointCurrent = (tournamentId?: number) => this.match.getMeanSecondsPerPoint(true, tournamentId);
+  getMeanMatchSeconds = () => this.match.getMeanMatchSeconds(false);
+  getMeanMatchSecondsCurrent = (tournamentId?: number) => this.match.getMeanMatchSeconds(true, tournamentId);
+  getMeanGameSeconds = () => this.match.getMeanGameSeconds(false);
+  getMeanGameSecondsCurrent = (tournamentId?: number) => this.match.getMeanGameSeconds(true, tournamentId);
   getAverageGamesPerMatch = () => this.match.getAverageGamesPerMatch(false);
   getAverageGamesPerMatchCurrent = (tournamentId?: number) => this.match.getAverageGamesPerMatch(true, tournamentId);
   getById = (id: number) => this.match.getById(id);

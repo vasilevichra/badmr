@@ -170,10 +170,10 @@ describe("Личный просмотр турнира (?tournament=)", () => {
     });
   });
 
-  describe("match: медианы и история", () => {
-    it("медианы с параметром считаются по турниру 3", () => {
-      assert.strictEqual(matchService.getMedianMatchSecondsCurrent(B), 600);
-      assert.strictEqual(matchService.getMedianMatchSecondsCurrent(), 120);
+  describe("match: средние и история", () => {
+    it("средние с параметром считаются по турниру 3", () => {
+      assert.strictEqual(matchService.getMeanMatchSecondsCurrent(B), 600);
+      assert.strictEqual(matchService.getMeanMatchSecondsCurrent(), 120);
     });
 
     it("история последней сессии с параметром — матчи турнира 3", async () => {

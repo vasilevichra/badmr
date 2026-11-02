@@ -49,7 +49,7 @@ class Game {
   };
 
   /** Счёт выигравшей пары по правилам бадминтона (те же CASE-выражения,
-   *  что в getMedianSecondsPerPoint): до game_point−2 — game_point,
+   *  что в getMeanSecondsPerPoint): до game_point−2 — game_point,
    *  до max_point−2 — lost+2, дальше — max_point. */
   private winPoints(lost: number): number {
     const gamePoint = Number(settingsService.get('game_point'));
@@ -57,7 +57,7 @@ class Game {
     return lost < gamePoint - 1 ? gamePoint : lost < maxPoint - 1 ? lost + 2 : maxPoint;
   }
 
-  /** Очки игры — сумма счёта обеих пар (как в getMedianSecondsPerPoint). */
+  /** Очки игры — сумма счёта обеих пар (как в getMeanSecondsPerPoint). */
   private gamePoints(lost_1_by: number | null, lost_2_by: number | null): number {
     if (lost_1_by !== null && lost_1_by !== undefined) return lost_1_by + this.winPoints(lost_1_by);
     if (lost_2_by !== null && lost_2_by !== undefined) return lost_2_by + this.winPoints(lost_2_by);
@@ -70,7 +70,7 @@ class Game {
    *  Записи без id — новые колонки: пустые пропускаются, заполненные
    *  создаются с экстраполированным created_at — среднее время на очко
    *  матча до редактирования (интервал от первой до последней игры,
-   *  делённый на очки игр после первой; фолбэк — медиана по системе,
+   *  делённый на очки игр после первой; фолбэк — среднее по системе,
    *  при нуле — время предыдущей игры). Пересчёт рейтинга — один
    *  каскад от матча в конце. */
   applyMatchGames = (match_id: number, games: {id?: number; lost_1_by: string | null; lost_2_by: string | null}[]) => {
@@ -86,7 +86,7 @@ class Game {
       if (durationSeconds > 0) secondsPerPoint = durationSeconds / pointsAfterFirst;
     }
     if (secondsPerPoint <= 0) {
-      secondsPerPoint = Number(matchRepository.getMedianSecondsPerPoint(false)) || 0;
+      secondsPerPoint = Number(matchRepository.getMeanSecondsPerPoint(false)) || 0;
     }
 
     let prevCreatedAt = last?.created_at;
