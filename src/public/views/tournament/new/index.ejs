@@ -1,256 +1,340 @@
 <%- include('registration', {tournament: tournament} ); %>
 
-<% if (registered_count > 0) { %>
-<div class="container">
-    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-    <div id="player" class="player closable">
+    <% if (registered_count> 0) { %>
         <div class="container">
-            <% if (user) { %>
-                <h1 class="text-center no-selection">Игроки</h1>
-            <% } %>
-            <div class="col-lg-12 col-md-12 col-sm-12 desc">
-                <table id="player-table" data-editable="true" class="table table-responsive"></table>
+            <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button"
+                    tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
+            <div id="player" class="player closable">
+                <div class="container">
+                    <% if (user) { %>
+                        <h1 class="text-center no-selection">Игроки</h1>
+                        <% } %>
+                            <div class="col-lg-12 col-md-12 col-sm-12 desc">
+                                <table id="player-table" data-editable="true" class="table table-responsive"></table>
+                            </div>
+                            <% if (user) { %>
+                                <%- include('player-toolbar'); %>
+                                    <% } %>
+                </div>
             </div>
-            <% if (user) { %>
-                <%- include('player-toolbar'); %>
-            <% } %>
+            <hr class="hr-dashed" />
         </div>
-    </div>
-    <hr class="hr-dashed"/>
-</div>
-<% } %>
+        <% } %>
 
-<div id="player-window" class="modal fade" tabindex="-1"></div>
+            <div id="player-window" class="modal fade" tabindex="-1"></div>
 
-<div id="player-signup-window" class="modal fade" tabindex="-1">
-    <%- include('../../signup', { kind: 'modal', states: states, regions: regions, cities: cities } ); %>
-</div>
+            <div id="player-signup-window" class="modal fade" tabindex="-1">
+                <%- include('../../signup', { kind: 'modal' , states: states, regions: regions, cities: cities } ); %>
+            </div>
 
-<% if (user) { %>
-    <div class="select" id="select">
-        <div class="container">
-            <h1 class="text-center no-selection">Подбор</h1>
-            <div id="select-block" class="col-lg-12 col-md-12 col-sm-12 desc">
-                <div id="select-info" class="row" style="display:none">
-                    <div class="text-center no-selection">
-                        <label>Нет игроков, подходящих под критерии выбора: зарегистрируйте больше игроков на </label>
-                        <a onclick="scrollToId('player')" href="#">турнир</a>
-                        <label>или добавьте </label>
-                        <a onclick="scrollToId('court')" href="#">корты</a>
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <% if (user) { %>
+                <div class="select" id="select">
+                    <div class="container">
+                        <h1 class="text-center no-selection">Подбор</h1>
+                        <div id="select-block" class="col-lg-12 col-md-12 col-sm-12 desc">
+                            <div id="select-info" class="row" style="display:none">
+                                <div class="text-center no-selection">
+                                    <label>Нет игроков, подходящих под критерии выбора: зарегистрируйте больше игроков
+                                        на </label>
+                                    <a onclick="scrollToId('player')" href="#">турнир</a>
+                                    <label>или добавьте </label>
+                                    <a onclick="scrollToId('court')" href="#">корты</a>
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="text-center">
+                                    <button id="select-button" type="button"
+                                        class="btn btn-lg btn-success mx-auto w-auto">Подобрать</button>
+                                </div>
+                            </div>
+                            <%- include('select-form'); %>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="text-center">
-                        <button id="select-button" type="button" class="btn btn-lg btn-success mx-auto w-auto">Подобрать</button>
+
+                <div class="game" id="game">
+                    <div class="container">
+                        <h1 class="text-center no-selection">Игры</h1>
+                        <div class="game-info row">
+                            <div class="text-center no-selection">
+                                <label>Тут появится информация по играм, после их </label>
+                                <a onclick="scrollToId('select')" href="#">подбора</a>
+                            </div>
+                        </div>
+                        <div id="game-block"></div>
+                        <%- include('game-form'); %>
                     </div>
                 </div>
-                <%- include('select-form'); %>
-            </div>
-        </div>
-    </div>
+                <% } %>
 
-    <div class="game" id="game">
-        <div class="container">
-            <h1 class="text-center no-selection">Игры</h1>
-            <div class="game-info row">
-                <div class="text-center no-selection">
-                    <label>Тут появится информация по играм, после их </label>
-                    <a onclick="scrollToId('select')" href="#">подбора</a>
-                </div>
-            </div>
-            <div id="game-block"></div>
-            <%- include('game-form'); %>
-        </div>
-    </div>
-<% } %>
+                    <% if (matches.length> 0) { %>
+                        <div class="container">
+                            <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)"
+                                    role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
+                            <div id="match-history" class="match-history closable">
+                                <% if (user) { %>
+                                    <h1 class="text-center no-selection">История матчей</h1>
+                                    <% } %>
+                                        <div class="col-lg-12 col-md-12 col-sm-12 desc">
+                                            <div id="match-history-block" class="row justify-content-center mx-auto">
+                                                <% matches.forEach((m, i)=> { %>
+                                                    <%- include('../../match', {index: i, match: m, total:
+                                                        matches.length}); %>
+                                                        <% }) %>
+                                            </div>
+                                        </div>
+                            </div>
+                            <hr class="hr-dashed" />
+                        </div>
+                        <% } %>
+                            <%- include('achievements'); %>
 
-<% if (matches.length > 0) { %>
-<div class="container">
-    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-    <div id="match-history" class="match-history closable">
-        <% if (user) { %>
-            <h1 class="text-center no-selection">История матчей</h1>
-        <% } %>
-        <div class="col-lg-12 col-md-12 col-sm-12 desc">
-            <div id="match-history-block" class="row justify-content-center mx-auto">
-                <% matches.forEach((m, i) => { %>
-                    <%- include('../../match', {index: i, match: m, total: matches.length}); %>
-                <% }) %>
-            </div>
-        </div>
-    </div>
-    <hr class="hr-dashed"/>
-</div>
-<% } %>
-<%- include('achievements'); %>
+                                <% if (user) { %>
+                                    <div class="container">
+                                        <div class="row"><i class="toggler bi bi-chevron-down"
+                                                onclick="toggler.toggle(this)" role="button" tabindex="0"
+                                                aria-label="Свернуть или развернуть блок"></i></div>
+                                        <div id="cort" class="cort closable">
+                                            <h1 class="text-center no-selection">Корты</h1>
+                                            <table id="cort-table" class="mx-auto w-auto"></table>
+                                            <div class="row">
+                                                <div class="text-center">
+                                                    <button class="btn btn-lg btn-success mx-auto w-auto m-3"
+                                                        type="button"
+                                                        onclick="$.post('/api/courts/create', {}, () => { refresh.table.court(); refresh.block.select(); });">
+                                                        Добавить
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="hr-dashed" />
+                                    </div>
 
-<% if (user) { %>
-    <div class="container">
-        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-        <div id="cort" class="cort closable">
-            <h1 class="text-center no-selection">Корты</h1>
-            <table id="cort-table" class="mx-auto w-auto"></table>
-            <div class="row">
-                <div class="text-center">
-                    <button class="btn btn-lg btn-success mx-auto w-auto m-3" type="button" onclick="$.post('/api/courts/create', {}, () => { refresh.table.court(); refresh.block.select(); });">
-                        Добавить
-                    </button>
-                </div>
-            </div>
-        </div>
-        <hr class="hr-dashed"/>
-    </div>
+                                    <div class="container">
+                                        <div class="row"><i class="toggler bi bi-chevron-down"
+                                                onclick="toggler.toggle(this)" role="button" tabindex="0"
+                                                aria-label="Свернуть или развернуть блок"></i></div>
+                                        <div id="tournament" class="tournament closable">
+                                            <h1 class="text-center no-selection">Турнир</h1>
+                                            <table id="tournament-table" class="mx-auto w-auto"></table>
+                                            <div class="row">
+                                                <div class="text-center">
+                                                    <%- include('../../modal/tournament/add', {defaults: defaults}); %>
+                                                        <button class="btn btn-lg btn-success mx-auto w-auto m-3"
+                                                            type="button" data-bs-toggle="modal"
+                                                            data-bs-target="#tournament-add">
+                                                            Добавить
+                                                        </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr class="hr-dashed" />
+                                    </div>
 
-    <div class="container">
-        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-        <div id="tournament" class="tournament closable">
-            <h1 class="text-center no-selection">Турнир</h1>
-            <table id="tournament-table" class="mx-auto w-auto"></table>
-            <div class="row">
-                <div class="text-center">
-                    <%- include('../../modal/tournament/add', {defaults: defaults}); %>
-                    <button class="btn btn-lg btn-success mx-auto w-auto m-3"
-                            type="button"
-                            data-bs-toggle="modal"
-                            data-bs-target="#tournament-add">
-                        Добавить
-                    </button>
-                </div>
-            </div>
-        </div>
-        <hr class="hr-dashed"/>
-    </div>
+                                    <div class="container">
+                                        <div class="row"><i class="toggler bi bi-chevron-down"
+                                                onclick="toggler.toggle(this)" role="button" tabindex="0"
+                                                aria-label="Свернуть или развернуть блок"></i></div>
+                                        <div id="settings" class="settings closable">
+                                            <h1 class="text-center no-selection">Настройки</h1>
+                                            <table id="settings-table" class="mx-auto w-auto"></table>
+                                        </div>
+                                        <hr class="hr-dashed" />
+                                    </div>
 
-    <div class="container">
-        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-        <div id="settings" class="settings closable">
-            <h1 class="text-center no-selection">Настройки</h1>
-            <table id="settings-table" class="mx-auto w-auto"></table>
-        </div>
-        <hr class="hr-dashed"/>
-    </div>
+                                    <div class="container">
+                                        <div class="row"><i class="toggler bi bi-chevron-down"
+                                                onclick="toggler.toggle(this)" role="button" tabindex="0"
+                                                aria-label="Свернуть или развернуть блок"></i></div>
+                                        <div id="player-archive" class="player-archive closable">
+                                            <h1 class="text-center no-selection">Архив</h1>
+                                            <table id="player-archive-table"
+                                                class="justify-content-center mx-auto w-auto"></table>
+                                        </div>
+                                        <hr class="hr-dashed" />
+                                    </div>
 
-    <div class="container">
-        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-        <div id="player-archive" class="player-archive closable">
-            <h1 class="text-center no-selection">Архив</h1>
-            <table id="player-archive-table" class="justify-content-center mx-auto w-auto"></table>
-        </div>
-        <hr class="hr-dashed"/>
-    </div>
+                                    <div class="pb-5"></div>
+                                    <!-- Пустое пространство для корректного отображения последнего блока -->
+                                    <% } %>
 
-    <div class="pb-5"></div> <!-- Пустое пространство для корректного отображения последнего блока -->
-<% } %>
+                                        <div class="container">
+                                            <div class="row"><i class="toggler bi bi-chevron-down"
+                                                    onclick="toggler.toggle(this)" role="button" tabindex="0"
+                                                    aria-label="Свернуть или развернуть блок"></i></div>
+                                            <div id="stats" class="stats closable">
+                                                <% if (user) { %>
+                                                    <h1 class="text-center no-selection">Статистика</h1>
+                                                    <% } %>
+                                                        <table class="table stats-table mx-auto w-auto">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Параметр</th>
+                                                                    <th class="text-center">Турнир</th>
+                                                                    <th class="text-center">За всё время</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td>Городов</td>
+                                                                    <td class="text-center">
+                                                                        <%= cities_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= cities_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Участников</td>
+                                                                    <td class="text-center">
+                                                                        <%= participants_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= participants_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Средний рейтинг</td>
+                                                                    <td class="text-center">
+                                                                        <%= avg_rating_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= avg_rating_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Новичков, %</td>
+                                                                    <td class="text-center">
+                                                                        <%= newcomers_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= newcomers_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Игр</td>
+                                                                    <td class="text-center">
+                                                                        <%= games_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= games_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>Матчей</td>
+                                                                    <td class="text-center">
+                                                                        <%= matches_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= matches_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math> розыгрыша</td>
+                                                                    <td class="text-center">
+                                                                        <%= seconds_per_point_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= seconds_per_point_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><math><msub><mi><mover accent="true"><mi>t</mi><mo>‾</mo></mover></mi><mi>1</mi></msub></math> игры</td>
+                                                                    <td class="text-center">
+                                                                        <%= game_seconds_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= game_seconds_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><math><mover accent="true"><mi>матч</mi><mo>‾</mo></mover></math></td>
+                                                                    <td class="text-center">
+                                                                        <%= match_seconds_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= match_seconds_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>max(t) игры</td>
+                                                                    <td class="text-center">
+                                                                        <%= longest_game_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= longest_game_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>max(t) матча</td>
+                                                                    <td class="text-center">
+                                                                        <%= longest_match_current %>
+                                                                    </td>
+                                                                    <td class="text-center">
+                                                                        <%= longest_match_all %>
+                                                                    </td>
+                                                                </tr>
+                                                                <% if (games_in_match_wins> 1) { %>
+                                                                    <tr>
+                                                                        <!-- матчи длятся от wins до 2×wins−1 игр -->
+                                                                        <td>Игр в матче (<%= games_in_match_wins %>-<%=
+                                                                                    games_in_match_wins * 2 - 1 %>)</td>
+                                                                        <td class="text-center">
+                                                                            <%= games_per_match_current %>
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <%= games_per_match_all %>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <% } %>
+                                                                        <tr>
+                                                                            <td>Дельта рейтинга: топ прироста</td>
+                                                                            <td class="text-center rating-plus">
+                                                                                <%= rating_delta_rise_current %>
+                                                                            </td>
+                                                                            <td class="text-center rating-plus">
+                                                                                <%= rating_delta_rise_all %>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Дельта рейтинга: топ падения</td>
+                                                                            <td class="text-center rating-minus">
+                                                                                <%= rating_delta_fall_current %>
+                                                                            </td>
+                                                                            <td class="text-center rating-minus">
+                                                                                <%= rating_delta_fall_all %>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Топ винрейта</td>
+                                                                            <td class="text-center">
+                                                                                <%= winrate_current %>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <%= winrate_all %>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>Как быстро набивается capacity по типам
+                                                                                турниров</td>
+                                                                            <td class="text-center">
+                                                                                <%= capacity_fill_current %>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <%= capacity_fill_all %>
+                                                                            </td>
+                                                                        </tr>
+                                                            </tbody>
+                                                        </table>
+                                            </div>
+                                            <hr class="hr-dashed" />
+                                        </div>
 
-<div class="container">
-    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-    <div id="stats" class="stats closable">
-        <% if (user) { %>
-            <h1 class="text-center no-selection">Статистика</h1>
-        <% } %>
-        <table class="table stats-table mx-auto w-auto">
-            <thead>
-            <tr>
-                <th>Параметр</th>
-                <th class="text-center">Турнир</th>
-                <th class="text-center">За всё время</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <td>Городов</td>
-                <td class="text-center"><%= cities_current %></td>
-                <td class="text-center"><%= cities_all %></td>
-            </tr>
-            <tr>
-                <td>Участников</td>
-                <td class="text-center"><%= participants_current %></td>
-                <td class="text-center"><%= participants_all %></td>
-            </tr>
-            <tr>
-                <td>Средний рейтинг</td>
-                <td class="text-center"><%= avg_rating_current %></td>
-                <td class="text-center"><%= avg_rating_all %></td>
-            </tr>
-            <tr>
-                <td>Новичков, %</td>
-                <td class="text-center"><%= newcomers_current %></td>
-                <td class="text-center"><%= newcomers_all %></td>
-            </tr>
-            <tr>
-                <td>Игр</td>
-                <td class="text-center"><%= games_current %></td>
-                <td class="text-center"><%= games_all %></td>
-            </tr>
-            <tr>
-                <td>Матчей</td>
-                <td class="text-center"><%= matches_current %></td>
-                <td class="text-center"><%= matches_all %></td>
-            </tr>
-            <tr>
-                <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math> розыгрыша</td>
-                <td class="text-center"><%= seconds_per_point_current %></td>
-                <td class="text-center"><%= seconds_per_point_all %></td>
-            </tr>
-            <tr>
-                <td><math><msub><mi><mover accent="true"><mi>t</mi><mo>‾</mo></mover></mi><mi>1</mi></msub></math></td>
-                <td class="text-center"><%= game_seconds_current %></td>
-                <td class="text-center"><%= game_seconds_all %></td>
-            </tr>
-            <tr>
-                <td><math><mover accent="true"><mi>матч</mi><mo>‾</mo></mover></math></td>
-                <td class="text-center"><%= match_seconds_current %></td>
-                <td class="text-center"><%= match_seconds_all %></td>
-            </tr>
-            <tr>
-                <td>max(t) игры</td>
-                <td class="text-center"><%= longest_game_current %></td>
-                <td class="text-center"><%= longest_game_all %></td>
-            </tr>
-            <tr>
-                <td>max(t) матча</td>
-                <td class="text-center"><%= longest_match_current %></td>
-                <td class="text-center"><%= longest_match_all %></td>
-            </tr>
-            <% if (games_in_match_wins > 1) { %>
-            <tr>
-                <!-- матчи длятся от wins до 2×wins−1 игр -->
-                <td>Игр в матче (<%= games_in_match_wins %>-<%= games_in_match_wins * 2 - 1 %>)</td>
-                <td class="text-center"><%= games_per_match_current %></td>
-                <td class="text-center"><%= games_per_match_all %></td>
-            </tr>
-            <% } %>
-            <tr>
-                <td>Дельта рейтинга: топ прироста</td>
-                <td class="text-center rating-plus"><%= rating_delta_rise_current %></td>
-                <td class="text-center rating-plus"><%= rating_delta_rise_all %></td>
-            </tr>
-            <tr>
-                <td>Дельта рейтинга: топ падения</td>
-                <td class="text-center rating-minus"><%= rating_delta_fall_current %></td>
-                <td class="text-center rating-minus"><%= rating_delta_fall_all %></td>
-            </tr>
-            <tr>
-                <td>Топ винрейта</td>
-                <td class="text-center"><%= winrate_current %></td>
-                <td class="text-center"><%= winrate_all %></td>
-            </tr>
-            <tr>
-                <td>Как быстро набивается capacity по типам турниров</td>
-                <td class="text-center"><%= capacity_fill_current %></td>
-                <td class="text-center"><%= capacity_fill_all %></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <hr class="hr-dashed"/>
-</div>
-
-<% if (device === 'phone') { %>
-    <div class="col text-center">
-        <div class="social no-selection">
-            <%- include('../../social', {device: device}); %>
-        </div>
-    </div>
-<% } %>
+                                        <% if (device==='phone' ) { %>
+                                            <div class="col text-center">
+                                                <div class="social no-selection">
+                                                    <%- include('../../social', {device: device}); %>
+                                                </div>
+                                            </div>
+                                            <% } %>
