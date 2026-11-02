@@ -8,3 +8,8 @@ DROP TRIGGER enable_resources_when_match_finished;
 
 DROP TRIGGER disable_court_and_tournament_users_by_match_created;
 DROP TRIGGER enable_court_and_tournament_users_by_match_deleted;
+
+DROP TRIGGER restrict_game_gap_by_hour;
+DROP TRIGGER restrict_match_duration_by_hour;
+DROP TRIGGER restrict_game_110_gap_by_two_hours;
+DROP TRIGGER restrict_match_110_duration_by_two_hours;

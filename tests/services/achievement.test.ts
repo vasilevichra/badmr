@@ -43,7 +43,8 @@ describe("Achievement", () => {
   // M4: (u1,u2) против (u5,u6) — победа 2:0
   // M5: (u3,u4) против (u5,u6) — победа 2:0
   // M6: (u3,u4) против (u5,u6) — победа 2:0, первая игра 30:29
-  // длительности игр: M1 40', M2 25', M3 70', M4 90', M5 30', M6 40'
+  // длительности игр: M1 40', M2 25', M3 59', M4 59', M5 25', M6 20'
+  // (констрейнт часа: длительность матча ≤ 60')
   const seedMatches = async (): Promise<number[]> => {
     const ids: number[] = [];
     for (let i = 1; i <= 6; i++) {
@@ -62,10 +63,10 @@ describe("Achievement", () => {
 
     await seed([u1, u2, u3, u4], [[null, "5", 10], [null, "25", 40]]);      // M1: 21:5, 27:25
     await seed([u1, u2, u3, u4], [["5", null, 10], ["8", null, 25]]);       // M2: 5:21, 8:21
-    await seed([u1, u2, u3, u4], [[null, "3", 10], ["20", null, 30], ["20", null, 70]]); // M3: 21:3, 22:20, 22:20
-    await seed([u1, u2, u5, u6], [[null, "8", 30], [null, "3", 90]]);       // M4: 21:8, 21:3
-    await seed([u3, u4, u5, u6], [[null, "5", 10], [null, "15", 30]]);      // M5: 21:5, 21:15
-    await seed([u3, u4, u5, u6], [[null, "29", 10], [null, "15", 40]]);     // M6: 30:29, 21:15
+    await seed([u1, u2, u3, u4], [[null, "3", 10], ["20", null, 30], ["20", null, 59]]); // M3: 21:3, 22:20, 22:20
+    await seed([u1, u2, u5, u6], [[null, "8", 30], [null, "3", 59]]);       // M4: 21:8, 21:3
+    await seed([u3, u4, u5, u6], [[null, "5", 10], [null, "15", 25]]);      // M5: 21:5, 21:15
+    await seed([u3, u4, u5, u6], [[null, "29", 10], [null, "15", 20]]);     // M6: 30:29, 21:15
     // рейтинговые дельты пишет триггер calculate_rating_when_match_finished
     return ids;
   };
@@ -99,9 +100,9 @@ describe("Achievement", () => {
     // Стальные нервы: выигранные игры со счётом >= 22 — (u3,u4): 22, 22, 30
     assert.deepStrictEqual(userIds(result.iron_nerves), pair34.sort((a, b) => a - b));
     assert.strictEqual(result.iron_nerves.value, 3);
-    // Черепаха: больше всех минут в играх — 40+25+70+90
+    // Черепаха: больше всех минут в играх — 40+25+59+59
     assert.deepStrictEqual(userIds(result.turtle), pair12.sort((a, b) => a - b));
-    assert.strictEqual(result.turtle.value, 225);
+    assert.strictEqual(result.turtle.value, 183);
     // Неудержимый: самая длинная серия выигранных игр подряд — (u3,u4):
     // с M3 g2 по M6 g2 — 6 игр (после единственного поражения в M3 g1)
     assert.deepStrictEqual(userIds(result.unrestrainable), pair34.sort((a, b) => a - b));
@@ -133,9 +134,9 @@ describe("Achievement", () => {
     // Трудяга: больше всех сыгранных игр — (u3,u4): 2+2+3+2+2
     assert.deepStrictEqual(userIds(result.workhorse), pair34.sort((a, b) => a - b));
     assert.strictEqual(result.workhorse.value, 11);
-    // Молния: самые короткие игры в среднем при >= 3 играх — (u3,u4): 205' / 11 игр
+    // Молния: самые короткие игры в среднем при >= 3 играх — (u3,u4): 169' / 11 игр
     assert.deepStrictEqual(userIds(result.lightning), pair34.sort((a, b) => a - b));
-    assert.strictEqual(result.lightning.value, 18.6);
+    assert.strictEqual(result.lightning.value, 15.4);
     // Восходящая звезда: больше всех рейтинговых очков — (u3,u4):
     // поражение в M1 и четыре победы, дельта триггера ±8.5 при равных рейтингах
     assert.deepStrictEqual(userIds(result.rising_star), pair34.sort((a, b) => a - b));

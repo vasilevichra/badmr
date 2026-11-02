@@ -490,3 +490,63 @@ describe("Match", () => {
     });
   });
 });
+
+describe("Констрейнты длительности", () => {
+  beforeEach(async () => {
+    await clean();
+  });
+
+  it("не должен позволить игру позже чем через час после предыдущей игры", async () => {
+    const ids = await seedMatchUsers();
+    await matchService.create(...(ids as [number, number, number, number]));
+    const id = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
+    await gameService.create(id, null, "5", "2026-01-01 10:00:00");
+    // разрыв 3601с — на секунду больше часа
+    assert.throws(() => db.run(
+        "INSERT INTO game (match_id, created_at) VALUES (?, '2026-01-01 11:00:01')", [id],
+    ));
+  });
+
+  it("не должен позволить игру позже чем через час после начала матча", async () => {
+    const ids = await seedMatchUsers();
+    await matchService.create(...(ids as [number, number, number, number]));
+    const id = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
+    await gameService.create(id, null, "5", "2026-01-01 10:00:00");
+    db.run("UPDATE match SET created_at = '2026-01-01 09:00:00' WHERE id = ?", [id]);
+    // разрыв от первой игры 1800с — в пределах часа, но от начала матча 5400с > 1ч
+    assert.throws(() => db.run(
+        "INSERT INTO game (match_id, created_at) VALUES (?, '2026-01-01 10:30:00')", [id],
+    ));
+  });
+
+  it("должен позволить игру ровно на границе часа", async () => {
+    const ids = await seedMatchUsers();
+    await matchService.create(...(ids as [number, number, number, number]));
+    const id = (await matchService.getAll() as unknown as MatchRow[]).at(-1)!.id;
+    db.run("UPDATE match SET created_at = '2026-01-01 09:00:00' WHERE id = ?", [id]);
+    // и разрыв от начала матча, и длительность — ровно 3600с: проходит
+    db.run("INSERT INTO game (match_id, created_at, lost_1_by) VALUES (?, '2026-01-01 10:00:00', 5)", [id]);
+  });
+
+  it("не должен позволить игру 110 позже чем через два часа после предыдущей", async () => {
+    db.run("INSERT INTO match_110 (id, tournament_id, team_1_id, team_2_id, court_id, created_at) " +
+        "VALUES (901, 4, 1, 2, 11, '2026-01-01 10:00:00')");
+    // разрыв 7200с — ровно два часа: проходит
+    db.run("INSERT INTO game_110 (match_110_id, game_type_id, created_at) VALUES (901, 1, '2026-01-01 12:00:00')");
+    // разрыв 7201с — на секунду больше двух часов
+    assert.throws(() => db.run(
+        "INSERT INTO game_110 (match_110_id, game_type_id, created_at) VALUES (901, 1, '2026-01-01 14:00:01')",
+    ));
+  });
+
+  it("не должен позволить матчу 110 длиться дольше двух часов", async () => {
+    db.run("INSERT INTO match_110 (id, tournament_id, team_1_id, team_2_id, court_id, created_at) " +
+        "VALUES (902, 4, 1, 2, 11, '2026-01-01 10:00:00')");
+    // первая игра: час после начала — проходит
+    db.run("INSERT INTO game_110 (match_110_id, game_type_id, created_at) VALUES (902, 1, '2026-01-01 11:00:00')");
+    // вторая: разрыв от первой 5401с — в пределах двух часов, но от начала матча 9001с > 2ч
+    assert.throws(() => db.run(
+        "INSERT INTO game_110 (match_110_id, game_type_id, created_at) VALUES (902, 1, '2026-01-01 12:30:01')",
+    ));
+  });
+});

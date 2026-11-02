@@ -305,3 +305,61 @@ BEGIN
     WHERE user_id IN (old.user_1_id, old.user_2_id, old.user_3_id, old.user_4_id)
       AND tournament_id IN (SELECT id FROM tournament AS t WHERE t.available = 1);
 END;
+
+-- Длительность: игры и матчи не живут дольше часа. CHECK не умеет
+-- кросс-строчные проверки (разрыв от предыдущей игры и от начала матча),
+-- поэтому — триггеры на вставку игры. Обновление created_at игр кодом
+-- не выполняется (game.update меняет только счёт) — триггеры на UPDATE
+-- не нужны. Граница ровно 3600с допустима.
+CREATE TRIGGER restrict_game_gap_by_hour
+    BEFORE INSERT
+    ON game
+    WHEN CAST(strftime('%s', new.created_at) AS INTEGER) -
+         CAST(strftime('%s', coalesce((SELECT max(g.created_at)
+                                       FROM game g
+                                       WHERE g.match_id = new.match_id
+                                         AND g.created_at < new.created_at),
+                                      (SELECT m.created_at
+                                       FROM match m
+                                       WHERE m.id = new.match_id))) AS INTEGER) > 3600
+BEGIN
+    SELECT RAISE(ABORT, 'игра не может начинаться позже чем через час после предыдущей игры или начала матча');
+END;
+
+CREATE TRIGGER restrict_match_duration_by_hour
+    BEFORE INSERT
+    ON game
+    WHEN CAST(strftime('%s', new.created_at) AS INTEGER) -
+         CAST(strftime('%s', (SELECT m.created_at
+                              FROM match m
+                              WHERE m.id = new.match_id)) AS INTEGER) > 3600
+BEGIN
+    SELECT RAISE(ABORT, 'матч не может длиться дольше часа');
+END;
+
+-- Тип 110: матчи длиннее, порог — два часа.
+CREATE TRIGGER restrict_game_110_gap_by_two_hours
+    BEFORE INSERT
+    ON game_110
+    WHEN CAST(strftime('%s', new.created_at) AS INTEGER) -
+         CAST(strftime('%s', coalesce((SELECT max(g.created_at)
+                                       FROM game_110 g
+                                       WHERE g.match_110_id = new.match_110_id
+                                         AND g.created_at < new.created_at),
+                                      (SELECT m.created_at
+                                       FROM match_110 m
+                                       WHERE m.id = new.match_110_id))) AS INTEGER) > 7200
+BEGIN
+    SELECT RAISE(ABORT, 'игра 110 не может начинаться позже чем через два часа после предыдущей игры или начала матча');
+END;
+
+CREATE TRIGGER restrict_match_110_duration_by_two_hours
+    BEFORE INSERT
+    ON game_110
+    WHEN CAST(strftime('%s', new.created_at) AS INTEGER) -
+         CAST(strftime('%s', (SELECT m.created_at
+                              FROM match_110 m
+                              WHERE m.id = new.match_110_id)) AS INTEGER) > 7200
+BEGIN
+    SELECT RAISE(ABORT, 'матч 110 не может длиться дольше двух часов');
+END;

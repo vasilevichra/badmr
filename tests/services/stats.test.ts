@@ -142,10 +142,8 @@ describe("Stats (блок «Статистика» главной турнира
 
   it("самая продолжительная игра и матч", async () => {
     // игры турнира 901: 90с, 90с, 60с, 120с; scope: + 150с, 150с, 120с, 180с;
-    // «за всё время» — максимум из медиан по турнирам scope:
-    // t901: [90, 90, 120] → 90с; t902: [120, 150, 150, 180] → 150с → 150
-    assert.deepStrictEqual(statsService.longestGameSeconds(901), {current: 120, all: 150});
-    // матчи: t901 медиана [180, 180] → 180с; t902 [300, 300] → 300с → 300
+    // глобальный максимум по scope (констрейнт часа ограничивает выбросы)
+    assert.deepStrictEqual(statsService.longestGameSeconds(901), {current: 120, all: 180});
     assert.deepStrictEqual(statsService.longestMatchSeconds(901), {current: 180, all: 300});
   });
 
