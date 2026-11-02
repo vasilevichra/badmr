@@ -33,9 +33,10 @@ const formatAvg = (value: number | null): string =>
 /** Число или «—» без данных. */
 const formatNum = (value: number | null): string => value === null ? '—' : String(value);
 
-/** Доля в процентах: «94% (15/16)» — округление до целого; без игроков → «—». */
+/** Доля в процентах: «94%(15)» — округлённый процент от общего числа игроков
+ *  и абсолютное число новичков в скобках; без игроков → «—». */
 const formatPct = (part: number, total: number): string =>
-    total === 0 ? '—' : `${Math.round(part / total * 100)}% (${part}/${total})`;
+    total === 0 ? '—' : `${Math.round(part / total * 100)}%(${part})`;
 
 const stats = (tournamentId?: number) => {
   const wins = Number(settingsService.get('wins', tournamentId) ?? 2);
