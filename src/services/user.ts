@@ -125,7 +125,6 @@ class User {
   deregisterAll = () => this.user.deregisterAll();
   deregisterByIds = (ids: number[]) => this.user.deregisterByIds(ids);
   isRegistered = (id: number) => this.user.isRegistered(id);
-  actualize = () => this.user.actualize();
   archive = (id: number) => this.user.archive(id);
   archiveAll = () => this.user.archiveAll();
   unarchive = (id: number) => this.user.unarchive(id);

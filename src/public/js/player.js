@@ -203,9 +203,6 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
   if (loggedInUser) {
     // кнопки у таблицы игроков — разметка из <template id="player-toolbar-template"> (player-toolbar.ejs):
     $('.player .fixed-table-toolbar .columns').append($('#player-toolbar-template').html());
-    $('#player-actualize').off('click').click(() => {
-      $.post('/api/users/actualize', {}, () => refresh.table.player());
-    });
     $('#player-settings').off('click').click(() => {
       turnPlayerSettings(!isPlayerSettingsOn());
     });

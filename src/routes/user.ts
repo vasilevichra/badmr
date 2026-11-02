@@ -94,10 +94,6 @@ router.post('/deregister/:ids', ensureLoggedIn(), (req, res) => {
   res.promise(userService.deregisterByIds(String(req.params.ids).split(',').map(Number)));
 });
 
-router.post('/actualize', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.actualize());
-});
-
 router.post('/rating/:id', ensureLoggedIn(), (req, res) => {
   res.promise(userService.setRating(Number(req.params.id), Number(req.query.new)));
 });
