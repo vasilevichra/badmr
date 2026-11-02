@@ -274,7 +274,10 @@ CREATE TABLE rating
     user_id  INTEGER NOT NULL CONSTRAINT user REFERENCES user,
     match_id INTEGER CONSTRAINT match REFERENCES match,
     previous INTEGER,
-    delta    INTEGER,
+    -- дельта округляется до десятых (0.1); формулы начисления — триггер
+    -- calculate_rating_when_match_finished и src/services/rating.ts —
+    -- уже возвращают round(..., 1), CHECK страхует ручные правки и синк
+    delta    INTEGER CHECK (delta IS NULL OR delta = ROUND(delta, 1)),
     -- калибровка рейтинга: серия игрока, начавшаяся с неактуального рейтинга.
     -- stale — серия началась с протухшего (или отсутствующего) рейтинга;
     -- series — номер матча в текущей серии, 0 для сидов (ручных установок);

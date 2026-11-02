@@ -16,7 +16,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { DatabaseSync } from "node:sqlite";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
+const ROOT = path.resolve(import.meta.dirname, "..", "..");
 const DEV_DB = path.join(ROOT, ".data", "badmr.sqlite3");
 const DUMP = path.join(ROOT, "migrations", "05-specific-up.sql");
 const REMOTE = "box:/home/r/badmr/.data/badmr.sqlite3";
@@ -69,6 +69,15 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "badmr-sync-"));
 const prodDb = path.join(tmp, "prod.sqlite3");
 log(`scp ${REMOTE} → ${prodDb}`);
 execFileSync("scp", ["-q", REMOTE, prodDb], {stdio: "inherit"});
+
+// дельты рейтинга округляем до десятых уже в скачанной копии: чистая база
+// несёт CHECK (delta = ROUND(delta, 1)) на rating.delta, а прод до ребилда —
+// нет; грязное значение уронило бы INSERT на шаге 2
+{
+  const fix = new DatabaseSync(prodDb);
+  fix.exec("UPDATE rating SET delta = ROUND(delta, 1) WHERE delta IS NOT NULL AND delta != ROUND(delta, 1)");
+  fix.close();
+}
 
 // ── 2. Перенос таблиц prod → dev ─────────────────────────────────────────────
 const prod = new DatabaseSync(prodDb, {readOnly: true});
@@ -145,7 +154,7 @@ for (const t of DUMP_TABLES) {
 }
 
 const header = `-- Перенос обновлений из живой базы. Регенерируется скриптом
--- .data/sync-tournaments.mjs (перенос prod → dev + дамп), руками не править.
+-- src/bin/sync.mjs (перенос prod → dev + дамп), руками не править.
 -- Секретные данные (пароли) не выгружаются — их сеет Specific.ts при регистрации.
 `;
 const tmpDump = DUMP + ".tmp";
