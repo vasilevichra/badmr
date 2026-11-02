@@ -9,6 +9,7 @@ interface Setting {
   value: string;
   default_value: string;
   description: string;
+  overridden: number;
 }
 
 interface Region {
@@ -54,15 +55,27 @@ describe("Settings", () => {
       // + rematch_window
       // + кеш обхода badminton4u (crawl_cache_m) и границы паузы (crawl_min_ms, crawl_max_ms)
       assert.strictEqual(all.length, 38);
-      assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s));
+      assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s && "overridden" in s));
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "delta"),
-        [{ name: "delta", value: "100", default_value: "50", description: "Максимальная разница в сумме рейтингов пар при их формировании" }]
+        [{
+          name: "delta", value: "100", default_value: "50", overridden: 1,
+          description: "Максимальная разница в сумме рейтингов пар при их формировании",
+        }]
       );
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "state"),
-        [{ name: "state", value: "1", default_value: "1", description: "Страна по умолчанию при добавлении новых игроков" }]
+        [{ name: "state", value: "1", default_value: "1", overridden: 0, description: "Страна по умолчанию при добавлении новых игроков" }]
       );
+    });
+
+    it("помечает overridden у настройки, сохранённой в tournament_settings", async () => {
+      await settingsService.set("state", "33");
+
+      const all = await settingsService.getAll() as unknown as Setting[];
+      assert.strictEqual(all.find((s) => s.name === "state")!.overridden, 1);
+      assert.strictEqual(all.find((s) => s.name === "delta")!.overridden, 1);
+      assert.strictEqual(all.find((s) => s.name === "wins")!.overridden, 0);
     });
   });
 

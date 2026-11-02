@@ -26,7 +26,8 @@ class Settings {
 
   getAll(tournamentId?: number) {
     return this.db.all(
-        `SELECT d.name AS name, coalesce(s.value, d.value) AS value, d.value AS default_value, d.description AS description
+        `SELECT d.name AS name, coalesce(s.value, d.value) AS value, d.value AS default_value,
+                d.description AS description, (s.tournament_id IS NOT NULL) AS overridden
          FROM defaults d
                   LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
         [tournamentId ?? null]

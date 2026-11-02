@@ -108,9 +108,9 @@ const renderSettings = () => {
             field: 'name',
             title: isPhone() ? 'Наз.' : 'Название',
             align: 'center',
-            // настройка, отличающаяся от значения по умолчанию, — жирным
+            // переопределение турнира (есть в tournament_settings) — жирным
             formatter: (value, row) =>
-                String(row.value) !== String(row.default_value) ? `<b>${value}</b>` : value
+                row.overridden ? `<b>${value}</b>` : value
           },
           {
             field: 'value',
