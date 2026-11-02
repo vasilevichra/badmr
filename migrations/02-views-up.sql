@@ -192,6 +192,9 @@ WHERE tu.archived = 1;
 CREATE VIEW delta_today AS
 -- у завершённого турнира дельта фиксируется на день окончания:
 -- точка отсчёта — ended_at прошедшего турнира, иначе текущий день
+-- калибровочные матчи (множитель применялся при вставке при stale = 1
+-- AND series BETWEEN 1 AND calibration_matches; series > 0 — не сид)
+-- в дельту не включаются
 SELECT u.id AS user_id, u.lastname || ' ' || u.firstname AS name, round(sum(r.delta), 1) AS sum,
        m.tournament_id                                                                                         AS tournament_id
 FROM rating r
@@ -199,6 +202,14 @@ FROM rating r
                  (SELECT ended_at FROM tournament WHERE id = m.tournament_id AND ended_at <= datetime('now')),
                  'now'))
          JOIN user u ON u.id = r.user_id
+WHERE NOT (r.stale = 1
+           AND r.series > 0
+           AND r.series <= coalesce(
+                   (SELECT ts.value
+                    FROM tournament_settings ts
+                             JOIN defaults d ON ts.defaults_id = d.id AND d.name = 'calibration_matches'
+                    WHERE ts.tournament_id = m.tournament_id),
+                   (SELECT value FROM defaults WHERE name = 'calibration_matches')) + 0)
 GROUP BY r.user_id, m.tournament_id
 ORDER BY sum DESC;
 

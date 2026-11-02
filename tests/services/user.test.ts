@@ -301,6 +301,33 @@ describe("User", () => {
       // m2 в другой день — в дельту дня окончания не попал: по-прежнему −10
       assert.strictEqual(nextDay.find((p) => p.id === ids[0])!.delta_today, -10);
     });
+
+    it("в дельте не учитываются матчи калибровочной серии", async () => {
+      await new SettingsService().set("calibration_matches", "1");
+      const ids = await seedUsers();
+      await matchService.create(...(ids as [number, number, number, number]));
+      const m1 = (await matchService.getAll() as { id: number }[]).at(-1)!.id;
+      await gameService.create(m1, "15", null, "2026-06-12 12:00:00");
+      await gameService.create(m1, "17", null, "2026-06-12 12:30:00");
+      db.run(`UPDATE match SET created_at = '2026-06-12 11:30:00' WHERE id = ${m1}`);
+
+      // у всех четырёх первый матч — калибровочный (series=1) → дельта-прочерк
+      const players = await userService.getAll() as unknown as PlayerRow[];
+      assert.strictEqual(players.find((p) => p.id === ids[0])!.delta_today, null);
+      assert.strictEqual(players.find((p) => p.id === ids[2])!.delta_today, null);
+
+      // второй матч: серия у игрока 1 уже закончилась (series=2 > c=1) — обычная дельта;
+      // created_at обновляем до игр, иначе триггер рейтинга увидит «протухший» рейтинг
+      await matchService.create(...(ids as [number, number, number, number]));
+      const m2 = (await matchService.getAll() as { id: number }[]).at(-1)!.id;
+      db.run(`UPDATE match SET created_at = '2026-06-12 12:30:00' WHERE id = ${m2}`);
+      await gameService.create(m2, "15", null, "2026-06-12 13:00:00");
+      await gameService.create(m2, "17", null, "2026-06-12 13:30:00");
+      // после калибровочного −20/+20 рейтинги 480/520 → diff 40 → дельта ±6
+      const after = await userService.getAll() as unknown as PlayerRow[];
+      assert.strictEqual(after.find((p) => p.id === ids[0])!.delta_today, -6);
+      assert.strictEqual(after.find((p) => p.id === ids[2])!.delta_today, 6);
+    });
   });
 
   describe("select", () => {
