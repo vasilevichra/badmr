@@ -27,7 +27,6 @@ class Stats {
   avgGamesPerMatchAll = (tournamentId?: number) => this.stats.avgGamesPerMatchAll(this.resolve(tournamentId));
   ratingDelta = (tournamentId?: number) => this.stats.ratingDelta(this.resolve(tournamentId));
   topWinrate = (tournamentId?: number) => this.stats.topWinrate(this.resolve(tournamentId));
-  repeatPairs = (tournamentId?: number) => this.stats.repeatPairs(this.resolve(tournamentId));
   capacityFillSeconds = (tournamentId?: number) => this.stats.capacityFillSeconds(this.resolve(tournamentId));
 
   /** Без явного id — текущий турнир (как в остальных статистиках маршрута);

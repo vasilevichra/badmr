@@ -33,6 +33,10 @@ const formatAvg = (value: number | null): string =>
 /** Число или «—» без данных. */
 const formatNum = (value: number | null): string => value === null ? '—' : String(value);
 
+/** Доля в процентах: «94% (15/16)» — округление до целого; без игроков → «—». */
+const formatPct = (part: number, total: number): string =>
+    total === 0 ? '—' : `${Math.round(part / total * 100)}% (${part}/${total})`;
+
 const stats = (tournamentId?: number) => {
   const wins = Number(settingsService.get('wins', tournamentId) ?? 2);
   const cities = statsService.cities(tournamentId);
@@ -45,7 +49,6 @@ const stats = (tournamentId?: number) => {
   const longestMatch = statsService.longestMatchSeconds(tournamentId);
   const delta = statsService.ratingDelta(tournamentId);
   const winrate = statsService.topWinrate(tournamentId);
-  const repeatPairs = statsService.repeatPairs(tournamentId);
   const capacityFill = statsService.capacityFillSeconds(tournamentId);
   return {
     seconds_per_point_current: formatSeconds(matchService.getMedianSecondsPerPointCurrent(tournamentId)),
@@ -64,8 +67,9 @@ const stats = (tournamentId?: number) => {
     participants_all: formatNum(participants.all),
     avg_rating_current: formatAvg(avgRating.current),
     avg_rating_all: formatAvg(avgRating.all),
-    newcomers_current: formatNum(newcomers.current),
-    newcomers_all: formatNum(newcomers.all),
+    // «Новичков, %»: процент (новичков / всего игроков)
+    newcomers_current: formatPct(newcomers.current, participants.current),
+    newcomers_all: formatPct(newcomers.all, participants.all),
     games_current: formatNum(games.current),
     games_all: formatNum(games.all),
     matches_current: formatNum(matches.current),
@@ -80,8 +84,6 @@ const stats = (tournamentId?: number) => {
     rating_delta_fall_all: formatNum(delta.fallAll),
     winrate_current: winrate.current === null ? '—' : `${winrate.current}%`,
     winrate_all: winrate.all === null ? '—' : `${winrate.all}%`,
-    repeat_pairs_current: formatNum(repeatPairs.current),
-    repeat_pairs_all: formatNum(repeatPairs.all),
     capacity_fill_current: formatSeconds(capacityFill.current),
     capacity_fill_all: formatSeconds(capacityFill.all),
   };

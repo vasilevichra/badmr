@@ -216,37 +216,6 @@ class Stats {
     };
   }
 
-  /** Повторные пары: пары, игравшие вместе не впервые.
-   *  Турнир — пары турнира с совместным матчем раньше первого совместного
-   *  матча внутри турнира; scope — пары с более чем одним совместным
-   *  матчем в рамках scope. */
-  repeatPairs(tournamentId: number): { current: number; all: number } {
-    const pairs = (scope: string) => this.db.all<{ tid: number; chron: string; a: number; b: number; a2: number; b2: number }>(
-        `SELECT m.tournament_id AS tid,
-                coalesce((SELECT max(g.created_at) FROM game g WHERE g.match_id = m.id), m.created_at) AS chron,
-                min(m.user_1_id, m.user_2_id) AS a, max(m.user_1_id, m.user_2_id) AS b,
-                min(m.user_3_id, m.user_4_id) AS a2, max(m.user_3_id, m.user_4_id) AS b2
-         FROM match m WHERE m.finished = 1 AND ${scope}`)
-        .flatMap(r => [{a: r.a, b: r.b, tid: r.tid, chron: r.chron}, {a: r.a2, b: r.b2, tid: r.tid, chron: r.chron}]);
-    const currentPairs = pairs(`m.tournament_id = ${Number(tournamentId)}`);
-    // первый совместный матч каждой пары внутри турнира
-    const firstInTournament = new Map<string, string>();
-    for (const p of currentPairs) {
-      const key = `${p.a}-${p.b}`;
-      const min = firstInTournament.get(key);
-      if (min === undefined || p.chron < min) firstInTournament.set(key, p.chron);
-    }
-    const allPairs = pairs(`m.tournament_id IN ${inList(scopeIds(tournamentId))}`);
-    // пара повторная, если был совместный матч раньше первого внутри турнира
-    const current = [...firstInTournament.entries()].filter(([key, first]) =>
-        allPairs.some(p => `${p.a}-${p.b}` === key && p.chron < first),
-    ).length;
-    const counts = new Map<string, number>();
-    for (const p of allPairs) counts.set(`${p.a}-${p.b}`, (counts.get(`${p.a}-${p.b}`) ?? 0) + 1);
-    const all = [...counts.values()].filter(c => c > 1).length;
-    return {current, all};
-  }
-
   /** Как быстро набивается capacity: секунды от первой регистрации до той,
    *  которой закрылся capacity; «—» если не набран или времени нет. */
   capacityFillSeconds(tournamentId: number): { current: number | null; all: number | null } {

@@ -162,12 +162,6 @@ describe("Stats (блок «Статистика» главной турнира
     assert.deepStrictEqual(statsService.topWinrate(901), {current: 100, all: 100});
   });
 
-  it("повторные пары", async () => {
-    // в турнире 901 повторных нет (все пары встретились впервые);
-    // в scope 3 пары с более чем одним совместным матчем: (901,902), (905,906), (903,904)
-    assert.deepStrictEqual(statsService.repeatPairs(901), {current: 0, all: 3});
-  });
-
   it("как быстро набивается capacity", async () => {
     // турнир 901 (capacity 3): 10:00 → 11:00 = 3600с; у 902 capacity не достигнут — не считается
     assert.deepStrictEqual(statsService.capacityFillSeconds(901), {current: 3600, all: 3600});
