@@ -125,22 +125,42 @@ class Stats {
 
   /** Длительности игр (от предыдущей игры или начала матча) и матчей
    *  в завершённых матчах дольше минуты — та же методика, что у медиан. */
+  /** Самая продолжительная игра: турнир — максимум длительностей игр;
+   *  scope («за всё время») — максимум из медиан длительностей по турнирам
+   *  (гасит аномальные выбросы отдельных игр). */
   longestGameSeconds(tournamentId: number): { current: number | null; all: number | null } {
-    const rows = (scope: string, params: unknown[] = []) => this.db.get<{ v: number | null }>(
+    const current = this.db.get<{ v: number | null }>(
         `SELECT max(s.game_dur) AS v FROM (
            SELECT CAST(strftime('%s', g.created_at) AS INTEGER) -
                   CAST(strftime('%s', coalesce((SELECT max(g2.created_at) FROM game g2
                                                 WHERE g2.match_id = m.id AND g2.created_at < g.created_at),
                                                m.created_at)) AS INTEGER) AS game_dur
            FROM match m JOIN game g ON g.match_id = m.id
-           WHERE m.finished = 1 AND ${scope}) s
-         WHERE s.game_dur > 60`, params)?.v ?? null;
-    return {
-      current: rows('m.tournament_id = ?', [tournamentId]),
-      all: rows(`m.tournament_id IN ${inList(scopeIds(tournamentId))}`),
-    };
+           WHERE m.finished = 1 AND m.tournament_id = ?) s
+         WHERE s.game_dur > 60`, [tournamentId])?.v ?? null;
+    const all = this.db.get<{ v: number | null }>(
+        `SELECT max(t.med) AS v FROM (
+           SELECT avg(u.game_dur) AS med
+           FROM (SELECT s.tid, s.game_dur,
+                        ROW_NUMBER() OVER (PARTITION BY s.tid ORDER BY s.game_dur) AS rn,
+                        COUNT(*) OVER (PARTITION BY s.tid) AS n
+                 FROM (SELECT m.tournament_id AS tid,
+                              CAST(strftime('%s', g.created_at) AS INTEGER) -
+                              CAST(strftime('%s', coalesce((SELECT max(g2.created_at) FROM game g2
+                                                            WHERE g2.match_id = m.id AND g2.created_at < g.created_at),
+                                                           m.created_at)) AS INTEGER) AS game_dur
+                       FROM match m JOIN game g ON g.match_id = m.id
+                       WHERE m.finished = 1
+                         AND m.tournament_id IN ${inList(scopeIds(tournamentId))}) s
+                 WHERE s.game_dur > 60) u
+           WHERE u.rn IN ((u.n + 1) / 2, (u.n + 2) / 2)
+           GROUP BY u.tid) t`)?.v ?? null;
+    return {current, all};
   }
 
+  /** Самый продолжительный матч: турнир — максимум длительностей матчей;
+   *  scope («за всё время») — максимум из медиан длительностей по турнирам
+   *  (гасит аномальные выбросы отдельных матчей). */
   longestMatchSeconds(tournamentId: number): { current: number | null; all: number | null } {
     const current = this.db.get<{ v: number | null }>(
         `SELECT max(s.dur) AS v FROM (
@@ -149,12 +169,19 @@ class Stats {
            FROM match m WHERE m.finished = 1 AND m.tournament_id = ?) s
          WHERE s.dur > 60`, [tournamentId])?.v ?? null;
     const all = this.db.get<{ v: number | null }>(
-        `SELECT max(s.dur) AS v FROM (
-           SELECT CAST(strftime('%s', (SELECT max(created_at) FROM game WHERE match_id = m.id)) AS INTEGER) -
-                  CAST(strftime('%s', m.created_at) AS INTEGER) AS dur
-           FROM match m WHERE m.finished = 1
-             AND m.tournament_id IN ${inList(scopeIds(tournamentId))}) s
-         WHERE s.dur > 60`)?.v ?? null;
+        `SELECT max(t.med) AS v FROM (
+           SELECT avg(u.dur) AS med
+           FROM (SELECT s.tid, s.dur,
+                        ROW_NUMBER() OVER (PARTITION BY s.tid ORDER BY s.dur) AS rn,
+                        COUNT(*) OVER (PARTITION BY s.tid) AS n
+                 FROM (SELECT m.tournament_id AS tid,
+                              CAST(strftime('%s', (SELECT max(created_at) FROM game WHERE match_id = m.id)) AS INTEGER) -
+                              CAST(strftime('%s', m.created_at) AS INTEGER) AS dur
+                       FROM match m WHERE m.finished = 1
+                         AND m.tournament_id IN ${inList(scopeIds(tournamentId))}) s
+                 WHERE s.dur > 60) u
+           WHERE u.rn IN ((u.n + 1) / 2, (u.n + 2) / 2)
+           GROUP BY u.tid) t`)?.v ?? null;
     return {current, all};
   }
 
