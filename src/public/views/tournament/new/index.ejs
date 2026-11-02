@@ -159,88 +159,90 @@
             </thead>
             <tbody>
             <tr>
-                <td>Городов</td>
+                <td><math><mi>Городов</mi></math></td>
                 <td class="text-center"><%= cities_current %></td>
                 <td class="text-center"><%= cities_all %></td>
             </tr>
             <tr>
-                <td>Участников</td>
+                <td><math><mi>Участников</mi></math></td>
                 <td class="text-center"><%= participants_current %></td>
                 <td class="text-center"><%= participants_all %></td>
             </tr>
             <tr>
-                <td>Средний рейтинг</td>
+                <td><math><mi>Средний рейтинг</mi></math></td>
                 <td class="text-center"><%= avg_rating_current %></td>
                 <td class="text-center"><%= avg_rating_all %></td>
             </tr>
             <tr>
-                <td>Новичков, %</td>
+                <td><math><mi>Новичков, %</mi></math></td>
                 <td class="text-center"><%= newcomers_current %></td>
                 <td class="text-center"><%= newcomers_all %></td>
             </tr>
             <tr>
-                <td>Игр</td>
+                <td><math><mi>Игр</mi></math></td>
                 <td class="text-center"><%= games_current %></td>
                 <td class="text-center"><%= games_all %></td>
             </tr>
             <tr>
-                <td>Матчей</td>
+                <td><math><mi>Матчей</mi></math></td>
                 <td class="text-center"><%= matches_current %></td>
                 <td class="text-center"><%= matches_all %></td>
             </tr>
             <tr>
-                <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math> розыгрыша</td>
+                <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math> <math><mi>розыгрыша</mi></math></td>
                 <td class="text-center"><%= seconds_per_point_current %></td>
                 <td class="text-center"><%= seconds_per_point_all %></td>
             </tr>
             <tr>
-                <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math><math><mspace width="3px"/><msub><mi>игры</mi><mi><%= game_point %></mi></msub></math></msub></td>
+                <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math><math><mspace width="3px"/><msub><mi>игры</mi><mi><%= game_point %></mi></msub></math></td>
                 <td class="text-center"><%= game_seconds_current %></td>
                 <td class="text-center"><%= game_seconds_all %></td>
             </tr>
             <tr>
-                <td><math><mover accent="true"><mi>матч</mi><mo>‾</mo></mover></math></td>
+                <td><math><mover accent="true"><mi>t</mi><mo>‾</mo></mover></math><math><mspace width="3px"/><msub><mi>матча</mi><mi><%= game_point %></mi></msub></math></td>
                 <td class="text-center"><%= match_seconds_current %></td>
                 <td class="text-center"><%= match_seconds_all %></td>
             </tr>
             <tr>
-                <td>max(t) игры</td>
+                <td><math><mi>max(t)</mi></math><math><mspace width="3px"/><msub><mi>игры</mi><mi><%= game_point %></mi></msub></math></td>
                 <td class="text-center"><%= longest_game_current %></td>
                 <td class="text-center"><%= longest_game_all %></td>
             </tr>
             <tr>
-                <td>max(t) матча</td>
+                <td><math><mi>max(t)</mi></math><math><mspace width="3px"/><msub><mi>матча</mi><mi><%= game_point %></mi></msub></math></td>
                 <td class="text-center"><%= longest_match_current %></td>
                 <td class="text-center"><%= longest_match_all %></td>
             </tr>
             <% if (games_in_match_wins > 1) { %>
             <tr>
                 <!-- матчи длятся от wins до 2×wins−1 игр -->
-                <td>Игр в матче (<%= games_in_match_wins %>-<%= games_in_match_wins * 2 - 1 %>)</td>
+                <td><math><msub><mi>Игр в матче</mi><mi><%= games_in_match_wins %> из <%= games_in_match_wins * 2 - 1 %></mi></msub></math></td>
                 <td class="text-center"><%= games_per_match_current %></td>
                 <td class="text-center"><%= games_per_match_all %></td>
             </tr>
             <% } %>
             <tr>
-                <td>Дельта рейтинга: топ прироста</td>
+                <td><math><mi>max(∆)</mi></math></td>
                 <td class="text-center rating-plus"><%= rating_delta_rise_current %></td>
                 <td class="text-center rating-plus"><%= rating_delta_rise_all %></td>
             </tr>
             <tr>
-                <td>Дельта рейтинга: топ падения</td>
+                <td><math><mi>min(∆)</mi></math></td>
                 <td class="text-center rating-minus"><%= rating_delta_fall_current %></td>
                 <td class="text-center rating-minus"><%= rating_delta_fall_all %></td>
             </tr>
             <tr>
-                <td>Топ винрейта</td>
+                <td><math><mi>max(% побед)</mi></math></td>
                 <td class="text-center"><%= winrate_current %></td>
                 <td class="text-center"><%= winrate_all %></td>
             </tr>
+            <% if (capacity_fill_current !== '—' || capacity_fill_all !== '—') { %>
             <tr>
-                <td>Как быстро набивается capacity по типам турниров</td>
+                <td><math><mi>t заполнения</mi></math></td>
                 <td class="text-center"><%= capacity_fill_current %></td>
                 <td class="text-center"><%= capacity_fill_all %></td>
             </tr>
+            <% } %>
             </tbody>
         </table>
     </div>

@@ -150,6 +150,18 @@ describe("Время розыгрыша в футере", () => {
     db.exec(`UPDATE match SET created_at = '2026-01-01 10:00:00' WHERE id = ${a}`);
     db.exec(`UPDATE match SET created_at = '2026-01-01 12:00:00', tournament_id = 1 WHERE id = ${b}`);
 
+    // capacity=3 и разнесённые регистрации → строка «t заполнения» видима:
+    // 10:00 → 11:00 = 3600 с → «60м 0с» (единственный турнир с заполнением)
+    db.exec(`DELETE FROM tournament_settings WHERE tournament_id = 4
+               AND defaults_id = (SELECT id FROM defaults WHERE name = 'capacity')`);
+    db.exec(`INSERT INTO tournament_settings (defaults_id, tournament_id, value)
+             SELECT d.id, 4, '3' FROM defaults d WHERE d.name = 'capacity'`);
+    db.exec(`UPDATE tournament_user SET created_at = CASE user_id
+               WHEN ${ids[0]} THEN '2026-01-01 10:00:00'
+               WHEN ${ids[1]} THEN '2026-01-01 10:30:00'
+               WHEN ${ids[2]} THEN '2026-01-01 11:00:00' END
+             WHERE tournament_id = 4 AND user_id IN (${ids.join(',')})`);
+
     const res = await fetch(`${base}t/4`);
     const html = await res.text();
 
@@ -157,27 +169,29 @@ describe("Время розыгрыша в футере", () => {
     // блок «Статистика» после блока «Достижения»: таблица (Параметр | Турнир | За всё время)
     assert.match(html, /<h1[^>]*>Статистика<\/h1>/);
     assert.match(html, /<th[^>]*>Параметр<\/th>\s*<th[^>]*>Турнир<\/th>\s*<th[^>]*>За всё время<\/th>/);
+    // подписи-лейблы устойчивы к переносу и math-обёртке
+    const labelRe = (label: string) =>
+      new RegExp(`<td[^>]*>(?:<[^>]*>|\\s)*${label.replace(/[\\^$.*+?(){}[\]|]/g, '\\$&').replace(/ /g, '(?:<[^>]*>|\\s)*')}`);
     // среднее секунд на очко: текущий — 3599/57 ≈ 63.1 → 63 → «1м 3с»;
     // за всё время — среднее {63.1, 9.7} = 36.4 → «36с»
-    assert.match(html, /<td[^>]*><math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*розыгрыша<\/td>\s*<td[^>]*>\s*1м 3с\s*<\/td>\s*<td[^>]*>\s*36с\s*<\/td>/);
+    assert.match(html, /<td[^>]*><math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*(?:<math>\s*<mi>\s*)?розыгрыша(?:\s*<\/mi>\s*<\/math>)?\s*<\/td>\s*<td[^>]*>\s*1м 3с\s*<\/td>\s*<td[^>]*>\s*36с\s*<\/td>/);
     // среднее времени игры: текущий — {1200, 2399} → 1799.5 с → «30м»;
     // за всё время — {300, 300, 1200, 2399} → 1049.75 с → «17м 30с»
-    assert.match(html, /<td[^>]*>\s*<math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*<math>\s*<mspace[^>]*\/>\s*<msub>\s*<mi>\s*игры\s*<\/mi>\s*<mi>\d+<\/mi>\s*<\/msub>\s*<\/math>(?:\s*<\/msub>)?\s*<\/td>\s*<td[^>]*>\s*30м 0с\s*<\/td>\s*<td[^>]*>\s*17м 30с\s*<\/td>/);
+    assert.match(html, /<td[^>]*>\s*<math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*<math>\s*<mspace[^>]*\/>\s*<msub>\s*<mi>\s*игры\s*<\/mi>\s*<mi>\d+<\/mi>\s*<\/msub>\s*<\/math>\s*<\/td>\s*<td[^>]*>\s*30м 0с\s*<\/td>\s*<td[^>]*>\s*17м 30с\s*<\/td>/);
     // среднее времени матча: текущий — 3599 с → «59м 59с»;
     // за всё время — {600, 3599} → 2099.5 с → «35м 0с»
-    assert.match(html, /<td[^>]*><math>\s*<mover accent="true">\s*<mi>матч<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*<\/td>\s*<td[^>]*>\s*59м 59с\s*<\/td>\s*<td[^>]*>\s*35м 0с\s*<\/td>/);
-    // игр в матче (2-3): по 2 игры в каждом матче → «2»; лейбл с диапазоном wins..2×wins−1
-    assert.match(html, /<td[^>]*>\s*Игр в матче \(2-3\)\s*<\/td>\s*<td[^>]*>\s*2\s*<\/td>\s*<td[^>]*>\s*2\s*<\/td>/);
+    assert.match(html, /<td[^>]*>\s*<math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*<math>\s*<mspace[^>]*\/>\s*<msub>\s*<mi>\s*матча\s*<\/mi>\s*<mi>\d+<\/mi>\s*<\/msub>\s*<\/math>\s*<\/td>\s*<td[^>]*>\s*59м 59с\s*<\/td>\s*<td[^>]*>\s*35м 0с\s*<\/td>/);
+    // t заполнения: 3600 с в обеих колонках
+    assert.match(html, /<math>\s*<mi>\s*t заполнения\s*<\/mi>\s*<\/math>\s*<\/td>\s*<td[^>]*>\s*60м 0с\s*<\/td>\s*<td[^>]*>\s*60м 0с\s*<\/td>/);
+    // игр в матче (2-3): по 2 игры в каждом матче → «2»; лейбл — msub «Игр в матче» / «2 из 3»
+    assert.match(html, /<td[^>]*>\s*<math>\s*<msub>\s*<mi>\s*Игр в матче\s*<\/mi>\s*<mi>\s*2 из 3\s*<\/mi>\s*<\/msub>\s*<\/math>\s*<\/td>\s*<td[^>]*>\s*2\s*<\/td>\s*<td[^>]*>\s*2\s*<\/td>/);
     // порядок строк блока: города → участники → средний рейтинг → новички, % → игры → матчи;
     // формат новичков — «NN%(N)»: процент (новичков)
-    assert.match(html, /<td[^>]*>\s*Городов\s*<\/td>[\s\S]*?<td[^>]*>\s*Участников\s*<\/td>[\s\S]*?<td[^>]*>\s*Средний рейтинг\s*<\/td>[\s\S]*?<td[^>]*>\s*Новичков, %\s*<\/td>\s*<td[^>]*>\s*\d+%\(\d+\)\s*<\/td>\s*<td[^>]*>\s*\d+%\(\d+\)\s*<\/td>[\s\S]*?<td[^>]*>\s*Игр\s*<\/td>[\s\S]*?<td[^>]*>\s*Матчей\s*<\/td>/);
-    // строки-новинки присутствуют
-    for (const label of ['Городов', 'Участников', 'Средний рейтинг', 'Игр', 'Матчей',
-      'max(t) игры', 'max(t) матча',
-      'Дельта рейтинга: топ прироста', 'Дельта рейтинга: топ падения',
-      'Топ винрейта',
-      'Как быстро набивается capacity по типам турниров']) {
-      assert.match(html, new RegExp(`<td[^>]*>${label.replace(/[()]/g, '\\$&').replace(/ /g, '\\s+')}<`));
+    assert.match(html, /<td[^>]*>(?:<[^>]*>|\s)*Городов[\s\S]*?<td[^>]*>(?:<[^>]*>|\s)*Участников[\s\S]*?<td[^>]*>(?:<[^>]*>|\s)*Средний рейтинг[\s\S]*?<td[^>]*>(?:<[^>]*>|\s)*Новичков, %[\s\S]*?<td[^>]*>\s*\d+%\(\d+\)\s*<\/td>\s*<td[^>]*>\s*\d+%\(\d+\)\s*<\/td>[\s\S]*?<td[^>]*>(?:<[^>]*>|\s)*Игр[\s\S]*?<td[^>]*>(?:<[^>]*>|\s)*Матчей/);
+    // строки блока присутствуют
+    for (const label of ['Городов', 'Участников', 'Средний рейтинг', 'Новичков, %', 'Игр', 'Матчей',
+      't заполнения', 'max(t)', 'max(∆)', 'min(∆)', 'max(% побед)']) {
+      assert.match(html, labelRe(label));
     }
     // «Повторные пары» убраны из блока
     assert.doesNotMatch(html, /Повторные пары/);
@@ -191,7 +205,9 @@ describe("Время розыгрыша в футере", () => {
     const res = await fetch(`${base}t/4`);
     const html = await res.text();
 
-    assert.match(html, /<td[^>]*><math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*розыгрыша<\/td>\s*<td[^>]*>\s*—\s*<\/td>\s*<td[^>]*>\s*—\s*<\/td>/);
+    assert.match(html, /<td[^>]*><math>\s*<mover accent="true">\s*<mi>t<\/mi>\s*<mo>‾<\/mo>\s*<\/mover>\s*<\/math>\s*(?:<math>\s*<mi>\s*)?розыгрыша(?:\s*<\/mi>\s*<\/math>)?\s*<\/td>\s*<td[^>]*>\s*—\s*<\/td>\s*<td[^>]*>\s*—\s*<\/td>/);
+    // «t заполнения» скрыта, когда данных нет (обе колонки «—»)
+    assert.doesNotMatch(html, /t заполнения/);
   });
 });
 
