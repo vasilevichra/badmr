@@ -21,7 +21,7 @@ Thumbs.db
 Desktop.ini
 .DS_Store*
 ehthumbs.db
-Icon?
+/Icon?
 
 # Модули Node, логи npm
 node_modules

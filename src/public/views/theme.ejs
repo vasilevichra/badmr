@@ -10,3 +10,14 @@
         media.addEventListener('change', apply);
     })();
 </script>
+<link rel="manifest" href="/manifest.webmanifest"/>
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f4f4"/>
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#212529"/>
+<script>
+    // PWA: регистрация service worker'а (кеш статики + оффлайн-фолбэк)
+    if ('serviceWorker' in navigator) {
+        addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+    }
+</script>
