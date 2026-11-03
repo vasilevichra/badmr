@@ -2,6 +2,7 @@ import DB from "../db.ts";
 import { testDbPath } from "../test-db.ts";
 import Specific from "./specific.ts";
 import crypto from "node:crypto";
+import path from "node:path";
 
 export interface ReadyRow {
   user_id: number;
@@ -43,7 +44,8 @@ class Common {
     }
     Common._instance = this;
 
-    this.db = new DB(process.env.NODE_ENV === 'test' ? testDbPath() : './.data/badmr.sqlite3');
+    // BADMR_DATA — корень данных в упакованном Electron-приложении; по умолчанию — cwd
+    this.db = new DB(process.env.NODE_ENV === 'test' ? testDbPath() : path.join(process.env.BADMR_DATA ?? '.', '.data/badmr.sqlite3'));
     // create an initial users
     const salt = crypto.randomBytes(16);
     (Specific.users || []).forEach(u => {

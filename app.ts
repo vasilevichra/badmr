@@ -15,11 +15,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
-// connect-sqlite3 exports a factory: module.exports = function(connect) => SQLiteStore class bound to session store
+// BADMR_HOME — корень кода, BADMR_DATA — корень данных (задаются в Electron-приложении);
+// по умолчанию — cwd, как раньше
+const home = process.env.BADMR_HOME ?? '.';
+const dataRoot = process.env.BADMR_DATA ?? '.';
 const SQLiteStore = ((await import('connect-sqlite3')).default as unknown as (connect: unknown) => new (options: { db: string }) => import('express-session').Store)(session);
-const store = new SQLiteStore({ db: '.data/sessions.db' });
+const store = new SQLiteStore({ db: 'sessions.db', dir: path.join(dataRoot, '.data') });
 
-app.set('views', './src/public/views');
+app.set('views', path.join(home, 'src/public/views'));
 app.set('view engine', 'ejs');
 
 app.use(cors());
@@ -35,7 +38,7 @@ const assets = (dir: string) => express.static(dir, {
   setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache')
 });
 
-app.use(assets('./src/public'));
+app.use(assets(path.join(home, 'src/public')));
 app.use(logger('dev'));
 app.use(useragent.express());
 app.use(session({

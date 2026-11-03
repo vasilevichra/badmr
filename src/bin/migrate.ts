@@ -4,7 +4,10 @@ import { DatabaseSync } from "node:sqlite";
 
 const dbFilePath = process.env.NODE_ENV === "test"
     ? path.resolve(import.meta.dirname, "../../.data/test.db")
-    : path.resolve(import.meta.dirname, "../../.data/badmr.sqlite3");
+    : // BADMR_DATA — корень данных в упакованном Electron-приложении
+      process.env.BADMR_DATA
+        ? path.join(process.env.BADMR_DATA, ".data/badmr.sqlite3")
+        : path.resolve(import.meta.dirname, "../../.data/badmr.sqlite3");
 const sqlsDir = path.resolve(import.meta.dirname, "../../migrations");
 
 fs.mkdirSync(path.dirname(dbFilePath), {recursive: true});
