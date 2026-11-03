@@ -53,7 +53,8 @@ router.get('/', (req, res) => {
 });
 
 router.post('/create', ensureLoggedIn(), (req, res) => {
-  const {user, club, gym, type, name, reg, start, end, cap, courts, rmin, rmax, rules, cur} = req.body;
+  const {user, club, gym, type, name, reg, start, end, cap, courts, rmin, rmax, rules, cur,
+         matches, wins, game_point, max_point, fee, calibration_matches, calibration_days} = req.body;
   const toUTC = (dateString: string) => moment(new Date(dateString)).utc().format('YYYY-MM-DD HH:mm:ss');
   const current = cur === 'on' ? 1 : 0;
   res.promise(tournamentService.create(
@@ -70,7 +71,9 @@ router.post('/create', ensureLoggedIn(), (req, res) => {
       rmin ? String(rmin) : '',
       rmax ? String(rmax) : '',
       rules ? String(rules) : '',
-      current
+      current,
+      undefined,
+      {matches, wins, game_point, max_point, fee, calibration_matches, calibration_days}
   ));
 });
 

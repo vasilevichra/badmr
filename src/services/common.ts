@@ -137,7 +137,14 @@ class Common {
     const proc = Number(settingsService.get(settingsService.opt.PROC, tournamentId));
 
     const readyRows = await this.repository.ready([], tournamentId) as ReadyRow[];
-    if (readyRows.length < 4) {
+    // лимит матчей (настройка matches, 0 — без ограничений): игроки,
+    // сыгравшие все свои матчи, в подбор не попадают — так и пары
+    // предлагаются только «до окончания турнира»
+    const matchesLimit = Number(settingsService.get('matches', tournamentId));
+    const eligibleRows = matchesLimit > 0
+        ? readyRows.filter(r => Number(r.matches) < matchesLimit)
+        : readyRows;
+    if (eligibleRows.length < 4) {
       return [];
     }
     // «Шанс» пары — винрейт совместных доигранных матчей напарников:
@@ -145,7 +152,7 @@ class Common {
     // Нужен и для показа колонки «Шанс» в «Подборе» (chance1/chance2),
     // и для friends-приоритета; вместе не игравшие в списке отсутствуют
     const buddies = new Map<number, Map<number, number>>();
-    for (const row of readyRows) {
+    for (const row of eligibleRows) {
       const partnerRates = new Map<number, number>();
       for (const b of await this.userRepository.getBuddiesById(row.user_id)) {
         partnerRates.set(b.user_id, b.win_rate);
@@ -178,7 +185,7 @@ class Common {
     }));
     const model = fitThreeGameModel(samples);
 
-    const candidates = buildCandidates(readyRows, buddies, recentDuos, recentQuads,
+    const candidates = buildCandidates(eligibleRows, buddies, recentDuos, recentQuads,
         {delta, proc, fifty, model});
     const pairs = optimize(candidates, availableCourts);
     return pairs;

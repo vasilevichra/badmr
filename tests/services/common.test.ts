@@ -419,6 +419,34 @@ describe("Common", () => {
         );
       });
 
+      it("не должен предлагать игроков, сыгравших лимит матчей (настройка matches)", async () => {
+        const settingsService = new SettingsService();
+        const courtService = new CourtService();
+        await courtService.disableAll();
+        await courtService.create();
+        await courtService.create();
+        // лимит: один матч на игрока
+        await settingsService.set("matches", "1");
+
+        const users = [
+          mkUser(1, 500), mkUser(2, 460), mkUser(3, 500), mkUser(4, 460),
+          mkUser(5, 500), mkUser(6, 460), mkUser(7, 500), mkUser(8, 460),
+        ];
+        const ids = await createAndRegister(new UserService(), users);
+        // u1-u4 сыграли матч и исчерпали лимит
+        const matchId = (await new MatchService().create(ids[0], ids[1], ids[2], ids[3])).id as number;
+        const gameService = new GameService();
+        await gameService.create(matchId, "15", null, "2026-01-01 10:00:00");
+        await gameService.create(matchId, "15", null, "2026-01-01 10:05:00");
+
+        // кортов два, но предлагается одна пара — только из игроков,
+        // ещё не сыгравших лимит: столько матчей и нужно до окончания
+        assert.deepStrictEqual<Pair[]>(
+          await new CommonService().ready(),
+          withIds([pair(users[4], users[5], users[6], users[7], [5, 6, 7, 8], 0)], ids),
+        );
+      });
+
       it("не должен учитывать корты и матчи других турниров в played", async () => {
         const courtService = new CourtService();
         await courtService.disableAll();

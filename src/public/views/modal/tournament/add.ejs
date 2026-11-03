@@ -108,6 +108,58 @@
                         </div>
                     </section>
                     <section class="mb-2">
+                        <div class="form-group text-end">
+                            <div class="col">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <input type="number" name="matches" class="form-control" value="<%= defaults.matches %>" min="0">
+                                        <label class="control-label">Матчей на игрока</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="fee" class="form-control" value="<%= defaults.fee %>" min="0">
+                                        <label class="control-label">Взнос</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <div class="col">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <input type="number" name="wins" class="form-control" value="<%= defaults.wins %>" min="1">
+                                        <label class="control-label">Побед в матче</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="game_point" class="form-control" value="<%= defaults.game_point %>" min="1">
+                                        <label class="control-label">Очко игры</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="max_point" class="form-control" value="<%= defaults.max_point %>" min="1">
+                                        <label class="control-label">Макс. очко</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
+                        <div class="form-group text-end">
+                            <div class="col">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <input type="number" name="calibration_matches" class="form-control" value="<%= defaults.calibration_matches %>" min="0">
+                                        <label class="control-label">Матчей калибровки</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="calibration_days" class="form-control" value="<%= defaults.calibration_days %>" min="0">
+                                        <label class="control-label">Дней калибровки</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="mb-2">
                         <div class="form-group">
                             <div class="col">
                                 <div class="input-group">

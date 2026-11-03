@@ -24,7 +24,7 @@ class Tournament {
     this.settingsRepository = new SettingsRepository();
   }
 
-  create(user_id: number, club_id: number, gym_id: number, type_id: number, name: string, registration_date: string, start_date: string, end_date: string, capacity: number, courts: number, min_rating: string, max_rating: string, rules_url: string, is_current: number, unit_id?: number) {
+  create(user_id: number, club_id: number, gym_id: number, type_id: number, name: string, registration_date: string, start_date: string, end_date: string, capacity: number, courts: number, min_rating: string, max_rating: string, rules_url: string, is_current: number, unit_id?: number, settings?: Record<string, string>) {
 
     const createTournamentStatements: SqliteParam[][] = [[
       `INSERT INTO tournament (user_id,
@@ -50,6 +50,20 @@ class Tournament {
       this.id = changes[changes.length - 1].id!;
       this.settingsRepository.set('r_min', min_rating, this.id);
       this.settingsRepository.set('r_max', max_rating, this.id);
+      // город турнира по умолчанию — город клуба создателя
+      const clubCity = this.db.get<{ city_id: number }>(
+          `SELECT city_id FROM user_club WHERE id = ?`,
+          [club_id]
+      );
+      if (clubCity?.city_id) {
+        this.settingsRepository.set('city', String(clubCity.city_id), this.id);
+      }
+      // настройки, заданные в форме создания (пустые не переопределяем —
+      // останутся дефолты)
+      for (const [setting, value] of Object.entries(settings ?? {})) {
+        if (value === null || value === undefined || String(value).trim() === '') continue;
+        this.settingsRepository.set(setting, String(value), this.id);
+      }
       for (let i = 0; i < courts; i++) {
         courtRepository.create(this.id);
       }
@@ -106,6 +120,24 @@ class Tournament {
                   JOIN tournament_type tt ON tt.id = t.tournament_type_id
          WHERE t.id = ?`,
         [id]
+    );
+  }
+
+  /** Сыгранные (завершённые) матчи каждого активного игрока турнира —
+   *  для авто-завершения по настройке matches. */
+  availablePlayed(tournamentId?: number) {
+    return this.db.all<{ user_id: number; played: number }>(
+        `SELECT tu.user_id,
+                (SELECT count(*)
+                 FROM match m
+                 WHERE m.tournament_id = tu.tournament_id
+                   AND m.finished = 1
+                   AND tu.user_id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)) AS played
+         FROM tournament_user tu
+         WHERE tu.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
+           AND tu.available = 1
+           AND tu.archived != 1`,
+        [tournamentId ?? null]
     );
   }
 

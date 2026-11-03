@@ -1,5 +1,35 @@
+// незавершённые матчи, известные странице: исчезновение id из списка
+// /api/matches/unfinished — признак завершения матча (кроме удалённых)
+const seenUnfinished = new Set();
+// матчи, удалённые с этой страницы: их исчезновение — не завершение
+const deletedUnfinished = new Set();
+
+/** Матч завершился: сразу предложить подбор — раскрыть блок «Подбор»,
+ *  перевести на него фокус и раскрыть пары. Сколько матчей предлагать —
+ *  считает сервер: столько, сколько нужно сыграть до окончания турнира,
+ *  но не больше свободных кортов. */
+const onMatchFinished = () => {
+  if (document.body.dataset.tournamentStatus !== '2') return;
+  const selectButton = $('#select-button');
+  if (!selectButton.length) return;
+  scrollToId('select');
+  selectButton.trigger('click');
+};
+
 const renderGames = () => {
   $.getJSON("/api/matches/unfinished", matches => {
+    const unfinishedIds = new Set(matches.map(m => Number(m.id)));
+    const disappeared = [...seenUnfinished].filter(id => !unfinishedIds.has(id));
+    for (const id of disappeared) {
+      seenUnfinished.delete(id);
+      if (deletedUnfinished.has(id)) {
+        deletedUnfinished.delete(id);
+      } else {
+        onMatchFinished();
+      }
+    }
+    for (const id of unfinishedIds) seenUnfinished.add(id);
+
     if (matches.length > 0) {
       $('.game-info').hide();
 
@@ -366,6 +396,7 @@ const fillMatch = (counter, match) => {
         }
       }
       $.post(`/api/matches/delete/${match.id}`, {}, () => {
+        deletedUnfinished.add(Number(match.id)); // исчезновение из списка — не завершение
         $(`#game-form-${counter}`).remove();
         if ($('#game-block > div').length === 0) {
           refresh.block.by.id('game'); // обновление блока игры

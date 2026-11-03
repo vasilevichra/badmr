@@ -400,6 +400,183 @@ describe("Tournament", () => {
       assert.deepStrictEqual(db.all("SELECT id FROM tournament WHERE name = 'Откат'"), []);
       assert.deepStrictEqual(db.all("SELECT id FROM court WHERE tournament_id > 4"), []);
     });
+
+    it("должен установить город турнира из города клуба", async () => {
+      const clubCity = db.get<{ city_id: number }>(
+        `SELECT city_id FROM user_club WHERE id = 1`,
+      )!;
+
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, "Город клуба",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+      ))!;
+
+      const city = db.get<{ value: string }>(
+        `SELECT s.value AS value
+         FROM tournament_settings s
+                  JOIN defaults d ON d.id = s.defaults_id
+         WHERE s.tournament_id = ? AND d.name = 'city'`, [id],
+      );
+      assert.strictEqual(city?.value, String(clubCity.city_id));
+    });
+
+    it("должен сохранить настройки, переданные при создании", async () => {
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, "Настройки при создании",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+        undefined,
+        {matches: "7", fee: "500", wins: "3", game_point: "21", max_point: "30",
+         calibration_matches: "2", calibration_days: "45"},
+      ))!;
+
+      const settings = await db.all<{ name: string; value: string }>(
+        `SELECT d.name AS name, s.value AS value
+         FROM tournament_settings s
+                  JOIN defaults d ON d.id = s.defaults_id
+         WHERE s.tournament_id = ?
+           AND d.name IN ('matches', 'fee', 'wins', 'game_point', 'max_point',
+                          'calibration_matches', 'calibration_days')
+         ORDER BY d.name`, [id],
+      );
+      assert.deepStrictEqual(settings, [
+        {name: "calibration_days", value: "45"},
+        {name: "calibration_matches", value: "2"},
+        {name: "fee", value: "500"},
+        {name: "game_point", value: "21"},
+        {name: "matches", value: "7"},
+        {name: "max_point", value: "30"},
+        {name: "wins", value: "3"},
+      ]);
+    });
+
+    it("не должен переопределять настройку пустым значением", async () => {
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, "Пустые настройки",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+        undefined,
+        {matches: "", fee: "500"},
+      ))!;
+
+      const settings = await db.all<{ name: string; value: string }>(
+        `SELECT d.name AS name, s.value AS value
+         FROM tournament_settings s
+                  JOIN defaults d ON d.id = s.defaults_id
+         WHERE s.tournament_id = ? AND d.name IN ('matches', 'fee')
+         ORDER BY d.name`, [id],
+      );
+      assert.deepStrictEqual(settings, [{name: "fee", value: "500"}]);
+    });
+  });
+
+  describe("checkMatchesLimit", () => {
+    const createRunning = async (name: string) => {
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, name,
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+      ))!;
+      await tournamentService.setStatus(2, id);
+      return id;
+    };
+    const seedUser = (tournamentId: number, userId: number, available = 1) => {
+      db.run(
+        `INSERT INTO tournament_user (tournament_id, user_id, available) VALUES (?, ?, ?)`,
+        [tournamentId, userId, available],
+      );
+    };
+    const seedMatch = (tournamentId: number, ids: number[]) => {
+      const court = db.get<{ id: number }>(
+        `SELECT id FROM court WHERE tournament_id = ? LIMIT 1`, [tournamentId],
+      )!;
+      db.run(
+        `INSERT INTO match (tournament_id, user_1_id, user_2_id, user_3_id, user_4_id, court_id, finished, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, 0, datetime('now'))`,
+        [tournamentId, ...ids, court.id],
+      );
+      // завершение — как в реальном потоке: игроки снова available=1
+      // становятся только через триггер на INSERT игры, доводящий счёт
+      // игр до wins
+      db.run(
+        `INSERT INTO game (match_id, created_at, lost_1_by)
+         VALUES (?, datetime('now'), 15), (?, datetime('now'), 12)`,
+        [db.get<{ id: number }>(`SELECT max(id) AS id FROM match WHERE tournament_id = ?`, [tournamentId])!.id,
+         db.get<{ id: number }>(`SELECT max(id) AS id FROM match WHERE tournament_id = ?`, [tournamentId])!.id],
+      );
+    };
+    const setSetting = (tournamentId: number, name: string, value: string) => {
+      db.run(
+        `INSERT INTO tournament_settings (defaults_id, tournament_id, value)
+         VALUES ((SELECT id FROM defaults WHERE name = ?), ?, ?)`,
+        [name, tournamentId, value],
+      );
+    };
+
+    it("должен завершить турнир, когда все активные игроки сыграли лимит матчей", async () => {
+      const id = await createRunning("Лимит достигнут");
+      setSetting(id, "matches", "1");
+      for (const u of [1, 2, 3, 4]) seedUser(id, u);
+      seedMatch(id, [1, 2, 3, 4]);
+
+      assert.strictEqual(tournamentService.checkMatchesLimit(id), true);
+      assert.strictEqual(
+        (await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 3,
+      );
+    });
+
+    it("не должен завершать турнир, пока кто-то из активных не сыграл лимит", async () => {      const id = await createRunning("Лимит не достигнут");
+      setSetting(id, "matches", "2");
+      for (const u of [1, 2, 3, 4]) seedUser(id, u);
+      seedMatch(id, [1, 2, 3, 4]);
+
+      assert.strictEqual(tournamentService.checkMatchesLimit(id), false);
+      assert.strictEqual(
+        (await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 2,
+      );
+    });
+
+    it("не должен учитывать выключенных игроков", async () => {
+      const id = await createRunning("Выключенный игрок");
+      setSetting(id, "matches", "1");
+      for (const u of [1, 2, 3, 4]) seedUser(id, u);
+      seedUser(id, 5, 0); // выключен: не играл, но турнир не блокирует
+      seedMatch(id, [1, 2, 3, 4]);
+
+      assert.strictEqual(tournamentService.checkMatchesLimit(id), true);
+      assert.strictEqual(
+        (await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 3,
+      );
+    });
+
+    it("не должен завершать турнир при matches = 0 (без ограничений)", async () => {
+      const id = await createRunning("Без лимита");
+      setSetting(id, "matches", "0");
+      for (const u of [1, 2, 3, 4]) seedUser(id, u);
+      seedMatch(id, [1, 2, 3, 4]);
+
+      assert.strictEqual(tournamentService.checkMatchesLimit(id), false);
+      assert.strictEqual(
+        (await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 2,
+      );
+    });
+
+    it("не должен завершать турнир не в статусе «Идёт»", async () => {
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, "Ещё регистрация",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+      ))!; // статус 1 «Регистрация»
+      setSetting(id, "matches", "1");
+      for (const u of [1, 2, 3, 4]) seedUser(id, u);
+      seedMatch(id, [1, 2, 3, 4]);
+
+      assert.strictEqual(tournamentService.checkMatchesLimit(id), false);
+      assert.strictEqual(
+        (await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 1,
+      );
+    });
   });
 
   describe("setDeferredStatusHandlers", () => {

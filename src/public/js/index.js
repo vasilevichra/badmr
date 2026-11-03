@@ -92,6 +92,7 @@ $(document).ready(() => {
     const index = $(this).data('index');
     confirmAction(`Удалить матч №${index}?`, () => {
       $.post(`/api/matches/delete/${id}`, {}, () => {
+        deletedUnfinished.add(Number(id)); // исчезновение из списка — не завершение
         refresh.block.by.id('match-history-block');
         refresh.table.player();
         refresh.table.court();

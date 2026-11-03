@@ -1,8 +1,10 @@
 import RatingRepository from '../repositories/rating.ts';
 import SettingsService from './settings.ts';
+import TournamentService from './tournament.ts';
 import type { SqliteParam } from '../db.ts';
 
 const settingsService = new SettingsService();
+const tournamentService = new TournamentService();
 
 /** Состояние цепочки рейтинга игрока (аналог последней строки rating в триггере). */
 interface UserState {
@@ -17,6 +19,7 @@ interface UserState {
 /** Снапшот строки матча из БД. */
 interface MatchRow {
   id: number;
+  tournament_id: number;
   user_1_id: number;
   user_2_id: number;
   user_3_id: number;
@@ -316,6 +319,12 @@ class Rating {
       }
     }
     this.rating.apply(statements);
+
+    // матч завершился — проверить авто-завершение турнира по лимиту матчей
+    if (flagUpdates.some(f => f[1] === 1)) {
+      const tournamentId = this.rating.getById<MatchRow>(source.matchId)?.tournament_id;
+      if (tournamentId) tournamentService.checkMatchesLimit(tournamentId);
+    }
   }
 }
 
