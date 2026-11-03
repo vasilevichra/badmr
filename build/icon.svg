@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8704a"/>
+      <stop offset="1" stop-color="#7a1e0e"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ef8355"/>
+      <stop offset="1" stop-color="#8a2410"/>
+    </linearGradient>
+    <linearGradient id="g3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d95f3b"/>
+      <stop offset="1" stop-color="#6b1a0b"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e06a42"/>
+      <stop offset="1" stop-color="#8a2410"/>
+    </linearGradient>
+  </defs>
+
+  <!-- три пера-лепестка веером из правого нижнего угла -->
+  <g stroke="#ffffff" stroke-width="12" stroke-linejoin="round">
+    <path fill="url(#g1)" d="M118 96
+      C 60 150 40 240 68 310
+      C 96 380 170 420 240 408
+      C 300 396 330 340 300 280
+      C 260 200 190 120 118 96 Z"/>
+    <path fill="url(#g2)" d="M262 76
+      C 190 96 130 160 122 240
+      C 116 310 170 370 240 372
+      C 300 374 340 326 330 264
+      C 318 190 300 110 262 76 Z"/>
+    <path fill="url(#g3)" d="M372 130
+      C 320 140 260 190 250 260
+      C 242 320 282 372 344 374
+      C 400 376 440 330 434 270
+      C 428 210 404 160 372 130 Z"/>
+  </g>
+
+  <!-- бандаж пробковой основы -->
+  <g transform="rotate(-12 355 404)">
+    <rect x="280" y="372" width="150" height="64" rx="30" fill="url(#band)" stroke="#ffffff" stroke-width="12"/>
+  </g>
+</svg>
