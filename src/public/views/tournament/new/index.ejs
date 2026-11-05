@@ -75,8 +75,9 @@
     </div>
 <% } %>
 
-<% if (matches.length > 0) { %>
-<div class="container">
+<% // контейнер истории рендерится всегда: после сохранения первого матча
+   // клиент показывает блок без перезагрузки страницы %>
+<div id="match-history-container" class="container<%= matches.length === 0 ? ' d-none' : '' %>">
     <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
     <div id="match-history" class="match-history closable">
         <% if (user) { %>
@@ -92,7 +93,6 @@
     </div>
     <hr class="hr-dashed"/>
 </div>
-<% } %>
 <% if (user) { %>
     <div class="container">
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>

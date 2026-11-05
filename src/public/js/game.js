@@ -392,6 +392,8 @@ const fillMatch = (counter, match) => {
       }
 
       refresh.block.by.id('match-history-block'); // обновление блока истории матчей
+      // первый матч турнира: блок истории появляется без перезагрузки страницы
+      $('#match-history-container').removeClass('d-none');
     });
   });
 
@@ -415,6 +417,13 @@ const fillMatch = (counter, match) => {
 
         refresh.table.player(); // игроки снова доступны — триггер удаления матча вернул их в подбор
         refresh.table.court();
+
+        // история матчей: перечитываем с сервера и прячем, если матчей не осталось
+        $('#match-history').load(`${location.href} #match-history>*`, '', () => {
+          if ($('#match-history-block').children().length === 0) {
+            $('#match-history-container').addClass('d-none');
+          }
+        });
       });
     }
   });
