@@ -368,6 +368,82 @@ describe("Common", () => {
         assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
       });
 
+      it("последний матч: побеждает минимальная разница сумм рейтингов", async () => {
+        const settingsService = new SettingsService();
+        const courtService = new CourtService();
+        await courtService.disableAll();
+        // четыре корта: played/won считаются по последним
+        // courts+unfinished матчам — все сеяные матчи должны попасть
+        // в окно, иначе won обнуляется и моментум теряется
+        await courtService.create();
+        await courtService.create();
+        await courtService.create();
+        await courtService.create();
+        // норма matches = 2: четверо игроков (u1..u4) сыграли по одному
+        // матчу, u5..u8 — по два и больше и в подбор не попадают; до конца
+        // турнира остаётся один матч (remaining = 4)
+        await settingsService.set("matches", "2");
+        // fifty включается явно: beforeEach её выключает
+        await settingsService.set(settingsService.opt.FIFTY, "1");
+
+        const users = [
+          mkUser(1, 735),
+          mkUser(2, 170),
+          mkUser(3, 156),
+          mkUser(4, 498),
+          mkUser(5, 500),
+          mkUser(6, 500),
+          mkUser(7, 500),
+          mkUser(8, 500),
+        ];
+        const ids = await createAndRegister(new UserService(), users);
+        const matchService = new MatchService();
+        const gameService = new GameService();
+        const seed = async (side1: [number, number, number, number], date: string) => {
+          const matchId = (await matchService.create(...side1)).id as number;
+          // обе игры проигрывает первая пара
+          await gameService.create(matchId, "15", null, date);
+          await gameService.create(matchId, "15", null, date);
+        };
+        // u1,u3 проиграли u5,u6; u2 выиграл у u6,u7; u4 проиграл u6,u7;
+        // u5..u8 добирают норму и выбывают из подбора; u2 — единственный
+        // из оставшихся с победой в последнем матче (фаворит по моментуму)
+        await seed([ids[0], ids[2], ids[4], ids[5]], "2026-01-01 10:00:00");
+        await seed([ids[5], ids[6], ids[1], ids[7]], "2026-01-01 11:00:00");
+        await seed([ids[3], ids[4], ids[5], ids[6]], "2026-01-01 12:00:00");
+        await seed([ids[7], ids[4], ids[5], ids[6]], "2026-01-01 13:00:00");
+        // рейтинги выставляются заново — ожидания не зависят от
+        // пересчёта рейтингов историей матчей
+        for (const [i, rating] of [[0, 735], [1, 170], [2, 156], [3, 498]] as const) {
+          await new UserService().setRating(ids[i], rating);
+        }
+
+        // для последнего матча действует единственный критерий —
+        // минимальная разница сумм рейтингов: дельта, proc и fifty сняты,
+        // rematch/balance/played не учитываются. Минимальный матчап —
+        // (u1,u3) против (u2,u4): 891 против 668, разница 223 (повтор
+        // недавних дуо для последнего матча не препятствие)
+        const expected: Pair = {
+          players1: [
+            {...player(users[0], ids[0]), matches: 1, played: 1, rating: 735, won: 0, wins: 0},
+            {...player(users[2], ids[2]), matches: 1, played: 1, rating: 156, won: 0, wins: 0},
+          ],
+          players2: [
+            {...player(users[1], ids[1]), matches: 1, played: 1, rating: 170, won: 1, wins: 1},
+            {...player(users[3], ids[3]), matches: 1, played: 1, rating: 498, won: 0, wins: 0},
+          ],
+          diff: 223,
+          matches: 4,
+          played: 4,
+          // u1 и u3 были напарниками в сеяном матче и проиграли —
+          // совместный винрейт 0%
+          chance1: 0,
+          chance2: null,
+          friends: 0,
+        };
+        assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
+      });
+
       it("не последний матч — ограничение дельты действует как прежде", async () => {
         const settingsService = new SettingsService();
         const courtService = new CourtService();

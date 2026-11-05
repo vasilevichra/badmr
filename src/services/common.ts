@@ -5,7 +5,7 @@ import SettingsService from "./settings.ts";
 const settingsService = new SettingsService();
 import CourtService from "./court.ts";
 const courtService = new CourtService();
-import {buildCandidates, fitThreeGameModel, optimize} from "./pairing.ts";
+import {buildCandidates, fitThreeGameModel, optimize, PRIORITY} from "./pairing.ts";
 import type { Request } from "express";
 
 /**
@@ -148,10 +148,11 @@ class Common {
       return [];
     }
     // последний матч турнира: до нормы всем оставшимся суммарно остаётся
-    // сыграть ровно один матч (каждый матч — 4 участника). Ограничения
-    // дельты и proc сняты — последний матч обязан состояться, иначе
-    // турнир не закончится; самый справедливый состав обеспечивает
-    // оптимизатор, минимизирующий баланс и разницу сумм команд
+    // сыграть ровно один матч (каждый матч — 4 участника). Применяется
+    // единственный критерий — минимальная разница сумм рейтингов команд:
+    // ограничения дельты, proc и fifty сняты, остальные приоритеты
+    // (rematch, balance, played и пр.) не действуют — последний матч
+    // обязан состояться, иначе турнир не закончится
     const remaining = matchesLimit > 0
         ? eligibleRows.reduce((sum, r) => sum + Math.max(0, matchesLimit - Number(r.matches)), 0)
         : 0;
@@ -195,8 +196,8 @@ class Common {
     const model = fitThreeGameModel(samples);
 
     const candidates = buildCandidates(eligibleRows, buddies, recentDuos, recentQuads,
-        {delta: lastMatch ? Infinity : delta, proc: lastMatch ? 0 : proc, fifty, model});
-    const pairs = optimize(candidates, availableCourts);
+        {delta: lastMatch ? Infinity : delta, proc: lastMatch ? 0 : proc, fifty: lastMatch ? false : fifty, model});
+    const pairs = optimize(candidates, availableCourts, lastMatch ? ['diff'] : PRIORITY);
     return pairs;
   };
 

@@ -261,9 +261,9 @@ const lexLess = (x: (string | number)[], y: (string | number)[]): boolean => {
 };
 
 /** Агрегированный ключ решения: [−число матчей, ...поля приоритета, сигнатуры]. */
-const solutionKeys = (solution: Candidate[]): (string | number)[] => {
+const solutionKeys = (solution: Candidate[], priority: string[]): (string | number)[] => {
   const keys: (string | number)[] = [-solution.length];
-  for (const name of PRIORITY) {
+  for (const name of priority) {
     const dir = FIELD_DIR[name] ?? 1;
     keys.push(dir * solution.reduce((s, c) => s + fieldValue(c, name), 0));
   }
@@ -274,8 +274,8 @@ const solutionKeys = (solution: Candidate[]): (string | number)[] => {
 };
 
 /** Пер-матчевое сравнение для жадного выбора (семантика прежнего calcReadyRec). */
-const matchLess = (x: Candidate, y: Candidate): boolean => {
-  for (const name of PRIORITY) {
+const matchLess = (x: Candidate, y: Candidate, priority: string[]): boolean => {
+  for (const name of priority) {
     const dir = FIELD_DIR[name] ?? 1;
     const d = (fieldValue(x, name) - fieldValue(y, name)) * dir;
     if (d !== 0) return d < 0;
@@ -297,10 +297,14 @@ const extendable = (c: Candidate, taken: Candidate[], pool: Candidate[], maxMatc
  * Собирает раунд: до maxMatches непересекающихся матчей.
  * Жадный старт + локальный поиск (замена матча, перегруппировка пары
  * матчей, добавление матча) до локального оптимума агрегатов приоритета.
+ * @param priority порядок приоритетов; по умолчанию — фиксированный
+ *        PRIORITY, для особого режима (последний матч турнира) можно
+ *        передать урезанный список, например только ['diff']
  */
 export const optimize = (
     candidates: Candidate[],
     maxMatches: number,
+    priority: string[] = PRIORITY,
 ): CalculatedPair[] => {
   if (candidates.length === 0 || maxMatches <= 0) return [];
 
@@ -314,13 +318,13 @@ export const optimize = (
     for (const c of candidates) {
       if (!disjoint(c, solution) || solution.includes(c)) continue;
       if (!extendable(c, solution, candidates, maxMatches)) continue;
-      if (!best || matchLess(c, best)) best = c;
+      if (!best || matchLess(c, best, priority)) best = c;
     }
     if (!best) {
       // расширяемых кандидатов нет — берём любой disjoint, чтобы не терять матч
       for (const c of candidates) {
         if (!disjoint(c, solution) || solution.includes(c)) continue;
-        if (!best || matchLess(c, best)) best = c;
+        if (!best || matchLess(c, best, priority)) best = c;
       }
     }
     if (!best) break;
@@ -328,7 +332,7 @@ export const optimize = (
   }
 
   const better = (trial: Candidate[]): boolean =>
-      lexLess(solutionKeys(trial), solutionKeys(solution));
+      lexLess(solutionKeys(trial, priority), solutionKeys(solution, priority));
 
   let improved = true;
   for (let guard = 0; improved && guard < 100; guard++) {
@@ -372,7 +376,7 @@ export const optimize = (
           for (let b = a + 1; b < local.length; b++) {
             if (!disjoint(local[b], [local[a]])) continue;
             const trial = [local[a], local[b]];
-            if (lexLess(solutionKeys(trial), solutionKeys(current))) {
+            if (lexLess(solutionKeys(trial, priority), solutionKeys(current, priority))) {
               solution.splice(i, 1, trial[0]);
               solution.splice(j, 1, trial[1]);
               improved = true;
