@@ -204,7 +204,7 @@
                     <% if (current_tournament.chat) { %>
                         <span class="list-group-item text-center"><i class="bi bi-chat-dots btn-xs"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></span>
                     <% } %>
-                    <span class="list-group-item text-center"><i class="bi bi-people"></i> <span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %><% if (current_tournament.rules) { %> | <i class="bi bi-journal-text"></i> <%- current_tournament.rules %><% } %> | <i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %><% if (Number(settings.matches) > 0) { %> | <i class="bi bi-hash"></i> <%= settings.matches %><% } %></span>
+                    <span class="list-group-item text-center"><i class="bi bi-people"></i> <span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %><% if (current_tournament.rules) { %> | <i class="bi bi-journal-text"></i> <%- current_tournament.rules %><% } %> | <i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %><% if (Number(settings.matches) > 0) { %> | <i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %><%= settings.matches %><% } else { %> | <i class="bi bi-hash"></i> ∞<% } %></span>
                 </div>
             </div>
         <% } else { %>
@@ -242,7 +242,7 @@
                         <span class="me-1"><i class="bi bi-people"></i> <span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %></span>
                         <% if (current_tournament.rules) { %><span class="me-1"><i class="bi bi-journal-text"></i> <%- current_tournament.rules %></span><% } %>
                         <span><i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
-                        <% if (Number(settings.matches) > 0) { %><span class="ms-1"><i class="bi bi-hash"></i> <%= settings.matches %></span><% } %>
+                        <% if (Number(settings.matches) > 0) { %><span class="ms-1"><i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %><%= settings.matches %></span><% } else { %><span class="ms-1"><i class="bi bi-hash"></i> ∞</span><% } %>
                     </div>
                 </div>
             </div>
