@@ -127,6 +127,11 @@ const renderSelect = () => {
                 $(`#select-form-${i}`).hide();
                 renderGames();
                 showSelectButton();
+                // матч создан: игроки перешли в «играет» — таблица игроков
+                // и корты обновляются по факту ответа, а не сразу после
+                // отправки запроса (иначе гонка: данные ещё старые)
+                refresh.table.player();
+                refresh.table.court();
               },
               complete: function () {
                 // при ошибке форма остаётся, кнопка снова активна
@@ -134,8 +139,6 @@ const renderSelect = () => {
                 submitButton.prop('disabled', false);
               }
             });
-            refresh.table.player();
-            refresh.table.court();
           });
           $(`#select-form-button-reset-${i}`).off('click').click((event) => {
             event.preventDefault();

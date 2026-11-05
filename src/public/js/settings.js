@@ -189,13 +189,16 @@ const renderSettings = () => {
           const newValue = String(input.val()).trim();
           input.off('blur keydown');
           if (newValue && newValue !== String(row.value) && validValue(row.name, newValue)) {
-            // delta и proc влияют на расчёт подбора: показанные пары
-            // устаревают — сбрасываем подбор
-            const affectsReady = ['delta', 'proc'].includes(row.name);
+            // любая настройка может влиять на подбор (delta, proc, matches,
+            // delta_auto, fifty и пр.): показанные пары устаревают — сбрасываем
+            // подбор, а если формы были открыты, сразу показываем заново
+            // уже с новыми значениями
+            const hadForms = $('.select-form:visible').length > 0;
             $.post(`/api/settings/${row.name}`, {value: newValue}, () => {
               refresh.table.settings();
-              if (affectsReady) {
-                showSelectButton(true);
+              showSelectButton(true);
+              if (hadForms) {
+                $('#select-button').trigger('click');
               }
             });
           } else {
@@ -251,11 +254,16 @@ const renderSettings = () => {
         });
       })
       // выключатели (Система 50%, автоподстройка дельты) влияют на расчёт
-      // подбора — после сохранения сбрасываем показанные пары
+      // подбора — после сохранения сбрасываем показанные пары, а если формы
+      // были открыты, сразу показываем заново с новыми значениями
       .on('change', '.settings-boolean-input', function () {
+        const hadForms = $('.select-form:visible').length > 0;
         $.post(`/api/settings/${this.dataset.name}`, {value: this.checked ? '1' : '0'}, () => {
           refresh.table.settings();
           showSelectButton(true);
+          if (hadForms) {
+            $('#select-button').trigger('click');
+          }
         });
       });
     });

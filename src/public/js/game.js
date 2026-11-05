@@ -234,10 +234,14 @@ const fillMatch = (counter, match) => {
       return false;
     }
 
+    // игры сохраняются параллельными запросами; обновления таблиц и прогресса
+    // выполняются после завершения всех — иначе гонка: обновление по старым данным
+    const saving = [];
+
     if (is11) {
       const cookieId11 = $(`#game-input-11-${counter}`).attr('ids');
       const cookieDateId11 = cookieId2cookieDateId(cookieId11);
-      $.ajax({
+      saving.push($.ajax({
         url: '/api/games/create',
         type: 'POST',
         dataType: 'json',
@@ -255,11 +259,11 @@ const fillMatch = (counter, match) => {
         error: function (err) {
           alert(JSON.stringify(err, null, 2));
         }
-      });
+      }));
     } else {
       const cookieId12 = $(`#game-input-12-${counter}`).attr('ids');
       const cookieDateId12 = cookieId2cookieDateId(cookieId12);
-      $.ajax({
+      saving.push($.ajax({
         url: '/api/games/create',
         type: 'POST',
         dataType: 'json',
@@ -277,13 +281,13 @@ const fillMatch = (counter, match) => {
         error: function (err) {
           alert(JSON.stringify(err, null, 2));
         }
-      });
+      }));
     }
 
     if (is21) {
       const cookieId21 = $(`#game-input-21-${counter}`).attr('ids');
       const cookieDateId21 = cookieId2cookieDateId(cookieId21);
-      $.ajax({
+      saving.push($.ajax({
         url: '/api/games/create',
         type: 'POST',
         dataType: 'json',
@@ -301,11 +305,11 @@ const fillMatch = (counter, match) => {
         error: function (err) {
           alert(JSON.stringify(err, null, 2));
         }
-      });
+      }));
     } else {
       const cookieId22 = $(`#game-input-22-${counter}`).attr('ids');
       const cookieDateId22 = cookieId2cookieDateId(cookieId22);
-      $.ajax({
+      saving.push($.ajax({
         url: '/api/games/create',
         type: 'POST',
         dataType: 'json',
@@ -323,13 +327,13 @@ const fillMatch = (counter, match) => {
         error: function (err) {
           alert(JSON.stringify(err, null, 2));
         }
-      });
+      }));
     }
     if (need3) {
       if (is31) {
         const cookieId31 = $(`#game-input-31-${counter}`).attr('ids');
         const cookieDateId31 = cookieId2cookieDateId(cookieId31);
-        $.ajax({
+        saving.push($.ajax({
           url: '/api/games/create',
           type: 'POST',
           dataType: 'json',
@@ -347,11 +351,11 @@ const fillMatch = (counter, match) => {
           error: function (err) {
             alert(JSON.stringify(err, null, 2));
           }
-        });
+        }));
       } else {
         const cookieId32 = $(`#game-input-32-${counter}`).attr('ids');
         const cookieDateId32 = cookieId2cookieDateId(cookieId32);
-        $.ajax({
+        saving.push($.ajax({
           url: '/api/games/create',
           type: 'POST',
           dataType: 'json',
@@ -369,23 +373,26 @@ const fillMatch = (counter, match) => {
           error: function (err) {
             alert(JSON.stringify(err, null, 2));
           }
-        });
+        }));
       }
     }
 
     $(`#game-form-${counter}`).hide();
-    show.player.column.delta_today();
-    refresh.table.player();
-    refresh.table.court();
-    // результаты сохранены — пересчитываем прогресс турнира
-    renderTournamentProgress();
 
-    if ($('.game-form-button-submit:visible').length === 0) {
-      $('.game-form').remove();
-      $('.game-info').show();
-    }
+    $.when(...saving).always(() => {
+      show.player.column.delta_today();
+      refresh.table.player();
+      refresh.table.court();
+      // результаты сохранены — пересчитываем прогресс турнира
+      renderTournamentProgress();
 
-    refresh.block.by.id('match-history-block'); // обновление блока истории матчей
+      if ($('.game-form-button-submit:visible').length === 0) {
+        $('.game-form').remove();
+        $('.game-info').show();
+      }
+
+      refresh.block.by.id('match-history-block'); // обновление блока истории матчей
+    });
   });
 
   $(`#game-form-button-reset-${counter}`).off('click').click(event => {
