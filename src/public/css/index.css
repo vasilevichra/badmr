@@ -115,6 +115,13 @@ button {
   --bs-link-color-rgb: var(--bs-link-hover-color-rgb);
 }
 
+/* выбранное значение select2 — слева, как в обычных полях:
+   text-align: right секций .text-end наследуется в rendered/choice */
+.form-group.text-end .select2-container--bootstrap-5 .select2-selection__rendered,
+.form-group.text-end .select2-container--bootstrap-5 .select2-selection__choice {
+  text-align: left;
+}
+
 /* хак для select2 и form-floating */
 .form-floating .select2-container--bootstrap-5 .select2-selection {
   height: calc(3.5rem + 2px);

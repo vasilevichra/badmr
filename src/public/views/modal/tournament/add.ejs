@@ -127,6 +127,10 @@
                                         <input type="number" name="rmax" class="form-control" value="<%= defaults.r_max %>">
                                         <label class="control-label">Макс. рейтинг</label>
                                     </div>
+                                    <div class="form-floating">
+                                        <input type="number" name="fee" class="form-control" value="<%= defaults.fee %>" min="0">
+                                        <label class="control-label">Взнос</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -142,10 +146,6 @@
                                     <div class="form-floating">
                                         <input type="number" name="calibration_days" class="form-control" value="<%= defaults.calibration_days %>" min="0">
                                         <label class="control-label">Дней без калибровки</label>
-                                    </div>
-                                    <div class="form-floating">
-                                        <input type="number" name="fee" class="form-control" value="<%= defaults.fee %>" min="0">
-                                        <label class="control-label">Взнос</label>
                                     </div>
                                 </div>
                             </div>
