@@ -11,6 +11,10 @@ const referenceSelector = (name, rows, value) => {
 const renderSettings = () => {
   // значения настроек (обновляются при каждой отрисовке строк)
   const values = {};
+  // delta применяется сервером только при выключенной delta_auto
+  // (при включённой автоподстройке дельта считается от неё) — строка
+  // настройки delta прячется, пока delta_auto включена
+  let deltaAutoOn = false;
   // справочники: state — все страны, region — по стране, city — по региону;
   // timezone — пояса выбранной страны (id из таблицы timezone) со смещением UTC
   const tzLabel = (tz) => {
@@ -103,6 +107,14 @@ const renderSettings = () => {
       $('#settings-table')
       .bootstrapTable({
         url: '/api/settings/',
+        // состояние delta_auto известно до отрисовки строк — rowStyle
+        // прячет строку delta независимо от порядка строк таблицы
+        responseHandler: (rows) => {
+          deltaAutoOn = rows.some((row) => row.name === 'delta_auto' && String(row.value) === '1');
+          return rows;
+        },
+        // delta при включённой автоподстройке не применяется — прячем строку
+        rowStyle: (row) => row.name === 'delta' && deltaAutoOn ? {classes: 'd-none'} : {},
         columns: [
           {
             field: 'name',
