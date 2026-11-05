@@ -28,7 +28,11 @@ const server = app.listen(0);
 const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
 
 describe("Tournament page", () => {
+  const db = new Repository().db;
+
   it("должен отдать шаблоны форм подбора, игр и кнопок таблицы игроков", async () => {
+    // блоки Подбор/Игры — только у идущего турнира
+    db.run("UPDATE tournament SET tournament_status_id = 2 WHERE id = 4");
     const res = await fetch(base);
     const html = await res.text();
 
@@ -55,6 +59,7 @@ describe("Tournament page", () => {
   });
 
   it("должен открыть турнир по id из адресной строки", async () => {
+    db.run("UPDATE tournament SET tournament_status_id = 2 WHERE id = 4");
     const res = await fetch(`${base}t/4`);
     const html = await res.text();
 
@@ -79,6 +84,20 @@ describe("Tournament page", () => {
     assert.strictEqual(res.status, 200);
     assert.doesNotMatch(html, /id="player-table"/);
     assert.match(html, /id="registration"/); // регистрация остаётся — иначе некому добавить первого игрока
+  });
+
+  it("не должен показывать блоки Подбор и Игры у завершённого турнира", async () => {
+    // в фикстуре турнир 4 «Новая Лига» — статус 3 «Завершён»
+    db.run("UPDATE tournament SET tournament_status_id = 3 WHERE id = 4");
+    const res = await fetch(`${base}t/4`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.doesNotMatch(html, /id="select"/);
+    assert.doesNotMatch(html, /id="game"/);
+    // игроки и история матчей остаются
+    assert.match(html, /id="player-table"/);
+    assert.match(html, /id="match-history"/);
   });
 
   it("должен открыть не текущий турнир по ссылке", async () => {

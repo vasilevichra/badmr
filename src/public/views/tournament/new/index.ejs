@@ -26,7 +26,9 @@
     <%- include('../../signup', { kind: 'modal', states: states, regions: regions, cities: cities } ); %>
 </div>
 
-<% if (user) { %>
+<%# Подбор и Игры — рабочие блоки идущего турнира; у закончившегося
+    (статус 3 «Завершён», 4 «Отменён») они не нужны: остаётся история матчей %>
+<% if (user && tournament.tournament_status_id < 3) { %>
     <%# тонкий прогресс-бар турнира: появляется после первого «Начать» в Подборе,
         заполняется по мере игр (renderTournamentProgress в index.js) %>
     <div id="tournament-progress" class="container d-none">

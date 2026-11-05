@@ -93,7 +93,7 @@ const stats = (tournamentId?: number) => {
 const renderTournamentPage = (
     req: Express.Request,
     res: Express.Response,
-    t: { id: number; tournament_type_id: number } | undefined
+    t: { id: number; tournament_type_id: number; tournament_status_id: number } | undefined
 ) => {
   const useragent = (req as unknown as { useragent?: { isDesktop?: boolean; isTablet?: boolean; isSmartTV?: boolean; isMobile?: boolean } }).useragent;
   const isPhone = () => !(useragent?.isDesktop || useragent?.isTablet || useragent?.isSmartTV) || false;
@@ -209,7 +209,7 @@ router.get(
     (req, res) => {
       res.locals.filter = null;
 
-      renderTournamentPage(req, res, tournamentService.getById(Number(req.params.id)) as { id: number; tournament_type_id: number } | undefined);
+      renderTournamentPage(req, res, tournamentService.getById(Number(req.params.id)) as { id: number; tournament_type_id: number; tournament_status_id: number } | undefined);
     }
 );
 
