@@ -83,8 +83,6 @@
     <hr class="hr-dashed"/>
 </div>
 <% } %>
-<%- include('achievements'); %>
-
 <% if (user) { %>
     <div class="container">
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
@@ -101,7 +99,10 @@
         </div>
         <hr class="hr-dashed"/>
     </div>
+<% } %>
+<%- include('achievements'); %>
 
+<% if (user) { %>
     <div class="container">
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
         <div id="tournament" class="tournament closable">
