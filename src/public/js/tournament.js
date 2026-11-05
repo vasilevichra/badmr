@@ -339,12 +339,15 @@ bindTournamentDatetimeShift('reg', {start: 1, end: 4});
 bindTournamentDatetimeShift('start', {reg: -1, end: 3});
 bindTournamentDatetimeShift('end', {reg: -4, start: -3});
 
-$('#tournament-add form').submit(() => {
-  $.ajax({
-    url: '/api/tournaments/create',
-    method: 'POST',
-    async: false,
-    data: $('#tournament-add form').serialize(),
+$('#tournament-add form').submit((e) => {
+  e.preventDefault();
+  // создаём асинхронно: нужен id нового турнира для перехода. Страница всегда
+  // перезагружается (текущий турнир сменился), но query не наследуем —
+  // ?player= и пр. относятся к прежнему турниру
+  $.post('/api/tournaments/create', $('#tournament-add form').serialize())
+  .done((id) => {
+    const target = $('#cur').is(':checked') ? `/t/${id}` : location.pathname;
+    location.assign(target);
   });
 });
 
