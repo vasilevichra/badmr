@@ -305,6 +305,40 @@ const tournamentNewRegistrationAddHandler = (city) => {
   });
 }
 
+// автозаполнение дат нового турнира: первое выбранное поле задаёт остальные
+// (только пустые — заполненные не трогаем):
+//   окончание регистрации +1ч → начало, +4ч → окончание;
+//   начало: −1ч → окончание регистрации, +3ч → окончание;
+//   окончание: −4ч → окончание регистрации, −3ч → начало
+const tournamentAddDatetime = (name) => $(`#tournament-add input[name="${name}"]`);
+
+const toDatetimeLocal = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const onTournamentDatetimeChanged = (shifts) => {
+  const values = {};
+  for (const name of ['reg', 'start', 'end']) {
+    values[name] = tournamentAddDatetime(name).val();
+  }
+  for (const [name, hours] of Object.entries(shifts)) {
+    if (values[name]) continue;
+    tournamentAddDatetime(name).val(toDatetimeLocal(new Date(new Date(values[shifts._base]).getTime() + hours * 3600e3)));
+  }
+};
+
+const bindTournamentDatetimeShift = (base, shifts) => {
+  // значения зависимых полей выставляются при уходе фокуса с поля
+  tournamentAddDatetime(base).on('blur', () => {
+    if (!tournamentAddDatetime(base).val()) return;
+    onTournamentDatetimeChanged({_base: base, ...shifts});
+  });
+};
+bindTournamentDatetimeShift('reg', {start: 1, end: 4});
+bindTournamentDatetimeShift('start', {reg: -1, end: 3});
+bindTournamentDatetimeShift('end', {reg: -4, start: -3});
+
 $('#tournament-add form').submit(() => {
   $.ajax({
     url: '/api/tournaments/create',
