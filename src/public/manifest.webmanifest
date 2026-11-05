@@ -1,6 +1,6 @@
 {
-    "name": "Бадминтон и ром",
-    "short_name": "Бадминтон",
+    "name": "badmr",
+    "short_name": "badmr",
     "lang": "ru",
     "start_url": "/",
     "scope": "/",
