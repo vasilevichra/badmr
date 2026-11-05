@@ -381,6 +381,16 @@ class User {
     );
   }
 
+  /** Кто из перечисленных пользователей уже зарегистрирован (archived = 0) в турнире. */
+  registeredIn(ids: number[], tournamentId: number) {
+    return this.db.all(
+        `SELECT user_id FROM tournament_user
+         WHERE tournament_id = ? AND archived = 0
+           AND user_id IN (SELECT value FROM json_each(?))`,
+        [tournamentId, JSON.stringify(ids)]
+    );
+  }
+
   archive(id: number) {
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)

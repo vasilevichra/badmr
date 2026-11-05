@@ -100,7 +100,40 @@ class User {
    *    совпадающих по городу (если такие есть);
    *  - отчество введено, но точных совпадений нет → ищем по фамилии,
    *    имени и городу (отчество отбрасываем). */
-  findBy = async (lastname: string, firstname: string, patronymic: string, city_id?: number) => {
+  /**
+   * Поиск игрока при регистрации по ФИО.
+   *
+   * Семантика прежнего поиска:
+   *    - отчество введено → ищем по точному совпадению фамилии, имени и
+   *      началу отчества; если точных совпадений нет и город задан —
+   *      по фамилии, имени и городу (отчество отбрасываем);
+   *    - отчество не введено → ищем по фамилии и началу имени;
+   *    - несколько совпадающих по фамилии-имени → приоритет
+   *      совпадающим по городу (если такие есть);
+   *    - отчество введено, но точных совпадений нет → ищем по фамилии,
+   *      имени и городу (отчество отбрасываем).
+   *
+   * @param tournamentId турнир, для которого ищется игрок: уже
+   *   зарегистрированные в нём из выдачи исключаются — при нескольких
+   *   однофамильцах предлагается оставшийся незарегистрированный вариант.
+   *   Если зарегистрированы все найденные — возвращается полный список:
+   *   карточка «уже зарегистрирован» полезнее пустой выдачи.
+   */
+  findBy = async (lastname: string, firstname: string, patronymic: string, city_id?: number, tournamentId?: number) => {
+    const found = await this.searchBy(lastname, firstname, patronymic, city_id);
+    if (!tournamentId || found.length === 0) {
+      return found;
+    }
+    const registered = new Set(
+        (await this.user.registeredIn(found.map((r) => r.id), tournamentId)).map((r) => r.user_id)
+    );
+    if (registered.size === 0 || registered.size === found.length) {
+      return found;
+    }
+    return found.filter((r) => !registered.has(r.id));
+  };
+
+  private searchBy = async (lastname: string, firstname: string, patronymic: string, city_id?: number) => {
     if (patronymic) {
       const exact = await this.user.findBy(lastname, firstname, patronymic);
       if (exact.length > 0 || !city_id) {

@@ -18,11 +18,12 @@ router.post('/create', (req, res) => {
 });
 
 router.get('/find', (req, res) => {
-  // город проведения турнира — для приоритезации вариантов при поиске
+  // город проведения турнира — для приоритезации вариантов при поиске;
+  // сам турнир — для исключения уже зарегистрированных из выдачи
   const tid = requestedTournament(req);
   const tournament = tid ? tournamentService.getById(tid) : tournamentService.getCurrent();
   const city_id = (tournament as { city_id?: number } | undefined)?.city_id;
-  res.promise(userService.findBy(String(req.query.lastname), String(req.query.firstname), String(req.query.patronymic), city_id));
+  res.promise(userService.findBy(String(req.query.lastname), String(req.query.firstname), String(req.query.patronymic), city_id, tid));
 });
 
 router.post('/enable/:ids', ensureLoggedIn(), (req, res) => {

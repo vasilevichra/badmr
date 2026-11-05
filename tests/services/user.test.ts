@@ -437,6 +437,31 @@ describe("User", () => {
       assert.strictEqual(found.length, 2);
     });
 
+    it("уже зарегистрированный на турнир однофамилец не предлагается — остаются незарегистрированные варианты", async () => {
+      // в сиде три Поповых: Елена (21), Ангелина (31), Наталья (34);
+      // регистрируем Елену на текущий турнир (id 4) — при поиске «Попова»
+      // должны остаться только Ангелина и Наталья
+      await userService.registerByIds([21]);
+
+      const found = await userService.findBy("Попова", "", "", undefined, 4) as unknown as FoundRow[];
+      assert.deepStrictEqual<number[]>(found.map((u) => u.id).sort((a, b) => a - b), [31, 34]);
+    });
+
+    it("если зарегистрированы все найденные однофамильцы — вернуть полный список", async () => {
+      await userService.registerByIds([21, 31, 34]);
+
+      const found = await userService.findBy("Попова", "", "", undefined, 4) as unknown as FoundRow[];
+      // все уже зарегистрированы: карточка «уже зарегистрирован» полезнее пустой выдачи
+      assert.deepStrictEqual<number[]>(found.map((u) => u.id).sort((a, b) => a - b), [21, 31, 34]);
+    });
+
+    it("без указания турнира зарегистрированные не отфильтровываются", async () => {
+      await userService.registerByIds([21]);
+
+      const found = await userService.findBy("Попова", "", "") as unknown as FoundRow[];
+      assert.strictEqual(found.length, 3);
+    });
+
     it("без отчества единственный вариант должен вернуть без учёта города", async () => {
       const { id } = await userService.create("Соловьева", "Виктория", "", 500, 1, 2, "1990-01-01");
 
