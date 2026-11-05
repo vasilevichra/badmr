@@ -541,6 +541,7 @@ describe("Tournament", () => {
 
     it("должен завершить турнир, когда все активные игроки сыграли лимит матчей", async () => {
       const id = await createRunning("Лимит достигнут");
+      setSetting(id, "calibration_matches", "0");
       setSetting(id, "matches", "1");
       for (const u of [1, 2, 3, 4]) seedUser(id, u);
       seedMatch(id, [1, 2, 3, 4]);
@@ -552,6 +553,7 @@ describe("Tournament", () => {
     });
 
     it("не должен завершать турнир, пока кто-то из активных не сыграл лимит", async () => {      const id = await createRunning("Лимит не достигнут");
+      setSetting(id, "calibration_matches", "1");
       setSetting(id, "matches", "2");
       for (const u of [1, 2, 3, 4]) seedUser(id, u);
       seedMatch(id, [1, 2, 3, 4]);
@@ -564,6 +566,7 @@ describe("Tournament", () => {
 
     it("не должен учитывать выключенных игроков", async () => {
       const id = await createRunning("Выключенный игрок");
+      setSetting(id, "calibration_matches", "0");
       setSetting(id, "matches", "1");
       for (const u of [1, 2, 3, 4]) seedUser(id, u);
       seedUser(id, 5, 0); // выключен: не играл, но турнир не блокирует
@@ -593,6 +596,7 @@ describe("Tournament", () => {
         "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
         20, 1, "100", "750", "", 0,
       ))!; // статус 1 «Регистрация»
+      setSetting(id, "calibration_matches", "0");
       setSetting(id, "matches", "1");
       for (const u of [1, 2, 3, 4]) seedUser(id, u);
       seedMatch(id, [1, 2, 3, 4]);

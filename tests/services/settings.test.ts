@@ -35,6 +35,38 @@ describe("Settings", () => {
     await clean();
   });
 
+  describe("ограничение matches и calibration_matches", () => {
+    // в дефолтах calibration_matches = 3
+    it("не должен сохранять matches не больше calibration_matches", async () => {
+      await assert.rejects(
+        () => settingsService.set("matches", "3"),
+        /matches/,
+      );
+      await assert.rejects(() => settingsService.set("matches", "2"));
+    });
+
+    it("должен сохранять matches = 0 без ограничений", async () => {
+      await settingsService.set("matches", "0");
+    });
+
+    it("должен сохранять matches больше calibration_matches", async () => {
+      await settingsService.set("matches", "4");
+    });
+
+    it("не должен сохранять calibration_matches не меньше matches", async () => {
+      await settingsService.set("matches", "4");
+      await assert.rejects(() => settingsService.set("calibration_matches", "4"));
+      await assert.rejects(() => settingsService.set("calibration_matches", "5"));
+    });
+
+    it("должен учитывать переопределение второй настройки", async () => {
+      // calibration_matches = 2 переопределена: matches = 3 допустимо (3 > 2)
+      await settingsService.set("matches", "4");
+      await settingsService.set("calibration_matches", "2");
+      await settingsService.set("matches", "3");
+    });
+  });
+
   describe("get", () => {
     it("должен вернуть значение настройки текущего турнира", async () => {
       assert.strictEqual(await settingsService.get("delta"), "100");

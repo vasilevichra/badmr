@@ -341,6 +341,14 @@ bindTournamentDatetimeShift('end', {reg: -4, start: -3});
 
 $('#tournament-add form').submit((e) => {
   e.preventDefault();
+  // норма матчей против длины калибровочной серии — то же ограничение
+  // проверяют сервер и триггеры БД
+  const matches = Number($('#tournament-add input[name="matches"]').val());
+  const calibration = Number($('#tournament-add input[name="calibration_matches"]').val());
+  if (matches !== 0 && matches <= calibration) {
+    alert('Норма матчей должна быть больше длины калибровочной серии или равна 0');
+    return;
+  }
   // создаём асинхронно: нужен id нового турнира для перехода. Страница всегда
   // перезагружается (текущий турнир сменился), но query не наследуем —
   // ?player= и пр. относятся к прежнему турниру

@@ -363,3 +363,111 @@ CREATE TRIGGER restrict_match_110_duration_by_two_hours
 BEGIN
     SELECT RAISE(ABORT, 'матч 110 не может длиться дольше двух часов');
 END;
+
+-- Норма матчей (matches) против длины калибровочной серии
+-- (calibration_matches): при ненулевой норме серия калибровки обязана
+-- быть короче — иначе игрок никогда не выйдет из калибровки и ни разу
+-- не сыграет «обычный» матч. CHECK не умеет кросс-строчные проверки
+-- (каждая из настроек — отдельная строка), поэтому — триггеры.
+-- Эффективное значение второй настройки берётся по семантике view
+-- settings: переопределение турнира (tournament_settings) либо дефолт.
+CREATE TRIGGER restrict_matches_against_calibration_matches_insert
+    BEFORE INSERT
+    ON tournament_settings
+    WHEN new.defaults_id IN (SELECT id FROM defaults
+                             WHERE name IN ('matches', 'calibration_matches'))
+BEGIN
+    SELECT RAISE(ABORT, 'настройка matches должна быть больше calibration_matches или равна 0')
+    WHERE CAST(CASE
+              WHEN (SELECT d.name FROM defaults d WHERE d.id = new.defaults_id) = 'matches'
+                  THEN new.value
+              ELSE coalesce((SELECT ts.value
+                             FROM tournament_settings ts
+                                      JOIN defaults dm ON dm.id = ts.defaults_id
+                             WHERE ts.tournament_id = new.tournament_id AND dm.name = 'matches'),
+                            (SELECT value FROM defaults WHERE name = 'matches'))
+          END AS INTEGER) > 0
+      AND CAST(CASE
+              WHEN (SELECT d.name FROM defaults d WHERE d.id = new.defaults_id) = 'calibration_matches'
+                  THEN new.value
+              ELSE coalesce((SELECT ts.value
+                             FROM tournament_settings ts
+                                      JOIN defaults dc ON dc.id = ts.defaults_id
+                             WHERE ts.tournament_id = new.tournament_id AND dc.name = 'calibration_matches'),
+                            (SELECT value FROM defaults WHERE name = 'calibration_matches'))
+          END AS INTEGER) >= CAST(CASE
+              WHEN (SELECT d.name FROM defaults d WHERE d.id = new.defaults_id) = 'matches'
+                  THEN new.value
+              ELSE coalesce((SELECT ts.value
+                             FROM tournament_settings ts
+                                      JOIN defaults dm ON dm.id = ts.defaults_id
+                             WHERE ts.tournament_id = new.tournament_id AND dm.name = 'matches'),
+                            (SELECT value FROM defaults WHERE name = 'matches'))
+          END AS INTEGER);
+END;
+
+CREATE TRIGGER restrict_matches_against_calibration_matches_update
+    BEFORE UPDATE OF value
+    ON tournament_settings
+    WHEN new.defaults_id IN (SELECT id FROM defaults
+                             WHERE name IN ('matches', 'calibration_matches'))
+BEGIN
+    SELECT RAISE(ABORT, 'настройка matches должна быть больше calibration_matches или равна 0')
+    WHERE CAST(CASE
+              WHEN (SELECT d.name FROM defaults d WHERE d.id = new.defaults_id) = 'matches'
+                  THEN new.value
+              ELSE coalesce((SELECT ts.value
+                             FROM tournament_settings ts
+                                      JOIN defaults dm ON dm.id = ts.defaults_id
+                             WHERE ts.tournament_id = new.tournament_id AND dm.name = 'matches'),
+                            (SELECT value FROM defaults WHERE name = 'matches'))
+          END AS INTEGER) > 0
+      AND CAST(CASE
+              WHEN (SELECT d.name FROM defaults d WHERE d.id = new.defaults_id) = 'calibration_matches'
+                  THEN new.value
+              ELSE coalesce((SELECT ts.value
+                             FROM tournament_settings ts
+                                      JOIN defaults dc ON dc.id = ts.defaults_id
+                             WHERE ts.tournament_id = new.tournament_id AND dc.name = 'calibration_matches'),
+                            (SELECT value FROM defaults WHERE name = 'calibration_matches'))
+          END AS INTEGER) >= CAST(CASE
+              WHEN (SELECT d.name FROM defaults d WHERE d.id = new.defaults_id) = 'matches'
+                  THEN new.value
+              ELSE coalesce((SELECT ts.value
+                             FROM tournament_settings ts
+                                      JOIN defaults dm ON dm.id = ts.defaults_id
+                             WHERE ts.tournament_id = new.tournament_id AND dm.name = 'matches'),
+                            (SELECT value FROM defaults WHERE name = 'matches'))
+          END AS INTEGER);
+END;
+
+-- Изменение дефолта затрагивает все турниры без переопределения:
+-- запрещаем дефолт, при котором хотя бы один турнир нарушает ограничение
+CREATE TRIGGER restrict_matches_against_calibration_matches_defaults_update
+    BEFORE UPDATE OF value
+    ON defaults
+    WHEN new.name IN ('matches', 'calibration_matches')
+BEGIN
+    SELECT RAISE(ABORT, 'дефолт matches должен быть больше calibration_matches или равен 0')
+    WHERE EXISTS (
+        SELECT 1
+        FROM tournament t
+        WHERE CAST(coalesce(
+                  (SELECT ts.value FROM tournament_settings ts
+                            JOIN defaults dm ON dm.id = ts.defaults_id
+                   WHERE ts.tournament_id = t.id AND dm.name = 'matches'),
+                  CASE WHEN new.name = 'matches' THEN new.value ELSE old.value END
+              ) AS INTEGER) > 0
+          AND CAST(coalesce(
+                  (SELECT ts.value FROM tournament_settings ts
+                            JOIN defaults dc ON dc.id = ts.defaults_id
+                   WHERE ts.tournament_id = t.id AND dc.name = 'calibration_matches'),
+                  CASE WHEN new.name = 'calibration_matches' THEN new.value ELSE old.value END
+              ) AS INTEGER) >= CAST(coalesce(
+                  (SELECT ts.value FROM tournament_settings ts
+                            JOIN defaults dm ON dm.id = ts.defaults_id
+                   WHERE ts.tournament_id = t.id AND dm.name = 'matches'),
+                  CASE WHEN new.name = 'matches' THEN new.value ELSE old.value END
+              ) AS INTEGER)
+    );
+END;

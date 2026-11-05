@@ -57,24 +57,34 @@ router.post('/create', ensureLoggedIn(), (req, res) => {
          matches, wins, game_point, max_point, fee, calibration_matches, calibration_days} = req.body;
   const toUTC = (dateString: string) => moment(new Date(dateString)).utc().format('YYYY-MM-DD HH:mm:ss');
   const current = cur === 'on' ? 1 : 0;
-  res.promise(tournamentService.create(
-      Number(user),
-      Number(club),
-      Number(gym),
-      Number(type),
-      name,
-      toUTC(reg),
-      toUTC(start),
-      toUTC(end),
-      Number(cap),
-      Number(courts),
-      rmin ? String(rmin) : '',
-      rmax ? String(rmax) : '',
-      rules ? String(rules) : '',
-      current,
-      undefined,
-      {matches, wins, game_point, max_point, fee, calibration_matches, calibration_days}
-  ));
+  res.promise(() => {
+    // норма матчей против длины калибровочной серии; то же ограничение
+    // на уровне БД (триггеры), но проверяем заранее: create пишет
+    // настройки после транзакции — нарушение оставило бы полусозданный турнир
+    const matchesNum = Number(matches);
+    const calibrationNum = Number(calibration_matches);
+    if (matchesNum > 0 && matchesNum <= calibrationNum) {
+      throw new Error('Норма матчей должна быть больше длины калибровочной серии или равна 0');
+    }
+    return tournamentService.create(
+        Number(user),
+        Number(club),
+        Number(gym),
+        Number(type),
+        name,
+        toUTC(reg),
+        toUTC(start),
+        toUTC(end),
+        Number(cap),
+        Number(courts),
+        rmin ? String(rmin) : '',
+        rmax ? String(rmax) : '',
+        rules ? String(rules) : '',
+        current,
+        undefined,
+        {matches, wins, game_point, max_point, fee, calibration_matches, calibration_days}
+    );
+  });
 });
 
 export default router;
