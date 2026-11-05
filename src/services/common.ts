@@ -147,6 +147,15 @@ class Common {
     if (eligibleRows.length < 4) {
       return [];
     }
+    // последний матч турнира: до нормы всем оставшимся суммарно остаётся
+    // сыграть ровно один матч (каждый матч — 4 участника). Ограничения
+    // дельты и proc сняты — последний матч обязан состояться, иначе
+    // турнир не закончится; самый справедливый состав обеспечивает
+    // оптимизатор, минимизирующий баланс и разницу сумм команд
+    const remaining = matchesLimit > 0
+        ? eligibleRows.reduce((sum, r) => sum + Math.max(0, matchesLimit - Number(r.matches)), 0)
+        : 0;
+    const lastMatch = remaining === 4;
     // «Шанс» пары — винрейт совместных доигранных матчей напарников:
     // getBuddiesById каждого готового игрока (сырой win_rate числом).
     // Нужен и для показа колонки «Шанс» в «Подборе» (chance1/chance2),
@@ -186,7 +195,7 @@ class Common {
     const model = fitThreeGameModel(samples);
 
     const candidates = buildCandidates(eligibleRows, buddies, recentDuos, recentQuads,
-        {delta, proc, fifty, model});
+        {delta: lastMatch ? Infinity : delta, proc: lastMatch ? 0 : proc, fifty, model});
     const pairs = optimize(candidates, availableCourts);
     return pairs;
   };

@@ -317,6 +317,84 @@ describe("Common", () => {
         );
       });
 
+      it("последний матч турнира подбирается без дельты — самый справедливый состав", async () => {
+        const settingsService = new SettingsService();
+        const courtService = new CourtService();
+        await courtService.disableAll();
+        await courtService.create();
+        // норма matches = 2: четверо игроков, у каждого ровно один
+        // сыгранный матч — до окончания турнира остаётся один матч
+        await settingsService.set("matches", "2");
+
+        const users = [
+          mkUser(1, 700),
+          mkUser(2, 690),
+          mkUser(3, 500),
+          mkUser(4, 100),
+        ];
+        const ids = await createAndRegister(new UserService(), users);
+        // совместный завершённый матч: сторона 2 (u3,u4) выиграла 2:0
+        const matchId = (await new MatchService().create(ids[0], ids[1], ids[2], ids[3])).id as number;
+        const gameService = new GameService();
+        await gameService.create(matchId, "15", null, "2026-01-01 10:00:00");
+        await gameService.create(matchId, "15", null, "2026-01-01 10:05:00");
+        // рейтинги выставляются заново — ожидания не зависят от
+        // пересчёта рейтингов историей матча
+        for (const [i, rating] of [[0, 700], [1, 690], [2, 500], [3, 100]] as const) {
+          await new UserService().setRating(ids[i], rating);
+        }
+
+        // дельта 100 не пропускает ни одну четвёрку (минимальная разница
+        // сумм 390) — но это последний матч: ограничения дельты сняты.
+        // Состав выбирает оптимизатор: rematch 0 у кросс-пар, из них
+        // максимальную вероятность трёхигрового матча (balance) имеет
+        // (700+100) против (690+500) — разница сумм 390
+        const expected: Pair = {
+          players1: [
+            {...player(users[0], ids[0]), matches: 1, played: 1, rating: 700, won: 0, wins: 0},
+            {...player(users[3], ids[3]), matches: 1, played: 1, rating: 100, won: 1, wins: 1},
+          ],
+          players2: [
+            {...player(users[1], ids[1]), matches: 1, played: 1, rating: 690, won: 0, wins: 0},
+            {...player(users[2], ids[2]), matches: 1, played: 1, rating: 500, won: 1, wins: 1},
+          ],
+          diff: 390,
+          matches: 4,
+          played: 4,
+          chance1: null,
+          chance2: null,
+          friends: 0,
+        };
+        assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), [expected]);
+      });
+
+      it("не последний матч — ограничение дельты действует как прежде", async () => {
+        const settingsService = new SettingsService();
+        const courtService = new CourtService();
+        await courtService.disableAll();
+        await courtService.create();
+        // тот же состав и те же рейтинги, но норма matches = 3: до
+        // окончания турнира два матча — дельта 100 по-прежнему срезает
+        await settingsService.set("matches", "3");
+
+        const users = [
+          mkUser(1, 700),
+          mkUser(2, 690),
+          mkUser(3, 500),
+          mkUser(4, 100),
+        ];
+        const ids = await createAndRegister(new UserService(), users);
+        const matchId = (await new MatchService().create(ids[0], ids[1], ids[2], ids[3])).id as number;
+        const gameService = new GameService();
+        await gameService.create(matchId, "15", null, "2026-01-01 10:00:00");
+        await gameService.create(matchId, "15", null, "2026-01-01 10:05:00");
+        for (const [i, rating] of [[0, 700], [1, 690], [2, 500], [3, 100]] as const) {
+          await new UserService().setRating(ids[i], rating);
+        }
+
+        assert.deepStrictEqual<Pair[]>(await new CommonService().ready(), []);
+      });
+
       it("должен выбирать игроков с меньшим числом сыгранных матчей (выравнивание туров)", async () => {
         const courtService = new CourtService();
         await courtService.disableAll();
