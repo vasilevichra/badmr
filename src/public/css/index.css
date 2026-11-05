@@ -58,6 +58,9 @@
   --badmr-sex-bottom: #ddd;
   --badmr-sex-hover-bottom: #b9b9b9;
   --badmr-sex-border: #9e9fa1;
+  /* зазор между ячейками таблицы Обзора в карточке игрока */
+  --badmr-gap: #ffffff;
+  color-scheme: light;
 }
 
 [data-bs-theme="dark"] {
@@ -73,6 +76,28 @@
   --badmr-sex-bottom: #2b3035;
   --badmr-sex-hover-bottom: #495057;
   --badmr-sex-border: #495057;
+  --badmr-gap: #212529;
+  color-scheme: dark;
+}
+
+/* зазоры между ячейками таблицы Обзора: border-white с !important не
+   адаптируется, поэтому ячейкам проставлен класс border-gap, а цвет
+   задаётся через --bs-border-color, который читают border-утилиты */
+.border-gap {
+  --bs-border-color: var(--badmr-gap);
+}
+
+/* дискета сохранения рейтинга: btn-outline-dark в ночной теме не виден */
+[data-bs-theme="dark"] .player-window-change-rating-button {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-color: #212529;
+  --bs-btn-hover-bg: var(--bs-body-color);
+  --bs-btn-hover-border-color: var(--bs-body-color);
+  --bs-btn-focus-shadow-rgb: 248, 249, 250;
+  --bs-btn-active-color: #212529;
+  --bs-btn-active-bg: var(--bs-body-color);
+  --bs-btn-active-border-color: var(--bs-body-color);
 }
 
 body {
