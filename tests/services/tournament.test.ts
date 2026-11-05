@@ -167,17 +167,17 @@ describe("Tournament", () => {
       assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).chat, link);
     });
 
-    it("при старте турнира должен создать чат и сохранить ссылку-приглашение", async () => {
+    it("при старте турнира не должен создавать чат", async () => {
       await tournamentService.setStatus(2, 1);
 
-      assert.deepStrictEqual(calls, ["Рейтинг"]);
-      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).chat, link);
+      assert.deepStrictEqual(calls, []);
+      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).chat, null);
     });
 
     it("не должен создавать чат, если ссылка уже сохранена", async () => {
       db.run(`UPDATE tournament SET chat = ? WHERE id = 1`, [link]);
 
-      await tournamentService.setStatus(2, 1);
+      tournamentService.tournament.createChatIfAbsent(1);
 
       assert.deepStrictEqual(calls, []);
     });
@@ -188,25 +188,50 @@ describe("Tournament", () => {
       assert.deepStrictEqual(calls, []);
     });
 
-    it("при ошибке VK должен сменить статус и не сохранить ссылку", async () => {
+    it("при ошибке VK должен создать турнир и не сохранить ссылку", async () => {
       (vkMock() as { vk: unknown }).vk = {
         createChat: async () => {
           throw new Error("VK down");
         },
       };
 
-      await tournamentService.setStatus(2, 1);
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, "Ошибка VK",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+      ))!;
 
-      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).tournament_status_id, 2);
-      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).chat, null);
+      assert.notStrictEqual(id, undefined);
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).chat, null);
     });
 
     it("не должен сохранять ссылку, если VK не вернул её", async () => {
       (vkMock() as { vk: unknown }).vk = { createChat: async () => undefined };
 
-      await tournamentService.setStatus(2, 1);
+      const id = (await tournamentService.create(
+        1, 1, 1, 1, "VK без ссылки",
+        "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+        20, 1, "100", "750", "", 0,
+      ))!;
 
-      assert.strictEqual((await tournamentService.getById(1) as unknown as TournamentRow).chat, null);
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).chat, null);
+    });
+
+    it("в dev-режиме не должен создавать чат", async () => {
+      const saved = process.env.NODE_ENV;
+      process.env.NODE_ENV = "dev";
+      try {
+        const id = (await tournamentService.create(
+          1, 1, 1, 1, "Dev без чата",
+          "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+          20, 1, "100", "750", "", 0,
+        ))!;
+
+        assert.deepStrictEqual(calls, []);
+        assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).chat, null);
+      } finally {
+        if (saved !== undefined) process.env.NODE_ENV = saved;
+      }
     });
   });
 

@@ -154,16 +154,15 @@ class Tournament {
              WHERE current = 1`,
             [status_id]
         );
-    // старт турнира (2 «Идёт») — создаём чат VK, если его ещё нет;
-    // ошибка VK не влияет на смену статуса
-    if (status_id === 2) {
-      this.createChatIfAbsent(id);
-    }
     return result;
   }
 
-  /** Создаёт чат VK для турнира и сохраняет ссылку-приглашение в tournament.chat. */
+  /** Создаёт чат VK для турнира и сохраняет ссылку-приглашение в tournament.chat.
+   * Вызывается только при создании турнира; в dev-режиме реальный VK не трогаем. */
   createChatIfAbsent(id?: number) {
+    if (process.env.NODE_ENV === 'dev') {
+      return;
+    }
     const tournament = (id
         ? this.db.get(`SELECT id, name, chat FROM tournament WHERE id = ?`, [id])
         : this.db.get(`SELECT id, name, chat FROM tournament WHERE current = 1`)) as
