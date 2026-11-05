@@ -122,10 +122,19 @@ button {
   text-align: left;
 }
 
-/* тонкий прогресс-бар турнира между «Игроками» и «Подбором» */
+/* тонкий прогресс-бар турнира: прижат к верхней кромке окна (как индикатор
+   чтения) и остаётся видимым при прокрутке страницы */
+#tournament-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1020; /* поверх контента, но под модальными окнами bootstrap */
+}
+
 .tournament-progress {
   height: 4px;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 .tournament-progress .progress-bar {

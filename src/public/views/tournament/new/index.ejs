@@ -31,7 +31,7 @@
 <% if (user && tournament.tournament_status_id < 3) { %>
     <%# тонкий прогресс-бар турнира: появляется после первого «Начать» в Подборе,
         заполняется по мере игр (renderTournamentProgress в index.js) %>
-    <div id="tournament-progress" class="container d-none">
+    <div id="tournament-progress" class="d-none">
         <div class="progress tournament-progress" role="progressbar" aria-label="Прогресс турнира" aria-valuemin="0" aria-valuemax="100">
             <div class="progress-bar"></div>
         </div>
