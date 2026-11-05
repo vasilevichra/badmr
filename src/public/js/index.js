@@ -7,6 +7,18 @@ $(document).ready(() => {
     }
   });
 
+  // турнир стартовал (статус 2 «Идёт» и дальше): один раз за турнир сворачиваем
+  // шапку, информацию о турнире и все разделы, кроме «Подбор» и «Игры» —
+  // у них нет шеврона. Маркер-cookie гарантирует «один раз» и не даёт
+  // перекрыть последующие раскрытия пользователя (и его выбор до старта)
+  if (tournamentStatus() !== undefined && tournamentStatus() !== 1) {
+    const collapsedMarker = `collapsed-at-start-${tournamentId()}`;
+    if ($.cookie(collapsedMarker) === undefined) {
+      $.cookie(collapsedMarker, true);
+      $('.closable').each((i, el) => toggler.hide($(el)));
+    }
+  }
+
   // настройка обратного отсчёта для информации о турнире
   // (не трогаем <time> с «закончилась N назад» — там свой формат datetime)
   $('time').not('.reg-end-since, .reg-end-since-badge')
