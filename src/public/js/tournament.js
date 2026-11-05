@@ -23,6 +23,12 @@ const renderTournaments = () => {
       //   checkbox: true
       // }
     ].filter(column => isPhone() ? !['id'].includes(column.field) : true)
+  })
+  .on('check.bs.table', (e, row) => {
+    // выбор radio «Текущий?» меняет глобальный current;
+    // при отказе сервера возвращаем radio к состоянию таблицы
+    $.post(`/api/tournaments/current/${row.id}`)
+      .fail(() => $('#tournament-table').bootstrapTable('refresh', {silent: true}));
   });
 }
 

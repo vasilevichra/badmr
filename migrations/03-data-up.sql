@@ -287,7 +287,7 @@ INSERT INTO user_club_gym (user_club_id, gym_id)
 VALUES (1, 1);
 
 INSERT INTO tournament (id, user_id, user_club_id, gym_id, unit_id, tournament_type_id, tournament_status_id, name, current, reg_ended_at, started_at, ended_at)
-VALUES (1, 1, 1, 1, 1, 1, 2, 'Рейтинг', 1, '2025-12-31 20:59:59', '2026-12-31 21:00:00', '2027-12-31 20:59:59');
+VALUES (1, 1, 1, 1, 1, 1, 2, 'Рейтинг', 0, '2025-12-31 20:59:59', '2026-12-31 21:00:00', '2027-12-31 20:59:59');
 
 INSERT INTO court (id, tournament_id, number, available)
 VALUES (1, 1, 1, 1);
