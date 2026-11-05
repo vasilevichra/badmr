@@ -122,6 +122,16 @@ button {
   text-align: left;
 }
 
+/* тонкий прогресс-бар турнира между «Игроками» и «Подбором» */
+.tournament-progress {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.tournament-progress .progress-bar {
+  transition: width 0.4s ease;
+}
+
 /* хак для select2 и form-floating */
 .form-floating .select2-container--bootstrap-5 .select2-selection {
   height: calc(3.5rem + 2px);

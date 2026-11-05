@@ -59,6 +59,7 @@ $(document).ready(() => {
   renderSettings();
   renderArchive();
   renderGroups();
+  renderTournamentProgress();
 
   // периодический тик: только перерисовка блока игр и пересчёт «закончилась
   // N назад» — таблицы и историю игрок обновляет вручную (периодический
@@ -305,3 +306,43 @@ $(document).ready(() => {
     }
   });
 });
+
+// тонкий прогресс-бар турнира (между «Игроками» и «Подбором»): доля сыгранных
+// матчей от примерного общего числа. Остаток ограничен тем, чтобы каждый
+// невыключенный (enabled) игрок сыграл минимум matches из настроек:
+//   нужно матчей ≈ ceil(Σ max(0, matches − сыграно_игроком) / 4)
+// незавершённые матчи не считаются сыгранными — их участники исключаются и
+// из «сыграно», и из остатка; вызывается при загрузке страницы, при первом
+// «Начать» в Подборе (select.js, с принудительным показом) и после
+// сохранения результатов матча (game.js)
+const renderTournamentProgress = (force = false) => {
+  if (!$('#tournament-progress').length) return;
+  Promise.all([
+    $.getJSON(withTournament('/api/users/')),
+    $.getJSON(withTournament('/api/settings/')),
+    $.getJSON(withTournament('/api/matches/unfinished')),
+  ]).then(([rows, settingRows, unfinished]) => {
+    const matchesTarget = Number(settingRows.find((row) => row.name === 'matches')?.value ?? 0);
+    const unfinishedByUser = {};
+    for (const match of unfinished) {
+      for (const i of [1, 2, 3, 4]) {
+        unfinishedByUser[match[`user_${i}_id`]] = (unfinishedByUser[match[`user_${i}_id`]] ?? 0) + 1;
+      }
+    }
+    // каждый матч играют ровно 4 игрока: сумма matches по всем игрокам
+    // (включая выключенных) — это 4 × сыгранные матчи
+    const playedTotal = Math.max(0, (rows.reduce((sum, p) => sum + p.matches, 0) - 4 * unfinished.length) / 4);
+    const remaining = rows.filter((p) => p.enabled)
+    .reduce((sum, p) => sum + Math.max(0, matchesTarget - (p.matches - (unfinishedByUser[p.id] ?? 0))), 0);
+    const neededTotal = Math.ceil(remaining / 4);
+    const total = playedTotal + neededTotal;
+    // без матчей бар показываем только по принудительному показу (первое «Начать»)
+    if (!playedTotal && !unfinished.length && !force) return;
+    const percent = total ? Math.round(100 * playedTotal / total) : 0;
+    $('#tournament-progress').removeClass('d-none')
+    .attr('title', `Сыграно примерно ${playedTotal} из ${total} матчей`)
+    .find('.progress-bar')
+    .css('width', `${percent}%`)
+    .attr('aria-valuenow', percent);
+  });
+};

@@ -29,6 +29,8 @@ const renderGames = () => {
       }
     }
     for (const id of unfinishedIds) seenUnfinished.add(id);
+    // матч завершился (или удалён) — пересчитываем прогресс турнира
+    if (disappeared.length) renderTournamentProgress();
 
     if (matches.length > 0) {
       $('.game-info').hide();
@@ -375,6 +377,8 @@ const fillMatch = (counter, match) => {
     show.player.column.delta_today();
     refresh.table.player();
     refresh.table.court();
+    // результаты сохранены — пересчитываем прогресс турнира
+    renderTournamentProgress();
 
     if ($('.game-form-button-submit:visible').length === 0) {
       $('.game-form').remove();

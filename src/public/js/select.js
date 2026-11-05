@@ -106,6 +106,9 @@ const renderSelect = () => {
           $(`#select-form-button-submit-${i}`).off('click').click((event) => {
             event.preventDefault();
 
+            // прогресс-бар турнира появляется при первом «Начать»
+            renderTournamentProgress(true);
+
             // защита от двойной отправки: кнопка неактивна до ответа сервера
             const submitButton = $(`#select-form-button-submit-${i}`).prop('disabled', true);
 
