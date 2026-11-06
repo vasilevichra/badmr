@@ -150,17 +150,24 @@ class Rating {
     const users = new Set<number>(source.userIds);
     const affected = new Map<number, AffectedMatch>();
     if (source.includeSelf) {
-      const start = this.rating.getById<MatchRow>(source.matchId)!;
-      affected.set(source.matchId, {
-        id: start.id,
-        user_1_id: start.user_1_id,
-        user_2_id: start.user_2_id,
-        user_3_id: start.user_3_id,
-        user_4_id: start.user_4_id,
-        created_at: start.created_at,
-        chron: source.chron,
-        finished: Number(start.finished),
-      });
+      // матч-источник могли удалить между планированием и выполнением
+      // (setImmediate откладывается за HTTP-ответ; в тестах — за clean()):
+      // тогда пересчитываем как после удаления — без самого матча
+      const start = this.rating.getById<MatchRow>(source.matchId);
+      if (!start) {
+        source.includeSelf = false;
+      } else {
+        affected.set(source.matchId, {
+          id: start.id,
+          user_1_id: start.user_1_id,
+          user_2_id: start.user_2_id,
+          user_3_id: start.user_3_id,
+          user_4_id: start.user_4_id,
+          created_at: start.created_at,
+          chron: source.chron,
+          finished: Number(start.finished),
+        });
+      }
     }
     for (;;) {
       const rows = this.rating.getLaterFinishedMatches([...users], source.chron, source.matchId);
