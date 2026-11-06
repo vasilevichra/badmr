@@ -1,12 +1,13 @@
 /* Service worker для PWA-режима badmr.ru.
  * Стратегии:
- *  - навигации и прочие документы — network-first (пользователи сразу
- *    видят обновления вёрстки/данных; кеш — только оффлайн-фолбэк);
  *  - статика (/css, /js, /assets) — cache-first с ревалидацией при
- *    обновлении кеша.
+ *    обновлении кеша;
+ *  - навигации и прочие документы — только сеть, без кеширования:
+ *    разметка зависит от User-Agent (phone/desktop), а Cache API в
+ *    Safari не учитывает Vary: User-Agent (см. fetch-обработчик).
  * При любых изменениях набора кешируемых файлов поднимать VERSION —
  * иначе клиенты останутся на старой статике. */
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = `badmr-${VERSION}`;
 const STATIC_PREFIXES = ['/css/', '/js/', '/assets/'];
 
@@ -59,20 +60,11 @@ self.addEventListener('fetch', (event) => {
 
     if (event.request.mode === 'navigate' ||
         (event.request.headers.get('accept') || '').includes('text/html')) {
-        // network-first: живые данные всегда свежие; кеш — только оффлайн
-        event.respondWith((async () => {
-            try {
-                const res = await fetch(event.request);
-                const cache = await caches.open(CACHE);
-                cache.put(event.request, res.clone());
-                return res;
-            } catch {
-                const cached = await caches.match(event.request);
-                return cached || new Response('Нет соединения', {
-                    status: 503,
-                    headers: {'Content-Type': 'text/plain; charset=utf-8'},
-                });
-            }
-        })());
+        // Документы НЕ кэшируются и оффлайн-фолбэк из кэша не отдаётся:
+        // разметка зависит от User-Agent (phone/desktop), а Cache API в
+        // Safari не учитывает Vary: User-Agent — при недоступной сети
+        // десктоп получал телефонную страницу (и наоборот). Статика
+        // выше по-прежнему в кэше, оффлайн-навигация просто падает.
+        return;
     }
 });
