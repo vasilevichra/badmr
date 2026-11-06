@@ -275,10 +275,15 @@ input:focus::placeholder {
 }
 
 .login {
-  margin: 1em 0 0 0;
   color: #007df9;
   /* селектор турниров и кнопка «Войти» — в одну строку по центру (#55) */
   display: flex;
+  align-items: center;
+}
+
+#header .col-10 {
+  /* контролы шапки (селектор, логин/выход) — по центру высоты строки,
+     как иконки соцсетей в соседней колонке */
   align-items: center;
 }
 
@@ -294,7 +299,8 @@ input:focus::placeholder {
 }
 
 .logout {
-  margin: 2em 0 0 0;
+  /* форма и соцсети центрируются в одной строке шапки — cy совпадает сам */
+  margin: 0;
 }
 
 .social {
