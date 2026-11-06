@@ -312,8 +312,10 @@ input:focus::placeholder {
   position: relative;
 }
 
+/* перебивает bootstrap-верстку селекта; правый отступ — зазор после
+   селекта до следующего элемента шапки */
 #tournament {
-  margin: -1rem 0 0 0 !important;
+  margin: -1rem 0.5rem 0 0 !important;
 }
 
 .tournament-new-registration-input {
@@ -354,6 +356,12 @@ input:focus::placeholder {
 
 /* небольшой зазор после селекта подразделения в шапке */
 #header #unit {
+  margin-right: 0.5rem;
+}
+
+/* зазор после селекта турниров в шапке: раньше он разделял селекты
+   турниров и подразделения, теперь — селект и имя пользователя */
+.player-selectors .tournament {
   margin-right: 0.5rem;
 }
 
