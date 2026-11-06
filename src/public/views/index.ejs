@@ -45,7 +45,7 @@
                     <% if (device !== 'phone') { %>
                         <div class="player-selectors">
                             <%- include('tournament', {tournaments: tournaments}); %>
-                            <%- include('unit', {units: units}); %>
+                            <%# временно скрыт: селектор подразделения (include('unit', {units: units})), вернуть по необходимости %>
                         </div>
                     <% } %>
                     <label class="user"><%= user.username %></label>
