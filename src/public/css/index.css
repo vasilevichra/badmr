@@ -317,6 +317,14 @@ body.desktop #header .col-10 {
   margin: 0;
 }
 
+/* в phone-DOM лейбл пользователя и кнопка выхода — выровнены по центру
+   высоты (в block-форме inline-элементы стоят по базовой линии, и текст
+   лейбла всплывает над центром кнопки) */
+body.phone #header form.logout {
+  display: flex;
+  align-items: center;
+}
+
 .social {
   /*margin: 2.2em 0 0 0;*/
 }
