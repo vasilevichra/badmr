@@ -1,5 +1,5 @@
 {
-  "watch": ["src", "app.js"],
+  "watch": ["src", "app.ts"],
   "ext": "ts,js,ejs",
   "execMap": {
     "ts": "node --experimental-strip-types"

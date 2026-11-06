@@ -63,6 +63,17 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
+// HTML одного и того же URL различается по User-Agent (phone/desktop):
+// без Vary общий HTTP-кэш браузера (обычный режим и режим отклика Safari —
+// один и тот же origin) подменяет телефонную версию десктопной, а no-cache
+// гарантирует ревалидацию после перезапуска сервера. Service worker тоже
+// опирается на Vary: caches.match различает записи по заголовкам запроса.
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  res.vary('User-Agent');
+  res.set('Cache-Control', 'no-cache');
+  next();
+});
+
 // pushed throw npm frontend dependencies
 app.use('/js', assets(path.join(__dirname, '/node_modules/jquery/dist')));
 app.use('/js', assets(path.join(__dirname, '/node_modules/jquery.cookie')));

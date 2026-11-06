@@ -6,7 +6,7 @@
  *    обновлении кеша.
  * При любых изменениях набора кешируемых файлов поднимать VERSION —
  * иначе клиенты останутся на старой статике. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `badmr-${VERSION}`;
 const STATIC_PREFIXES = ['/css/', '/js/', '/assets/'];
 
