@@ -313,9 +313,10 @@ input:focus::placeholder {
 }
 
 /* перебивает bootstrap-верстку селекта; правый отступ — зазор после
-   селекта до следующего элемента шапки */
+   селекта до следующего элемента шапки; отрицательный вертикальный
+   маржа-хак убран — в гостевой flex-форме он уводил селект вверх */
 #tournament {
-  margin: -1rem 0.5rem 0 0 !important;
+  margin: 0 0.5rem 0 0 !important;
 }
 
 .tournament-new-registration-input {
