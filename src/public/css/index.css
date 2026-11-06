@@ -351,6 +351,14 @@ body.desktop #header #tournament {
   padding-left: 0.75rem;
 }
 
+/* Ряды полей подсказки растягиваются на всю ширину формы: колонки,
+   перенесённые на второй ряд, распределяются от края до края, как и
+   первый ряд. В phone-DOM не применяется — там форма переносится на
+   много строк, и растяжка частичных строк по краям выглядит рваной. */
+body.desktop #tournament-new-registration-hint > .row {
+  justify-content: space-between;
+}
+
 #tournament-new-registration-hint-sex {
   background-color: deeppink;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
