@@ -294,8 +294,11 @@ input:focus::placeholder {
   margin: 0 0.5rem 0 0;
 }
 
-.header button > p {
-  margin-top: 1em;
+/* p внутри кнопок шапки: гасим bootstrap-овский margin-bottom — иначе
+   текст «Войти»/иконка выхода всплывают над центром кнопки и не на
+   одном уровне с текстом селекта турниров */
+#header button > p {
+  margin: 0;
 }
 
 .logout {
