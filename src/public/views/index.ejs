@@ -27,7 +27,7 @@
 </head>
 
 <body data-tournament="<%= typeof tournament_id !== 'undefined' ? tournament_id : '' %>" data-tournament-status="<%= typeof tournament !== 'undefined' && tournament ? tournament.tournament_status_id : '' %>">
-<div class="container">
+<div class="container pt-3">
     <% if (user) { %>
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
     <% } %>
