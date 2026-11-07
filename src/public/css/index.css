@@ -1099,18 +1099,26 @@ body.desktop #tournament-new-registration-hint > .row {
   font-weight: 567;
 }
 
+/* Общее правило (не device-специфичное). Модалка добавления команды:
+   равные вертикальные отступы между полями (select2-контейнеры блочные,
+   сами скрытые select отступов не дают). */
+#tournament-groups-team-add .modal-body .select2-container {
+  margin-bottom: 0.75rem;
+}
+#tournament-groups-team-add .modal-body .row:last-child .select2-container {
+  margin-bottom: 0;
+}
+
+/* Свотч цвета в селекте: инлайново по центру строки текста, иначе наезжает
+   на подпись; граница в цвет границ темы — чёрная на тёмном фоне сливается. */
 #select2-tournament-groups-team-add-select-color-results span,
 #select2-tournament-groups-team-add-select-color-container span {
   width: 14px;
   height: 14px;
-  display: block;
-  float: left;
-  margin: 6px 6px 0 0;
-  border: 1px solid black;
-}
-
-#tournament-groups-team-add-add-name {
-  height: 28px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin: 0 8px 0 0;
+  border: 1px solid var(--bs-border-color);
 }
 
 .tournament-groups-table-games {
