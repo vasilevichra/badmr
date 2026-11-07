@@ -138,16 +138,20 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
   hide.register.all();
   setClearState(null);
 
+  // #число или №число — игрок по id ищется с первого символа, без ожидания
+  // трёх; голое число — как раньше, от трёх символов
+  const byId = query.match(/^(?:#|№)(\d+)$/) || (query.length > 2 && query.match(/^(\d+)$/));
+  if (byId) {
+    lastRegistrationSearch = query;
+    $.getJSON(`/api/users/${byId[1]}`, (u) => {
+      if (u && u.id) showRegisteredUser(u);
+    });
+    return;
+  }
+
   lastRegistrationSearch = query.length > 2 ? query : null;
 
   if (input.length > 2) {
-    // число — показываем игрока с таким id
-    if (/^\d+$/.test(query)) {
-      $.getJSON(`/api/users/${query}`, (u) => {
-        if (u && u.id) showRegisteredUser(u);
-      });
-      return;
-    }
     // [а-яёА-ЯЁ]: «ё» (U+0451) вне диапазона а-я — иначе «Семён» режется до «Сем»
     const names = input.match(/(?<lastname>[а-яёА-ЯЁ]+)?(\s+)?(?<firstname>[а-яёА-ЯЁ]+)?(\s+)?(?<patronymic>[а-яёА-ЯЁ]+)?/).groups;
     if (names.lastname) {
