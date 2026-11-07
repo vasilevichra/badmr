@@ -7,20 +7,12 @@
             </div>
             <form>
                 <div class="modal-body">
-                    <div class="col-auto">
-                        <div class="row">
-                            <select id="tournament-groups-team-add-select-group" class="select2 form-control" required></select>
-                            <select id="tournament-groups-team-add-select-city" class="select2 form-control" required></select>
-                            <select id="tournament-groups-team-add-select-color" class="select2 form-control" required></select>
-                        </div>
-                        <div class="row">
-                            <input id="tournament-groups-team-add-add-name" class="form-control" type="text" placeholder="Название" minlength="1" size="8"
-                                   required/>
-                        </div>
-                        <div class="row">
-                            <select id="tournament-groups-team-add-select-users" class="select form-control" multiple="multiple" required></select>
-                        </div>
-                    </div>
+                    <select id="tournament-groups-team-add-select-group" class="select2 form-control" required></select>
+                    <select id="tournament-groups-team-add-select-city" class="select2 form-control" required></select>
+                    <select id="tournament-groups-team-add-select-color" class="select2 form-control" required></select>
+                    <input id="tournament-groups-team-add-add-name" class="form-control" type="text" placeholder="Название" minlength="1" size="8"
+                           required/>
+                    <select id="tournament-groups-team-add-select-users" class="select form-control" multiple="multiple" required></select>
                 </div>
                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                 <div class="modal-footer">

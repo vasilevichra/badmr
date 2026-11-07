@@ -1100,22 +1100,21 @@ body.desktop #tournament-new-registration-hint > .row {
 }
 
 /* Общее правило (не device-специфичное). Модалка добавления команды:
-   равные вертикальные отступы между полями (select2-контейнеры блочные,
-   сами скрытые select отступов не дают; у инпута «Название» своего
-   отступа нет — он между select2-полями). Bootstrap-гуттеры .row > *
-   дают контейнерам боковой паддинг 12px — видимая коробка селектов
-   становится уже инпута; убираем только у контейнеров, инпут оставляем
-   с дефолтными паддингами .form-control. */
-#tournament-groups-team-add .modal-body .select2-container {
-  margin-bottom: 0.75rem;
-  padding-left: 0;
-  padding-right: 0;
-}
-#tournament-groups-team-add .modal-body #tournament-groups-team-add-add-name {
+   поля — прямые дети .modal-body, стеком; равные вертикальные отступы
+   между ними, от краёв — дефолтный паддинг .modal-body (16px).
+   select2-контейнеры блочные, сами скрытые select отступов не дают. */
+#tournament-groups-team-add .modal-body > * {
   margin-bottom: 0.75rem;
 }
-#tournament-groups-team-add .modal-body .row:last-child .select2-container {
+#tournament-groups-team-add .modal-body > *:last-child {
   margin-bottom: 0;
+}
+
+/* Плейсхолдер инпута «Название» — тот же цвет, что у плейсхолдеров
+   select2-полей (см. оверрайд .select2-selection__placeholder ниже),
+   иначе текст и его яркость отличаются от полей выбора. */
+[data-bs-theme="dark"] #tournament-groups-team-add-add-name::placeholder {
+  color: var(--bs-secondary-color);
 }
 
 /* Свотч цвета в селекте: инлайново по центру строки текста, иначе наезжает
