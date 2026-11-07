@@ -194,58 +194,62 @@
                                                 <% const win_rate_a = matches_total.count ? (wins_a / matches_total.count * 100).toFixed(2) : 0; %>
                                                 <% const matches3_t = Number(games.count) - 2 * Number(matches.count); %>
                                                 <% const matches3_a = Number(games_total.count) - 2 * Number(matches_total.count); %>
+                                                <% // у игрока нет матчей в других турнирах того же типа —
+                                                    // турнир единственный: колонка «За всё время» дублирует
+                                                    // «Турнир» и скрывается (d-none), «Турнир» занимает её место %>
+                                                <% const single_tournament = !type_matches.length; %>
                                                 <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
-                                                    <div class="p-2">Параметр</div>
+                                                    <div class="p-2 fw-bold">Параметр</div>
                                                 </div>
-                                                <div class="col-3 col-md-3 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2 fw-bold">Турнир</div>
                                                 </div>
-                                                <div class="col-4 col-md-6 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2 fw-bold">За всё время</div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
                                                     <div class="p-2">Матчей</div>
                                                 </div>
-                                                <div class="col-3 col-md-3 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= matches.count %></div>
                                                 </div>
-                                                <div class="col-4 col-md-6 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= matches_total.count %></div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
                                                     <div class="p-2">Игр</div>
                                                 </div>
-                                                <div class="col-3 col-md-3 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= games.count %></div>
                                                 </div>
-                                                <div class="col-4 col-md-6 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= games_total.count %></div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
                                                     <div class="p-2">Игр на матч</div>
                                                 </div>
-                                                <div class="col-3 col-md-3 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= matches.count ? (Number(games.count) / Number(matches.count)).toFixed(2) : 0; %></div>
                                                 </div>
-                                                <div class="col-4 col-md-6 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= matches_total.count ? (Number(games_total.count) / Number(matches_total.count)).toFixed(2) : 0; %></div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
                                                     <div class="p-2">Матчей из трёх игр</div>
                                                 </div>
-                                                <div class="col-3 col-md-3 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= matches3_t %> (<%= matches.count ? (matches3_t / matches.count * 100).toFixed(2) : 0; %>%)</div>
                                                 </div>
-                                                <div class="col-4 col-md-6 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><%= matches3_a %> (<%= matches_total.count ? (matches3_a / matches_total.count * 100).toFixed(2) : 0; %>%)</div>
                                                 </div>
                                                 <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
                                                     <div class="p-2">Побед / Поражений / %</div>
                                                 </div>
-                                                <div class="col-3 col-md-3 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><span class="rating-plus"><%= wins_t %></span> / <span class="rating-minus"><%= loses_t %></span> / <span class="rating-<%= win_rate_t > 50 ? 'plus' : 'minus' %>"><%= win_rate_t %>%</span></div>
                                                 </div>
-                                                <div class="col-4 col-md-6 bg-body-tertiary border-start border-bottom border-gap border-3">
+                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
                                                     <div class="p-2"><span class="rating-plus"><%= wins_a %></span> / <span class="rating-minus"><%= loses_a %></span> / <span class="rating-<%= win_rate_a > 50 ? 'plus' : 'minus' %>"><%= win_rate_a %>%</span></div>
                                                 </div>
                                             </div>
