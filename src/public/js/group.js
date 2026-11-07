@@ -313,16 +313,16 @@ drawGroupsDiagonal = () => {
     line.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
     line.setAttribute('stroke-width', '0.75');
     svg.appendChild(line);
-    // вертикальные линии по левой границе названий остальных колонок:
-    // от верха таблицы до диагонали (нижний левый угол rowspan-ячейки
-    // лежит на диагонали, поэтому линия смыкается с ней без зазора)
+    // вертикальные линии по левой границе названий остальных колонок —
+    // насквозь: от верха таблицы до её низа (x совпадает с границами
+    // игровых колонок под диагональю, ширины колонок те же)
     table.querySelectorAll('td.game-column-name').forEach(cell => {
       const rect = cell.getBoundingClientRect();
       const cline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       cline.setAttribute('x1', rect.left - hostRect.left);
       cline.setAttribute('y1', 0);
       cline.setAttribute('x2', rect.left - hostRect.left);
-      cline.setAttribute('y2', rect.bottom - hostRect.top);
+      cline.setAttribute('y2', hostRect.height);
       cline.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
       cline.setAttribute('stroke-width', '0.75');
       svg.appendChild(cline);
