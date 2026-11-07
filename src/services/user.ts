@@ -266,7 +266,17 @@ class User {
     }
   }
 
-  private async searchLab(name: string, city: string | null, user_id: number, site_id: number | null = null): Promise<LabSearchResult> {
+  /** Ищет игрока badminton4u по логину (@логин в строке регистрации);
+   *  совпадение — точное равенство логина, без фильтра по городу. */
+  async labSearchByLogin(login: string, user_id: number): Promise<LabSearchResult> {
+    try {
+      return await this.searchLab(login, null, user_id, null, login);
+    } catch {
+      return {status: 'blocked', matches: 0};
+    }
+  }
+
+  private async searchLab(name: string, city: string | null, user_id: number, site_id: number | null = null, login: string | null = null): Promise<LabSearchResult> {
     // пауза перед каждым запросом, чтобы не походить на бота:
     // случайное значение между crawl_min_ms и crawl_max_ms (настройки)
     const pause = (base = 0) => {
@@ -310,14 +320,20 @@ class User {
       interface SitePlayer {
         id: number;
         city: string | null;
+        login: string | null;
       }
       const searchRows = async (title: string): Promise<SitePlayer[]> => {
         const document = new JSDOM(await fetchHtml('https://badminton4u.ru/ajax?search=rating&s=d', `title=${encodeURIComponent(title)}&s=d`)).window.document;
         const rows = [...document.querySelectorAll('a[href*="/players/"]')].map(row => {
           const href = row.getAttribute('href') ?? '';
+          // строка результата: «<b>Фамилия Имя Отчество</b>логин» — логин
+          // вырезается как хвост текста после имени
+          const nameSpan = [...row.querySelectorAll('span')].find(span => span.querySelector('b'));
+          const name = nameSpan?.querySelector('b')?.textContent ?? '';
           return {
             id: Number((href.match(/(\d+)/) ?? [])[1]),
             city: [...row.querySelectorAll('span')].map(span => span.textContent ?? '').find(text => text.startsWith('г. ')) ?? null,
+            login: nameSpan && name ? nameSpan.textContent?.slice(name.length).trim() ?? null : null,
           };
         });
         // нормальный пустой ответ содержит маркер «ничего не найдено»;
@@ -330,7 +346,11 @@ class User {
       };
 
       let players = await searchRows(name);
-      if (players.length === 0) {
+      if (login) {
+        // поиск по логину: оставляем строки с точным совпадением логина —
+        // поиск сайта по title находит и по имени, это не то же самое
+        players = players.filter(player => player.login?.toLowerCase() === login.toLowerCase());
+      } else if (players.length === 0) {
         const words = name.trim().split(/\s+/);
         if (words.length >= 3) {
           players = await searchRows(words.slice(0, 2).join(' '));

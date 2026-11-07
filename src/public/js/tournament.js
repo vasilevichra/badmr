@@ -124,6 +124,33 @@ const showRegisteredUser = (u) => {
 // null — поиска не было либо ввод сброшен
 let lastRegistrationSearch = null;
 
+// badminton4u ответил на поиск: подкрашиваем значок очистки по результату
+// (found — один игрок, many — несколько, blocked — сайт недоступен) и при
+// единственном совпадении заполняем форму нового игрока его данными
+const showLabSearchResult = (result) => {
+  const hintSection = $('#tournament-new-registration-hint');
+  setClearState(result.status === 'blocked' ? 'blocked' : result.player ? 'found' : result.matches > 1 ? 'many' : null);
+  const user = result.player;
+  if (user) {
+    const {lastname, firstname, patronymic} = parseName(user.name);
+    show.register.lastname(lastname);
+    show.register.firstname(firstname);
+    if (patronymic) {
+      show.register.patronymic(patronymic);
+    }
+    show.register.account(user.id);
+    hintSection
+    .find('[name=account]')
+    .off('click')
+    .on('click', () => window.open(`https://badminton4u.ru/players/${user.id}`, '_blank'));
+
+    show.register.rate(user.r2);
+    show.register.sex(lastname, firstname, patronymic);
+    show.register.user.new.regAddButton();
+    $('#tournament-new-registration-hint-reg-btn').off('click').on('click', () => tournamentNewRegistrationAddHandler(user.city));
+  }
+};
+
 const tournamentNewRegistrationHandler = _.debounce(function(input) {
   $.cookie(registrationCookie, input);
 
@@ -133,19 +160,25 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
   // уже показанное состояние формы
   if (query.length > 2 && query === lastRegistrationSearch) return;
 
-  const hintSection = $('#tournament-new-registration-hint');
-
   hide.register.all();
   setClearState(null);
 
   // #число или №число — игрок по id ищется с первого символа, без ожидания
-  // трёх; голое число — как раньше, от трёх символов
-  const byId = query.match(/^(?:#|№)(\d+)$/) || (query.length > 2 && query.match(/^(\d+)$/));
+  // трёх; голое число ищется по ФИО как обычный текст
+  const byId = query.match(/^(?:#|№)(\d+)$/);
   if (byId) {
     lastRegistrationSearch = query;
     $.getJSON(`/api/users/${byId[1]}`, (u) => {
       if (u && u.id) showRegisteredUser(u);
     });
+    return;
+  }
+
+  // @логин — игрок с badminton4u по логину, с первого символа
+  const byLogin = query.match(/^@(\S+)$/);
+  if (byLogin) {
+    lastRegistrationSearch = query;
+    $.getJSON(`/api/users/lab/search?login=${encodeURIComponent(byLogin[1])}`, showLabSearchResult);
     return;
   }
 
@@ -185,28 +218,7 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
           url: withTournament(`/api/users/lab/search?name=${[ln, fn, pn].join(' ').trim()}`),
           method: 'GET',
           async: true,
-          success: result => {
-            setClearState(result.status === 'blocked' ? 'blocked' : result.player ? 'found' : result.matches > 1 ? 'many' : null);
-            const user = result.player;
-            if (user) {
-              const {lastname, firstname, patronymic} = parseName(user.name);
-              show.register.lastname(lastname);
-              show.register.firstname(firstname);
-              if (patronymic) {
-                show.register.patronymic(patronymic);
-              }
-              show.register.account(user.id);
-              hintSection
-              .find('[name=account]')
-              .off('click')
-              .on('click', () => window.open(`https://badminton4u.ru/players/${user.id}`, '_blank'));
-
-              show.register.rate(user.r2);
-              show.register.sex(lastname, firstname, patronymic);
-              show.register.user.new.regAddButton();
-              $('#tournament-new-registration-hint-reg-btn').off('click').on('click', () => tournamentNewRegistrationAddHandler(user.city));
-            }
-          }
+          success: showLabSearchResult,
         });
 
         if (ln && fn) {

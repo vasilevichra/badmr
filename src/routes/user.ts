@@ -74,6 +74,11 @@ router.get('/buddies/:id', (req, res) => {
 });
 
 router.get('/lab/search', (req, res) => {
+  // поиск по логину badminton4u (@логин в строке регистрации)
+  if (req.query.login !== undefined) {
+    res.promise(userService.labSearchByLogin(String(req.query.login), Number(req.query.user_id)));
+    return;
+  }
   // город турнира (явно указанного ?tournament= либо текущего) — отсекает
   // однофамильцев из других городов; явный ?city= имеет приоритет
   const tid = requestedTournament(req);
