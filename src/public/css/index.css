@@ -1134,9 +1134,15 @@ body.desktop #tournament-new-registration-hint > .row {
 }
 
 /* Общее правило (не device-специфичное). Подсветка участников при наведении
-   на кнопку матча в матрице игр: названия строки и колонки — жирным. */
+   на кнопку матча в матрице игр: названия строки и колонки — жирнее.
+   Настоящий font-weight меняет метрики текста и «трясёт» таблицу, поэтому
+   жирнота имитируется тенями по четырём сторонам глифов. */
 .tournament-groups-table-games td.game-hover {
-  font-weight: bold;
+  text-shadow:
+    0.5px 0 0 currentColor,
+    -0.5px 0 0 currentColor,
+    0 0.5px 0 currentColor,
+    0 -0.5px 0 currentColor;
 }
 
 /* Линия диагонали матрицы игр рисуется одной SVG-линией поверх таблицы
