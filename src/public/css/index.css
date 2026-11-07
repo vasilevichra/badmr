@@ -1123,6 +1123,14 @@ body.desktop #tournament-new-registration-hint > .row {
   height: 85px;
 }
 
+/* Общее правило (не device-специфичное). Точки в матрице игр (•, ещё не
+   сыгранные пары) — в цвет границ таблиц, чтобы не выделялись на фоне
+   диагональной линии и сетки. */
+.tournament-groups-table-game.game-dot {
+  color: var(--bs-border-color);
+  font-size: 0.75rem;
+}
+
 /* Линия диагонали матрицы игр рисуется одной SVG-линией поверх таблицы
    (drawGroupsDiagonal в group.js) — класс diagonal-cross остаётся маркером
    диагональных ячеек для этой функции. */
