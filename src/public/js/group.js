@@ -313,6 +313,16 @@ drawGroupsDiagonal = () => {
     line.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
     line.setAttribute('stroke-width', '0.75');
     svg.appendChild(line);
+    // вертикальная линия от точки старта диагонали вверх до верха таблицы —
+    // отделяет угол шапки от первой колонки
+    const vline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    vline.setAttribute('x1', first.left - hostRect.left);
+    vline.setAttribute('y1', 0);
+    vline.setAttribute('x2', first.left - hostRect.left);
+    vline.setAttribute('y2', first.top - hostRect.top);
+    vline.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
+    vline.setAttribute('stroke-width', '0.75');
+    svg.appendChild(vline);
     host.style.position = 'relative';
     host.appendChild(svg);
   });
