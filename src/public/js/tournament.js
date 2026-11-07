@@ -73,16 +73,81 @@ $(document).on('click', '.registration-clear', () => {
   $('.tournament-new-registration-input').val('').trigger('input').trigger('focus');
 });
 
+// имя cookie с текущим содержимым поисковой строки регистрации
+const registrationCookie = 'registration-input';
+
+// нормализуем ввод поиска регистрации: пробелы (в т.ч. начальные/конечные)
+// не влияют на запрос — «измалкова» и «измалкова    » ищут одно и то же
+const normalizeRegistrationInput = (input) => input.replace(/\s+/g, ' ').trim();
+
+// найден зарегистрированный игрок: показываем блок «имя + Добавить / уже
+// зарегистрирован»; общий путь для поиска по ФИО и по числу-Id
+const showRegisteredUser = (u) => {
+  show.register.user.existed.section();
+  hide.register.lastname();
+  hide.register.firstname();
+  hide.register.patronymic();
+
+  const playerNameWithCity = share.playerNameFormatter(u.id, `${u.lastname} ${u.firstname}`, u.sex, u.pic, isPhone())
+      + (u.city ? `<span class="mx-2 no-selection">(${u.city})</span>` : '');
+  $.ajax({
+    url: `/api/users/registered/${u.id}`,
+    success: (data) => {
+      if (data.registered === 1) {
+        $('#tournament-new-add-existed-username').html(playerNameWithCity + '<span class="no-selection">уже <b>зарегистрирован</b> на турнире</span>');
+      } else {
+        $('#tournament-new-add-existed-username').html(playerNameWithCity);
+        show.register.user.existed.addButton().off('click').on('click', () =>
+            $.ajax({
+              url: `/api/users/register/${u.id}`,
+              type: 'POST',
+              success: () => {
+                hide.register.all();
+                // параметры адреса исчерпаны — до reload, чтобы
+                // перезагрузка шла уже без query-параметров
+                resetQuery();
+                // блока «Игроки» могло не быть (не было зарегистрированных) — тогда страница перезагрузится и блок отрисуется
+                if ($('#player-table').length) refresh.table.player();
+                else location.reload();
+                $('.tournament-new-registration-input').val('').trigger('input');
+                $.removeCookie(registrationCookie);
+              },
+            })
+            .then(() => closeRegistrationIfNeed())
+        )
+      }
+    },
+  });
+};
+
+// последний выполненный поиск регистрации (нормализованный ввод);
+// null — поиска не было либо ввод сброшен
+let lastRegistrationSearch = null;
+
 const tournamentNewRegistrationHandler = _.debounce(function(input) {
-  const cookieName = 'registration-input';
-  $.cookie(cookieName, input);
+  $.cookie(registrationCookie, input);
+
+  const query = normalizeRegistrationInput(input);
+
+  // пробелы не меняют запрос — не повторяем поиск и не трогаем
+  // уже показанное состояние формы
+  if (query.length > 2 && query === lastRegistrationSearch) return;
 
   const hintSection = $('#tournament-new-registration-hint');
 
   hide.register.all();
   setClearState(null);
 
+  lastRegistrationSearch = query.length > 2 ? query : null;
+
   if (input.length > 2) {
+    // число — показываем игрока с таким id
+    if (/^\d+$/.test(query)) {
+      $.getJSON(`/api/users/${query}`, (u) => {
+        if (u && u.id) showRegisteredUser(u);
+      });
+      return;
+    }
     // [а-яёА-ЯЁ]: «ё» (U+0451) вне диапазона а-я — иначе «Семён» режется до «Сем»
     const names = input.match(/(?<lastname>[а-яёА-ЯЁ]+)?(\s+)?(?<firstname>[а-яёА-ЯЁ]+)?(\s+)?(?<patronymic>[а-яёА-ЯЁ]+)?/).groups;
     if (names.lastname) {
@@ -106,46 +171,10 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
       }
 
       // поиск зарегистрированных — асинхронно (sync-запрос блокировал ввод)
-      const self = this;
       $.getJSON(`/api/users/find?lastname=${ln}&firstname=${fn}&patronymic=${pn}&tournament=${$('body').data('tournament')}`, (users) => {
       if (users.length >= 1) {
         if (users.length === 1) {
-          const u = users[0];
-
-          show.register.user.existed.section();
-          hide.register.lastname();
-          hide.register.firstname();
-          hide.register.patronymic();
-
-          const playerNameWithCity = self.share.playerNameFormatter(u.id, `${u.lastname} ${u.firstname}`, u.sex, u.pic, isPhone()) + `<span class="mx-2 no-selection">(${u.city})</span>`;
-          $.ajax({
-            url: `/api/users/registered/${u.id}`,
-            success: (data) => {
-              if (data.registered === 1) {
-                $('#tournament-new-add-existed-username').html(playerNameWithCity + '<span class="no-selection">уже <b>зарегистрирован</b> на турнире</span>');
-              } else {
-                $('#tournament-new-add-existed-username').html(playerNameWithCity);
-                show.register.user.existed.addButton().off('click').on('click', () =>
-                    $.ajax({
-                      url: `/api/users/register/${u.id}`,
-                      type: 'POST',
-                      success: () => {
-                        hide.register.all();
-                        // параметры адреса исчерпаны — до reload, чтобы
-                        // перезагрузка шла уже без query-параметров
-                        resetQuery();
-                        // блока «Игроки» могло не быть (не было зарегистрированных) — тогда страница перезагрузится и блок отрисуется
-                        if ($('#player-table').length) refresh.table.player();
-                        else location.reload();
-                        $('.tournament-new-registration-input').val('').trigger('input');
-                        $.removeCookie(cookieName);
-                      },
-                    })
-                    .then(() => closeRegistrationIfNeed())
-                )
-              }
-            },
-          });
+          showRegisteredUser(users[0]);
         }
       } else {
         $.ajax({

@@ -70,6 +70,7 @@ class User {
                 cast(strftime('%Y.%m%d', 'now') - strftime('%Y.%m%d', u.birthday) AS INT) AS age,
                 u.sex,
                 coalesce(up.pic, ul.img)                                                  AS pic,
+                c.name                                                                    AS city,
                 u.city_id,
                 ul.rating_1,
                 ul.rating_2,
@@ -79,6 +80,7 @@ class User {
          FROM user u
                   LEFT OUTER JOIN user_pic up ON u.id = up.user_id
                   LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
+                  LEFT OUTER JOIN city c ON c.id = u.city_id
          WHERE u.id = ?`,
         [id]
     );
