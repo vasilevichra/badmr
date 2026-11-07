@@ -93,6 +93,8 @@ class User {
   select = (city_id: number) => this.user.select(city_id);
   getArchived = (tournamentId?: number) => this.user.getArchived(tournamentId);
   getById = (id: number) => this.user.getById(id);
+  /** Локальный игрок по логину badminton4u, если привязка есть в user_lab. */
+  getBySiteLogin = (login: string) => this.user.getBySiteLogin(login);
   /** Поиск при регистрации.
    *
    *  city_id — город проведения турнира:

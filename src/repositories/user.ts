@@ -86,6 +86,26 @@ class User {
     );
   }
 
+  /** Локальный игрок по логину на badminton4u (site_login из user_lab);
+   *  без совпадения — undefined. */
+  getBySiteLogin(login: string) {
+    return this.db.get<{ lastname: string; firstname: string; patronymic: string | null; sex: number; pic: string | null; city: string | null }>(
+        `SELECT u.id,
+                u.lastname,
+                u.firstname,
+                u.patronymic,
+                u.sex,
+                coalesce(up.pic, ul.img)                                                  AS pic,
+                c.name                                                                    AS city
+         FROM user u
+                  LEFT OUTER JOIN user_pic up ON u.id = up.user_id
+                  LEFT OUTER JOIN user_lab ul ON u.id = ul.user_id
+                  LEFT OUTER JOIN city c ON c.id = u.city_id
+         WHERE lower(ul.site_login) = lower(?)`,
+        [login]
+    );
+  }
+
   findBy(lastname: string, firstname: string, patronymic: string, city_id?: number) {
     // сравнение без учёта замены ё/е: «Соловьёва» должна находиться
     // и по запросу «Соловьева», и наоборот; нормализуем обе стороны к «е»

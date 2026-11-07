@@ -174,11 +174,15 @@ const tournamentNewRegistrationHandler = _.debounce(function(input) {
     return;
   }
 
-  // @логин — игрок с badminton4u по логину, с первого символа
+  // @логин — сначала игрок из базы с привязкой к этому логину,
+  // иначе поиск в лаборатории; с первого символа
   const byLogin = query.match(/^@(\S+)$/);
   if (byLogin) {
     lastRegistrationSearch = query;
-    $.getJSON(`/api/users/lab/search?login=${encodeURIComponent(byLogin[1])}`, showLabSearchResult);
+    $.getJSON(`/api/users/lab/search?login=${encodeURIComponent(byLogin[1])}`, (result) => {
+      if (result.user) showRegisteredUser(result.user);
+      else showLabSearchResult(result);
+    });
     return;
   }
 
