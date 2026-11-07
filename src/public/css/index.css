@@ -1122,19 +1122,6 @@ body.desktop #tournament-new-registration-hint > .row {
   justify-content: center;
 }
 
-/* «Группа», «Город», «Цвет» — в одной строке; контейнеры select2
-   растягиваются поровну, скрытые select и inline-width select2
-   не мешают (width сбрасываем в auto/flex-basis). */
-.tournament-groups-team-add-row {
-  display: flex;
-  gap: 0.75rem;
-}
-.tournament-groups-team-add-row .select2-container {
-  flex: 1 1 0;
-  width: auto;
-  min-width: 0;
-}
-
 /* Свотч цвета в селекте: инлайново по центру строки текста, иначе наезжает
    на подпись; граница в цвет границ темы — чёрная на тёмном фоне сливается. */
 #select2-tournament-groups-team-add-select-color-results span,
