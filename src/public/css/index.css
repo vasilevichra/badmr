@@ -1123,12 +1123,15 @@ body.desktop #tournament-new-registration-hint > .row {
   height: 85px;
 }
 
-/* Общее правило (не device-специфичное). Точки в матрице игр (•, ещё не
-   сыгранные пары) — в цвет границ таблиц, чтобы не выделялись на фоне
-   диагональной линии и сетки. */
-.tournament-groups-table-game.game-dot {
-  color: var(--bs-border-color);
-  font-size: 0.75rem;
+/* Общее правило (не device-специфичное). Названия команд в матрице игр:
+   шапки у таблицы нет, каждая колонка подписана в ячейке сразу над
+   диагональной (лесенка вдоль диагонали). Ячейка 85×85 — длинные названия
+   переносятся на вторую вертикальную строку. */
+.tournament-groups-table-game.game-column-name {
+  text-align: center;
+  font-size: 0.7rem;
+  line-height: 1.1;
+  vertical-align: middle;
 }
 
 /* Линия диагонали матрицы игр рисуется одной SVG-линией поверх таблицы
