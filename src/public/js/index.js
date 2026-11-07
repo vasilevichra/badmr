@@ -59,6 +59,7 @@ $(document).ready(() => {
   renderSettings();
   renderArchive();
   renderGroups();
+  drawGroupsDiagonal();
   renderTournamentProgress();
 
   // периодический тик: только перерисовка блока игр и пересчёт «закончилась

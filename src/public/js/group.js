@@ -283,3 +283,38 @@ const playMatch110 = (teamId1, teamId2) => {
     }
   });
 }
+// диагональ матрицы игр группы: одна прямая SVG-линия из левого верхнего
+// угла первой диагональной ячейки в правый нижний угол последней —
+// градиентные сегменты по ячейкам на стыках «гуляли» из-за антиалиасинга
+drawGroupsDiagonal = () => {
+  document.querySelectorAll('svg.groups-diagonal').forEach(svg => svg.remove());
+
+  const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--badmr-diag-line').trim();
+  document.querySelectorAll('table.tournament-groups-table-games').forEach(table => {
+    const cells = table.querySelectorAll('td.diagonal-cross');
+    if (cells.length === 0) return;
+
+    const host = table.parentElement; // .d-flex — только таблица внутри
+    const hostRect = host.getBoundingClientRect();
+    const first = cells[0].getBoundingClientRect();
+    const last = cells[cells.length - 1].getBoundingClientRect();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'groups-diagonal');
+    svg.setAttribute('width', hostRect.width);
+    svg.setAttribute('height', hostRect.height);
+    svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', first.left - hostRect.left);
+    line.setAttribute('y1', first.top - hostRect.top);
+    line.setAttribute('x2', last.right - hostRect.left);
+    line.setAttribute('y2', last.bottom - hostRect.top);
+    line.setAttribute('stroke', lineColor);
+    line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+    host.style.position = 'relative';
+    host.appendChild(svg);
+  });
+};
+
+$(window).on('resize', _.debounce(drawGroupsDiagonal, 200));
