@@ -69,9 +69,16 @@
         <div class="d-flex">
             <table class="table tournament-groups-table-games">
                 <tbody>
-                <% /* Шапки у таблицы нет: каждая колонка подписана в ячейке сразу
-                      над диагональной (лесенка вдоль диагонали), последнюю колонку
-                      не рисуем — партификаторы там не несут информации */ %>
+                <% /* Шапка: пустой угол + название только первой команды — её колонка
+                      начинается сразу с диагонали, лесенка названий её не покрывает.
+                      Остальные колонки подписаны rowspan-ячейками, слитыми от верха
+                      таблицы до диагонали (крупный шрифт, текст прижат к диагонали).
+                      Последнюю колонку не рисуем. */ %>
+                <tr>
+                    <td style="background-color: rgba(0, 0, 0, 0.0) !important;"></td>
+                    <% var first_team = teams_in_group[0][0]; %>
+                    <td class="vertical-text"><%= `${first_team.team_city} - ${first_team.team_name}` %></td>
+                </tr>
                 <% teams_in_group.forEach((gig, i) => { %>
                     <% var team_name = `${gig[0].team_city} - ${gig[0].team_name}`; %>
                     <tr>
@@ -79,13 +86,11 @@
                         <% for (let j = 0; j < teams_in_group.length - 1; j++) { %>
                             <% if (i === j) { %>
                                 <td class="tournament-groups-table-game diagonal-cross"></td>
-                            <% } else if (i < j) { %>
-                                <% if (j === i + 1) { %>
-                                    <td class="tournament-groups-table-game vertical-text game-column-name"><%= `${teams_in_group[j][0].team_city} - ${teams_in_group[j][0].team_name}` %></td>
-                                <% } else { %>
-                                    <td class="tournament-groups-table-game"></td>
-                                <% } %>
-                            <% } else { %>
+                            <% } else if (i === 0) { %>
+                                <% /* Название колонки: rowspan-ячейка от верха таблицы
+                                      до ячейки над диагональной */ %>
+                                <td class="tournament-groups-table-game vertical-text game-column-name" rowspan="<%= j %>"><%= `${teams_in_group[j][0].team_city} - ${teams_in_group[j][0].team_name}` %></td>
+                            <% } else if (i > j) { %>
                                     <% var team_name_1 = `${teams_in_group[i][0].team_city} - ${teams_in_group[i][0].team_name}`; %>
                                     <% var team_name_2 = `${teams_in_group[j][0].team_city} - ${teams_in_group[j][0].team_name}`; %>
                                     <% var team_1_id = teams_in_group[i][0].team_id; %>
