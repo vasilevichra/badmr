@@ -319,3 +319,16 @@ drawGroupsDiagonal = () => {
 };
 
 $(window).on('resize', _.debounce(drawGroupsDiagonal, 200));
+
+// при наведении на кнопку матча подсвечиваем обоих участников:
+// название в строке слева и название колонки в шапке.
+// j — колонка матрицы (0-based): после td с названием команды;
+// названия колонок лежат в первой строке (rowspan-ячейки) по порядку j.
+$(document).on('mouseenter mouseleave', 'table.tournament-groups-table-games td > button.btn', function (e) {
+  const td = this.closest('td');
+  const row = td.closest('tr');
+  const table = row.closest('table');
+  const j = td.cellIndex - 1;
+  const nameTd = table.querySelector('tbody').rows[0].cells[j + 1];
+  [row.cells[0], nameTd].forEach(el => el && el.classList.toggle('game-hover', e.type === 'mouseenter'));
+});

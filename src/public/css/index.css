@@ -1133,6 +1133,12 @@ body.desktop #tournament-new-registration-hint > .row {
   border-bottom: 0;
 }
 
+/* Общее правило (не device-специфичное). Подсветка участников при наведении
+   на кнопку матча в матрице игр: названия строки и колонки — жирным. */
+.tournament-groups-table-games td.game-hover {
+  font-weight: bold;
+}
+
 /* Линия диагонали матрицы игр рисуется одной SVG-линией поверх таблицы
    (drawGroupsDiagonal в group.js) — класс diagonal-cross остаётся маркером
    диагональных ячеек для этой функции. */
