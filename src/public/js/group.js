@@ -323,6 +323,20 @@ drawGroupsDiagonal = () => {
     vline.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
     vline.setAttribute('stroke-width', '0.75');
     svg.appendChild(vline);
+    // вертикальные линии по левой границе названий остальных колонок:
+    // от верха таблицы до диагонали (нижний левый угол rowspan-ячейки
+    // лежит на диагонали, поэтому линия смыкается с ней без зазора)
+    table.querySelectorAll('td.game-column-name').forEach(cell => {
+      const rect = cell.getBoundingClientRect();
+      const cline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      cline.setAttribute('x1', rect.left - hostRect.left);
+      cline.setAttribute('y1', 0);
+      cline.setAttribute('x2', rect.left - hostRect.left);
+      cline.setAttribute('y2', rect.bottom - hostRect.top);
+      cline.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
+      cline.setAttribute('stroke-width', '0.75');
+      svg.appendChild(cline);
+    });
     host.style.position = 'relative';
     host.appendChild(svg);
   });
