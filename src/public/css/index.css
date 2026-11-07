@@ -1127,6 +1127,12 @@ body.desktop #tournament-new-registration-hint > .row {
    (drawGroupsDiagonal в group.js) — класс diagonal-cross остаётся маркером
    диагональных ячеек для этой функции. */
 
+/* Нижняя линия таблицы игр не нужна: таблица и так отделена следующим
+   блоком, а с диагональю, упирающейся в этот угол, она выглядит замкнутой. */
+.tournament-groups-table-games tr:last-child > td {
+  border-bottom: 0;
+}
+
 .vertical-text {
   writing-mode: vertical-lr;
   transform: rotate(180deg);

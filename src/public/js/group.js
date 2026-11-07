@@ -289,7 +289,6 @@ const playMatch110 = (teamId1, teamId2) => {
 drawGroupsDiagonal = () => {
   document.querySelectorAll('svg.groups-diagonal').forEach(svg => svg.remove());
 
-  const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--badmr-diag-line').trim();
   document.querySelectorAll('table.tournament-groups-table-games').forEach(table => {
     const cells = table.querySelectorAll('td.diagonal-cross');
     if (cells.length === 0) return;
@@ -309,8 +308,10 @@ drawGroupsDiagonal = () => {
     line.setAttribute('y1', first.top - hostRect.top);
     line.setAttribute('x2', last.right - hostRect.left);
     line.setAttribute('y2', last.bottom - hostRect.top);
-    line.setAttribute('stroke', lineColor);
-    line.setAttribute('stroke-width', '1');
+    // тоньше и незаметнее линий таблиц: цвет — как у их границ, толщина
+    // 0.75 даёт по вертикали ~0.5px (у 45° линии проекция w·cos 45°)
+    line.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
+    line.setAttribute('stroke-width', '0.75');
     svg.appendChild(line);
     host.style.position = 'relative';
     host.appendChild(svg);
