@@ -262,7 +262,10 @@
                                                     </tbody>
                                                 </table>
                                                 <% } %>
-                                                <% if (co_winners_all.length) { %>
+                                                <% if (co_winners_all.length && type_matches.length) { %>
+                                                <%# «За всё время» скрывается, если других турниров того же типа
+                                                    у игрока нет (type_matches пуст): список совпадёт с таблицей
+                                                    напарников этого турнира выше — дубль без новой информации %>
                                                 <a class="link-body-emphasis link-underline-opacity-0" data-bs-toggle="collapse" href="#win-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="win-all-collapse">
                                                     <i class="bi bi-chevron-down"></i> За всё время
                                                 </a>
@@ -289,7 +292,9 @@
                                                     </tbody>
                                                 </table>
                                                 <% } %>
-                                                <% if (co_losers_all.length) { %>
+                                                <% if (co_losers_all.length && type_matches.length) { %>
+                                                <%# аналогично вкладке «Выигрывает»: без других турниров
+                                                    того же типа список совпадёт с таблицей выше %>
                                                 <a class="link-body-emphasis link-underline-opacity-0" data-bs-toggle="collapse" href="#lose-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="lose-all-collapse">
                                                     <i class="bi bi-chevron-down"></i> За всё время
                                                 </a>
