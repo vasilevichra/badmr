@@ -1104,12 +1104,15 @@ body.desktop #tournament-new-registration-hint > .row {
    сами скрытые select отступов не дают; у инпута «Название» своего
    отступа нет — он между select2-полями). Bootstrap-гуттеры .row > *
    дают контейнерам боковой паддинг 12px — видимая коробка селектов
-   становится уже инпута; убираем. */
-#tournament-groups-team-add .modal-body .select2-container,
-#tournament-groups-team-add .modal-body #tournament-groups-team-add-add-name {
+   становится уже инпута; убираем только у контейнеров, инпут оставляем
+   с дефолтными паддингами .form-control. */
+#tournament-groups-team-add .modal-body .select2-container {
   margin-bottom: 0.75rem;
   padding-left: 0;
   padding-right: 0;
+}
+#tournament-groups-team-add .modal-body #tournament-groups-team-add-add-name {
+  margin-bottom: 0.75rem;
 }
 #tournament-groups-team-add .modal-body .row:last-child .select2-container {
   margin-bottom: 0;
