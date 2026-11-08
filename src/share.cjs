@@ -13,9 +13,10 @@
     // в БД аватар — data-URL (base64, в т.ч. из user_lab.img), либо http-ссылка,
     // либо «сырой» base64 из user_pic.pic
     const src = pic && (pic.startsWith('http') || pic.startsWith('data:')) ? pic : 'data:image/png;base64, ' + pic;
-    return pic ?
-        `<img class="no-selection" src="${src}" alt="${name}" width="20" height="20"/>` :
-        `<img class="no-selection" src="/assets/images/${sex ? 'pepe' : 'pepe-girl'}.svg" alt="${name}" width="20" height="20"/>`;
+    const fallback = `this.onerror=null;this.src='/assets/images/${sex ? 'pepe' : 'pepe-girl'}.svg';`;
+    // onerror: при битой картинке браузер рисует текст из alt рядом с именем — выглядит как задвоение,
+    // поэтому подменяем src на заглушку
+    return `<img class="no-selection" src="${pic ? src : `/assets/images/${sex ? 'pepe' : 'pepe-girl'}.svg`}" alt="" width="20" height="20" onerror="${fallback}"/>`;
   };
 
   exports.playerNameFormatter = playerNameFormatter;
