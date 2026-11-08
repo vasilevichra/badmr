@@ -283,49 +283,52 @@ const playMatch110 = (teamId1, teamId2) => {
     }
   });
 }
-// диагональ матрицы игр группы: одна прямая SVG-линия из левого верхнего
-// угла первой диагональной ячейки в правый нижний угол последней —
-// градиентные сегменты по ячейкам на стыках «гуляли» из-за антиалиасинга
+// вертикальные линии матрицы игр группы по левой границе названий колонок.
+// Диагональная линия рисуется только если есть ячейки-маркеры diagonal-cross
+// (сейчас их нет — диагональ убрана), функция оставлена для вертикалей
 drawGroupsDiagonal = () => {
   document.querySelectorAll('svg.groups-diagonal').forEach(svg => svg.remove());
 
   document.querySelectorAll('table.tournament-groups-table-games').forEach(table => {
     const cells = table.querySelectorAll('td.diagonal-cross');
-    if (cells.length === 0) return;
 
     const host = table.parentElement; // .d-flex — таблица + скрытые модалки, host выше таблицы
     const hostRect = host.getBoundingClientRect();
     const tableRect = table.getBoundingClientRect();
-    const first = cells[0].getBoundingClientRect();
-    const last = cells[cells.length - 1].getBoundingClientRect();
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'groups-diagonal');
     svg.setAttribute('width', hostRect.width);
     svg.setAttribute('height', hostRect.height);
     svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', first.left - hostRect.left);
-    line.setAttribute('y1', first.top - hostRect.top);
-    line.setAttribute('x2', last.right - hostRect.left);
-    line.setAttribute('y2', last.bottom - hostRect.top);
-    // тоньше и незаметнее линий таблиц: цвет — как у их границ, толщина
-    // 0.75 даёт по вертикали ~0.5px (у 45° линии проекция w·cos 45°)
-    line.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
-    line.setAttribute('stroke-width', '0.75');
-    svg.appendChild(line);
+    if (cells.length > 0) {
+      const first = cells[0].getBoundingClientRect();
+      const last = cells[cells.length - 1].getBoundingClientRect();
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', first.left - hostRect.left);
+      line.setAttribute('y1', first.top - hostRect.top);
+      line.setAttribute('x2', last.right - hostRect.left);
+      line.setAttribute('y2', last.bottom - hostRect.top);
+      // тоньше и незаметнее линий таблиц: цвет — как у их границ, толщина
+      // 0.75 даёт по вертикали ~0.5px (у 45° линии проекция w·cos 45°)
+      line.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
+      line.setAttribute('stroke-width', '0.75');
+      svg.appendChild(line);
+    }
     // вертикальные линии по левой границе названий остальных колонок —
-    // насквозь: от верха таблицы до её низа (x совпадает с границами
-    // игровых колонок под диагональю, ширины колонок те же);
+    // насквозь: от верха таблицы до её низа;
     // ограничены таблицей, а не host — иначе уходят ниже ячеек
-    table.querySelectorAll('td.game-column-name').forEach(cell => {
+    const nameCells = table.querySelectorAll('td.game-column-name');
+    if (nameCells.length === 0) return;
+    const stroke = getComputedStyle(nameCells[0]).borderBottomColor;
+    nameCells.forEach(cell => {
       const rect = cell.getBoundingClientRect();
       const cline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       cline.setAttribute('x1', rect.left - hostRect.left);
       cline.setAttribute('y1', tableRect.top - hostRect.top);
       cline.setAttribute('x2', rect.left - hostRect.left);
       cline.setAttribute('y2', tableRect.bottom - hostRect.top);
-      cline.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
+      cline.setAttribute('stroke', stroke);
       cline.setAttribute('stroke-width', '0.75');
       svg.appendChild(cline);
     });
