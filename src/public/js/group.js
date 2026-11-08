@@ -320,7 +320,10 @@ drawGroupsDiagonal = () => {
     // ограничены таблицей, а не host — иначе уходят ниже ячеек
     const nameCells = table.querySelectorAll('td.game-column-name');
     if (nameCells.length === 0) return;
-    const stroke = getComputedStyle(nameCells[0]).borderBottomColor;
+    // цвет — как у горизонтальных границ таблицы: border-bottom у name-ячеек
+    // имеет width 0 и fallback в currentColor (чёрный), поэтому берём
+    // border-left обычной игровой ячейки
+    const stroke = getComputedStyle(table.querySelector('tbody td')).borderLeftColor;
     nameCells.forEach(cell => {
       const rect = cell.getBoundingClientRect();
       const cline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
