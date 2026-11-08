@@ -293,8 +293,9 @@ drawGroupsDiagonal = () => {
     const cells = table.querySelectorAll('td.diagonal-cross');
     if (cells.length === 0) return;
 
-    const host = table.parentElement; // .d-flex — только таблица внутри
+    const host = table.parentElement; // .d-flex — таблица + скрытые модалки, host выше таблицы
     const hostRect = host.getBoundingClientRect();
+    const tableRect = table.getBoundingClientRect();
     const first = cells[0].getBoundingClientRect();
     const last = cells[cells.length - 1].getBoundingClientRect();
 
@@ -315,14 +316,15 @@ drawGroupsDiagonal = () => {
     svg.appendChild(line);
     // вертикальные линии по левой границе названий остальных колонок —
     // насквозь: от верха таблицы до её низа (x совпадает с границами
-    // игровых колонок под диагональю, ширины колонок те же)
+    // игровых колонок под диагональю, ширины колонок те же);
+    // ограничены таблицей, а не host — иначе уходят ниже ячеек
     table.querySelectorAll('td.game-column-name').forEach(cell => {
       const rect = cell.getBoundingClientRect();
       const cline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       cline.setAttribute('x1', rect.left - hostRect.left);
-      cline.setAttribute('y1', 0);
+      cline.setAttribute('y1', tableRect.top - hostRect.top);
       cline.setAttribute('x2', rect.left - hostRect.left);
-      cline.setAttribute('y2', hostRect.height);
+      cline.setAttribute('y2', tableRect.bottom - hostRect.top);
       cline.setAttribute('stroke', getComputedStyle(cells[0]).borderBottomColor);
       cline.setAttribute('stroke-width', '0.75');
       svg.appendChild(cline);
