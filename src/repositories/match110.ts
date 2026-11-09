@@ -32,15 +32,9 @@ class Match {
 
   /** Отдых команд текущего турнира: с какого момента команда ждёт —
    *  created_at последнего сыгранного матча, без сыгранных — старт турнира.
-   *  playing — команды, чей матч сейчас идёт (finished = 0);
    *  played — число сыгранных матчей команды. */
   rests() {
     const current = `(SELECT id FROM tournament WHERE current = 1)`;
-    const playing = new Set(this.db.all<{team_id: number}>(
-        `SELECT team_1_id AS team_id FROM match_110 WHERE finished = 0 AND tournament_id = ${current}
-         UNION
-         SELECT team_2_id AS team_id FROM match_110 WHERE finished = 0 AND tournament_id = ${current}`
-    ).map(row => row.team_id));
     const restStarts = this.db.all<{team_id: number, rest_start: string}>(
         `SELECT t.id                                          AS team_id,
                 COALESCE((SELECT MAX(m.created_at)
@@ -60,7 +54,7 @@ class Match {
              SELECT team_2_id AS team_id FROM match_110 WHERE finished = 1 AND tournament_id = ${current}
          ) GROUP BY team_id`
     ).map(row => [row.team_id, row.played]));
-    return {playing, restStarts, played};
+    return {restStarts, played};
   }
 }
 
