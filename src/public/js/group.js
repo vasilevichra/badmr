@@ -335,6 +335,20 @@ drawGroupsDiagonal = () => {
       cline.setAttribute('stroke-width', '0.75');
       svg.appendChild(cline);
     });
+    // горизонтальные линии — только под вертикальными названиями колонок
+    // (нижняя граница каждой rowspan-ячейки): продолжают разделители строк
+    // «ступенькой», не перечёркивая сам текст названий
+    nameCells.forEach(cell => {
+      const rect = cell.getBoundingClientRect();
+      const rline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      rline.setAttribute('x1', rect.left - hostRect.left);
+      rline.setAttribute('y1', rect.bottom - hostRect.top);
+      rline.setAttribute('x2', rect.right - hostRect.left);
+      rline.setAttribute('y2', rect.bottom - hostRect.top);
+      rline.setAttribute('stroke', stroke);
+      rline.setAttribute('stroke-width', '0.75');
+      svg.appendChild(rline);
+    });
     host.style.position = 'relative';
     host.appendChild(svg);
   });
