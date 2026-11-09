@@ -1166,6 +1166,27 @@ body.desktop #tournament-new-registration-hint > .row {
     0 -0.5px 0 currentColor;
 }
 
+/* Общее правило (не device-специфичное). Номер сеяности команды в цветной
+   полосе слева от состава: маленький, полупрозрачный, у самого верха полосы.
+   absolute — размер полосы не меняется; светлый текст с тёмной тенью читается
+   и на тёмных, и на светлых цветах команды. */
+.tournament-groups-team-vr {
+  position: relative;
+}
+
+.tournament-groups-team-vr .vr-seed {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
 /* Линия диагонали матрицы игр раньше рисовалась одной SVG-линией поверх
    таблицы (drawGroupsDiagonal в group.js); сейчас диагональных ячеек нет,
    функция рисует только вертикальные линии колонок. */
