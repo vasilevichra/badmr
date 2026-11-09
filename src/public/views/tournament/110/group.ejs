@@ -82,12 +82,17 @@
                       ячейки не рисуются. Первая команда (i=0) отдельной строкой
                       не выводится — в её строке нет ни одного матча.
                       Последнюю колонку не рисуем. */ %>
+                <% var tournamentRunning = tournament.tournament_status_id === 2
+                    && Date.now() >= new Date(tournament.started_at + 'Z').getTime()
+                    && (!tournament.ended_at || Date.now() <= new Date(tournament.ended_at + 'Z').getTime()); %>
                 <tr>
                     <td style="background-color: rgba(0, 0, 0, 0.0) !important;"></td>
                     <% var first_team = matrix_teams[0][0]; %>
-                    <td class="vertical-text"><%= `${first_team.team_city} - ${first_team.team_name}` %></td>
+                    <td class="vertical-text"><%= `${first_team.team_city} - ${first_team.team_name}` %><%-
+                        include('team-rest', {team_id: first_team.team_id, total_games: teams_in_group.length * (teams_in_group.length - 1) / 2, tournamentRunning: tournamentRunning}); %></td>
                     <% for (let j = 1; j < matrix_teams.length - 1; j++) { %>
-                        <td class="tournament-groups-table-game vertical-text game-column-name" rowspan="<%= j + 1 %>"><%= `${matrix_teams[j][0].team_city} - ${matrix_teams[j][0].team_name}` %></td>
+                        <td class="tournament-groups-table-game vertical-text game-column-name" rowspan="<%= j + 1 %>"><%= `${matrix_teams[j][0].team_city} - ${matrix_teams[j][0].team_name}` %><%-
+                            include('team-rest', {team_id: matrix_teams[j][0].team_id, total_games: teams_in_group.length * (teams_in_group.length - 1) / 2, tournamentRunning: tournamentRunning}); %></td>
                     <% } %>
                 </tr>
                 <% matrix_teams.forEach((gig, i) => { %>
@@ -98,17 +103,8 @@
                     <tr>
                         <td style="text-align: right;">
                             <%= team_name %>
-                            <% /* отдых — только у идущего турнира: статус «Идёт»
-                                  и сейчас внутри окна [start, end] */ %>
-                            <% var tournamentRunning = tournament.tournament_status_id === 2
-                                && Date.now() >= new Date(tournament.started_at + 'Z').getTime()
-                                && (!tournament.ended_at || Date.now() <= new Date(tournament.ended_at + 'Z').getTime()); %>
-                            <% if (tournamentRunning && !teamRests.playing.has(gig[0].team_id)) { %>
-                                <% var rest_start = teamRests.restStarts.find(r => r.team_id === gig[0].team_id)?.rest_start; %>
-                                <% /* знаменатель — всего матчей в группе: C(n,2) = n(n-1)/2 */ %>
-                                <div class="secondary-info team-rest"
-                                     data-rest-start="<%= rest_start.replace(' ', 'T') %>Z"><span class="team-rest-played"><%= teamRests.played.get(gig[0].team_id) ?? 0 %>/<%= teams_in_group.length * (teams_in_group.length - 1) / 2 %></span><span class="team-rest-minutes"></span></div>
-                            <% } %>
+                            <% /* отдых — только у идущего турнира (условие в партиале) */ %>
+                            <%- include('team-rest', {team_id: gig[0].team_id, total_games: teams_in_group.length * (teams_in_group.length - 1) / 2, tournamentRunning: tournamentRunning}); %>
                         </td>
                         <% for (let j = 0; j < matrix_teams.length - 1; j++) { %>
                             <% if (i > j) { %>

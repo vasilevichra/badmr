@@ -1,0 +1,11 @@
+<% /* Отдых команды в матрице игр: счётчик сыгранных «сыграно/всего» + минуты
+      с момента последнего сыгранного матча (старт турнира, если не играла).
+      Показывается только пока идёт турнир — статус «Идёт» и сейчас внутри
+      окна [started_at, ended_at]; у команды с идущим сейчас матчем не рисуем.
+      Используется в заголовках строк и колонок (вертикальных) матрицы.
+      Параметры: team_id, total_games — всего матчей в группе, C(n,2). */ %>
+<% if (tournamentRunning && !teamRests.playing.has(team_id)) { %>
+    <% var rest_start = teamRests.restStarts.find(r => r.team_id === team_id)?.rest_start; %>
+    <div class="secondary-info team-rest"
+         data-rest-start="<%= rest_start.replace(' ', 'T') %>Z"><span class="team-rest-played"><%= teamRests.played.get(team_id) ?? 0 %>/<%= total_games %></span><span class="team-rest-minutes"></span></div>
+<% } %>
