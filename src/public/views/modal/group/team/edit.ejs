@@ -81,6 +81,9 @@
                 </div>
                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary"
+                            onclick="autoOrder(<%= team_id %>)"
+                            title="Расставить по пустым ячейкам от слабейшего к сильнейшему, от первого круга ко второму">Расставить</button>
                     <button id="tournament-groups-team-edit-submit" type="submit" class="btn btn-success">Сохранить</button>
                 </div>
             </form>

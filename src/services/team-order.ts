@@ -14,6 +14,7 @@ class TeamOrder {
   }
 
   position = (team_id: number, position_number: number) => this.teamOrder.position(team_id, position_number);
+  roster = (team_id: number) => this.teamOrder.roster(team_id);
   select = (team_id: number, position_number: number) => this.teamOrder.select(team_id, position_number);
   set = (team_id: number, position_number: number, team_user_id: number) => this.teamOrder.set(team_id, position_number, team_user_id);
 }

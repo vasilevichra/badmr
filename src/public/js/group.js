@@ -230,6 +230,50 @@ const copyRound = (team_id) => {
   copyPosition('xd12', 'xd22');
 }
 
+// авторасстановка состава по пустым ячейкам: игроки сортируются от слабейшего
+// к сильнейшему (средний рейтинг лаба; без рейтингов — самые слабые) и
+// последовательно занимают пустые слоты от первого круга ко второму. Если
+// игроков больше, чем влезло в первый круг, остальные попадают во второй —
+// первый круг получается слабее второго. Уже расставленные игроки не
+// трогаются и повторно не ставятся.
+const autoOrder = (team_id) => {
+  // слоты по полу в порядке заполнения: одиночный, пара, смешанный —
+  // сначала весь первый круг, потом весь второй
+  const maleSlots = ['ms1', 'md11', 'md12', 'xd11', 'ms2', 'md21', 'md22', 'xd21'];
+  const femaleSlots = ['ws1', 'wd11', 'wd12', 'xd12', 'ws2', 'wd21', 'wd22', 'xd22'];
+  const positionNumbers = {ms1: 1, ws1: 2, md11: 3, md12: 4, wd11: 5, wd12: 6, xd11: 7, xd12: 8, ms2: 9, ws2: 10, md21: 11, md22: 12, wd21: 13, wd22: 14, xd21: 15, xd22: 16};
+
+  const slotSelect = (name) => $(`.tournament-groups-team-edit-select-${name}`);
+
+  $.get(`/api/teams/${team_id}/roster`)
+      .then(roster => {
+        // уже расставленные игроки — не двигаем и не дублируем
+        const occupied = new Set(
+            [...maleSlots, ...femaleSlots]
+                .map(name => slotSelect(name).select2('data')[0]?.id)
+                .filter(id => id !== undefined)
+                .map(Number)
+        );
+
+        const fill = (slots, sex) => {
+          const players = roster
+              .filter(p => p.sex === sex && !occupied.has(p.id))
+              .sort((a, b) => a.rating - b.rating);
+          let next = 0;
+          slots.forEach(name => {
+            const select = slotSelect(name);
+            if (select.val() || next >= players.length) return;
+            const p = players[next++];
+            select.append(new Option(p.name, p.id, true, true)).trigger('change');
+            $.post(`/api/teams/${team_id}/order/${positionNumbers[name]}?team_user_id=${p.id}`);
+          });
+        };
+
+        fill(maleSlots, 1);
+        fill(femaleSlots, 0);
+      });
+}
+
 const editGroupUser = (element, team_id, user_id, user_group_id, user_group_name) => {
   const groupSelector = $(element);
   groupSelector.select2({

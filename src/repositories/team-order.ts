@@ -106,6 +106,23 @@ class TeamOrder {
     );
   }
 
+  /** Весь состав команды для авторасстановки: пол и сила — средний рейтинг
+   *  лаба (rating_1/rating_2, что есть; без рейтингов — 0, самый слабый). */
+  roster(team_id: number) {
+    return this.db.all<{id: number, name: string, sex: number, rating: number}>(
+        `SELECT tu.id,
+                u.lastname || ' ' || u.firstname          AS name,
+                u.sex,
+                (COALESCE(ul.rating_1, ul.rating_2, 0) +
+                 COALESCE(ul.rating_2, ul.rating_1, 0)) / 2.0 AS rating
+         FROM team_user tu
+                  JOIN user u ON u.id = tu.user_id
+                  LEFT OUTER JOIN user_lab ul ON ul.user_id = u.id
+         WHERE tu.team_id = ?`,
+        [team_id]
+    );
+  }
+
   set(team_id: number, position_number: number, team_user_id: number) {
     const positionName = this.positionNumberToName(position_number);
     return this.db.run(

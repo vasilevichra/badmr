@@ -36,6 +36,10 @@ router.post('/:team_id/name', ensureLoggedIn(), (req, res) => {
   res.promise(teamService.setName(Number(req.params.team_id), String(req.query.value)));
 });
 
+router.get('/:id/roster', ensureLoggedIn(), (req, res) => {
+  res.promise(teamOrderService.roster(Number(req.params.id)));
+});
+
 router.get('/:id/order/:position_number', ensureLoggedIn(), (req, res) => {
   res.promise(teamOrderService.select(Number(req.params.id), Number(req.params.position_number)));
 });
