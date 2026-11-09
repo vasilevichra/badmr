@@ -68,8 +68,8 @@
     <div class="col-auto">
         <div class="d-flex">
             <% /* Порядок матрицы инвертирован относительно силы команд (слабейшая
-                  первой): пары на антидиагонали — сеяный k против сеяного n+1-k,
-                  к главной диагонали пары выравниваются по силе */ %>
+                  первой в колонках): сеяный k встречает сеяного n+1-k на
+                  противоположных краях ступенчатой диагонали */ %>
             <% var matrix_teams = [...teams_in_group].reverse(); %>
             <table class="table tournament-groups-table-games">
                 <tbody>
@@ -86,10 +86,14 @@
                         <td class="tournament-groups-table-game vertical-text game-column-name" rowspan="<%= j + 1 %>"><%= `${matrix_teams[j][0].team_city} - ${matrix_teams[j][0].team_name}` %></td>
                     <% } %>
                 </tr>
-                <% matrix_teams.forEach((gig, i) => { %>
-                    <% if (i === 0) { %>
-                        <% return; %>
-                    <% } %>
+                <% /* Строки идут по убыванию индекса: сильнейшая (НН) — первой
+                       строкой и играет со всеми, слабейшие — в конце; колонки
+                       при этом в прямом порядке (слабейшая первой). Пары
+                       выравниваются по силе вдоль ступенчатой диагонали,
+                       максимальный перепад (сеяный 1 × сеяный N) — в левом
+                       верхнем углу. */ %>
+                <% for (let i = matrix_teams.length - 1; i >= 1; i--) { %>
+                    <% var gig = matrix_teams[i]; %>
                     <% var team_name = `${gig[0].team_city} - ${gig[0].team_name}`; %>
                     <tr>
                         <td style="text-align: right;"><%= team_name %></td>
@@ -119,7 +123,7 @@
                             <% } %>
                         <% } %>
                     </tr>
-                <% }) %>
+                <% } %>
                 </tbody>
             </table>
         </div>
