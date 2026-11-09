@@ -94,7 +94,8 @@
                     <tr>
                         <td style="text-align: right;">
                             <%= team_name %>
-                            <% if (!teamRests.playing.has(gig[0].team_id)) { %>
+                            <% /* отдых показываем только у идущего турнира (статус «Идёт») */ %>
+                            <% if (tournament.tournament_status_id === 2 && !teamRests.playing.has(gig[0].team_id)) { %>
                                 <% var rest_start = teamRests.restStarts.find(r => r.team_id === gig[0].team_id)?.rest_start; %>
                                 <div class="secondary-info team-rest"
                                      data-rest-start="<%= rest_start.replace(' ', 'T') %>Z"><span class="team-rest-minutes"></span></div>

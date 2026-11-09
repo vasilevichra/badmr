@@ -337,8 +337,12 @@ drawGroupsDiagonal = () => {
     });
     // горизонтальные линии — только под вертикальными названиями колонок
     // (нижняя граница каждой rowspan-ячейки): продолжают разделители строк
-    // «ступенькой», не перечёркивая сам текст названий
-    nameCells.forEach(cell => {
+    // «ступенькой», не перечёркивая сам текст названий; название первой
+    // колонки — обычная ячейка шапки (без rowspan и класса), ступенька
+    // под ней продолжает диагональ
+    const firstHeaderCell = table.querySelector('tbody tr').cells[1];
+    [firstHeaderCell, ...nameCells].forEach(cell => {
+      if (!cell) return;
       const rect = cell.getBoundingClientRect();
       const rline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       rline.setAttribute('x1', rect.left - hostRect.left);
