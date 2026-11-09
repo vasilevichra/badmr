@@ -389,20 +389,26 @@ $(document).on('mouseenter mouseleave', 'table.tournament-groups-table-games td.
 
 // отдых команд в матрице игр: минуты с момента последнего сыгранного матча
 // (или старта турнира — он уже зашит в data-rest-start сервером).
-// Обновление раз в 30 секунд; лидеры ожидания (максимальный отдых) — красным
-// через rating-minus. Команды, чей матч идёт сейчас, сервер пометкой не
+// Обновление раз в 30 секунд; rating-minus — у отстающих: сыграли меньше
+// всех в этой матрице. Команды, чей матч идёт сейчас, сервер пометкой не
 // снабжает — элемент .team-rest у них не рендерится.
 updateTeamRests = () => {
-  const rests = [...document.querySelectorAll('.team-rest')];
   const now = Date.now();
-  const minutes = rests.map(el => {
-    const start = new Date(el.dataset.restStart).getTime();
-    return Math.max(0, Math.floor((now - start) / 60000));
-  });
-  const max = Math.max(0, ...minutes);
-  rests.forEach((el, i) => {
-    el.querySelector('.team-rest-minutes').textContent = `${minutes[i]}'`;
-    el.classList.toggle('rating-minus', minutes[i] === max && max > 0);
+  // минимум считается внутри каждой группы (таблицы) отдельно —
+  // группы могут идти с разным прогрессом
+  document.querySelectorAll('table.tournament-groups-table-games').forEach(table => {
+    const rests = [...table.querySelectorAll('.team-rest')];
+    if (rests.length === 0) return;
+    const played = rests.map(el => parseInt(el.querySelector('.team-rest-played').textContent, 10));
+    const minutes = rests.map(el => {
+      const start = new Date(el.dataset.restStart).getTime();
+      return Math.max(0, Math.floor((now - start) / 60000));
+    });
+    const minPlayed = Math.min(...played);
+    rests.forEach((el, i) => {
+      el.querySelector('.team-rest-minutes').textContent = `${minutes[i]}'`;
+      el.classList.toggle('rating-minus', played[i] === minPlayed);
+    });
   });
 };
 updateTeamRests();
