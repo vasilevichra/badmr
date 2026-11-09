@@ -231,11 +231,9 @@ const copyRound = (team_id) => {
 }
 
 // авторасстановка состава по пустым ячейкам: игроки сортируются от слабейшего
-// к сильнейшему (средний рейтинг лаба; без рейтингов — самые слабые) и
-// последовательно занимают пустые слоты от первого круга ко второму. Если
-// игроков больше, чем влезло в первый круг, остальные попадают во второй —
-// первый круг получается слабее второго. Уже расставленные игроки не
-// трогаются и повторно не ставятся.
+// к сильнейшему и распределяются по обоим кругам — слабейшая половина в
+// первый, сильнейшая во второй; первый круг получается слабее второго.
+// Уже расставленные игроки не трогаются и повторно не ставятся.
 const autoOrder = (team_id) => {
   // слоты по полу в порядке заполнения: одиночный, пара, смешанный —
   // сначала весь первый круг, потом весь второй
@@ -256,15 +254,25 @@ const autoOrder = (team_id) => {
         );
 
         const fill = (slots, sex) => {
+          const empty1 = slots.slice(0, 4).filter(name => !slotSelect(name).val());
+          const empty2 = slots.slice(4).filter(name => !slotSelect(name).val());
           const players = roster
               .filter(p => p.sex === sex && !occupied.has(p.id))
               .sort((a, b) => a.rating - b.rating);
-          let next = 0;
-          slots.forEach(name => {
-            const select = slotSelect(name);
-            if (select.val() || next >= players.length) return;
-            const p = players[next++];
-            select.append(new Option(p.name, p.id, true, true)).trigger('change');
+          // игроки делятся между кругами пропорционально числу пустых слотов:
+          // слабейшие — в первый круг, сильнейшие — во второй
+          const total = empty1.length + empty2.length;
+          if (total === 0 || players.length === 0) return;
+          const n1 = Math.min(empty1.length, Math.round(players.length * empty1.length / total));
+          const n2 = Math.min(empty2.length, players.length - n1);
+          players.slice(0, n1).forEach((p, i) => {
+            const name = empty1[i];
+            slotSelect(name).append(new Option(p.name, p.id, true, true)).trigger('change');
+            $.post(`/api/teams/${team_id}/order/${positionNumbers[name]}?team_user_id=${p.id}`);
+          });
+          players.slice(n1, n1 + n2).forEach((p, i) => {
+            const name = empty2[i];
+            slotSelect(name).append(new Option(p.name, p.id, true, true)).trigger('change');
             $.post(`/api/teams/${team_id}/order/${positionNumbers[name]}?team_user_id=${p.id}`);
           });
         };
