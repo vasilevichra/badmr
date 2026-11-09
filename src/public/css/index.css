@@ -1195,6 +1195,11 @@ body.desktop #tournament-new-registration-hint > .row {
   line-height: 1.2;
 }
 
+/* визуальный пробел между «сыграно/всего» и минутами отдыха */
+.team-rest-played {
+  margin-right: 0.4em;
+}
+
 /* Линия диагонали матрицы игр раньше рисовалась одной SVG-линией поверх
    таблицы (drawGroupsDiagonal в group.js); сейчас диагональных ячеек нет,
    функция рисует только вертикальные линии колонок. */
