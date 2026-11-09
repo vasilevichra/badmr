@@ -253,41 +253,45 @@ const femaleSlots = ['ws1', 'wd11', 'wd12', 'xd12', 'ws2', 'wd21', 'wd22', 'xd22
 const slotSelect = (team_id, name) => $(`#tournament-groups-team-edit-${team_id} .tournament-groups-team-edit-select-${name}`);
 
 // авторасстановка состава по пустым ячейкам: игроки сортируются от слабейшего
-// к сильнейшему и распределяются по обоим кругам — слабейшая половина в
-// первый, сильнейшая во второй; первый круг получается слабее второго.
-// Уже расставленные игроки не трогаются и повторно не ставятся.
+// к сильнейшему и последовательно занимают пустые слоты — сначала весь первый
+// круг (МО, МП, СП), потом весь второй. Если игроков меньше, чем пустых
+// слотов, они идут по кругу заново, но с учётом ограничений базы: одиночка не
+// повторяется между кругами (ms1 != ms2, ws1 != ws2), партнёры по паре
+// различаются (md11 != md12 и т.п.). Уже расставленные игроки не двигаются.
 const autoOrder = (team_id) => {
   $.get(`/api/teams/${team_id}/roster`)
       .then(roster => {
-        // уже расставленные игроки — не двигаем и не дублируем
-        const occupied = new Set(
-            [...maleSlots, ...femaleSlots]
-                .map(name => slotSelect(team_id, name).select2('data')[0]?.id)
-                .filter(id => id !== undefined)
-                .map(Number)
-        );
+        // расстановка на текущий момент: слот → team_user.id
+        const placed = {};
+        [...maleSlots, ...femaleSlots].forEach(name => {
+          const id = slotSelect(team_id, name).select2('data')[0]?.id;
+          if (id !== undefined) placed[name] = Number(id);
+        });
+
+        const pairPartner = {md11: 'md12', md12: 'md11', wd11: 'wd12', wd12: 'wd11', md21: 'md22', md22: 'md21', wd21: 'wd22', wd22: 'wd21'};
+        const singlesTwin = {ms1: 'ms2', ms2: 'ms1', ws1: 'ws2', ws2: 'ws1'};
 
         const fill = (slots, sex) => {
-          const empty1 = slots.slice(0, 4).filter(name => !slotSelect(team_id, name).val());
-          const empty2 = slots.slice(4).filter(name => !slotSelect(team_id, name).val());
+          const empty = slots.filter(name => !slotSelect(team_id, name).val());
           const players = roster
-              .filter(p => p.sex === sex && !occupied.has(p.id))
+              .filter(p => p.sex === sex && !Object.values(placed).includes(p.id))
               .sort((a, b) => a.rating - b.rating);
-          // игроки делятся между кругами пропорционально числу пустых слотов:
-          // слабейшие — в первый круг, сильнейшие — во второй
-          const total = empty1.length + empty2.length;
-          if (total === 0 || players.length === 0) return;
-          const n1 = Math.min(empty1.length, Math.round(players.length * empty1.length / total));
-          const n2 = Math.min(empty2.length, players.length - n1);
-          players.slice(0, n1).forEach((p, i) => {
-            const name = empty1[i];
-            slotSelect(team_id, name).append(new Option(p.name, p.id, true, true)).trigger('change');
-            $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
-          });
-          players.slice(n1, n1 + n2).forEach((p, i) => {
-            const name = empty2[i];
-            slotSelect(team_id, name).append(new Option(p.name, p.id, true, true)).trigger('change');
-            $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
+          if (empty.length === 0 || players.length === 0) return;
+          // все пустые слоты обоих кругов заполняются; при нехватке игроки
+          // повторяются по кругу, минуя запрещённые для слота совпадения
+          let idx = 0;
+          empty.forEach(name => {
+            for (let k = 0; k < players.length; k++) {
+              const p = players[(idx + k) % players.length];
+              const partner = pairPartner[name];
+              const twin = singlesTwin[name];
+              if ((partner && placed[partner] === p.id) || (twin && placed[twin] === p.id)) continue;
+              slotSelect(team_id, name).append(new Option(p.name, p.id, true, true)).trigger('change');
+              $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
+              placed[name] = p.id;
+              idx = (idx + k + 1) % players.length;
+              return;
+            }
           });
         };
 
