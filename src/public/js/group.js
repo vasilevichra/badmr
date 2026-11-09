@@ -353,6 +353,20 @@ drawGroupsDiagonal = () => {
       rline.setAttribute('stroke-width', '0.75');
       svg.appendChild(rline);
     });
+    // вертикальная линия по правому краю колонки названий строк — граница
+    // с первой игровой колонкой: у той заголовок — обычная ячейка шапки
+    // (без rowspan-класса game-column-name), поэтому в общий цикл по
+    // левой границе она не попадает
+    const nameColumnCell = table.querySelector('tbody tr').cells[0];
+    const ncRect = nameColumnCell.getBoundingClientRect();
+    const nvline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    nvline.setAttribute('x1', ncRect.right - hostRect.left);
+    nvline.setAttribute('y1', tableRect.top - hostRect.top);
+    nvline.setAttribute('x2', ncRect.right - hostRect.left);
+    nvline.setAttribute('y2', tableRect.bottom - hostRect.top);
+    nvline.setAttribute('stroke', stroke);
+    nvline.setAttribute('stroke-width', '0.75');
+    svg.appendChild(nvline);
     host.style.position = 'relative';
     host.appendChild(svg);
   });
