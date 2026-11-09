@@ -1178,7 +1178,7 @@ body.desktop #tournament-new-registration-hint > .row {
   position: absolute;
   top: 2px;
   left: 50%;
-  transform: translateX(-50%) scaleY(1.35);
+  transform: translateX(-50%) scaleY(1.5);
   font-size: 8px;
   line-height: 1.2;
   font-weight: 700;
