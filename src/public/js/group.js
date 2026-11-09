@@ -147,7 +147,9 @@ const editTeam = (id, teamName) => {
 
   const renderSelector = (i, position, placeholder) => {
 
-    const positionSelect = $(`.tournament-groups-team-edit-select-${position}`)
+    // выборка строго внутри этой модалки: классы селектов одинаковы у всех
+    // команд, глобальный поиск захватывал чужие модалки
+    const positionSelect = groupsEditModal.find(`.tournament-groups-team-edit-select-${position}`)
 
     // прорисовка селектора
     positionSelect.select2({
@@ -216,7 +218,7 @@ const editTeam = (id, teamName) => {
   // после загрузки предыдущих позиций — авторасстановка, если остались
   // пустые ячейки (заполняются только пустые)
   $.when(...selectors).then(() => {
-    if ([...maleSlots, ...femaleSlots].some(name => !slotSelect(name).val())) {
+    if ([...maleSlots, ...femaleSlots].some(name => !slotSelect(id, name).val())) {
       autoOrder(id);
     }
   });
@@ -225,9 +227,10 @@ const editTeam = (id, teamName) => {
 };
 
 const copyRound = (team_id) => {
+  const modal = $(`#tournament-groups-team-edit-${team_id}`);
   const copyPosition = (from, to) => {
-    const teamUser = $(`.tournament-groups-team-edit-select-${from}`).select2('data')[0];
-    $(`.tournament-groups-team-edit-select-${to}`).append(new Option(teamUser.name, Number(teamUser.id), true, true)).trigger('change');
+    const teamUser = modal.find(`.tournament-groups-team-edit-select-${from}`).select2('data')[0];
+    modal.find(`.tournament-groups-team-edit-select-${to}`).append(new Option(teamUser.name, Number(teamUser.id), true, true)).trigger('change');
   }
 
   copyPosition('ms1', 'ms2');
@@ -245,7 +248,9 @@ const copyRound = (team_id) => {
 const editSlots = {ms1: 1, ws1: 2, md11: 3, md12: 4, wd11: 5, wd12: 6, xd11: 7, xd12: 8, ms2: 9, ws2: 10, md21: 11, md22: 12, wd21: 13, wd22: 14, xd21: 15, xd22: 16};
 const maleSlots = ['ms1', 'md11', 'md12', 'xd11', 'ms2', 'md21', 'md22', 'xd21'];
 const femaleSlots = ['ws1', 'wd11', 'wd12', 'xd12', 'ws2', 'wd21', 'wd22', 'xd22'];
-const slotSelect = (name) => $(`.tournament-groups-team-edit-select-${name}`);
+// выборка селекта строго внутри модалки этой команды: классы селектов
+// одинаковы у всех команд, глобальный поиск захватывал чужие модалки
+const slotSelect = (team_id, name) => $(`#tournament-groups-team-edit-${team_id} .tournament-groups-team-edit-select-${name}`);
 
 // авторасстановка состава по пустым ячейкам: игроки сортируются от слабейшего
 // к сильнейшему и распределяются по обоим кругам — слабейшая половина в
@@ -257,14 +262,14 @@ const autoOrder = (team_id) => {
         // уже расставленные игроки — не двигаем и не дублируем
         const occupied = new Set(
             [...maleSlots, ...femaleSlots]
-                .map(name => slotSelect(name).select2('data')[0]?.id)
+                .map(name => slotSelect(team_id, name).select2('data')[0]?.id)
                 .filter(id => id !== undefined)
                 .map(Number)
         );
 
         const fill = (slots, sex) => {
-          const empty1 = slots.slice(0, 4).filter(name => !slotSelect(name).val());
-          const empty2 = slots.slice(4).filter(name => !slotSelect(name).val());
+          const empty1 = slots.slice(0, 4).filter(name => !slotSelect(team_id, name).val());
+          const empty2 = slots.slice(4).filter(name => !slotSelect(team_id, name).val());
           const players = roster
               .filter(p => p.sex === sex && !occupied.has(p.id))
               .sort((a, b) => a.rating - b.rating);
@@ -276,12 +281,12 @@ const autoOrder = (team_id) => {
           const n2 = Math.min(empty2.length, players.length - n1);
           players.slice(0, n1).forEach((p, i) => {
             const name = empty1[i];
-            slotSelect(name).append(new Option(p.name, p.id, true, true)).trigger('change');
+            slotSelect(team_id, name).append(new Option(p.name, p.id, true, true)).trigger('change');
             $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
           });
           players.slice(n1, n1 + n2).forEach((p, i) => {
             const name = empty2[i];
-            slotSelect(name).append(new Option(p.name, p.id, true, true)).trigger('change');
+            slotSelect(team_id, name).append(new Option(p.name, p.id, true, true)).trigger('change');
             $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
           });
         };
