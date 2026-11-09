@@ -356,12 +356,12 @@ drawGroupsDiagonal = () => {
 
 $(window).on('resize', _.debounce(drawGroupsDiagonal, 200));
 
-// при наведении на кнопку матча подсвечиваем обоих участников:
-// название в строке слева и название колонки в шапке.
+// при наведении на ячейку матча (не только на кнопку) подсвечиваем обоих
+// участников: название в строке слева и название колонки в шапке.
 // j — колонка матрицы (0-based): после td с названием команды;
 // названия колонок лежат в первой строке (rowspan-ячейки) по порядку j.
-$(document).on('mouseenter mouseleave', 'table.tournament-groups-table-games td > button.btn', function (e) {
-  const td = this.closest('td');
+$(document).on('mouseenter mouseleave', 'table.tournament-groups-table-games td.tournament-groups-table-game', function (e) {
+  const td = this;
   const row = td.closest('tr');
   const table = row.closest('table');
   const j = td.cellIndex - 1;
