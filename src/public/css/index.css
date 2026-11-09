@@ -1176,13 +1176,13 @@ body.desktop #tournament-new-registration-hint > .row {
 
 .tournament-groups-team-vr .vr-seed {
   position: absolute;
-  top: 0;
+  top: 2px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleY(1.35);
   font-size: 8px;
   line-height: 1.2;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.7);
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
   pointer-events: none;
 }
