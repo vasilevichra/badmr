@@ -4,6 +4,8 @@ import DB, { type RunResult } from "../db.ts";
 interface GroupRow {
   group_id: number;
   team_id: number;
+  user_lab_rating_1: number | null;
+  user_lab_rating_2: number | null;
 }
 
 class Group {
@@ -59,6 +61,19 @@ class Group {
       const rows = groupedByGroup[groupId] ?? [];
       groups.push({[groupId]: Object.groupBy(rows, (row: GroupRow) => row.team_id) as Partial<Record<number, GroupRow[]>>});
     }
+
+    // сеяние групп по силе: рейтинг игрока — среднее его одиночного и парного
+    // рейтингов лаб (что из них есть); сила группы — среднее по игрокам
+    // с рейтингом; группы без оценённых игроков — в конец
+    const strength = (teams: Partial<Record<number, GroupRow[]>>) => {
+      const playerRatings = Object.values(teams).flatMap(rows => (rows ?? []).map(row => {
+        const ratings = [row.user_lab_rating_1, row.user_lab_rating_2].filter((v): v is number => v !== null);
+        return ratings.length ? ratings.reduce((s, v) => s + v, 0) / ratings.length : null;
+      }).filter((v): v is number => v !== null));
+      return playerRatings.length ? playerRatings.reduce((s, v) => s + v, 0) / playerRatings.length : -1;
+    };
+    groups.sort((a, b) => strength(Object.values(b)[0]!) - strength(Object.values(a)[0]!));
+
     return groups;
   }
 }
