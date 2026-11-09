@@ -43,6 +43,7 @@ class Group {
                 coalesce(up.pic, ul.img)                          AS user_pic,
                 (SELECT id FROM "group" WHERE id = tu.group_id)   AS user_group_id,
                 (SELECT name FROM "group" WHERE id = tu.group_id) AS user_group_name,
+                ul.site_id                                         AS user_lab_site_id,
                 ul.rating_1                                       AS user_lab_rating_1,
                 ul.rating_2                                       AS user_lab_rating_2
          FROM "group" g

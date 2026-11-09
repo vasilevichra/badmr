@@ -1200,6 +1200,14 @@ body.desktop #tournament-new-registration-hint > .row {
   margin-right: 0.4em;
 }
 
+/* ссылка на профиль в лабе вокруг рейтингов игрока: без синего цвета
+   и подчёркивания Bootstrap — рейтинги выглядят как раньше, просто кликабельны */
+a.lab-profile,
+a.lab-profile:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
 /* Линия диагонали матрицы игр раньше рисовалась одной SVG-линией поверх
    таблицы (drawGroupsDiagonal в group.js); сейчас диагональных ячеек нет,
    функция рисует только вертикальные линии колонок. */

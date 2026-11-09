@@ -26,6 +26,9 @@
                         <tr>
                             <td><%- playerNameFormatter(t.user_id, `${t.user_lastname} ${t.user_firstname}`, t.user_sex, t.user_pic) %></td>
                             <td style="text-align: center; align-content: center">
+                                <% /* клик по рейтингам открывает профиль игрока в лабе;
+                                      без привязки к user_lab — просто текст */ %>
+                                <% if (t.user_lab_site_id) { %><a class="lab-profile" href="https://badminton4u.ru/players/<%= t.user_lab_site_id %>" target="_blank" rel="noopener" title="Профиль в лаб"><% } %>
                                 <math class="secondary-info">
                                     <% if (t.user_lab_rating_1 || t.user_lab_rating_2) { %>
                                         <% if (t.user_lab_rating_1) { %>
@@ -49,6 +52,7 @@
                                         </mrow>
                                     <% } %>
                                 </math>
+                                <% if (t.user_lab_site_id) { %></a><% } %>
                             </td>
                             <td class="team-group-name"
                             <% if (user) { %>
