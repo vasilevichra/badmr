@@ -18,11 +18,11 @@ describe("playerNameFormatter", () => {
     assert.doesNotMatch(html, /pepe\.svg/);
   });
 
-  it("data-URL аватар подставляется как есть", () => {
+  it("data-URL аватар подставляется как есть, с fallback на заглушку", () => {
     const pic = "data:image/webp;base64,UklGRg==";
     const html = playerNameFormatter(1, "Василевич Роман", 1, pic);
     assert.match(html, new RegExp(`src="${pic.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}"`));
-    assert.doesNotMatch(html, /pepe/);
+    assert.match(html, /onerror=/);
   });
 
   it("сырой base64 оборачивается в data:image/png;base64", () => {

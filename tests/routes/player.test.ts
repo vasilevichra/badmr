@@ -39,7 +39,7 @@ const settingsService = new SettingsService();
 const playerHtml = (uid: number, name: string, bold = false) =>
     (bold ? "<strong>" : "") +
     `<span class="co-player" data-user-id="${uid}" role="button">` +
-    `<span class="no-selection text-nowrap"><img class="no-selection" src="/assets/images/pepe.svg" alt="${name}" width="20" height="20"/>&nbsp;${name}<span class="secondary-info">&nbsp;#<span class="user-id">${uid}</span></span></span>` +
+    `<span class="no-selection text-nowrap"><img class="no-selection" src="/assets/images/pepe.svg" alt="" width="20" height="20" onerror="this.onerror=null;this.src='/assets/images/pepe.svg';"/>&nbsp;${name}<span class="secondary-info">&nbsp;#<span class="user-id">${uid}</span></span></span>` +
     "</span>" + (bold ? "</strong>" : "");
 
 after(async () => {
