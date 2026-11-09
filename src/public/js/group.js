@@ -174,16 +174,6 @@ const editTeam = (id, teamName) => {
       width: '10%',
     });
 
-    // установка выбранного ранее значения
-    $.get(`/api/teams/${id}/position/${i}`)
-    .then(c => {
-      if (c) {
-        return positionSelect
-        .append(new Option(this.share.playerNameFormatter(c.id, c.name, c.sex, c.pic, isPhone()), c.id, true, true))
-        .trigger('change');
-      }
-    });
-
     // сохранить в базу на изменение значения
     positionSelect.on('input', function (e) {
       let teamUserId = Number($(this).select2('data')[0].id);
@@ -191,25 +181,45 @@ const editTeam = (id, teamName) => {
         $.post(`/api/teams/${id}/order/${i}?team_user_id=${teamUserId}`);
       }
     });
+
+    // установка выбранного ранее значения
+    return $.get(`/api/teams/${id}/position/${i}`)
+    .then(c => {
+      if (c) {
+        return positionSelect
+        .append(new Option(this.share.playerNameFormatter(c.id, c.name, c.sex, c.pic, isPhone()), c.id, true, true))
+        .trigger('change');
+      }
+    });
   }
 
-  renderSelector(1, 'ms1', 'М');
-  renderSelector(2, 'ws1', 'Ж');
-  renderSelector(3, 'md11', 'М');
-  renderSelector(4, 'md12', 'М');
-  renderSelector(5, 'wd11', 'Ж');
-  renderSelector(6, 'wd12', 'Ж');
-  renderSelector(7, 'xd11', 'М');
-  renderSelector(8, 'xd12', 'Ж');
+  const selectors = [
+    renderSelector(1, 'ms1', 'М'),
+    renderSelector(2, 'ws1', 'Ж'),
+    renderSelector(3, 'md11', 'М'),
+    renderSelector(4, 'md12', 'М'),
+    renderSelector(5, 'wd11', 'Ж'),
+    renderSelector(6, 'wd12', 'Ж'),
+    renderSelector(7, 'xd11', 'М'),
+    renderSelector(8, 'xd12', 'Ж'),
 
-  renderSelector(9, 'ms2', 'М');
-  renderSelector(10, 'ws2', 'Ж');
-  renderSelector(11, 'md21', 'М');
-  renderSelector(12, 'md22', 'М');
-  renderSelector(13, 'wd21', 'Ж');
-  renderSelector(14, 'wd22', 'Ж');
-  renderSelector(15, 'xd21', 'М');
-  renderSelector(16, 'xd22', 'Ж');
+    renderSelector(9, 'ms2', 'М'),
+    renderSelector(10, 'ws2', 'Ж'),
+    renderSelector(11, 'md21', 'М'),
+    renderSelector(12, 'md22', 'М'),
+    renderSelector(13, 'wd21', 'Ж'),
+    renderSelector(14, 'wd22', 'Ж'),
+    renderSelector(15, 'xd21', 'М'),
+    renderSelector(16, 'xd22', 'Ж'),
+  ];
+
+  // после загрузки предыдущих позиций — авторасстановка, если остались
+  // пустые ячейки (заполняются только пустые)
+  $.when(...selectors).then(() => {
+    if ([...maleSlots, ...femaleSlots].some(name => !slotSelect(name).val())) {
+      autoOrder(id);
+    }
+  });
 
   groupsEditModal.modal('show');
 };
@@ -230,19 +240,18 @@ const copyRound = (team_id) => {
   copyPosition('xd12', 'xd22');
 }
 
+// слоты состава по полу в порядке заполнения: одиночный, пара, смешанный —
+// сначала весь первый круг, потом весь второй; номер позиции — для API
+const editSlots = {ms1: 1, ws1: 2, md11: 3, md12: 4, wd11: 5, wd12: 6, xd11: 7, xd12: 8, ms2: 9, ws2: 10, md21: 11, md22: 12, wd21: 13, wd22: 14, xd21: 15, xd22: 16};
+const maleSlots = ['ms1', 'md11', 'md12', 'xd11', 'ms2', 'md21', 'md22', 'xd21'];
+const femaleSlots = ['ws1', 'wd11', 'wd12', 'xd12', 'ws2', 'wd21', 'wd22', 'xd22'];
+const slotSelect = (name) => $(`.tournament-groups-team-edit-select-${name}`);
+
 // авторасстановка состава по пустым ячейкам: игроки сортируются от слабейшего
 // к сильнейшему и распределяются по обоим кругам — слабейшая половина в
 // первый, сильнейшая во второй; первый круг получается слабее второго.
 // Уже расставленные игроки не трогаются и повторно не ставятся.
 const autoOrder = (team_id) => {
-  // слоты по полу в порядке заполнения: одиночный, пара, смешанный —
-  // сначала весь первый круг, потом весь второй
-  const maleSlots = ['ms1', 'md11', 'md12', 'xd11', 'ms2', 'md21', 'md22', 'xd21'];
-  const femaleSlots = ['ws1', 'wd11', 'wd12', 'xd12', 'ws2', 'wd21', 'wd22', 'xd22'];
-  const positionNumbers = {ms1: 1, ws1: 2, md11: 3, md12: 4, wd11: 5, wd12: 6, xd11: 7, xd12: 8, ms2: 9, ws2: 10, md21: 11, md22: 12, wd21: 13, wd22: 14, xd21: 15, xd22: 16};
-
-  const slotSelect = (name) => $(`.tournament-groups-team-edit-select-${name}`);
-
   $.get(`/api/teams/${team_id}/roster`)
       .then(roster => {
         // уже расставленные игроки — не двигаем и не дублируем
@@ -268,12 +277,12 @@ const autoOrder = (team_id) => {
           players.slice(0, n1).forEach((p, i) => {
             const name = empty1[i];
             slotSelect(name).append(new Option(p.name, p.id, true, true)).trigger('change');
-            $.post(`/api/teams/${team_id}/order/${positionNumbers[name]}?team_user_id=${p.id}`);
+            $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
           });
           players.slice(n1, n1 + n2).forEach((p, i) => {
             const name = empty2[i];
             slotSelect(name).append(new Option(p.name, p.id, true, true)).trigger('change');
-            $.post(`/api/teams/${team_id}/order/${positionNumbers[name]}?team_user_id=${p.id}`);
+            $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
           });
         };
 
