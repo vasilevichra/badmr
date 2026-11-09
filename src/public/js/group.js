@@ -368,3 +368,24 @@ $(document).on('mouseenter mouseleave', 'table.tournament-groups-table-games td.
   const nameTd = table.querySelector('tbody').rows[0].cells[j + 1];
   [row.cells[0], nameTd].forEach(el => el && el.classList.toggle('game-hover', e.type === 'mouseenter'));
 });
+
+// отдых команд в матрице игр: минуты с момента последнего сыгранного матча
+// (или старта турнира — он уже зашит в data-rest-start сервером).
+// Обновление раз в 30 секунд; лидеры ожидания (максимальный отдых) — красным
+// через rating-minus. Команды, чей матч идёт сейчас, сервер пометкой не
+// снабжает — элемент .team-rest у них не рендерится.
+updateTeamRests = () => {
+  const rests = [...document.querySelectorAll('.team-rest')];
+  const now = Date.now();
+  const minutes = rests.map(el => {
+    const start = new Date(el.dataset.restStart).getTime();
+    return Math.max(0, Math.floor((now - start) / 60000));
+  });
+  const max = Math.max(0, ...minutes);
+  rests.forEach((el, i) => {
+    el.querySelector('.team-rest-minutes').textContent = `${minutes[i]}'`;
+    el.classList.toggle('rating-minus', minutes[i] === max && max > 0);
+  });
+};
+updateTeamRests();
+setInterval(updateTeamRests, 30000);

@@ -36,6 +36,7 @@ class Match {
   getById = (id: number) => this.match.getById(id);
   create = (user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number) => this.match.create(user_1_id, user_2_id, user_3_id, user_4_id);
   create110 = (team_1_id: number, team_2_id: number) => this.match110.create(team_1_id, team_2_id);
+  rests = () => this.match110.rests();
   deleteById = (id: number) => {
     // снапшот для каскадного пересчёта — до удаления матча
     ratingService.scheduleRecalcAfterMatchDelete(id);

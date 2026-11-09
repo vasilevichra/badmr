@@ -183,6 +183,8 @@ const renderTournamentPage = (
         registered_count: promises[6],
         settings: promises[7],
         timezone: settingsService.getTimezone(),
+        // отдых команд: с какого момента ждёт каждая (для матрицы игр)
+        teamRests: matchService.rests(),
         playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
       });
       break;

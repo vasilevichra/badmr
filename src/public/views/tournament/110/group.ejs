@@ -92,7 +92,14 @@
                     <% } %>
                     <% var team_name = `${gig[0].team_city} - ${gig[0].team_name}`; %>
                     <tr>
-                        <td style="text-align: right;"><%= team_name %></td>
+                        <td style="text-align: right;">
+                            <%= team_name %>
+                            <% if (!teamRests.playing.has(gig[0].team_id)) { %>
+                                <% var rest_start = teamRests.restStarts.find(r => r.team_id === gig[0].team_id)?.rest_start; %>
+                                <div class="secondary-info team-rest"
+                                     data-rest-start="<%= rest_start.replace(' ', 'T') %>Z"><span class="team-rest-minutes"></span></div>
+                            <% } %>
+                        </td>
                         <% for (let j = 0; j < matrix_teams.length - 1; j++) { %>
                             <% if (i > j) { %>
                                     <% var team_name_1 = `${matrix_teams[i][0].team_city} - ${matrix_teams[i][0].team_name}`; %>
