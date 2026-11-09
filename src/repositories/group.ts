@@ -57,22 +57,35 @@ class Group {
          ORDER BY g.id DESC`);
     const groupedByGroup = Object.groupBy(result as GroupRow[], (row: GroupRow) => row.group_id);
     const groups: Record<string, Partial<Record<number, GroupRow[]>>>[] = [];
-    for (const groupId in groupedByGroup) {
-      const rows = groupedByGroup[groupId] ?? [];
-      groups.push({[groupId]: Object.groupBy(rows, (row: GroupRow) => row.team_id) as Partial<Record<number, GroupRow[]>>});
-    }
 
-    // сеяние групп по силе: рейтинг игрока — среднее его одиночного и парного
-    // рейтингов лаб (что из них есть); сила группы — среднее по игрокам
-    // с рейтингом; группы без оценённых игроков — в конец
-    const strength = (teams: Partial<Record<number, GroupRow[]>>) => {
-      const playerRatings = Object.values(teams).flatMap(rows => (rows ?? []).map(row => {
-        const ratings = [row.user_lab_rating_1, row.user_lab_rating_2].filter((v): v is number => v !== null);
-        return ratings.length ? ratings.reduce((s, v) => s + v, 0) / ratings.length : null;
-      }).filter((v): v is number => v !== null));
-      return playerRatings.length ? playerRatings.reduce((s, v) => s + v, 0) / playerRatings.length : -1;
+    // сеяние команд в группе по силе: рейтинг игрока — среднее его одиночного
+    // и парного рейтингов лаб (что из них есть); сила команды — среднее по
+    // её игрокам с рейтингом; команды без оценённых игроков — в конце группы.
+    // Порядок групп не меняем (как в SQL: g.id DESC)
+    const playerRating = (row: GroupRow) => {
+      const ratings = [row.user_lab_rating_1, row.user_lab_rating_2].filter((v): v is number => v !== null);
+      return ratings.length ? ratings.reduce((s, v) => s + v, 0) / ratings.length : null;
     };
-    groups.sort((a, b) => strength(Object.values(b)[0]!) - strength(Object.values(a)[0]!));
+    const teamStrength = (rows: GroupRow[]) => {
+      const ratings = rows.map(playerRating).filter((v): v is number => v !== null);
+      return ratings.length ? ratings.reduce((s, v) => s + v, 0) / ratings.length : -1;
+    };
+    for (const groupId in groupedByGroup) {
+      const teams = new Map<number, GroupRow[]>();
+      for (const row of groupedByGroup[groupId] ?? []) {
+        const rows = teams.get(row.team_id) ?? [];
+        rows.push(row);
+        teams.set(row.team_id, rows);
+      }
+      // игроки внутри команды — по убыванию рейтинга, без рейтинга — в конец
+      teams.forEach(rows => rows.sort((a, b) => (playerRating(b) ?? -1) - (playerRating(a) ?? -1)));
+      const sortedTeams = [...teams.entries()].sort((a, b) => teamStrength(b[1]) - teamStrength(a[1]));
+      // ключи с префиксом: JS упорядочивает целочисленные ключи объекта
+      // численно, что сломало бы порядок команд — вьюха идёт по Object.values
+      const teamObject: Record<string, GroupRow[]> = {};
+      for (const [teamId, rows] of sortedTeams) teamObject[`team_${teamId}`] = rows;
+      groups.push({[groupId]: teamObject});
+    }
 
     return groups;
   }
