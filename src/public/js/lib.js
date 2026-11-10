@@ -183,10 +183,28 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
   if (increasedValue % 11 === 0) {
     kva(el);
+    advanceBoardGameType(el);
     // перевернуть табло
     // создать новую игру
     // убрать статус текущей у предыдущей
   }
+};
+
+// конец партии (счёт одной из сторон достиг 11/22/…/99): сдвигаем выбор
+// типа игры на строку вниз по списку, разделитель «•» текущим не делаем.
+// По новому типу переставляются аватары игроков (updateBoardAvatars из
+// group.js — на момент события оба скрипта уже загружены).
+const advanceBoardGameType = (el) => {
+  const modal = el.closest('.modal');
+  const current = modal && modal.querySelector('.board-game-type-current');
+  if (!current) return;
+  let next = current.nextElementSibling;
+  while (next && !next.classList.contains('board-game-type')) next = next.nextElementSibling;
+  if (next && next.textContent.trim() === '•') next = next.nextElementSibling;
+  if (!next) return;
+  current.classList.remove('board-game-type-current');
+  next.classList.add('board-game-type-current');
+  if (typeof updateBoardAvatars === 'function') updateBoardAvatars(modal);
 };
 
 // окончание партии на табло: вспышка счёта + короткий сигнал
