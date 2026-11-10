@@ -1378,6 +1378,46 @@ a.lab-profile:hover {
   display: none;
 }
 
+/* Общее правило (не device-специфичное). Предупреждение об автоматической
+   смене сторон: крупная надпись поверх табло, появляется на 6-м очке
+   партии (6, 17, 28 … 105) и растворяется за ~2 секунды. */
+.board-swap-notice {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1051;
+  font-size: 9vh;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  padding: 3vh 5vh;
+  border-radius: 3vh;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  pointer-events: none;
+  animation: board-swap-notice 2s ease forwards;
+}
+
+@keyframes board-swap-notice {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
 .board-game-type {
   font-size: 1.6vw;
   justify-content: center;

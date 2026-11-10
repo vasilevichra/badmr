@@ -188,8 +188,11 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   const swap = modal.querySelector('.board-swap');
   if (swap) swap.hidden = true;
   // автоматическая смена сторон: 6-е очко каждой партии
-  // (6, 17, 28 … 105 = 6 + 11k)
-  if (increasedValue % 11 === 6 && increasedValue < 110) swapBoardSidesEl(modal);
+  // (6, 17, 28 … 105 = 6 + 11k), с предупреждением на табло
+  if (increasedValue % 11 === 6 && increasedValue < 110) {
+    boardSwapNotice(modal);
+    swapBoardSidesEl(modal);
+  }
   if (increasedValue % 11 === 0) {
     kva(el);
     // 110-е очко выигрывает матч: салют, корона над счётом, последняя
@@ -239,13 +242,15 @@ const grayBoardLastType = (el) => {
   });
 };
 
-// смена сторон на табло: меняются местами имена, аватары и onclick
-// счётов — целиком, потому что в нём зашит номер команды (team_number)
+// смена сторон на табло: меняются местами имена, аватары, счёт (счёт
+// команды продолжает идти за ней) и onclick счётов — целиком, потому
+// что в нём зашит номер команды (team_number)
 const swapBoardSidesEl = (modal) => {
   const left = modal.querySelector('#board-score-l');
   const right = modal.querySelector('#board-score-r');
   const names = modal.querySelectorAll('.board-team-name');
   [names[0].textContent, names[1].textContent] = [names[1].textContent, names[0].textContent];
+  [left.textContent, right.textContent] = [right.textContent, left.textContent];
   const avatars = modal.querySelectorAll('.board-avatars');
   [avatars[0].innerHTML, avatars[1].innerHTML] = [avatars[1].innerHTML, avatars[0].innerHTML];
   const leftClick = left.getAttribute('onclick');
@@ -261,6 +266,16 @@ const swapBoardSides = (btn) => {
   const right = modal.querySelector('#board-score-r');
   if (parseInt(left.textContent) !== 0 || parseInt(right.textContent) !== 0) return;
   swapBoardSidesEl(modal);
+};
+
+// предупреждение о смене сторон: крупная надпись поверх табло на пару
+// секунд; absolute + pointer-events: none — вёрстку не сдвигает
+const boardSwapNotice = (modal) => {
+  const notice = document.createElement('div');
+  notice.className = 'board-swap-notice';
+  notice.textContent = 'Смена сторон';
+  modal.querySelector('.modal-content').appendChild(notice);
+  setTimeout(() => notice.remove(), 2100);
 };
 
 // конец партии (счёт одной из сторон достиг 11/22/…/99): сдвигаем выбор
