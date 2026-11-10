@@ -187,9 +187,14 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   const modal = el.closest('.modal');
   const swap = modal.querySelector('.board-swap');
   if (swap) swap.hidden = true;
-  // автоматическая смена сторон: 6-е очко каждой партии
-  // (6, 17, 28 … 105 = 6 + 11k), с предупреждением на табло
-  if (increasedValue % 11 === 6 && increasedValue < 110) {
+  // автоматическая смена сторон: порог 6, 17, 28 … 105 (6 + 11k) —
+  // только когда его достигает лидер матча (у кого строго больше очков),
+  // т.е. очко набрано лидером; при равном счёте и при доборе догоняющей
+  // смены нет. Каждый порог лидер проходит один раз → до 10 смен за
+  // матч; с предупреждением на табло
+  const leftScore = parseInt(modal.querySelector('#board-score-l').textContent);
+  const rightScore = parseInt(modal.querySelector('#board-score-r').textContent);
+  if (leftScore !== rightScore && increasedValue % 11 === 6 && increasedValue < 110) {
     boardSwapNotice(modal);
     swapBoardSidesEl(modal);
   }
