@@ -178,13 +178,21 @@ const playerRatingGroupsStyle = (rating, B_max, C_max, D_max, E_max, F_max, G_ma
 const date2DatabaseFormat = (date = new Date()) => date.toISOString().replace('T', ' ').substring(0, 19);
 
 const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
+  // матч до 110 очков: дальше счёт не увеличивается
+  if (parseInt(el.textContent) >= 110) return;
   let increasedValue = parseInt(el.textContent) + 1;
   el.textContent = increasedValue;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
   if (increasedValue % 11 === 0) {
     kva(el);
-    // 110-е очко выигрывает матч: без автозачёта и сдвига типа игры
-    if (increasedValue === 110) return;
+    // 110-е очко выигрывает матч: салют, корона над счётом, последняя
+    // партия в списке — серым; без автозачёта и сдвига типа игры
+    if (increasedValue === 110) {
+      boardSalute(el);
+      el.classList.add('winner');
+      grayBoardLastType(el);
+      return;
+    }
     // автозачёт: проигравший партию получает минимум 5 очков за неё
     // (добор до 5×номер партии, как на сервере)
     const modal = el.closest('.modal');
@@ -195,6 +203,34 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
     // создать новую игру
     // убрать статус текущей у предыдущей
   }
+};
+
+// салют при выигранном матче: лёгкие искры вокруг счёта, каждая
+// разлетается по своему направлению и исчезает; на вёрстку не влияет
+// (position: absolute, pointer-events: none)
+const boardSalute = (el) => {
+  const colors = ['#ffd700', '#ff4d4d', '#4da6ff', '#7dff7d', '#ff9de2'];
+  for (let i = 0; i < 14; i++) {
+    const spark = document.createElement('span');
+    spark.className = 'board-spark';
+    spark.style.background = colors[i % colors.length];
+    const angle = Math.PI * 2 * i / 14 + Math.random() / 4;
+    const distance = 9 + Math.random() * 9; // vh
+    spark.style.setProperty('--dx', `${Math.cos(angle) * distance}vh`);
+    spark.style.setProperty('--dy', `${Math.sin(angle) * distance}vh`);
+    el.appendChild(spark);
+    setTimeout(() => spark.remove(), 1300);
+  }
+};
+
+// матч окончен на 110: текущая (последняя) партия списка — тоже
+// сыгранная, серым; счёт текущим в списке больше не помечается
+const grayBoardLastType = (el) => {
+  const modal = el.closest('.modal');
+  modal.querySelectorAll('.board-game-type-current').forEach(row => {
+    row.classList.remove('board-game-type-current');
+    row.classList.add('secondary-info');
+  });
 };
 
 // конец партии (счёт одной из сторон достиг 11/22/…/99): сдвигаем выбор

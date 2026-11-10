@@ -243,6 +243,22 @@ describe("Game", () => {
       const match = await db.get<{ finished: number }>(`SELECT finished FROM match_110 WHERE id = ?`, [match110Id]);
       assert.strictEqual(match!.finished, 1);
     });
+
+    it("не должен увеличивать счёт после 110 очков", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+
+      for (let i = 0; i < 110; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      await gameService.increaseCurrentByTeamIds(team1, team2, "2");
+
+      const game = await db.get<{ score_1: number, score_2: number }>(
+          `SELECT score_1, score_2 FROM game_110 WHERE match_110_id = ?`,
+          [match110Id]
+      )!;
+      assert.strictEqual(game.score_1, 110);
+      assert.strictEqual(game.score_2, 45);
+    });
   });
 
   // редактирование матча по карандашу в истории: применение пачки игр

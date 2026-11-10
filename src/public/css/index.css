@@ -1250,6 +1250,46 @@ a.lab-profile:hover {
   margin: 0 0 0 0 !important;
   align-content: center;
   justify-content: center;
+  /* точка отсчёта для короны и искр салюта (absolute) — на вёрстку
+     само позиционирование не влияет */
+  position: relative;
+}
+
+/* Общее правило (не device-специфичное). Корона над счётом 110 у
+   выигравшего матч: absolute, вёрстку не сдвигает. */
+.board-score.winner::after {
+  content: '👑';
+  position: absolute;
+  /* над верхней кромкой цифр (низ короны ≈ 21vh от верха блока) */
+  top: 15vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 6vh;
+  line-height: 1;
+}
+
+/* Общее правило (не device-специфичное). Искры салюта при 110:
+   разлетаются из центра счёта по --dx/--dy и растворяются. */
+.board-spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.6vh;
+  height: 0.6vh;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: board-spark 1.2s ease-out forwards;
+}
+
+@keyframes board-spark {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.3);
+    opacity: 0;
+  }
 }
 
 /* окончание партии на табло: вспышка вместо alert('kva!') */

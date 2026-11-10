@@ -40,12 +40,14 @@ class Game110 {
 
   increaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string) {
     const g = this.getCurrentByTeamIds(teamId1, teamId2);
+    // матча нет или он уже завершён — инкремента нет
+    if (!g) return;
     const winner = teamNumber === "1" ? "1" : "2";
     const loser = winner === "1" ? "2" : "1";
     this.db.run(
         `UPDATE game_110
          SET score_${winner} = score_${winner} + 1
-         WHERE id = ?`,
+         WHERE id = ? AND score_${winner} < 110`,
         [g!.id]
     );
     const updated = this.db.get<{ score_1: number, score_2: number, match_110_id: number }>(
