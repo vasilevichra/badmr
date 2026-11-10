@@ -1326,6 +1326,15 @@ a.lab-profile:hover {
   width: 3.5em;
 }
 
+/* Общее правило (не device-специфичное): поле имени команды — на всю ширину формы */
+.tournament-groups-team-edit-name-wrap {
+  flex: 1 1 100%;
+}
+
+.tournament-groups-team-edit-name-wrap .form-control {
+  width: 100%;
+}
+
 .man {
   color: royalblue;
 }
