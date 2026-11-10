@@ -1298,6 +1298,15 @@ a.lab-profile:hover {
   user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 }
 
+/* Общее правило (не device-специфичное). Список типов игр на табло:
+   занимает ту же вертикальную полосу, что и блоки счёта (сверху отступ
+   под имя команды 6vh, высота как у счёта 73vh), список центрируется
+   внутри неё — совпадает с числами счёта по вертикали. */
+.board-game-types {
+  height: 73vh;
+  margin-top: 6vh;
+}
+
 .board-game-type {
   font-size: 1.6vw;
   justify-content: center;
