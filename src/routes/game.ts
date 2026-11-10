@@ -8,6 +8,13 @@ router.get('/current110', (req, res) => {
   res.promise(gameService.getCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id)));
 });
 
+// счёты матчей 110 текущего турнира (флаг finished) — для показа
+// в ячейках матрицы: финишировавший — только счёт, идущий — счёт
+// и кнопка возобновления
+router.get('/110/results', (req, res) => {
+  res.promise(gameService.getResults());
+});
+
 router.get('/:id', (req, res) => {
   res.promise(gameService.getById(Number(req.params.id)));
 });

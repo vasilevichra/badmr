@@ -25,6 +25,7 @@ class Game {
 
   getById = (id: number) => this.game.getById(id);
   getCurrentByTeamIds = (teamId1: number, teamId2: number) => this.game110.getCurrentByTeamIds(teamId1, teamId2);
+  getResults = () => this.game110.getResults();
   increaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string) => this.game110.increaseCurrentByTeamIds(teamId1, teamId2, teamNumber);
 
   create = (match_id: number, lost_1_by: string | null, lost_2_by: string | null, created_at: string) => {

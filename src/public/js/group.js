@@ -524,3 +524,39 @@ $(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => {
   // строки выше текущего разряда — уже сыгранные игры: серым (lib.js)
   markBoardPlayedTypes(event.currentTarget);
 });
+
+// счёт матчей в ячейках матрицы: финишировавший матч — только итоговый
+// счёт (вместо кнопки ▶ / ⏱️ у гостя); идущий — текущий счёт + небольшая
+// кнопка возобновления под ним (открывает табло, матч не создаёт).
+// Размеры колонки не меняются: счёт компактный, кнопка btn-sm.
+// Один запрос на страницу; после закрытия табло перерисовываем —
+// только что доигранный/возобновлённый матч сразу показывает счёт
+const renderFinishedMatchScores = () => {
+  $.get('/api/games/110/results').then(results => {
+    // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ
+    // "team-1Id" — читаем атрибуты напрямую
+    const byPair = new Map((results || []).map(r => [`${r.team_1_id}-${r.team_2_id}`, r]));
+    document.querySelectorAll('td.tournament-groups-table-game[data-team-1-id]').forEach(td => {
+      const pair = `${td.getAttribute('data-team-1-id')}-${td.getAttribute('data-team-2-id')}`;
+      const r = byPair.get(pair);
+      if (!r) return; // матча нет — кнопка ▶ остаётся
+      td.querySelectorAll('button, span').forEach(el => el.remove());
+      const scoreEl = document.createElement('span');
+      scoreEl.className = 'game-result-score';
+      scoreEl.textContent = `${r.score_1}:${r.score_2}`;
+      td.appendChild(scoreEl);
+      if (!r.finished) {
+        const resume = document.createElement('button');
+        resume.type = 'button';
+        resume.className = 'btn btn-outline-success btn-sm game-result-resume';
+        resume.title = 'Возобновить матч';
+        resume.setAttribute('data-bs-toggle', 'modal');
+        resume.setAttribute('data-bs-target', `#tournament-groups-board-${pair}`);
+        resume.innerHTML = '<i class="bi bi-play"></i>';
+        td.appendChild(resume);
+      }
+    });
+  });
+};
+renderFinishedMatchScores();
+$(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => renderFinishedMatchScores());

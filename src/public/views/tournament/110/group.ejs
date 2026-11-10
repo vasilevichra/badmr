@@ -121,7 +121,8 @@
                                     <%# var game = getJson(`/api/games/current110?team_1_id=${team_1_id}&team_2_id=${team_2_id}`); %>
                                     <%- include('board', {gameId: game_id, teamIds: [team_1_id, team_2_id], teamNames: [team_name_1, team_name_2], startScores: [0, 0], teamAvatars: [boardAvatars[team_1_id], boardAvatars[team_2_id]]}); %>
 
-                                    <td class="tournament-groups-table-game" style="text-align: center;">
+                                    <td class="tournament-groups-table-game" style="text-align: center;"
+                                        data-team-1-id="<%= team_1_id %>" data-team-2-id="<%= team_2_id %>">
                                         <% if (user) { %>
                                             <button class="btn btn-outline-success"
                                                     type="button"

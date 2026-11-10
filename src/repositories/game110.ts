@@ -38,6 +38,26 @@ class Game110 {
     );
   }
 
+  /** Счёты матчей 110 текущего турнира — счёт последней игры матча
+   *  (для идущего матча она же текущая), с флагом финиша. Для показа
+   *  в ячейках матрицы: финишировавший — только счёт, идущий —
+   *  счёт + кнопка возобновления. По паре берём только последний
+   *  матч (клик ▶ может насоздавать несколько матчей одной пары). */
+  getResults() {
+    return this.db.all<{ team_1_id: number, team_2_id: number, score_1: number, score_2: number, finished: number }>(
+        `SELECT m.team_1_id, m.team_2_id, m.finished, g.score_1, g.score_2
+         FROM match_110 m
+                  JOIN game_110 g ON g.match_110_id = m.id
+                  JOIN tournament t ON t.id = m.tournament_id
+         WHERE t.current = 1
+           AND m.id = (SELECT MAX(m2.id) FROM match_110 m2
+                       WHERE m2.tournament_id = m.tournament_id
+                         AND m2.team_1_id = m.team_1_id
+                         AND m2.team_2_id = m.team_2_id)
+           AND g.id = (SELECT MAX(g2.id) FROM game_110 g2 WHERE g2.match_110_id = m.id)`
+    );
+  }
+
   increaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string) {
     const g = this.getCurrentByTeamIds(teamId1, teamId2);
     // матча нет или он уже завершён — инкремента нет
