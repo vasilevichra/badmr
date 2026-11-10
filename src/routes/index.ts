@@ -185,7 +185,9 @@ const renderTournamentPage = (
         timezone: settingsService.getTimezone(),
         // отдых команд: с какого момента ждёт каждая (для матрицы игр)
         teamRests: matchService.rests(),
-        playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)
+        playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false),
+        // аватар игрока с фолбэком pepe/pepe-girl (для табло матча)
+        playerAvatarFormatter: (pic: string | null, sex: number) => share.playerAvatarFormatter(pic, '', sex)
       });
       break;
     }

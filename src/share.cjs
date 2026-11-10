@@ -20,5 +20,6 @@
   };
 
   exports.playerNameFormatter = playerNameFormatter;
+  exports.playerAvatarFormatter = playerAvatarFormatter;
 
 })(typeof exports === 'undefined' ? this['share'] = {} : exports);

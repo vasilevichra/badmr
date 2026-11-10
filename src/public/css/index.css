@@ -1308,6 +1308,14 @@ a.lab-profile:hover {
   font-weight: 700;
 }
 
+/* Общее правило (не device-специфичное). Аватары реальных игроков пары
+   на табло матча: playerAvatarFormatter рисует их 20×20, на табло
+   укрупняем до 40px — как были заглушки pepe. */
+.board-player-avatar img {
+  width: 40px;
+  height: 40px;
+}
+
 /*.select2-dropdown .select2-results__option[aria-selected=true] {*/
 /*  display: none;*/
 /*}*/
