@@ -237,8 +237,9 @@ const grayBoardLastType = (el) => {
 };
 
 // смена сторон на табло: доступна только при 0:0 (кнопка прячется на
-// первом очке). Меняются местами имена, аватары и onclick счётов —
-// целиком, потому что в нём зашит номер команды (team_number)
+// первом очке). Повторные нажатия меняют стороны обратно. Меняются
+// местами имена, аватары и onclick счётов — целиком, потому что в нём
+// зашит номер команды (team_number)
 const swapBoardSides = (btn) => {
   const modal = btn.closest('.modal');
   const left = modal.querySelector('#board-score-l');
@@ -251,7 +252,6 @@ const swapBoardSides = (btn) => {
   const leftClick = left.getAttribute('onclick');
   left.setAttribute('onclick', right.getAttribute('onclick'));
   right.setAttribute('onclick', leftClick);
-  btn.hidden = true;
 };
 
 // конец партии (счёт одной из сторон достиг 11/22/…/99): сдвигаем выбор
