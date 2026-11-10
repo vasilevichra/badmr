@@ -119,7 +119,7 @@
                                     <% var team_2_id = matrix_teams[j][0].team_id; %>
                                     <% var game_id = `${team_1_id}-${team_2_id}`; %>
                                     <%# var game = getJson(`/api/games/current110?team_1_id=${team_1_id}&team_2_id=${team_2_id}`); %>
-                                    <%- include('board', {gameId: game_id, teamIds: [team_1_id, team_2_id], teamNames: [team_name_1, team_name_2], startScores: [0, 0], teams: [matrix_teams[i], matrix_teams[j]]}); %>
+                                    <%- include('board', {gameId: game_id, teamIds: [team_1_id, team_2_id], teamNames: [team_name_1, team_name_2], startScores: [0, 0], teamAvatars: [boardAvatars[team_1_id], boardAvatars[team_2_id]]}); %>
 
                                     <td class="tournament-groups-table-game" style="text-align: center;">
                                         <% if (user) { %>

@@ -503,3 +503,20 @@ updateTeamRests = () => {
 };
 updateTeamRests();
 setInterval(updateTeamRests, 30000);
+
+// аватары на табло матча: у каждого разряда своя группа игроков
+// (МО — одиночный мужчина, ЖО — женщина, МП/ЖП/СП — пары), сервер
+// берёт её из сеяния команды. Текущий разряд читается из
+// .board-game-type-current; функция вызывается при каждом открытии
+// модалки табло — когда смена текущего разряда появится в JS,
+// её достаточно дёргать и после смены.
+const updateBoardAvatars = (modal) => {
+  const current = modal.querySelector('.board-game-type-current');
+  const type = current ? current.textContent.trim() : '';
+  modal.querySelectorAll('.board-avatars').forEach(row => {
+    row.querySelectorAll('[data-type]').forEach(cell => {
+      cell.hidden = cell.dataset.type !== type;
+    });
+  });
+};
+$(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => updateBoardAvatars(event.currentTarget));

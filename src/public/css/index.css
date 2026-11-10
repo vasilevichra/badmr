@@ -1319,10 +1319,21 @@ a.lab-profile:hover {
 
 /* Общее правило (не device-специфичное). Аватары реальных игроков пары
    на табло матча: playerAvatarFormatter рисует их 20×20, на табло
-   укрупняем до 40px — как были заглушки pepe. */
+   укрупняем до 60px (в 1.5 раза к прежним заглушкам pepe на 40px). */
 .board-player-avatar img {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
+}
+
+/* Имя игрока (Фамилия Имя) под аватаром на табло: мелкий текст,
+   по центру блока «аватар + имя». */
+.board-player {
+  text-align: center;
+}
+
+.board-player-name {
+  font-size: 2.2vh;
+  line-height: 1.2;
 }
 
 /*.select2-dropdown .select2-results__option[aria-selected=true] {*/

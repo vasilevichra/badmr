@@ -17,6 +17,8 @@ class TeamOrder {
   roster = (team_id: number) => this.teamOrder.roster(team_id);
   select = (team_id: number, position_number: number) => this.teamOrder.select(team_id, position_number);
   set = (team_id: number, position_number: number, team_user_id: number) => this.teamOrder.set(team_id, position_number, team_user_id);
+  /** Игроки команды по разрядам табло (аватары): сеяние + фолбэк на сильнейших. */
+  avatars = (team_id: number) => this.teamOrder.avatars(team_id);
 }
 
 export default TeamOrder;

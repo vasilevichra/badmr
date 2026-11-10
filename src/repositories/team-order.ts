@@ -130,6 +130,50 @@ class TeamOrder {
         [team_id, team_user_id, team_user_id, team_id]
     );
   }
+
+  /** Игроки команды по разрядам первой половины табло (для аватаров):
+   *  МО — сеяние ms1, ЖО — ws1, МП — md11/md12, ЖП — wd11/wd12,
+   *  СП — xd11/xd12 (пол позиции — positionNumberToSex). Пустая позиция
+   *  сеяния — фолбэк: сильнейший подходящего пола из состава (для пары
+   *  второй — без уже взятого в разряд: CHECK md11 != md12 и т.п.). */
+  avatars(team_id: number) {
+    const players = this.db.all<{id: number, name: string, sex: number, pic: string | null, rating: number}>(
+        `SELECT tu.id,
+                u.lastname || ' ' || u.firstname AS name,
+                u.sex,
+                coalesce(up.pic, ul.img)         AS pic,
+                (COALESCE(ul.rating_1, ul.rating_2, 0) +
+                 COALESCE(ul.rating_2, ul.rating_1, 0)) / 2.0 AS rating
+         FROM team_user tu
+                  JOIN user u ON u.id = tu.user_id
+                  LEFT JOIN user_pic up ON u.id = up.user_id
+                  LEFT OUTER JOIN user_lab ul ON ul.user_id = u.id
+         WHERE tu.team_id = ?`,
+        [team_id]
+    );
+    const order = this.db.get<Record<string, number | null>>(
+        `SELECT ms1, ws1, md11, md12, wd11, wd12, xd11, xd12 FROM team_order_110 WHERE team_id = ?`,
+        [team_id]
+    ) ?? {};
+    const byId = new Map(players.map(p => [p.id, p]));
+    const strongest = (sex: number, exclude: number[] = []) => players
+        .filter(p => p.sex === sex && !exclude.includes(p.id))
+        .sort((a, b) => b.rating - a.rating)[0] ?? null;
+    const pick = (position: string, sex: number, exclude: number[] = []) =>
+        (order[position] ? byId.get(order[position]!) : null) ?? strongest(sex, exclude);
+    const pair = (first: string, second: string, sex: number) => {
+      const p1 = pick(first, sex);
+      const p2 = pick(second, sex, p1 ? [p1.id] : []);
+      return [p1, p2].filter(Boolean);
+    };
+    return {
+      МО: [pick('ms1', 1)].filter(Boolean),
+      ЖО: [pick('ws1', 0)].filter(Boolean),
+      МП: pair('md11', 'md12', 1),
+      ЖП: pair('wd11', 'wd12', 0),
+      СП: [pick('xd11', 1), pick('xd12', 0)].filter(Boolean)
+    };
+  }
 }
 
 export default TeamOrder;

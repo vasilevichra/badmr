@@ -8,16 +8,23 @@
                         <div class="col">
                             <div class="row board-team-name"><%= teamNames[0] %></div>
                             <div id="board-score-l" class="row board-score" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 1)"><%= startScores[0] %></div>
-                            <% /* аватары реальных игроков пары: рядом по центру
-                                  и прижаты к низу блока, зазор между ними —
-                                  визуальный пробел (px-1) */ %>
-                            <div class="row align-content-end justify-content-center" style="height: 10vh;">
-                                <div class="col-auto px-1">
-                                    <span class="board-player-avatar"><%- playerAvatarFormatter(teams[0][0].user_pic, teams[0][0].user_sex) %></span>
-                                </div>
-                                <div class="col-auto px-1">
-                                    <span class="board-player-avatar"><%- playerAvatarFormatter(teams[0][1].user_pic, teams[0][1].user_sex) %></span>
-                                </div>
+                            <% /* аватары реальных игроков по разрядам: для текущего
+                                  разряда табло показывает свою группу (МО —
+                                  одиночный мужчина, МП — пара и т.д.), группы
+                                  переключает JS по .board-game-type-current.
+                                  Рядом по центру, прижаты к низу блока, зазор
+                                  между ними — визуальный пробел (px-1) */ %>
+                            <div class="row align-content-end justify-content-center board-avatars" style="height: 10vh;">
+                                <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>
+                                    <div class="col-auto px-1" data-type="<%= avatarType %>" hidden>
+                                        <% teamAvatars[0][avatarType].forEach(player => { %>
+                                            <div class="board-player">
+                                                <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
+                                                <div class="board-player-name"><%= player.name %></div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                <% }); %>
                             </div>
                         </div>
 
@@ -40,13 +47,17 @@
                         <div class="col">
                             <div class="row board-team-name"><%= teamNames[1] %></div>
                             <div id="board-score-r" class="row board-score" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 2)"><%= startScores[1] %></div>
-                            <div class="row align-content-end justify-content-center" style="height: 10vh;">
-                                <div class="col-auto px-1">
-                                    <span class="board-player-avatar"><%- playerAvatarFormatter(teams[1][0].user_pic, teams[1][0].user_sex) %></span>
-                                </div>
-                                <div class="col-auto px-1">
-                                    <span class="board-player-avatar"><%- playerAvatarFormatter(teams[1][1].user_pic, teams[1][1].user_sex) %></span>
-                                </div>
+                            <div class="row align-content-end justify-content-center board-avatars" style="height: 10vh;">
+                                <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>
+                                    <div class="col-auto px-1" data-type="<%= avatarType %>" hidden>
+                                        <% teamAvatars[1][avatarType].forEach(player => { %>
+                                            <div class="board-player">
+                                                <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
+                                                <div class="board-player-name"><%= player.name %></div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                <% }); %>
                             </div>
                         </div>
                     </div>

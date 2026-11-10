@@ -16,6 +16,8 @@ import AchievementService from '../services/achievement.ts';
 const achievementService = new AchievementService();
 import GroupService from '../services/group.ts';
 const groupService = new GroupService();
+import TeamOrderService from '../services/team-order.ts';
+const teamOrderService = new TeamOrderService();
 import share from '../share.cjs';
 
 /** «95.3» → «1м 35с», «51.2» → «51с», без данных → «—». */
@@ -185,6 +187,15 @@ const renderTournamentPage = (
         timezone: settingsService.getTimezone(),
         // отдых команд: с какого момента ждёт каждая (для матрицы игр)
         teamRests: matchService.rests(),
+        // аватары табло по разрядам: сеяние команды с фолбэком на сильнейших
+        // подходящего пола (для каждой команды групп — один расчёт)
+        boardAvatars: Object.values(promises[5] as Record<string, Record<string, Record<string, { team_id: number }[]>>>)
+            .flatMap(groupTeams => Object.values(groupTeams))
+            .flatMap(teams => Object.values(teams))
+            .reduce<Record<number, unknown>>((acc, rows) => {
+              if (!(rows[0].team_id in acc)) acc[rows[0].team_id] = teamOrderService.avatars(rows[0].team_id);
+              return acc;
+            }, {}),
         playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false),
         // аватар игрока с фолбэком pepe/pepe-girl (для табло матча)
         playerAvatarFormatter: (pic: string | null, sex: number) => share.playerAvatarFormatter(pic, '', sex)
