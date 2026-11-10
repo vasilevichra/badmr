@@ -1356,7 +1356,8 @@ a.lab-profile:hover {
    прячется при первом очке (lib.js). */
 .board-swap {
   position: absolute;
-  top: 2.2vh;
+  /* по вертикали — центр кнопки на центре строки названий команд */
+  top: 5.7vh;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1050;
