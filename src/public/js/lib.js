@@ -187,24 +187,25 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   const modal = el.closest('.modal');
   const swap = modal.querySelector('.board-swap');
   if (swap) swap.hidden = true;
-  // автоматическая смена сторон: порог 6, 17, 28 … 105 (6 + 11k) —
-  // только когда его достигает лидер матча (у кого строго больше очков),
-  // т.е. очко набрано лидером; при равном счёте и при доборе догоняющей
-  // смены нет. Каждый порог лидер проходит один раз → до 10 смен за
-  // матч; с предупреждением на табло
-  const leftScore = parseInt(modal.querySelector('#board-score-l').textContent);
-  const rightScore = parseInt(modal.querySelector('#board-score-r').textContent);
-  if (leftScore !== rightScore && increasedValue % 11 === 6 && increasedValue < 110) {
+  // очко набрано лидером матча (у кого строго больше очков) — от этого
+  // зависят автосмена сторон и завершение партии на кратном 11 счёте
+  const opponent = modal.querySelector(el.id === 'board-score-l' ? '#board-score-r' : '#board-score-l');
+  const opponentScore = parseInt(opponent.textContent);
+  const scoredByLeader = increasedValue > opponentScore;
+  // автоматическая смена сторон: порог 6, 17, 28 … 105 (6 + 11k), набранный
+  // лидером; при равном счёте и при доборе догоняющей смены нет. Каждый
+  // порог лидер проходит один раз → до 10 смен за матч
+  if (scoredByLeader && increasedValue % 11 === 6 && increasedValue < 110) {
     boardSwapNotice(modal);
     swapBoardSidesEl(modal);
   }
   if (increasedValue % 11 === 0) {
-    // анимация победы партии — только для лидера матча: догоняющая
-    // команда, добравшаяся до кратного 11 счёта (её счёт не больше
-    // счёта соперника), анимацию не получает; на 110 матч окончен —
-    // анимация всегда (победитель)
-    const opponent = modal.querySelector(el.id === 'board-score-l' ? '#board-score-r' : '#board-score-l');
-    if (increasedValue === 110 || increasedValue > parseInt(opponent.textContent)) kva(el);
+    // партия заканчивается, только когда кратный 11 счёт достигает лидер:
+    // вспышка-анимация и сдвиг типа игры — только у него; догоняющая
+    // команда, добравшаяся до того же кратного 11 счёта, партию не
+    // закрывает (без анимации, автозачёта и сдвига типа игры); на 110
+    // матч окончен — победитель всегда
+    if (scoredByLeader || increasedValue === 110) flashPartyWin(el);
     // 110-е очко выигрывает матч: салют, корона над счётом, последняя
     // партия в списке — серым; без автозачёта и сдвига типа игры
     if (increasedValue === 110) {
@@ -213,13 +214,15 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
       grayBoardLastType(el);
       return;
     }
-    // автозачёт: проигравший партию получает минимум 5 очков за неё
-    // (добор до 5×номер партии, как на сервере)
-    opponent.textContent = Math.max(parseInt(opponent.textContent), 5 * increasedValue / 11);
-    advanceBoardGameType(el);
-    // перевернуть табло
-    // создать новую игру
-    // убрать статус текущей у предыдущей
+    if (scoredByLeader) {
+      // автозачёт: проигравший партию получает минимум 5 очков за неё
+      // (добор до 5×номер партии, как на сервере)
+      opponent.textContent = Math.max(opponentScore, 5 * increasedValue / 11);
+      advanceBoardGameType(el);
+      // перевернуть табло
+      // создать новую игру
+      // убрать статус текущей у предыдущей
+    }
   }
 };
 
@@ -321,9 +324,9 @@ const markBoardPlayedTypes = (modal) => {
 
 // окончание партии на табло: вспышка счёта + короткий сигнал
 // (alert() требовал подтверждения и останавливал взаимодействие)
-const kva = (el) => {
-  $(el).addClass('kva');
-  setTimeout(() => $(el).removeClass('kva'), 1500);
+const flashPartyWin = (el) => {
+  $(el).addClass('party-win');
+  setTimeout(() => $(el).removeClass('party-win'), 1500);
 
   try {
     const context = new (window.AudioContext || window.webkitAudioContext)();

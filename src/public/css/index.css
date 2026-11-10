@@ -1313,7 +1313,7 @@ a.lab-profile:hover {
   }
 }
 
-/* окончание партии на табло: вспышка вместо alert('kva!') */
+/* окончание партии на табло: вспышка счёта */
 @keyframes board-score-flash {
   0%,
   100% {
@@ -1328,7 +1328,7 @@ a.lab-profile:hover {
   }
 }
 
-.board-score.kva {
+.board-score.party-win {
   animation: board-score-flash 0.75s ease-in-out 2;
 }
 
