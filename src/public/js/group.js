@@ -253,11 +253,13 @@ const femaleSlots = ['ws1', 'wd11', 'wd12', 'xd12', 'ws2', 'wd21', 'wd22', 'xd22
 const slotSelect = (team_id, name) => $(`#tournament-groups-team-edit-${team_id} .tournament-groups-team-edit-select-${name}`);
 
 // авторасстановка состава по пустым ячейкам: игроки сортируются от слабейшего
-// к сильнейшему и последовательно занимают пустые слоты — сначала весь первый
-// круг (МО, МП, СП), потом весь второй. Если игроков меньше, чем пустых
-// слотов, они идут по кругу заново, но с учётом ограничений базы: одиночка не
-// повторяется между кругами (ms1 != ms2, ws1 != ws2), партнёры по паре
-// различаются (md11 != md12 и т.п.). Уже расставленные игроки не двигаются.
+// к сильнейшему; позиции обходятся парами слотов «круг 1 / круг 2» — в первый
+// круг встаёт слабейший подходящий игрок, во второй — следующий за ним, так
+// что сильнейшая пара категории попадает во второй круг. Если игроков меньше,
+// чем пустых слотов, они переиспользуются по кругу, но с учётом ограничений
+// базы: одиночка не повторяется между кругами (ms1 != ms2, ws1 != ws2),
+// партнёры по паре различаются (md11 != md12 и т.п.). Уже расставленные
+// игроки не двигаются.
 const autoOrder = (team_id) => {
   $.get(`/api/teams/${team_id}/roster`)
       .then(roster => {
@@ -270,33 +272,52 @@ const autoOrder = (team_id) => {
 
         const pairPartner = {md11: 'md12', md12: 'md11', wd11: 'wd12', wd12: 'wd11', md21: 'md22', md22: 'md21', wd21: 'wd22', wd22: 'wd21'};
         const singlesTwin = {ms1: 'ms2', ms2: 'ms1', ws1: 'ws2', ws2: 'ws1'};
+        // пары слотов «круг 1 / круг 2» одной позиции, по возрастанию силы
+        const slotPairs = sex => sex === 1
+            ? [['ms1', 'ms2'], ['md11', 'md21'], ['md12', 'md22'], ['xd11', 'xd21']]
+            : [['ws1', 'ws2'], ['wd11', 'wd21'], ['wd12', 'wd22'], ['xd12', 'xd22']];
 
-        const fill = (slots, sex) => {
-          const empty = slots.filter(name => !slotSelect(team_id, name).val());
-          const players = roster
-              .filter(p => p.sex === sex && !Object.values(placed).includes(p.id))
-              .sort((a, b) => a.rating - b.rating);
-          if (empty.length === 0 || players.length === 0) return;
-          // все пустые слоты обоих кругов заполняются; при нехватке игроки
-          // повторяются по кругу, минуя запрещённые для слота совпадения
-          let idx = 0;
-          empty.forEach(name => {
-            for (let k = 0; k < players.length; k++) {
-              const p = players[(idx + k) % players.length];
-              const partner = pairPartner[name];
-              const twin = singlesTwin[name];
-              if ((partner && placed[partner] === p.id) || (twin && placed[twin] === p.id)) continue;
-              slotSelect(team_id, name).append(new Option(p.name, p.id, true, true)).trigger('change');
-              $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
-              placed[name] = p.id;
-              idx = (idx + k + 1) % players.length;
-              return;
-            }
-          });
+        const byRating = (a, b) => a.rating - b.rating;
+        // слот принимает игрока, если тот не партнёр по паре и не «тёзка» одиночки
+        const allowed = (name, p) =>
+            !(pairPartner[name] && placed[pairPartner[name]] === p.id) &&
+            !(singlesTwin[name] && placed[singlesTwin[name]] === p.id);
+        // состав пола без уже расставленных до запуска игроков — они не двигаются;
+        // снапшот на момент старта, иначе пул вымывается по ходу расстановки
+        const pools = {};
+        [1, 0].forEach(sex => {
+          pools[sex] = roster.filter(p => p.sex === sex && !Object.values(placed).includes(p.id)).sort(byRating);
+        });
+        // кандидаты на слот: сначала незадействованные в этой расстановке,
+        // при нехватке — переиспользование уже расставленных; в паре кругов
+        // предпочитаем разных игроков (круг 2 — следующий по силе)
+        const candidates = (sex, name, excludeId) => {
+          const pool = pools[sex];
+          const free = pool.filter(p => !Object.values(placed).includes(p.id));
+          return free.find(p => p.id !== excludeId && allowed(name, p))
+              ?? free.find(p => allowed(name, p))
+              ?? pool.find(p => p.id !== excludeId && allowed(name, p))
+              ?? pool.find(p => allowed(name, p));
+        };
+        const assign = (name, p) => {
+          slotSelect(team_id, name).append(new Option(p.name, p.id, true, true)).trigger('change');
+          $.post(`/api/teams/${team_id}/order/${editSlots[name]}?team_user_id=${p.id}`);
+          placed[name] = p.id;
         };
 
-        fill(maleSlots, 1);
-        fill(femaleSlots, 0);
+        [1, 0].forEach(sex => {
+          slotPairs(sex).forEach(([first, second]) => {
+            let firstPick;
+            if (!slotSelect(team_id, first).val()) {
+              firstPick = candidates(sex, first);
+              if (firstPick) assign(first, firstPick);
+            }
+            if (!slotSelect(team_id, second).val()) {
+              const p = candidates(sex, second, firstPick && firstPick.id);
+              if (p) assign(second, p);
+            }
+          });
+        });
       });
 }
 
