@@ -1257,12 +1257,12 @@ a.lab-profile:hover {
 
 /* Общее правило (не device-специфичное). Корона над счётом 110 у
    выигравшего матч: inline-SVG через mask (в Bootstrap Icons короны
-   нет — twbs/icons#1422), по центру зазора между счётом и названием
-   команды; absolute — вёрстку не сдвигает. */
+   нет — twbs/icons#1422), под счётом и над аватарами, по центру;
+   absolute — вёрстку не сдвигает. */
 .board-score.winner::after {
   content: '';
   position: absolute;
-  top: 8vh;
+  top: 66vh;
   left: 50%;
   transform: translateX(-50%);
   width: 6vh;
