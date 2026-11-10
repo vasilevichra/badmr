@@ -274,6 +274,44 @@ describe("Common", () => {
         })
       );
 
+      it("должен помечать матчап нейтральным (favorite 0) когда моментум пар равен", async () => {
+        const settingsService = new SettingsService();
+        const courtService = new CourtService();
+        await courtService.disableAll();
+        await courtService.create();
+
+        const users = [mkUser(1, 500), mkUser(2, 460), mkUser(3, 400), mkUser(4, 280)];
+        const ids = await createAndRegister(new UserService(), users);
+
+        // единственный кандидат: 500+280 против 460+400; все четверо
+        // новички — исход последнего матча не определён, винрейты по 0,
+        // поэтому фаворита по моментуму нет — favorite 0; система 50%
+        // нейтральный матчап не фильтрует
+        const expected: Pair = {
+          players1: [
+            player(users[0], ids[0]),
+            player(users[3], ids[3]),
+          ],
+          players2: [
+            player(users[1], ids[1]),
+            player(users[2], ids[2]),
+          ],
+          diff: 80,
+          matches: 0,
+          played: 0,
+          chance1: null,
+          chance2: null,
+          friends: 0,
+          favorite: 0,
+        };
+
+        await settingsService.set(settingsService.opt.FIFTY, "1");
+        assert.deepStrictEqual<Pair[]>(
+          await new CommonService().ready(),
+          [expected],
+        );
+      });
+
       it("должен отклонять пару когда рейтинг превышает средний больше чем на proc", async () => {
         const settingsService = new SettingsService();
         const courtService = new CourtService();
