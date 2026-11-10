@@ -199,7 +199,12 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
     swapBoardSidesEl(modal);
   }
   if (increasedValue % 11 === 0) {
-    kva(el);
+    // анимация победы партии — только для лидера матча: догоняющая
+    // команда, добравшаяся до кратного 11 счёта (её счёт не больше
+    // счёта соперника), анимацию не получает; на 110 матч окончен —
+    // анимация всегда (победитель)
+    const opponent = modal.querySelector(el.id === 'board-score-l' ? '#board-score-r' : '#board-score-l');
+    if (increasedValue === 110 || increasedValue > parseInt(opponent.textContent)) kva(el);
     // 110-е очко выигрывает матч: салют, корона над счётом, последняя
     // партия в списке — серым; без автозачёта и сдвига типа игры
     if (increasedValue === 110) {
@@ -210,7 +215,6 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
     }
     // автозачёт: проигравший партию получает минимум 5 очков за неё
     // (добор до 5×номер партии, как на сервере)
-    const opponent = modal.querySelector(el.id === 'board-score-l' ? '#board-score-r' : '#board-score-l');
     opponent.textContent = Math.max(parseInt(opponent.textContent), 5 * increasedValue / 11);
     advanceBoardGameType(el);
     // перевернуть табло
