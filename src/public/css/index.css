@@ -1256,16 +1256,20 @@ a.lab-profile:hover {
 }
 
 /* Общее правило (не device-специфичное). Корона над счётом 110 у
-   выигравшего матч: absolute, вёрстку не сдвигает. */
+   выигравшего матч: inline-SVG через mask (в Bootstrap Icons короны
+   нет — twbs/icons#1422), по центру зазора между счётом и названием
+   команды; absolute — вёрстку не сдвигает. */
 .board-score.winner::after {
-  content: '👑';
+  content: '';
   position: absolute;
-  /* над верхней кромкой цифр (низ короны ≈ 21vh от верха блока) */
-  top: 15vh;
+  top: 8vh;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 6vh;
-  line-height: 1;
+  width: 6vh;
+  height: 6vh;
+  background: currentColor;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 4l3.5 3L8 2.5 10.5 7 14 4l-1.2 9H3.2z"/></svg>') center / contain no-repeat;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M2 4l3.5 3L8 2.5 10.5 7 14 4l-1.2 9H3.2z"/></svg>') center / contain no-repeat;
 }
 
 /* Общее правило (не device-специфичное). Искры салюта при 110:
