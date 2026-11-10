@@ -183,6 +183,13 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
   if (increasedValue % 11 === 0) {
     kva(el);
+    // 110-е очко выигрывает матч: без автозачёта и сдвига типа игры
+    if (increasedValue === 110) return;
+    // автозачёт: проигравший партию получает минимум 5 очков за неё
+    // (добор до 5×номер партии, как на сервере)
+    const modal = el.closest('.modal');
+    const opponent = modal.querySelector(el.id === 'board-score-l' ? '#board-score-r' : '#board-score-l');
+    opponent.textContent = Math.max(parseInt(opponent.textContent), 5 * increasedValue / 11);
     advanceBoardGameType(el);
     // перевернуть табло
     // создать новую игру

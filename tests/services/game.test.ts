@@ -191,6 +191,58 @@ describe("Game", () => {
       assert.strictEqual(game.score_1, 0);
       assert.strictEqual(game.score_2, 2);
     });
+
+    it("должен зачислить проигравшему партию минимум 5 очков (11-5)", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+
+      for (let i = 0; i < 11; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+
+      const game = await gameService.getCurrentByTeamIds(team1, team2) as Game110Row;
+      assert.strictEqual(game.score_1, 11);
+      assert.strictEqual(game.score_2, 5);
+    });
+
+    it("не должен трогать счёт проигравшего, набравшего за партию больше 5", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+
+      for (let i = 0; i < 6; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "2");
+      for (let i = 0; i < 11; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+
+      const game = await gameService.getCurrentByTeamIds(team1, team2) as Game110Row;
+      assert.strictEqual(game.score_1, 11);
+      assert.strictEqual(game.score_2, 6);
+    });
+
+    it("во второй партии должен добрать проигравшему до 10 (22-10)", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+
+      for (let i = 0; i < 22; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+
+      const game = await gameService.getCurrentByTeamIds(team1, team2) as Game110Row;
+      assert.strictEqual(game.score_1, 22);
+      assert.strictEqual(game.score_2, 10);
+    });
+
+    it("при 110 очках должен завершить матч без автозачёта за последнюю партию (110-45)", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+
+      for (let i = 0; i < 110; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+
+      // матч завершён — getCurrentByTeamIds (фильтр finished = 0) уже не
+      // находит игру, читаем счёт напрямую
+      const game = await db.get<{ score_1: number, score_2: number }>(
+          `SELECT score_1, score_2 FROM game_110 WHERE match_110_id = ?`,
+          [match110Id]
+      )!;
+      assert.strictEqual(game.score_1, 110);
+      assert.strictEqual(game.score_2, 45);
+      const match = await db.get<{ finished: number }>(`SELECT finished FROM match_110 WHERE id = ?`, [match110Id]);
+      assert.strictEqual(match!.finished, 1);
+    });
   });
 
   // редактирование матча по карандашу в истории: применение пачки игр
