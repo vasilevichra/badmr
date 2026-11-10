@@ -204,7 +204,22 @@ const advanceBoardGameType = (el) => {
   if (!next) return;
   current.classList.remove('board-game-type-current');
   next.classList.add('board-game-type-current');
+  markBoardPlayedTypes(modal);
   if (typeof updateBoardAvatars === 'function') updateBoardAvatars(modal);
+};
+
+// уже сыгранные игры табло (строки выше текущей, без разделителя «•»)
+// выделяем серым (secondary-info), текущая остаётся крупной и жирной
+const markBoardPlayedTypes = (modal) => {
+  const current = modal.querySelector('.board-game-type-current');
+  if (!current) return;
+  let row = current.previousElementSibling;
+  while (row) {
+    if (row.classList.contains('board-game-type') && row.textContent.trim() !== '•') {
+      row.classList.add('secondary-info');
+    }
+    row = row.previousElementSibling;
+  }
 };
 
 // окончание партии на табло: вспышка счёта + короткий сигнал

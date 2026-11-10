@@ -519,4 +519,8 @@ const updateBoardAvatars = (modal) => {
     });
   });
 };
-$(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => updateBoardAvatars(event.currentTarget));
+$(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => {
+  updateBoardAvatars(event.currentTarget);
+  // строки выше текущего разряда — уже сыгранные игры: серым (lib.js)
+  markBoardPlayedTypes(event.currentTarget);
+});
