@@ -29,6 +29,10 @@
                         </div>
 
                         <div class="col-auto align-content-center board-game-types">
+                            <% /* смена сторон: только при счёте 0:0, при первом
+                                  очке прячется (lib.js); absolute — на вёрстку
+                                  колонки разрядов не влияет */ %>
+                            <button type="button" class="board-swap" onclick="swapBoardSides(this)" title="Сменить стороны" aria-label="Сменить стороны"><i class="bi bi-arrow-left-right"></i></button>
                             <div class="row board-game-type board-game-type-current">МО</div>
                             <div class="row board-game-type">ЖО</div>
                             <div class="row board-game-type">МП</div>

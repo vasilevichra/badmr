@@ -183,6 +183,9 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   let increasedValue = parseInt(el.textContent) + 1;
   el.textContent = increasedValue;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
+  // кнопка смены сторон видна только при 0:0
+  const swap = el.closest('.modal').querySelector('.board-swap');
+  if (swap) swap.hidden = true;
   if (increasedValue % 11 === 0) {
     kva(el);
     // 110-е очко выигрывает матч: салют, корона над счётом, последняя
@@ -231,6 +234,24 @@ const grayBoardLastType = (el) => {
     row.classList.remove('board-game-type-current');
     row.classList.add('secondary-info');
   });
+};
+
+// смена сторон на табло: доступна только при 0:0 (кнопка прячется на
+// первом очке). Меняются местами имена, аватары и onclick счётов —
+// целиком, потому что в нём зашит номер команды (team_number)
+const swapBoardSides = (btn) => {
+  const modal = btn.closest('.modal');
+  const left = modal.querySelector('#board-score-l');
+  const right = modal.querySelector('#board-score-r');
+  if (parseInt(left.textContent) !== 0 || parseInt(right.textContent) !== 0) return;
+  const names = modal.querySelectorAll('.board-team-name');
+  [names[0].textContent, names[1].textContent] = [names[1].textContent, names[0].textContent];
+  const avatars = modal.querySelectorAll('.board-avatars');
+  [avatars[0].innerHTML, avatars[1].innerHTML] = [avatars[1].innerHTML, avatars[0].innerHTML];
+  const leftClick = left.getAttribute('onclick');
+  left.setAttribute('onclick', right.getAttribute('onclick'));
+  right.setAttribute('onclick', leftClick);
+  btn.hidden = true;
 };
 
 // конец партии (счёт одной из сторон достиг 11/22/…/99): сдвигаем выбор

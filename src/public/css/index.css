@@ -1351,6 +1351,31 @@ a.lab-profile:hover {
   margin-top: 6vh;
 }
 
+/* Общее правило (не device-специфичное). Кнопка смены сторон на табло:
+   между названиями команд, на их уровне; видна только при 0:0 —
+   прячется при первом очке и после смены (lib.js). */
+.board-swap {
+  position: absolute;
+  top: 2.2vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1050;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--bs-secondary-color);
+  font-size: 3vh;
+  line-height: 1;
+}
+
+.board-swap:hover {
+  color: var(--bs-body-color);
+}
+
+.board-swap[hidden] {
+  display: none;
+}
+
 .board-game-type {
   font-size: 1.6vw;
   justify-content: center;
