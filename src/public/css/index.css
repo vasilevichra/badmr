@@ -1326,11 +1326,14 @@ a.lab-profile:hover {
   width: 3.5em;
 }
 
-/* Общее правило (не device-специфичное): поле имени команды — на всю ширину формы */
+/* Общее правило (не device-специфичное): город и название команды —
+   на одной строке, пополам */
+.tournament-groups-team-edit-city-wrap,
 .tournament-groups-team-edit-name-wrap {
-  flex: 1 1 100%;
+  flex: 1 1 0;
 }
 
+.tournament-groups-team-edit-city-wrap .form-control,
 .tournament-groups-team-edit-name-wrap .form-control {
   width: 100%;
 }
