@@ -184,8 +184,12 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   el.textContent = increasedValue;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
   // кнопка смены сторон видна только при 0:0
-  const swap = el.closest('.modal').querySelector('.board-swap');
+  const modal = el.closest('.modal');
+  const swap = modal.querySelector('.board-swap');
   if (swap) swap.hidden = true;
+  // автоматическая смена сторон: 6-е очко каждой партии
+  // (6, 17, 28 … 105 = 6 + 11k)
+  if (increasedValue % 11 === 6 && increasedValue < 110) swapBoardSidesEl(modal);
   if (increasedValue % 11 === 0) {
     kva(el);
     // 110-е очко выигрывает матч: салют, корона над счётом, последняя
@@ -198,7 +202,6 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
     }
     // автозачёт: проигравший партию получает минимум 5 очков за неё
     // (добор до 5×номер партии, как на сервере)
-    const modal = el.closest('.modal');
     const opponent = modal.querySelector(el.id === 'board-score-l' ? '#board-score-r' : '#board-score-l');
     opponent.textContent = Math.max(parseInt(opponent.textContent), 5 * increasedValue / 11);
     advanceBoardGameType(el);
@@ -236,15 +239,11 @@ const grayBoardLastType = (el) => {
   });
 };
 
-// смена сторон на табло: доступна только при 0:0 (кнопка прячется на
-// первом очке). Повторные нажатия меняют стороны обратно. Меняются
-// местами имена, аватары и onclick счётов — целиком, потому что в нём
-// зашит номер команды (team_number)
-const swapBoardSides = (btn) => {
-  const modal = btn.closest('.modal');
+// смена сторон на табло: меняются местами имена, аватары и onclick
+// счётов — целиком, потому что в нём зашит номер команды (team_number)
+const swapBoardSidesEl = (modal) => {
   const left = modal.querySelector('#board-score-l');
   const right = modal.querySelector('#board-score-r');
-  if (parseInt(left.textContent) !== 0 || parseInt(right.textContent) !== 0) return;
   const names = modal.querySelectorAll('.board-team-name');
   [names[0].textContent, names[1].textContent] = [names[1].textContent, names[0].textContent];
   const avatars = modal.querySelectorAll('.board-avatars');
@@ -252,6 +251,16 @@ const swapBoardSides = (btn) => {
   const leftClick = left.getAttribute('onclick');
   left.setAttribute('onclick', right.getAttribute('onclick'));
   right.setAttribute('onclick', leftClick);
+};
+
+// ручная смена сторон (кнопка между названиями): доступна только при 0:0,
+// кнопка прячется на первом очке. Повторные нажатия меняют стороны обратно
+const swapBoardSides = (btn) => {
+  const modal = btn.closest('.modal');
+  const left = modal.querySelector('#board-score-l');
+  const right = modal.querySelector('#board-score-r');
+  if (parseInt(left.textContent) !== 0 || parseInt(right.textContent) !== 0) return;
+  swapBoardSidesEl(modal);
 };
 
 // конец партии (счёт одной из сторон достиг 11/22/…/99): сдвигаем выбор
