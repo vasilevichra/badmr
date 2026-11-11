@@ -255,8 +255,8 @@ $(document).ready(() => {
   });
   // ----- конец редактирования матча -----
 
-  // обработчики событий для табло
-  ["board-score-l", "board-score-r"].map(id => document.getElementById(id)).map(el => addScoreBoardHandlers(el));
+  // обработчики событий для табло (свайп вверх по счёту — +1 очко)
+  addScoreBoardHandlers();
 
   // модалка игрока привязана к адресу (?player=<id>):
   // по ссылке открываем модалку, назад/вперёд открывают/закрывают её,

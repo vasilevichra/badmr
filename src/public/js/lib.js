@@ -183,6 +183,11 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   let increasedValue = parseInt(el.textContent) + 1;
   el.textContent = increasedValue;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
+  // тактильный и звуковой отклик на каждое очко; на границе партии
+  // свой отдельный сигнал (flashPartyWin) — короткий не дублируем.
+  // navigator.vibrate нет на iOS Safari — там остаётся только бип
+  navigator.vibrate?.(30);
+  if (increasedValue % 11 !== 0) boardBeep();
   // кнопка смены сторон видна только при 0:0
   const modal = el.closest('.modal');
   const swap = modal.querySelector('.board-swap');
@@ -322,70 +327,65 @@ const markBoardPlayedTypes = (modal) => {
   }
 };
 
-// окончание партии на табло: вспышка счёта + короткий сигнал
+// короткий ненавязчивый бип: отклик на очко (880 Гц) и окончание партии
+// (660 Гц). Контекст создаётся один раз и переиспользуется — на каждый
+// клик новый AudioContext не выделяем; без поддержки AudioContext тихо
+let _audioContext = null;
+const boardBeep = (frequency = 880, gainValue = 0.05, seconds = 0.12) => {
+  try {
+    _audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+    const context = _audioContext;
+    // Chrome создаёт контекст suspended, пока не было жеста пользователя —
+    // бипы как раз идут из кликов/тачей, возобновляем
+    if (context.state === 'suspended') context.resume();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(gainValue, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + seconds);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + seconds);
+  } catch {
+    // звук не критичен
+  }
+};
+
+// окончание партии на табло: вспышка счёта + сигнал
 // (alert() требовал подтверждения и останавливал взаимодействие)
 const flashPartyWin = (el) => {
   $(el).addClass('party-win');
   setTimeout(() => $(el).removeClass('party-win'), 1500);
-
-  try {
-    const context = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 660;
-    gain.gain.setValueAtTime(0.15, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
-    oscillator.connect(gain).connect(context.destination);
-    oscillator.start();
-    oscillator.stop(context.currentTime + 0.5);
-    oscillator.onended = () => context.close();
-  } catch {
-    // звук не критичен: без поддержки AudioContext остаётся вспышка
-  }
+  boardBeep(660, 0.15, 0.5);
 };
-const decreaseBoardScore = (el, team_1_id, team_2_id) => el.textContent = parseInt(el.textContent) - 1;
 
-function handleScoreBoardGesture(el) {
-  // if (touchendX < touchstartX) {
-  //   console.log('Swiped Left');
-  // }
-  //
-  // if (touchendX > touchstartX) {
-  //   console.log('Swiped Right');
-  // }
-
-  if (touchendY < touchstartY) {
-    console.log('Swiped Up');
-    increaseBoardScore(el);
-  }
-
-  if (touchendY > touchstartY) {
-    console.log('Swiped Down');
-    decreaseBoardScore(el);
-  }
-
-  // if (touchendY === touchstartY) {
-  //   console.log('Tap');
-  // }
-}
-
-const addScoreBoardHandlers = (el) => {
-  document.addEventListener('DOMContentLoaded', function () {
-    el.addEventListener('touchstart', function (event) {
-      touchstartX = event.changedTouches[0].screenX;
-      touchstartY = event.changedTouches[0].screenY;
-    }, false);
-  });
-
-  document.addEventListener('DOMContentLoaded', function () {
-    el.addEventListener('touchend', function (event) {
-      touchendX = event.changedTouches[0].screenX;
-      touchendY = event.changedTouches[0].screenY;
-      handleScoreBoardGesture(el);
-    }, false);
-  });
-}
+// свайп вверх по полю счёта табло — +1 очко (клик обрабатывает onclick
+// в board.ejs). Делегирование на document: модалок табло несколько (по
+// одной на пару команд), getElementById нашёл бы только первую. Порог
+// 30px отсекает тап — его обрабатывает click. preventDefault гасит
+// синтетический click после свайпа, иначе очко задвоится
+const addScoreBoardHandlers = () => {
+  let scoreEl = null;
+  let startY = 0;
+  document.addEventListener('touchstart', (e) => {
+    scoreEl = e.target.closest?.('.board-score') ?? null;
+    if (scoreEl) startY = e.changedTouches[0].clientY;
+  }, {passive: true});
+  document.addEventListener('touchend', (e) => {
+    if (!scoreEl) return;
+    const el = scoreEl;
+    scoreEl = null;
+    if (e.changedTouches[0].clientY - startY > -30) return; // не свайп вверх
+    e.preventDefault();
+    // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ
+    // "team-1Id" — читаем атрибуты напрямую
+    increaseBoardScore(el,
+        Number(el.getAttribute('data-team-1-id')),
+        Number(el.getAttribute('data-team-2-id')),
+        el.id === 'board-score-l' ? 1 : 2);
+  }, {passive: false});
+};
 
 const winValue = (lostValue) => lostValue <= 19 ? 21 : (lostValue + 2);
 
