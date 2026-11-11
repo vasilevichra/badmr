@@ -224,11 +224,38 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
       // (добор до 5×номер партии, как на сервере)
       opponent.textContent = Math.max(opponentScore, 5 * increasedValue / 11);
       advanceBoardGameType(el);
+      // пауза между партиями: обратный отсчёт, прерывается кнопкой
+      showBoardBreakPlate(modal, Number(modal.getAttribute('data-game-break')) || 0);
       // перевернуть табло
       // создать новую игру
       // убрать статус текущей у предыдущей
     }
   }
+};
+
+// пауза между партиями (настройка game_break): после счёта, кратного 11,
+// закрывает табло обратным отсчётом; кнопка «Продолжить» прерывает до
+// истечения, по нулю секунд плашка закрывается сама. 0 — пауза выключена
+let boardBreakInterval = null;
+const showBoardBreakPlate = (modal, seconds) => {
+  const overlay = modal.querySelector('.board-break-overlay');
+  if (!overlay || seconds <= 0) return;
+  const counter = overlay.querySelector('.board-break-seconds');
+  let left = seconds;
+  counter.textContent = left;
+  overlay.hidden = false;
+  clearInterval(boardBreakInterval);
+  boardBreakInterval = setInterval(() => {
+    left -= 1;
+    if (left <= 0) return hideBoardBreakPlate(overlay);
+    counter.textContent = left;
+  }, 1000);
+};
+
+// «Продолжить» на плашке паузы: прерываем отсчёт и возвращаем табло в игру
+const hideBoardBreakPlate = (btn) => {
+  clearInterval(boardBreakInterval);
+  btn.closest('.board-break-overlay').hidden = true;
 };
 
 // минус очко (корректировка судьёй): DOM сразу, БД — синхронно с сервером;

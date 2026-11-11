@@ -67,6 +67,17 @@ class Settings {
     return settings.reduce((obj: Record<string, unknown>, s) => Object.assign(obj, {[s.name]: s.value}), {});
   }
 
+  /** Тип турнира (tournament_type_id): свой набор релевантных настроек
+   *  у каждого типа соревнований. */
+  getType(tournamentId?: number) {
+    return this.db.get<{ tournament_type_id: number }>(
+        `SELECT tournament_type_id
+         FROM tournament
+         WHERE id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [tournamentId ?? null]
+    )?.tournament_type_id;
+  }
+
   set(name: string, value: string, tournament_id?: number) {
     const id = tournament_id || this.db.get<{ id: number }>(`SELECT id FROM tournament WHERE current = 1`)?.id;
     return this.db.get(

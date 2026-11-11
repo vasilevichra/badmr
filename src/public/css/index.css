@@ -1427,6 +1427,16 @@ a.lab-profile:hover {
   margin-bottom: 4vh;
 }
 
+/* Общее правило (не device-специфичное). Цифры обратного отсчёта паузы
+   между партиями — крупнее заголовка, чтобы читались с корта. */
+.board-break-seconds {
+  font-size: 18vh;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  margin-bottom: 4vh;
+}
+
 .board-game-type {
   font-size: 1.6vw;
   justify-content: center;

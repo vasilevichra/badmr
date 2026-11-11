@@ -15,7 +15,7 @@ class Settings {
   private static readonly INTEGER_MIN: Record<string, number> = {
     delta: 0, proc: 0, matches: 0, wins: 1, game_point: 1, max_point: 1, capacity: 1, courts: 1,
     rating_diff_limit: 0, rating_diff_divisor: 1,
-    rematch_window: 0, delta_auto_window: 0, delta_auto_lower: 0, delta_auto_upper: 0,
+    rematch_window: 0, delta_auto_window: 0, delta_auto_lower: 0, delta_auto_upper: 0, game_break: 0,
   };
   private static readonly POSITIVE: Record<string, number> = {
     fee: 0, B_max: 0, C_max: 0, D_max: 0, E_max: 0, F_max: 0, G_max: 0, H_max: 0, r_min: 0,
@@ -41,6 +41,15 @@ class Settings {
     const error = new Error(message) as Error & { status?: number };
     error.status = 400;
     return error;
+  };
+
+  // настройки, релевантные типу турнира: у 110 свой регламент (матч до
+  // 110 очков, свой счёт и смена сторон), матчмейкинг, рейтинговые группы
+  // и формулы дельты НЛ к нему не относятся — из таблицы настроек их
+  // прячем. Отсутствующий тип (или null) — показывать все настройки,
+  // как у Новой лиги
+  private static readonly RELEVANT: Record<number, ReadonlySet<string> | null> = {
+    2: new Set(['state', 'region', 'city', 'timezone', 'capacity', 'courts', 'fee', 'r_min', 'r_max', 'type', 'game_break']),
   };
 
   private assertValid = async (name: string, value: string) => {
@@ -100,7 +109,14 @@ class Settings {
   }
 
   get = (name: string, tournamentId?: number) => this.settings.get(name, tournamentId)!.value;
-  getAll = (tournamentId?: number) => this.settings.getAll(tournamentId);
+  /** Список настроек с оверрайдами турнира; relevantOnly — только
+   *  релевантные типу этого турнира (см. RELEVANT). */
+  getAll = (tournamentId?: number, relevantOnly = false) => {
+    const rows = this.settings.getAll(tournamentId);
+    if (!relevantOnly) return rows;
+    const relevant = Settings.RELEVANT[this.settings.getType(tournamentId)] ?? null;
+    return relevant ? rows.filter(row => relevant.has(row.name)) : rows;
+  };
   set = async (name: string, value: string) => {
     await this.assertValid(name, String(value));
     return this.settings.set(name, value);

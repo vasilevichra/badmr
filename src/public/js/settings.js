@@ -49,7 +49,7 @@ const renderSettings = () => {
   // ограничения значений из схемы БД (CHECK нижних границ
   // и триггеры перекрёстных ограничений); селекторы шлют валидные id
   const integerMin = {delta: 0, proc: 0, matches: 0, wins: 1, game_point: 1, max_point: 1, capacity: 1, courts: 1,
-    rematch_window: 0, delta_auto_window: 0, delta_auto_lower: 0, delta_auto_upper: 0};
+    rematch_window: 0, delta_auto_window: 0, delta_auto_lower: 0, delta_auto_upper: 0, game_break: 0};
   const positive = {fee: 0, B_max: 0, C_max: 0, D_max: 0, E_max: 0, F_max: 0, G_max: 0, H_max: 0, r_min: 0};
   const greaterThan = {max_point: 'game_point', B_max: 'C_max', C_max: 'D_max', D_max: 'E_max', E_max: 'F_max', F_max: 'G_max', G_max: 'H_max'};
   // обратные стороны тех же пар: меньшая сторона не должна подняться до большей
@@ -88,7 +88,11 @@ const renderSettings = () => {
     });
   };
 
-  $.getJSON('/api/settings/', (rows) => {
+  // ?relevant=1 — сервер оставляет только настройки, релевантные типу
+  // текущего турнира (у Новой лиги — все, у 110 — свой список)
+  const settingsUrl = '/api/settings/?relevant=1';
+
+  $.getJSON(settingsUrl, (rows) => {
     rows.forEach((r) => values[r.name] = String(r.value));
 
     // начальные списки — уже отфильтрованные по текущим значениям
@@ -106,7 +110,7 @@ const renderSettings = () => {
 
       $('#settings-table')
       .bootstrapTable({
-        url: '/api/settings/',
+        url: settingsUrl,
         // состояние delta_auto известно до отрисовки строк — rowStyle
         // прячет строку delta независимо от порядка строк таблицы
         responseHandler: (rows) => {
