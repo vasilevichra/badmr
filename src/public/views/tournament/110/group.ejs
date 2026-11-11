@@ -75,7 +75,7 @@
                   первой): пары на антидиагонали — сеяный k против сеяного n+1-k,
                   к главной диагонали пары выравниваются по силе */ %>
             <% var matrix_teams = [...teams_in_group].reverse(); %>
-            <table class="table tournament-groups-table-games">
+            <table class="table tournament-groups-table-games" data-signed-in="<%= user ? 1 : 0 %>">
                 <tbody>
                 <% /* Шапка: пустой угол + названия колонок — rowspan-ячейки, смёрженные
                       с шапкой и строками до диагонали (rowspan = j+1), диагональные

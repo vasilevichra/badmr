@@ -533,6 +533,9 @@ $(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => {
 // только что доигранный/возобновлённый матч сразу показывает счёт
 const renderFinishedMatchScores = () => {
   $.get('/api/games/110/results').then(results => {
+    // кнопка возобновления — только залогиненным (как ▶ в EJS);
+    // флаг выставляет group.ejs на таблице матрицы
+    const signedIn = document.querySelector('table.tournament-groups-table-games[data-signed-in="1"]') !== null;
     // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ
     // "team-1Id" — читаем атрибуты напрямую
     const byPair = new Map((results || []).map(r => [`${r.team_1_id}-${r.team_2_id}`, r]));
@@ -545,7 +548,7 @@ const renderFinishedMatchScores = () => {
       scoreEl.className = 'game-result-score';
       scoreEl.textContent = `${r.score_1}:${r.score_2}`;
       td.appendChild(scoreEl);
-      if (!r.finished) {
+      if (!r.finished && signedIn) {
         const resume = document.createElement('button');
         resume.type = 'button';
         resume.className = 'btn btn-outline-success btn-sm game-result-resume';
