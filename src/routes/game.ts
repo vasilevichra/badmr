@@ -23,6 +23,11 @@ router.post('/current110/increase', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.increaseCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number)));
 });
 
+// минус очко — корректировка счёта судьёй (свайп вниз по полю счёта)
+router.post('/current110/decrease', ensureLoggedIn(), (req, res) => {
+  res.promise(gameService.decreaseCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number)));
+});
+
 router.post('/create', ensureLoggedIn(), (req, res) => {
   const {match_id, lost_1_by, lost_2_by, created_at} = req.body;
   res.promise(gameService.create(match_id, lost_1_by || null, lost_2_by || null, created_at));

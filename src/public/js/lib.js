@@ -201,8 +201,8 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   // лидером; при равном счёте и при доборе догоняющей смены нет. Каждый
   // порог лидер проходит один раз → до 10 смен за матч
   if (scoredByLeader && increasedValue % 11 === 6 && increasedValue < 110) {
-    boardSwapNotice(modal);
     swapBoardSidesEl(modal);
+    showBoardSwapPlate(modal);
   }
   if (increasedValue % 11 === 0) {
     // партия заканчивается, только когда кратный 11 счёт достигает лидер:
@@ -229,6 +229,15 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
       // убрать статус текущей у предыдущей
     }
   }
+};
+
+// минус очко (корректировка судьёй): DOM сразу, БД — синхронно с сервером;
+// без бипа и вибрации — это исправление, а не очко в игре
+const decreaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
+  // счёт 0 — ниже не убавляем
+  if (parseInt(el.textContent) <= 0) return;
+  el.textContent = parseInt(el.textContent) - 1;
+  $.post(`/api/games/current110/decrease?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
 };
 
 // салют при выигранном матче: лёгкие искры вокруг счёта, каждая
@@ -273,6 +282,10 @@ const swapBoardSidesEl = (modal) => {
   const leftClick = left.getAttribute('onclick');
   left.setAttribute('onclick', right.getAttribute('onclick'));
   right.setAttribute('onclick', leftClick);
+  // номер команды для жестов (свайп вверх/вниз) переезжает вместе со счётом
+  const leftNumber = left.getAttribute('data-team-number');
+  left.setAttribute('data-team-number', right.getAttribute('data-team-number'));
+  right.setAttribute('data-team-number', leftNumber);
 };
 
 // ручная смена сторон (кнопка между названиями): доступна только при 0:0,
@@ -283,16 +296,19 @@ const swapBoardSides = (btn) => {
   const right = modal.querySelector('#board-score-r');
   if (parseInt(left.textContent) !== 0 || parseInt(right.textContent) !== 0) return;
   swapBoardSidesEl(modal);
+  showBoardSwapPlate(modal);
 };
 
-// предупреждение о смене сторон: крупная надпись поверх табло на пару
-// секунд; absolute + pointer-events: none — вёрстку не сдвигает
-const boardSwapNotice = (modal) => {
-  const notice = document.createElement('div');
-  notice.className = 'board-swap-notice';
-  notice.textContent = 'Смена сторон';
-  modal.querySelector('.modal-content').appendChild(notice);
-  setTimeout(() => notice.remove(), 2100);
+// плашка смены сторон: закрывает табло целиком (счёт и типы игр не видны),
+// игру продолжает кнопка «Продолжить» — до неё счёт не изменить
+const showBoardSwapPlate = (modal) => {
+  modal.querySelector('.board-swap-overlay').hidden = false;
+};
+
+// «Продолжить» на плашке смены сторон: стороны уже поменяны, просто
+// возвращаем табло в игру
+const hideBoardSwapPlate = (btn) => {
+  btn.closest('.board-swap-overlay').hidden = true;
 };
 
 // конец партии (счёт одной из сторон достиг 11/22/…/99): сдвигаем выбор
@@ -360,8 +376,8 @@ const flashPartyWin = (el) => {
   boardBeep(660, 0.15, 0.5);
 };
 
-// свайп вверх по полю счёта табло — +1 очко (клик обрабатывает onclick
-// в board.ejs). Делегирование на document: модалок табло несколько (по
+// свайп вверх по полю счёта табло — +1 очко, свайп вниз — минус очко
+// (клик обрабатывает onclick в board.ejs). Делегирование на document: модалок табло несколько (по
 // одной на пару команд), getElementById нашёл бы только первую. Порог
 // 30px отсекает тап — его обрабатывает click. preventDefault гасит
 // синтетический click после свайпа, иначе очко задвоится
@@ -376,14 +392,19 @@ const addScoreBoardHandlers = () => {
     if (!scoreEl) return;
     const el = scoreEl;
     scoreEl = null;
-    if (e.changedTouches[0].clientY - startY > -30) return; // не свайп вверх
-    e.preventDefault();
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dy) < 30) return; // не свайп: тап обрабатывает click
+    e.preventDefault(); // гасим синтетический click, иначе очко задвоится
     // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ
-    // "team-1Id" — читаем атрибуты напрямую
-    increaseBoardScore(el,
-        Number(el.getAttribute('data-team-1-id')),
-        Number(el.getAttribute('data-team-2-id')),
-        el.id === 'board-score-l' ? 1 : 2);
+    // "team-1Id" — читаем атрибуты напрямую. data-team-number переезжает
+    // вместе со стороной при смене сторон (swapBoardSidesEl)
+    const args = [
+      Number(el.getAttribute('data-team-1-id')),
+      Number(el.getAttribute('data-team-2-id')),
+      Number(el.getAttribute('data-team-number')),
+    ];
+    if (dy > 0) decreaseBoardScore(el, ...args);
+    else increaseBoardScore(el, ...args);
   }, {passive: false});
 };
 

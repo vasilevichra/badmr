@@ -519,10 +519,29 @@ const updateBoardAvatars = (modal) => {
     });
   });
 };
+// восстановление текущего счёта при открытии табло: EJS рендерит стартовый
+// счёт, а матч мог уже идти — добираем фактический из БД. Команда 1 слева
+// (teamIds[0] → score_1), как при рендере; смена сторон — клиентская и
+// живёт только в открытом табло. При ненулевом счёте кнопка смены сторон
+// прячется — как при первом очке
+const restoreBoardScores = (modal) => {
+  const [teamId1, teamId2] = modal.id.match(/^tournament-groups-board-(\d+)-(\d+)$/)?.slice(1).map(Number) ?? [];
+  if (!teamId1) return;
+  $.get(`/api/games/current110?team_1_id=${teamId1}&team_2_id=${teamId2}`).then(game => {
+    if (!game) return;
+    const left = modal.querySelector('#board-score-l');
+    const right = modal.querySelector('#board-score-r');
+    left.textContent = game.score_1;
+    right.textContent = game.score_2;
+    const swap = modal.querySelector('.board-swap');
+    if (swap && (game.score_1 !== 0 || game.score_2 !== 0)) swap.hidden = true;
+  });
+};
 $(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => {
   updateBoardAvatars(event.currentTarget);
   // строки выше текущего разряда — уже сыгранные игры: серым (lib.js)
   markBoardPlayedTypes(event.currentTarget);
+  restoreBoardScores(event.currentTarget);
 });
 
 // счёт матчей в ячейках матрицы: финишировавший матч — только итоговый

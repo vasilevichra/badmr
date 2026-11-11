@@ -1,13 +1,21 @@
 <div class="modal fade" id="tournament-groups-board-<%= gameId %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
+            <% /* плашка смены сторон: закрывает табло, пока стороны
+                  не подтверждены кнопкой; показывает swapBoardSidesPlate */ %>
+            <div class="board-swap-overlay" hidden>
+                <div class="board-swap-plate">
+                    <div class="board-swap-plate-title">Смена сторон</div>
+                    <button type="button" class="btn btn-primary" onclick="hideBoardSwapPlate(this)">Продолжить</button>
+                </div>
+            </div>
             <div class="modal-body">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
                 <div class="container-fluid">
                     <div class="row vh-100 text-center no-selection">
                         <div class="col">
                             <div class="row board-team-name"><%= teamNames[0] %></div>
-                            <div id="board-score-l" class="row board-score" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 1)"><%= startScores[0] %></div>
+                            <div id="board-score-l" class="row board-score" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" data-team-number="1" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 1)"><%= startScores[0] %></div>
                             <% /* аватары реальных игроков по разрядам: для текущего
                                   разряда табло показывает свою группу (МО —
                                   одиночный мужчина, МП — пара и т.д.), группы
@@ -50,7 +58,7 @@
 
                         <div class="col">
                             <div class="row board-team-name"><%= teamNames[1] %></div>
-                            <div id="board-score-r" class="row board-score" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 2)"><%= startScores[1] %></div>
+                            <div id="board-score-r" class="row board-score" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" data-team-number="2" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 2)"><%= startScores[1] %></div>
                             <div class="row align-content-end justify-content-center board-avatars" style="height: 10vh;">
                                 <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>
                                     <div class="col-auto px-1" data-type="<%= avatarType %>" hidden>

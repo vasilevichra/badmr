@@ -33,7 +33,13 @@ class Game110 {
            AND m.finished = 0
            AND m.team_1_id = ?
            AND m.team_2_id = ?
-           AND g.current = 1`,
+           AND g.current = 1
+           -- по паре берём только последний матч (клик ▶ может
+           -- насоздавать несколько матчей одной пары)
+           AND m.id = (SELECT MAX(m2.id) FROM match_110 m2
+                       WHERE m2.tournament_id = m.tournament_id
+                         AND m2.team_1_id = m.team_1_id
+                         AND m2.team_2_id = m.team_2_id)`,
         [teamId1, teamId2]
     );
   }
@@ -97,6 +103,22 @@ class Game110 {
          SET score_${loser} = MAX(score_${loser}, ?)
          WHERE id = ?`,
         [5 * winnerScore / 11, g!.id]
+    );
+  }
+
+  /** Минус очко (корректировка): только у идущего матча, счёт не ниже 0.
+   *  Автозачёт и finished не трогаем — убавление не отменяет сыгранную
+   *  партию, судья правит счёт вручную. */
+  decreaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string) {
+    const g = this.getCurrentByTeamIds(teamId1, teamId2);
+    // матча нет или он уже завершён — декремента нет
+    if (!g) return;
+    const scorer = teamNumber === "1" ? "1" : "2";
+    this.db.run(
+        `UPDATE game_110
+         SET score_${scorer} = score_${scorer} - 1
+         WHERE id = ? AND score_${scorer} > 0`,
+        [g!.id]
     );
   }
 
