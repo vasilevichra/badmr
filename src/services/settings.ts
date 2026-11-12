@@ -47,10 +47,13 @@ class Settings {
   // 110 очков, свой счёт и смена сторон), матчмейкинг, рейтинговые группы
   // и формулы дельты НЛ к нему не относятся — из таблицы настроек их
   // прячем. Отсутствующий тип (или null) — показывать все настройки,
-  // как у Новой лиги
+  // как у Новой лиги, кроме чисто «стодесятых» (ONLY_110)
   private static readonly RELEVANT: Record<number, ReadonlySet<string> | null> = {
     2: new Set(['state', 'region', 'city', 'timezone', 'capacity', 'courts', 'fee', 'r_min', 'r_max', 'type', 'game_break']),
   };
+
+  // настройки, существующие только у турниров 110
+  private static readonly ONLY_110: ReadonlySet<string> = new Set(['game_break']);
 
   private assertValid = async (name: string, value: string) => {
     if (name === 'type') {
@@ -115,7 +118,9 @@ class Settings {
     const rows = this.settings.getAll(tournamentId);
     if (!relevantOnly) return rows;
     const relevant = Settings.RELEVANT[this.settings.getType(tournamentId)] ?? null;
-    return relevant ? rows.filter(row => relevant.has(row.name)) : rows;
+    if (relevant) return rows.filter(row => relevant.has(row.name));
+    // тип без своего списка (Новая лига и др.) — все настройки, кроме 110-шных
+    return rows.filter(row => !Settings.ONLY_110.has(row.name));
   };
   set = async (name: string, value: string) => {
     await this.assertValid(name, String(value));

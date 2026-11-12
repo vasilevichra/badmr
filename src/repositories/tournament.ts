@@ -50,6 +50,10 @@ class Tournament {
       this.id = changes[changes.length - 1].id!;
       this.settingsRepository.set('r_min', min_rating, this.id);
       this.settingsRepository.set('r_max', max_rating, this.id);
+      // вместимость из формы: 0/пусто — оставить дефолт
+      if (Number(capacity) > 0) {
+        this.settingsRepository.set('capacity', String(capacity), this.id);
+      }
       // город турнира по умолчанию — город клуба создателя
       const clubCity = this.db.get<{ city_id: number }>(
           `SELECT city_id FROM user_club WHERE id = ?`,

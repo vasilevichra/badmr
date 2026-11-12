@@ -100,9 +100,9 @@
             regEndTimeTag = `<time datetime="${regEndUntilDays}d ${regEndUntilHours}h ${regEndUntilMinutes}m ${regEndUntilSecs}s"></time>`;
             regEndUntilStr = ` (осталось: ${regEndTimeTag})`;
         } else {
-            // «закончилась N назад» досчитывает клиент (calendarPartsSince из lib.js):
+            // «N назад» досчитывает клиент (calendarPartsSince из lib.js):
             // серверная строка устаревает сразу после рендера
-            regEndUntilStr = ` (закончилась: <time class="reg-end-since" datetime="${regEndedAt.toISOString()}">сегодня</time>)`;
+            regEndUntilStr = ` (<time class="reg-end-since" datetime="${regEndedAt.toISOString()}">сегодня</time>)`;
         }
 
         const getRegEndPhoneStr = () => {

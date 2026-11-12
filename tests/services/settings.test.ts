@@ -121,10 +121,12 @@ describe("Settings", () => {
       );
     });
 
-    it("relevantOnly для типа без своего списка возвращает все настройки", async () => {
-      // у типа 1 (Новая лига) отдельного списка нет — показываем все
+    it("relevantOnly для типа без своего списка возвращает все настройки, кроме 110-шных", async () => {
+      // у типа 1 (Новая лига) отдельного списка нет — показываем все,
+      // кроме настроек, существующих только у 110 (game_break)
       const all = await settingsService.getAll(undefined, true) as unknown as Setting[];
-      assert.strictEqual(all.length, 39);
+      assert.strictEqual(all.length, 38);
+      assert.ok(!all.some((s) => s.name === "game_break"));
     });
   });
 
