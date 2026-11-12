@@ -1256,6 +1256,18 @@ a.lab-profile:hover {
   font-size: 6vh;
   font-weight: 500;
   justify-content: center;
+  /* Общее правило (не device-специфичное): название команды — всегда
+     одной строкой, подбор размера делает fitBoardTeamNames (lib.js);
+     боковые паддинги держат текст от краёв колонки */
+  white-space: nowrap;
+  padding: 0 2vw;
+}
+
+/* Общее правило (не device-специфичное). Bootstrap растягивает прямых
+   детей .row на width:100% — спан с текстом названия должен быть шириной
+   с текст, по нему fitBoardTeamNames меряет переполнение */
+.board-team-name span {
+  width: auto;
 }
 
 .board-score {
@@ -1412,11 +1424,21 @@ a.lab-profile:hover {
   display: none;
 }
 
+/* Общее правило (не device-специфичное). Пауза между партиями: без
+   затемнения табло — вместо него непрозрачная плашка на всю модалку. */
+.board-break-overlay {
+  background: transparent;
+}
+
 .board-swap-plate {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 4vh 6vh;
-  border-radius: 3vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--badmr-card-bg);
 }
 
 .board-swap-plate-title {
@@ -1427,13 +1449,54 @@ a.lab-profile:hover {
   margin-bottom: 4vh;
 }
 
+/* Общее правило (не device-специфичное). Заголовок плашки паузы скромнее
+   плашки смены сторон: главное на ней — цифры отсчёта. */
+.board-break-overlay .board-swap-plate-title {
+  font-size: 5vh;
+  margin-bottom: 1vh;
+}
+
+/* Общее правило (не device-специфичное). Заголовок плашки смены сторон —
+   капсом; плашка паузы не задевается (там пользователь просил строчные). */
+.board-swap-overlay:not(.board-break-overlay) .board-swap-plate-title {
+  text-transform: uppercase;
+}
+
+/* Общее правило (не device-специфичное). Подзаголовок «приготовиться:»
+   и ряд игроков на плашке смены сторон: игроки клонируются с табло
+   (классы .board-player*), имена и зазор укрупняем под плашку. */
+.board-swap-plate-subtitle {
+  font-size: 3.5vh;
+  margin-bottom: 1vh;
+}
+
+.board-swap-players {
+  display: flex;
+  justify-content: center;
+  gap: 6vw;
+  margin-bottom: 4vh;
+}
+
+.board-swap-players .board-player-name {
+  font-size: 2.6vh;
+}
+
+/* Общее правило (не device-специфичное). Кнопка «Продолжить» на плашках
+   (смена сторон и пауза) — крупная иконка play вместо текста: читается
+   с корта, кликается с телефона. */
+.board-swap-overlay .btn-primary {
+  font-size: 6vh;
+  line-height: 1;
+  padding: 1.5vh 6vh;
+}
+
 /* Общее правило (не device-специфичное). Цифры обратного отсчёта паузы
    между партиями — крупнее заголовка, чтобы читались с корта. */
 .board-break-seconds {
-  font-size: 18vh;
+  font-size: 37vw;
+  font-stretch: 50%;
   font-weight: 700;
   line-height: 1;
-  color: #fff;
   margin-bottom: 4vh;
 }
 

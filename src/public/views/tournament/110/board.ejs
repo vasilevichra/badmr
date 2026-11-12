@@ -6,7 +6,15 @@
             <div class="board-swap-overlay" hidden>
                 <div class="board-swap-plate">
                     <div class="board-swap-plate-title">Смена сторон</div>
-                    <button type="button" class="btn btn-primary" onclick="hideBoardSwapPlate(this)">Продолжить</button>
+                    <div class="board-swap-plate-subtitle secondary-info">приготовиться:</div>
+                    <% /* игроки с ФИ и аватаркой — как на табло: JS клонирует
+                          сюда видимых игроков текущего разряда (lib.js,
+                          showBoardSwapPlate) */ %>
+                    <div class="board-swap-players">
+                        <div class="board-swap-players-side board-swap-players-left"></div>
+                        <div class="board-swap-players-side board-swap-players-right"></div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="hideBoardSwapPlate(this)" aria-label="Продолжить"><i class="bi bi-play-fill"></i></button>
                 </div>
             </div>
             <% /* пауза между партиями: обратный отсчёт с game_break секунд
@@ -14,9 +22,17 @@
                   showBoardBreakPlate */ %>
             <div class="board-swap-overlay board-break-overlay" hidden>
                 <div class="board-swap-plate">
-                    <div class="board-swap-plate-title">Следующая игра через</div>
+                    <div class="board-swap-plate-title">таймаут</div>
                     <div class="board-break-seconds"></div>
-                    <button type="button" class="btn btn-primary" onclick="hideBoardBreakPlate(this)">Продолжить</button>
+                    <div class="board-swap-plate-subtitle secondary-info">приготовиться:</div>
+                    <% /* игроки с ФИ и аватаркой — как на табло: JS клонирует
+                          сюда видимых игроков текущего разряда (lib.js,
+                          showBoardBreakPlate) */ %>
+                    <div class="board-swap-players">
+                        <div class="board-swap-players-side board-break-players-left"></div>
+                        <div class="board-swap-players-side board-break-players-right"></div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="hideBoardBreakPlate(this)" aria-label="Продолжить"><i class="bi bi-play-fill"></i></button>
                 </div>
             </div>
             <div class="modal-body">
@@ -24,7 +40,7 @@
                 <div class="container-fluid">
                     <div class="row vh-100 text-center no-selection">
                         <div class="col">
-                            <div class="row board-team-name"><%= teamNames[0] %></div>
+                            <div class="row board-team-name"><span><%= teamNames[0] %></span></div>
                             <div id="board-score-l" class="row board-score" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" data-team-number="1" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 1)"><%= startScores[0] %></div>
                             <% /* аватары реальных игроков по разрядам: для текущего
                                   разряда табло показывает свою группу (МО —
@@ -67,7 +83,7 @@
                         </div>
 
                         <div class="col">
-                            <div class="row board-team-name"><%= teamNames[1] %></div>
+                            <div class="row board-team-name"><span><%= teamNames[1] %></span></div>
                             <div id="board-score-r" class="row board-score" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" data-team-number="2" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 2)"><%= startScores[1] %></div>
                             <div class="row align-content-end justify-content-center board-avatars" style="height: 10vh;">
                                 <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>

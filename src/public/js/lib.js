@@ -223,9 +223,11 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
       // автозачёт: проигравший партию получает минимум 5 очков за неё
       // (добор до 5×номер партии, как на сервере)
       opponent.textContent = Math.max(opponentScore, 5 * increasedValue / 11);
-      advanceBoardGameType(el);
-      // пауза между партиями: обратный отсчёт, прерывается кнопкой
+      // пауза между партиями: обратный отсчёт, прерывается кнопкой.
+      // Плашка до advanceBoardGameType: она показывает состав следующей
+      // игры, вычисленный от текущего типа
       showBoardBreakPlate(modal, Number(modal.getAttribute('data-game-break')) || 0);
+      advanceBoardGameType(el);
       // перевернуть табло
       // создать новую игру
       // убрать статус текущей у предыдущей
@@ -237,12 +239,46 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
 // закрывает табло обратным отсчётом; кнопка «Продолжить» прерывает до
 // истечения, по нулю секунд плашка закрывается сама. 0 — пауза выключена
 let boardBreakInterval = null;
+// игроки с ФИ и аватаркой на плашках: показываем состав СЛЕДУЮЩЕЙ игры —
+// тип берём из списка разрядов (строка после текущей, через разделитель
+// «•»), игроков клонируем из соответствующей группы колонок табло.
+// Подзаголовок — «ПРИГОТОВИТЬСЯ [тип]:». Следующего типа нет (последняя
+// партия) — показываем видимых игроков без типа в подзаголовке
+const cloneBoardPlayers = (modal, overlay, left, right) => {
+  const current = modal.querySelector('.board-game-type-current');
+  let next = current && current.nextElementSibling;
+  while (next && !next.classList.contains('board-game-type')) next = next.nextElementSibling;
+  if (next && next.textContent.trim() === '•') next = next.nextElementSibling;
+  const type = next ? next.textContent.trim() : null;
+  // круг игры: блоки разрядов до и после разделителя «•» — первый и второй
+  // круг; номер = сколько разделителей выше строки следующей игры + 1
+  let circle = 1;
+  if (next) {
+    const rows = Array.from(modal.querySelectorAll('.board-game-types .board-game-type'));
+    circle = rows.slice(0, rows.indexOf(next)).filter((r) => r.textContent.trim() === '•').length + 1;
+  }
+  // «ПРИГОТОВИТЬСЯ» — только на плашке смены сторон; на плашке таймаута
+  // (новая игра) — только тип с кругом
+  overlay.querySelector('.board-swap-plate-subtitle').innerHTML = overlay.classList.contains('board-break-overlay')
+      ? (type ? `${type} · ${circle}` : '')
+      : (type ? `ПРИГОТОВИТЬСЯ: ${type} · ${circle}` : '');
+  modal.querySelectorAll('.modal-body .board-avatars').forEach((column, i) => {
+    const group = type && column.querySelector(`[data-type="${type}"]`);
+    const players = group
+        ? group.querySelectorAll('.board-player')
+        : column.querySelectorAll('[data-type]:not([hidden]) .board-player');
+    const side = modal.querySelector(i === 0 ? left : right);
+    side.replaceChildren(...Array.from(players, (p) => p.cloneNode(true)));
+  });
+};
+
 const showBoardBreakPlate = (modal, seconds) => {
   const overlay = modal.querySelector('.board-break-overlay');
   if (!overlay || seconds <= 0) return;
   const counter = overlay.querySelector('.board-break-seconds');
   let left = seconds;
   counter.textContent = left;
+  cloneBoardPlayers(modal, overlay, '.board-break-players-left', '.board-break-players-right');
   overlay.hidden = false;
   clearInterval(boardBreakInterval);
   boardBreakInterval = setInterval(() => {
@@ -258,12 +294,35 @@ const hideBoardBreakPlate = (btn) => {
   btn.closest('.board-break-overlay').hidden = true;
 };
 
+// подбор размера названий команд на табло: уменьшаем шрифт так, чтобы
+// каждое название умещалось в одну строку своей колонки; размер общий —
+// по самому длинному названию, чтобы оба выглядели одинаково
+const fitBoardTeamNames = (modal) => {
+  const names = modal.querySelectorAll('.board-team-name');
+  if (names.length !== 2) return;
+  names.forEach((n) => { n.style.fontSize = ''; });
+  // доступная ширина: колонка минус боковые паддинги самой строки названия
+  const avail = (n) => {
+    const cs = getComputedStyle(n);
+    return n.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  };
+  // итеративно: ширина текста не строго линейна кеглю (веб-шрифт Raleway,
+  // пробелы), поэтому после каждой смены кегля перемеряем и уточняем,
+  // пока оба названия не умещаются в свою колонку
+  for (let i = 0; i < 6; i++) {
+    const scale = Math.min(...Array.from(names, (n) => Math.min(1, avail(n) * 0.98 / n.querySelector('span').offsetWidth)));
+    if (scale >= 1) break;
+    names.forEach((n) => { n.style.fontSize = `${parseFloat(getComputedStyle(n).fontSize) * scale}px`; });
+  }
+};
+
 // минус очко (корректировка судьёй): DOM сразу, БД — синхронно с сервером;
-// без бипа и вибрации — это исправление, а не очко в игре
+// низкий бип фэйла — откат очка, а не очко в игре
 const decreaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   // счёт 0 — ниже не убавляем
   if (parseInt(el.textContent) <= 0) return;
   el.textContent = parseInt(el.textContent) - 1;
+  boardBeep(220, 0.1, 0.2);
   $.post(`/api/games/current110/decrease?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
 };
 
@@ -329,6 +388,10 @@ const swapBoardSides = (btn) => {
 // плашка смены сторон: закрывает табло целиком (счёт и типы игр не видны),
 // игру продолжает кнопка «Продолжить» — до неё счёт не изменить
 const showBoardSwapPlate = (modal) => {
+  // игроки с ФИ и аватаркой — как на табло: клонируем видимых игроков
+  // текущего разряда из обеих колонок табло; слева — будущая левая
+  // сторона (на обоих местах вызова swapBoardSidesEl уже отработал)
+  cloneBoardPlayers(modal, modal.querySelector('.board-swap-overlay'), '.board-swap-players-left', '.board-swap-players-right');
   modal.querySelector('.board-swap-overlay').hidden = false;
 };
 
@@ -606,6 +669,10 @@ const copyToClipboard = (text, onDone) => {
   }
 };
 
+$(document).on('shown.bs.modal', (e) => {
+  // названия команд на табло: общий подобранный размер после отрисовки
+  if (e.target.querySelector('.board-team-name')) fitBoardTeamNames(e.target);
+});
 $(document).on('click', '.tournament-name-copy', function () {
   // текст шеры собран в data-share; {REG_LEFT} — скобка про регистрацию:
   // есть отсчёт (статус «Регистрация») → остаток в полных сутках или
