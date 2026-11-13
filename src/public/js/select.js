@@ -6,156 +6,194 @@ const renderSelect = () => {
 
     $.getJSON(withTournament("/api/common/ready/"), ready => {
       if (ready.join("").length) {
-        // шанс пары («Шанс») считает сервер: win_rate совместных доигранных
-        // матчей напарников входит в ответ ready() — chance1/chance2;
-        // null — напарники ни разу не играли вместе (в таблице «—»)
+        // карточка-барометр: две пары навстречу друг другу с полосами
+        // по сумме рейтингов; шанс пары («Шанс») и превышение среднего
+        // рейтинга сильнейшим игроком («Δ») — у каждой пары отдельно
 
-        $.each(ready, i => {
-          $(selectFormTemplate(i)).appendTo($('#select-block'));
+        // корт каждой кандидатуры: /api/matches/create назначит матчу
+        // первый свободный корт (available = 1, ORDER BY id ASC) — тот же
+        // порядок здесь, чтобы бейдж корта совпал с фактическим назначением.
+        // Свободный корт: available = 1 И на нём не идёт незавершённый
+        // матч (флаг available может быть неактуален, поэтому занятые
+        // номера кортов дополнительно вычисляем по /api/matches/unfinished
+        // — он не фильтруется по турниру и отдаёт номер корта каждого
+        // незавершённого матча)
+        $.when(
+            $.getJSON(withTournament("/api/courts/")),
+            $.getJSON(withTournament("/api/matches/unfinished"))
+        ).done((courts, unfinished) => {
+          const busyNumbers = new Set(unfinished[0].map(match => match.court));
+          const freeCourts = courts[0]
+              .filter(court => court.available && !busyNumbers.has(court.number))
+              .sort((a, b) => a.id - b.id)
+              .map(court => court.number);
+          $.each(ready, (i, field) => {
+            field.court = freeCourts[i];
+          });
+          renderReadyForms(ready);
         });
-
-        $.each(ready, (i, field) => {
-          let players1 = field.players1;
-          let players2 = field.players2;
-
-          // процент превышения среднего рейтинга пары одним из игроков
-          const pairExcess = (players) => {
-            const avg = (players[0].rating + players[1].rating) / 2;
-            return (Math.max(players[0].rating, players[1].rating) / avg - 1) * 100;
-          };
-          players1.forEach((player) => {
-            player.excess = pairExcess(players1);
-          });
-          players2.forEach((player) => {
-            player.excess = pairExcess(players2);
-          });
-
-          // пол и аватар приходят прямо в ready() — отдельные запросы
-          // за пользователем не нужны
-
-          // шанс пары живёт в rowspan-ячейке первого игрока: 0 — вместе
-          // играли, но ни одной совместной победы; null — не играли («—»)
-          players1[0].chance = field.chance1;
-          players2[0].chance = field.chance2;
-
-          const table1 = $(`#select-form-table-1-${i}`);
-          table1.bootstrapTable({
-            data: field.players1,
-            columns: selectColumns
-          });
-          // скрытия до mergeCells: hideColumn перерисовывает тело таблицы
-          // и сбросил бы уже проставленные rowspan-ячейки.
-          // «Сыграно» скрываем, пока пара ещё не сыграла ни одного матча;
-          // «Шанс» виден всегда — без совместных матчей показывает «—»
-          if (players1.every((player) => !player.matches)) {
-            table1.bootstrapTable('hideColumn', 'matches');
-          }
-          table1.bootstrapTable('mergeCells', {index: 0, field: 'chance', rowspan: 2});
-          table1.bootstrapTable('mergeCells', {index: 0, field: 'excess', rowspan: 2});
-          bindMergedCellHover(table1);
-          addPhoneColumnHints(table1);
-          table1.on('click-cell.bs.table', (e, field, row, element) => {
-            if (field === 'name') {
-              openPlayerWindow(element.user_id);
-            }
-          });
-
-          const table2 = $(`#select-form-table-2-${i}`);
-          table2.bootstrapTable({
-            data: field.players2,
-            columns: selectColumns
-          });
-          if (players2.every((player) => !player.matches)) {
-            table2.bootstrapTable('hideColumn', 'matches');
-          }
-          table2.bootstrapTable('mergeCells', {index: 0, field: 'chance', rowspan: 2});
-          table2.bootstrapTable('mergeCells', {index: 0, field: 'excess', rowspan: 2});
-          bindMergedCellHover(table2);
-          addPhoneColumnHints(table2);
-          table2.on('click-cell.bs.table', (e, field, row, element) => {
-            if (field === 'name') {
-              openPlayerWindow(element.user_id);
-            }
-          });
-          // сильнейшая пара — с большей суммой рейтингов: её колонка красится
-          // как rating-plus; при равенстве сумм сильнейшей считается вторая
-          const stronger = field.players1.reduce((acc, p1) => acc + p1.rating, 0) >
-            field.players2.reduce((acc, p2) => acc + p2.rating, 0) ? 1 : 2;
-          if (stronger === 1) {
-            $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
-            $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
-          } else {
-            $(`#select-form-table-1-${i} tbody tr td:nth-child(1)`).addClass('rating-minus');
-            $(`#select-form-table-2-${i} tbody tr td:nth-child(1)`).addClass('rating-plus');
-          }
-
-          // пометки в заголовке колонки «Имя»: слева название, у правого края —
-          // дельта сильнейшей пары (+1.6) и значок фаворита; если обе в одном
-          // заголовке — сначала дельта, через пробел значок
-          const marks = {};
-          // дельта сильнейшей пары в заголовке: на телефоне — целочисленная
-          marks[stronger] = `<span class="select-delta">+${isPhone() ? Math.round(field.diff) : field.diff.toFixed(1)}</span>`;
-          if (field.favorite === 1 || field.favorite === 2) {
-            marks[field.favorite] = `${marks[field.favorite] ?? ''}<i class="bi bi-trophy-fill select-favorite"></i>`;
-          }
-          for (const [tableNum, html] of Object.entries(marks)) {
-            const nameTh = $(`#select-form-table-${tableNum}-${i}`).find('thead th:first');
-            nameTh.addClass('select-mark-th');
-            nameTh.find('.th-inner').append(`<span class="select-marks">${html}</span>`);
-          }
-          $(`#select-form-button-submit-${i}`).off('click').click((event) => {
-            event.preventDefault();
-
-            // прогресс-бар турнира появляется при первом «Начать»
-            renderTournamentProgress(true);
-
-            // защита от двойной отправки: кнопка неактивна до ответа сервера
-            const submitButton = $(`#select-form-button-submit-${i}`).prop('disabled', true);
-
-            $.ajax({
-              url: '/api/matches/create',
-              type: 'POST',
-              dataType: 'json',
-              contentType: 'application/json; charset=utf-8',
-              data: JSON.stringify({
-                user_1_id: players1[0].user_id,
-                user_2_id: players1[1].user_id,
-                user_3_id: players2[0].user_id,
-                user_4_id: players2[1].user_id
-              }),
-              success: function (result) {
-                $(`#select-form-${i}`).hide();
-                renderGames();
-                showSelectButton();
-                // матч создан: игроки перешли в «играет» — таблица игроков
-                // и корты обновляются по факту ответа, а не сразу после
-                // отправки запроса (иначе гонка: данные ещё старые)
-                refresh.table.player();
-                refresh.table.court();
-              },
-              complete: function () {
-                // при ошибке форма остаётся, кнопка снова активна
-                // (текст ошибки показывает глобальный обработчик ajaxError)
-                submitButton.prop('disabled', false);
-              }
-            });
-          });
-          $(`#select-form-button-reset-${i}`).off('click').click((event) => {
-            event.preventDefault();
-
-            $(`#select-form-${i}`).hide();
-
-            showSelectButton();
-          });
-        });
-
-        if (isPhone()) {
-          fitSelectTables();
-          $(window).off('resize.selectFit').on('resize.selectFit', fitSelectTables);
-        }
       } else {
         $('#select-info').show();
       }
+    });
+  });
+}
+
+const renderReadyForms = (ready) => {
+  $.each(ready, i => {
+    $(selectFormTemplate(i)).appendTo($('#select-block'));
+    $(selectBoardTemplate(i)).appendTo($('#select-block'));
+  });
+
+  $.each(ready, (i, field) => {
+    const players1 = field.players1;
+    const players2 = field.players2;
+
+    // процент превышения среднего рейтинга пары одним из игроков
+    const pairExcess = (players) => {
+      const avg = (players[0].rating + players[1].rating) / 2;
+      return (Math.max(players[0].rating, players[1].rating) / avg - 1) * 100;
+    };
+
+    const sigma1 = players1.reduce((acc, p) => acc + p.rating, 0);
+    const sigma2 = players2.reduce((acc, p) => acc + p.rating, 0);
+    // фаворит: при системе 50% — по моментуму (field.favorite),
+    // без неё — сильнейшая пара по сумме рейтингов; при равенстве
+    // сумм сильнейшей считается вторая (как в прежней раскраске)
+    const favorite = field.favorite === 1 || field.favorite === 2
+        ? field.favorite
+        : (sigma1 > sigma2 ? 1 : 2);
+
+    // формат чисел: на телефоне — целочисленный, без дробной части
+    // не телефона — один знак после запятой (плавающая точка даёт хвосты
+    // вида 770.9000000000001)
+    const num = (value) => isPhone() ? `${Math.round(value)}` : value.toFixed(1);
+    // проценты (шанс и разница) — всегда до одного знака после запятой
+    const pct = (value) => `${value.toFixed(1)}%`;
+
+    // аватар игрока — реплика playerAvatarFormatter (src/share.cjs):
+    // pic — data-URL/http/«сырой» base64, битая картинка подменяется
+    // заглушкой по полу; на углу аватарки — точка статуса: красная, если
+    // игрок играл в последних матчах (флаг played вьюхи ready), зелёная,
+    // если нет; точка ставится со стороны ФИО: справа у левой колонки,
+    // слева у правой
+    const avatar = (player, flip) => {
+      const src = player.pic && (player.pic.startsWith('http') || player.pic.startsWith('data:'))
+          ? player.pic
+          : 'data:image/png;base64, ' + player.pic;
+      const fallback = `this.onerror=null;this.src='/assets/images/${player.sex ? 'pepe' : 'pepe-girl'}.svg';`;
+      const dot = `<i class="select-baro-dot ${flip ? 'select-baro-dot-l' : 'select-baro-dot-r'} ${player.played ? 'select-baro-dot-played' : 'select-baro-dot-idle'}"></i>`;
+      return `<span class="select-baro-ava">` +
+          `<img class="no-selection select-baro-pic" src="${player.pic ? src : `/assets/images/${player.sex ? 'pepe' : 'pepe-girl'}.svg`}" alt="" width="20" height="20" onerror="${fallback}"/>` +
+          `${dot}</span>`;
+    };
+
+    // строка игрока «Имя рейтинг · сыграно матчей»; порядок задаётся
+    // колонкой: слева — аватар + «Имя рейтинг · сыграно», справа —
+    // «сыграно · рейтинг Имя» + аватар в конце; числа приглушённые
+    // (secondary-info, как #id в playerNameFormatter); разделитель
+    // между ФИО и рейтингом — пробел, между рейтингом и матчами — точка;
+    // матчи — matches вьюхи ready (played там — флаг «играл
+    // в последних N матчах»), их количество — всегда целое; клик по имени
+    // открывает карточку игрока; на телефоне имя сокращается до
+    // «Фамилия И.» и обрезается многоточием
+    const matches = (player) => `${Math.round(player.matches)}`;
+    const playerLine = (player, flip) =>
+        `<span class="select-baro-name no-selection" data-user-id="${player.user_id}" role="button">` +
+        (flip
+            ? `<span class="secondary-info">${matches(player)}&nbsp;·&nbsp;${num(player.rating)}</span>&nbsp;${shortName(player.name)}&nbsp;${avatar(player, flip)}`
+            : `${avatar(player, flip)}&nbsp;${shortName(player.name)}&nbsp;<span class="secondary-info">${num(player.rating)}&nbsp;·&nbsp;${matches(player)}</span>`) +
+        `</span>`;
+
+    const fillColumn = (side, players, sigma, chance, excess) => {
+      const max = Math.max(sigma1, sigma2);
+      // кубок: в левой колонке — справа от суммы, в правой — слева
+      $(`#select-baro-sigma-${side}-${i}`).html(
+          favorite !== Number(side) ? num(sigma) : side === 1
+              ? num(sigma) + '<i class="bi bi-trophy-fill select-baro-trophy select-baro-trophy-after"></i>'
+              : '<i class="bi bi-trophy-fill select-baro-trophy"></i>' + num(sigma)
+      );
+      // полоса — винрейт совместных матчей пары: вместе не играли — пустая
+      $(`#select-baro-fill-${side}-${i}`).css('width', chance != null ? `${Math.min(chance, 100)}%` : '0%');
+      $(`#select-baro-names-${side}-${i}`).html(players.map(p => playerLine(p, side === 2)).join(''));
+      // шанс пары — только в полосе под суммой; мета — только Δ
+      $(`#select-baro-meta-${side}-${i}`).html(
+          `<span class="select-baro-chip select-baro-chip-warn">Δ&nbsp;${pct(excess)}</span>`
+      );
+      $(`#select-baro-col-${side}-${i}`).toggleClass('select-baro-fav', favorite === Number(side));
+    };
+    fillColumn(1, players1, sigma1, field.chance1, pairExcess(players1));
+    fillColumn(2, players2, sigma2, field.chance2, pairExcess(players2));
+
+    // строки «имя · числа» — по содержимому: самая длинная из 4 игроков
+    // пары задаёт ширину остальным строкам; эта же ширина — колонкам и
+    // полосам шанса (колонка ровно по ширине шанса, симметрично)
+    const nameLines = $(`#select-form-${i} .select-baro-name`).toArray();
+    const barWidth = Math.max(...nameLines.map(el => el.offsetWidth));
+    nameLines.forEach(el => {
+      el.style.width = `${barWidth}px`;
+    });
+    $(`#select-baro-col-1-${i}, #select-baro-col-2-${i}`)
+        .css('width', `${barWidth}px`);
+
+    // бейдж корта между половинками
+    $(`#select-baro-court-${i}`).text(field.court ? `Корт №${field.court}` : 'Корт —');
+
+    // превью-табло кандидатуры: составы пар и корт, счёт 0:0
+    $(`#select-board-title-${i}`).text(`Корт №${field.court ?? '—'} · кандидатура ${i + 1}`);
+    $(`#select-board-team-1-${i}`).html(players1.map(p => playerLine(p, false)).join('<br>'));
+    $(`#select-board-team-2-${i}`).html(players2.map(p => playerLine(p, true)).join('<br>'));
+
+    // клик по имени — карточка игрока (в карточке и на превью-табло)
+    $(`#select-form-${i}, #select-board-${i}`).off('click', '.select-baro-name')
+        .on('click', '.select-baro-name', (event) => {
+          openPlayerWindow($(event.currentTarget).data('user-id'));
+        });
+
+    $(`#select-form-button-submit-${i}`).off('click').click((event) => {
+      event.preventDefault();
+
+      // прогресс-бар турнира появляется при первом «Начать»
+      renderTournamentProgress(true);
+
+      // защита от двойной отправки: кнопка неактивна до ответа сервера
+      const submitButton = $(`#select-form-button-submit-${i}`).prop('disabled', true);
+
+      $.ajax({
+        url: '/api/matches/create',
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user_1_id: players1[0].user_id,
+          user_2_id: players1[1].user_id,
+          user_3_id: players2[0].user_id,
+          user_4_id: players2[1].user_id
+        }),
+        success: function (result) {
+          $(`#select-form-${i}`).hide();
+          $(`#select-board-${i}`).modal('hide');
+          renderGames();
+          showSelectButton();
+          // матч создан: игроки перешли в «играет» — таблица игроков
+          // и корты обновляются по факту ответа, а не сразу после
+          // отправки запроса (иначе гонка: данные ещё старые)
+          refresh.table.player();
+          refresh.table.court();
+        },
+        complete: function () {
+          // при ошибке форма остаётся, кнопка снова активна
+          // (текст ошибки показывает глобальный обработчик ajaxError)
+          submitButton.prop('disabled', false);
+        }
+      });
+    });
+    $(`#select-form-button-reset-${i}`).off('click').click((event) => {
+      event.preventDefault();
+
+      $(`#select-form-${i}`).hide();
+
+      showSelectButton();
     });
   });
 }
@@ -164,116 +202,18 @@ const renderSelect = () => {
 // __i__ заменяется на номер формы
 const selectFormTemplate = (counter) => $('#select-form-template').html().replaceAll('__i__', counter);
 
-// наведение на смёрженную ячейку («Шанс»/«Разница»): гасим штатную
-// подсветку строки первого игрока — rowspan-ячейка принадлежит его tr,
-// и .table-hover красил бы всю строку, пока курсор над ячейкой
-const bindMergedCellHover = (table) => {
-  table.find('td[rowspan]')
-  .on('mouseenter', () => table.addClass('cell-hover-only'))
-  .on('mouseleave', () => table.removeClass('cell-hover-only'));
-};
+// разметка превью-табло кандидатуры — из <template id="select-board-template">
+const selectBoardTemplate = (counter) => $('#select-board-template').html().replaceAll('__i__', counter);
 
-// подсказки над сокращёнными на телефоне названиями колонок; паддинги
-// заголовков переключает CSS-класс .select-compact на таблице
-const addPhoneColumnHints = (table) => {
+// имя игрока для барометра: на телефоне — «Фамилия И.» (как в
+// playerNameFormatter), на десктопе — полное
+const shortName = (name) => {
   if (!isPhone()) {
-    return;
+    return name;
   }
-  const hints = {rating: 'Рейтинг', matches: 'Сыграно', chance: 'Шанс', excess: 'Разница'};
-  for (const [field, hint] of Object.entries(hints)) {
-    table.find(`thead th[data-field="${field}"] .th-inner`).attr('title', hint);
-  }
-};
-
-// числовые колонки подбора на телефоне помечаются классом .select-num —
-// паддинги (максимум 4px/6px, минимум 2px/3px) и шрифт переключает CSS
-// по классам .select-compact/.select-tight, которые выставляет fitSelectTables()
-
-// экран: адаптация таблиц подбора ступенями — сперва минимальные паддинги
-// (.select-compact), шрифт ещё полный; если и после этого не умещается —
-// минимальный шрифт (.select-tight); перепроверяем при повороте экрана
-const fitSelectTables = () => {
-  const tables = $('.select-form-table-1, .select-form-table-2');
-  const tight = () => document.body.scrollWidth > document.documentElement.clientWidth;
-  tables.removeClass('select-compact select-tight');
-  if (tight()) {
-    tables.addClass('select-compact');
-    if (tight()) {
-      tables.addClass('select-tight');
-    }
-  }
-};
-
-const selectColumns = [
-  {
-    field: 'name',
-    title: 'Имя',
-    // признак «Играл» — точка у аватара: зелёная — не играл, красная — играл
-    formatter: (value, row) =>
-        // индикация последнего матча: проиграл — красная точка, выиграл —
-        // зелёная; отдыхал (played = 0) — без индикации
-        (row.played ? `<span class="played-dot ${row.won ? 'played-dot-won' : 'played-dot-lost'}" title="${row.won ? 'Выиграл' : 'Проиграл'}"></span>` : '') +
-        this.share.playerNameFormatter(row.user_id, value, row.sex, row.pic, isPhone()),
-    cellStyle: (value, row) => playerSexStyle(row.sex)
-  },
-  {
-    field: 'rating',
-    title: isPhone() ? 'Р.' : 'Рейтинг',
-    align: 'center',
-    class: 'select-num',
-    // на телефоне рейтинг целочисленный — без дробной части
-    formatter: (value) => isPhone() ? Math.round(value) : value
-  },
-  {
-    field: 'matches',
-    title: isPhone() ? 'И.' : 'Сыграно',
-    align: 'center',
-    class: 'select-num',
-    // выигранные матчи — зелёным, проигранные (всего минус выигранные) —
-    // красным; когда есть и те и другие — с суммой сыгранных матчей,
-    // при одной составляющей — только она, без матчей — «0»
-    formatter: (value, row) => {
-      if (!value) {
-        return '0';
-      }
-      const wins = row.wins ?? 0;
-      const lost = value - wins;
-      if (isPhone()) {
-        // компактный формат «победы поражения всего» с уменьшенным
-        // пробелом-разделителем (thin space)
-        return `<span class="rating-plus">${wins}</span>&#8201;<span class="rating-minus">${lost}</span>&#8201;${value}`;
-      }
-      if (!lost) {
-        return `<span class="rating-plus">${value}</span>`;
-      }
-      if (!wins) {
-        return `<span class="rating-minus">${value}</span>`;
-      }
-      return `<span class="rating-plus">${wins}</span> + <span class="rating-minus">${lost}</span> = ${value}`;
-    }
-  },
-  {
-    field: 'chance',
-    title: isPhone() ? 'Ш.' : 'Шанс',
-    align: 'center',
-    class: 'select-num',
-    // винрейт совместных доигранных матчей пары в процентах (из ответа
-    // ready()); напарники ни разу не игравшие вместе — null, показываем «—»;
-    // на телефоне — целочисленный, без дробной части
-    formatter: (value) => value != null
-        ? `${isPhone() ? Math.round(value) : value}${isPhone() ? '<span class="select-pct">%</span>' : '%'}`
-        : '—'
-  },
-  {
-    field: 'excess',
-    title: isPhone() ? 'Δ' : 'Разница',
-    align: 'center',
-    class: 'select-num',
-    formatter: (value) => isPhone()
-        ? `${Math.round(value)}<span class="select-pct">%</span>`
-        : `${value.toFixed(1)}%`
-  }
-];
+  const names = name.split(/\s/);
+  return `${names[0]} ${names[1]?.charAt(0) ?? ''}.`;
+}
 
 const showSelectButton = (force) => {
   const info = $('#select-info');
@@ -282,6 +222,7 @@ const showSelectButton = (force) => {
   if (force || info.is(":visible") || $('.select-form-button-submit:visible').length === 0) {
     info.hide();
     $('.select-form').remove();
+    $('.select-board-preview').remove();
     $('#select-button').show();
   }
 }

@@ -544,6 +544,30 @@ $(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => {
   restoreBoardScores(event.currentTarget);
 });
 
+// принудительный альбом табло на телефоне: сама страница экран не
+// поворачивает (Screen Orientation Lock в iOS Safari не поддерживается),
+// поэтому два уровня. Нативный: полноэкранный режим + lock('landscape') —
+// работает в Android Chrome, экран поворачивается по-настоящему и
+// CSS-поворот (см. index.css) перестаёт совпадать по @media. Где нативный
+// недоступен (iOS), модалку доворачивает CSS: правило
+// @media (orientation: portrait) + body.phone поворачивает её на 90°
+// с подменой vh↔vw — телефон во время игры держат боком
+$(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', async event => {
+  if (!document.body.classList.contains('phone')) return;
+  try {
+    await event.currentTarget.requestFullscreen?.();
+    await screen.orientation?.lock?.('landscape');
+  } catch {
+    /* без fullscreen/lock — работает CSS-поворот */
+  }
+});
+$(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => {
+  try {
+    screen.orientation?.unlock?.();
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } catch { /* ничего: табло закрыто, ориентация системная */ }
+});
+
 // счёт матчей в ячейках матрицы: финишировавший матч — только итоговый
 // счёт (вместо кнопки ▶ / ⏱️ у гостя); идущий — текущий счёт + небольшая
 // кнопка возобновления под ним (открывает табло, матч не создаёт).

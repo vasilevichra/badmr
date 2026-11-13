@@ -224,7 +224,20 @@ router.get(
     (req, res) => {
       res.locals.filter = null;
 
-      renderTournamentPage(req, res, tournamentService.getById(Number(req.params.id)) as { id: number; tournament_type_id: number; tournament_status_id: number } | undefined);
+      const t = tournamentService.getById(Number(req.params.id)) as { id: number; tournament_type_id: number; tournament_status_id: number } | undefined;
+
+      // кросс-турнирность: матчи (подбор, живое табло, сохранение через
+      // форму) всегда создаются в текущем турнире, а страница показывает
+      // свой — идущий (статус 2 «Идёт») не-текущий турнир редиректим на
+      // текущий, иначе игроки играют на одной странице, а история
+      // появляется на другой. Регистрация (1) и завершённые (3, 4)
+      // остаются на своих страницах
+      const current = tournamentService.getCurrent() as { id: number } | undefined;
+      if (t && t.tournament_status_id === 2 && current && t.id !== current.id) {
+        return res.redirect(`/t/${current.id}`);
+      }
+
+      renderTournamentPage(req, res, t);
     }
 );
 

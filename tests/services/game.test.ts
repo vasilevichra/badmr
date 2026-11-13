@@ -14,6 +14,14 @@ interface GameRow {
   match_id: number;
   lost_1_by: number | null;
   lost_2_by: number | null;
+  // живое табло Новой лиги: счёт текущей игры (current = 1)
+  score_1: number;
+  score_2: number;
+  current: number;
+  // чётность кортов и подача (live-табло Новой лиги)
+  serve_user_id: number | null;
+  even_1_user_id: number | null;
+  even_2_user_id: number | null;
   created_at: string;
 }
 
@@ -98,6 +106,12 @@ describe("Game", () => {
         match_id: matchId,
         lost_1_by: 21,
         lost_2_by: 15,
+        score_1: 0,
+        score_2: 0,
+        current: 0,
+        serve_user_id: null,
+        even_1_user_id: null,
+        even_2_user_id: null,
         created_at: "2026-01-01 10:00:00",
       });
     });

@@ -112,6 +112,26 @@ router.post('/rating/:id', ensureLoggedIn(), (req, res) => {
   res.promise(userService.setRating(Number(req.params.id), Number(req.query.new)));
 });
 
+// ФИО из карточки игрока: «Фамилия Имя Отчество» одной строкой,
+// отчество — всё, что после первых двух слов (может отсутствовать)
+router.post('/name/:id', ensureLoggedIn(), (req, res) => {
+  const parts = String(req.body.name || '').trim().split(/\s+/);
+  if (parts.length < 2) {
+    return res.status(400).json({error: 'нужны минимум фамилия и имя'});
+  }
+  const [lastname, firstname, ...rest] = parts;
+  res.promise(userService.setName(Number(req.params.id), lastname, firstname, rest.length ? rest.join(' ') : null));
+});
+
+// дата рождения из карточки игрока редактируется по клику под админом
+router.post('/birthday/:id', ensureLoggedIn(), (req, res) => {
+  const birthday = String(req.body.birthday || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday) || isNaN(Date.parse(birthday))) {
+    return res.status(400).json({error: 'нужна дата в формате ГГГГ-ММ-ДД'});
+  }
+  res.promise(userService.setBirthday(Number(req.params.id), birthday));
+});
+
 router.post('/lab', (req, res) => {
   // краул идёт в фоне — ответ не ждёт обхода (он может длиться минуты),
   // иначе браузер абортит запрос и таблица висит «идёт загрузка»

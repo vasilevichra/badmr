@@ -29,6 +29,26 @@ class Game {
   increaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string) => this.game110.increaseCurrentByTeamIds(teamId1, teamId2, teamNumber);
   decreaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string) => this.game110.decreaseCurrentByTeamIds(teamId1, teamId2, teamNumber);
 
+  /** Живое табло Новой лиги: текущая игра матча (может быть null —
+   *  табло показывает 0:0, игра создаётся первым очком). */
+  getCurrentByMatchId = (matchId: number) => this.game.getCurrentByMatchId(matchId);
+
+  increaseCurrentByMatchId = (matchId: number, teamNumber: string) =>
+      this.game.increaseCurrentByMatchId(
+          matchId,
+          teamNumber,
+          Number(settingsService.get('game_point')),
+          Number(settingsService.get('max_point'))
+      );
+
+  decreaseCurrentByMatchId = (matchId: number, teamNumber: string) => this.game.decreaseCurrentByMatchId(matchId, teamNumber);
+
+  /** Двойной клик судьи по игроку на 0:0 — задать первого подающего матча. */
+  setCurrentServeByMatchId = (matchId: number, userId: number) => this.game.setCurrentServeByMatchId(matchId, userId);
+
+  /** Свайп судьи по игроку — ручной свап чётности кортов пары. */
+  swapCurrentEvenByMatchId = (matchId: number, teamNumber: string) => this.game.swapCurrentEvenByMatchId(matchId, teamNumber);
+
   create = (match_id: number, lost_1_by: string | null, lost_2_by: string | null, created_at: string) => {
     const result = this.game.create(match_id, lost_1_by, lost_2_by, created_at);
     // каскадный пересчёт рейтинга этого и последующих матчей — в фоне

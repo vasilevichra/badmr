@@ -295,6 +295,133 @@ $(document).ready(() => {
     $('#achievement-block, #match-history-block, #player-window').on('click', '.achievement-player, .match-history-players-name, .co-player', function () {
       openPlayerWindow(Number($(this).data('user-id')));
     });
+
+    // ФИО в шапке карточки под логином редактируется по клику: Enter или
+    // смена фокуса — сохранить, Esc — отмена. Содержимое карточки
+    // подгружается ajax'ом, поэтому делегирование — на постоянной
+    // оболочке #player-window
+    $('#player-window').on('click', '.player-window-name', function () {
+      const header = $(this);
+      if (header.find('input').length) return;
+      const original = header.text().trim();
+      header.data('original', original)
+          .removeData('cancelled')
+          .html($('<input>', {type: 'text', class: 'form-control form-control-sm', value: original}));
+      const input = header.find('input').get(0);
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+
+    // Esc запоминается на заголовке (input при закрытии теряет .data),
+    // чтобы нативный blur вслед за jQuery-триггером не сохранил правку
+    $('#player-window').on('keydown', '.player-window-name input', function (event) {
+      if (event.key === 'Escape') {
+        $(this).closest('.player-window-name').data('cancelled', true);
+        $(this).trigger('blur');
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        $(this).trigger('blur');
+      }
+    });
+
+    $('#player-window').on('blur', '.player-window-name input', function () {
+      const input = $(this);
+      const header = input.closest('.player-window-name');
+      // blur срабатывает и от jQuery-триггера, и нативно вслед за ним;
+      // после первого закрытия ввода input уже отвязан — это повтор
+      if (!header.length) return;
+      const cancelled = header.data('cancelled');
+      const original = String(header.data('original'));
+      const name = String(input.val()).trim();
+      // ввод закрывается сразу: неуспешный POST вернёт старое имя
+      header.text(original).removeData('cancelled');
+      if (cancelled || !name || name === original) return;
+      $.post(`/api/users/name/${header.data('user-id')}`, {name: name})
+          .done(() => {
+            header.text(name);
+            refresh.table.player();
+          })
+          .fail(() => header.text(original));
+    });
+
+    // дата рождения в карточке редактируется по клику так же, как ФИО:
+    // Enter или смена фокуса — сохранить, Esc — отмена. Нативный
+    // input[type=date] гарантирует формат ГГГГ-ММ-ДД; после сохранения
+    // карточка перезагружается — возраст пересчитывается на сервере
+    $('#player-window').on('click', '.player-window-birthday', function () {
+      const field = $(this);
+      if (field.find('input').length) return;
+      const original = field.data('original-text') ?? field.text().trim();
+      field.data('original-text', original)
+          .removeData('cancelled')
+          .html($('<input>', {type: 'date', class: 'form-control form-control-sm', value: $(this).data('birthday')}));
+      const input = field.find('input').get(0);
+      input.focus();
+    });
+
+    $('#player-window').on('keydown', '.player-window-birthday input', function (event) {
+      if (event.key === 'Escape') {
+        $(this).closest('.player-window-birthday').data('cancelled', true);
+        $(this).trigger('blur');
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        $(this).trigger('blur');
+      }
+    });
+
+    $('#player-window').on('blur', '.player-window-birthday input', function () {
+      const input = $(this);
+      const field = input.closest('.player-window-birthday');
+      if (!field.length) return;
+      const cancelled = field.data('cancelled');
+      const original = String(field.data('original-text'));
+      const birthday = String(input.val());
+      field.text(original).removeData('cancelled').removeData('original-text');
+      if (cancelled || !birthday) return;
+      const userId = field.data('user-id');
+      $.post(`/api/users/birthday/${userId}`, {birthday: birthday})
+          .done(() => openPlayerWindow(userId))
+          .fail(() => field.text(original));
+    });
+
+    // название турнира в шапке (hero) редактируется по клику под админом:
+    // Enter или смена фокуса — сохранить, Esc — отмена; класс
+    // tournament-hero-name-edit присутствует в разметке только у залогиненного
+    $('.tournament-hero-name-edit').on('click', function () {
+      const field = $(this);
+      if (field.find('input').length) return;
+      const original = field.text().trim();
+      field.data('original', original)
+          .removeData('cancelled')
+          .text('')
+          .append($('<input>', {type: 'text', class: 'form-control form-control-sm', value: original}));
+      const input = field.find('input').get(0);
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+
+    $('.tournament-hero-name-edit').on('keydown', 'input', function (event) {
+      if (event.key === 'Escape') {
+        $(this).closest('.tournament-hero-name-edit').data('cancelled', true);
+        $(this).trigger('blur');
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        $(this).trigger('blur');
+      }
+    });
+
+    $('.tournament-hero-name-edit').on('blur', 'input', function () {
+      const input = $(this);
+      const field = input.closest('.tournament-hero-name-edit');
+      const cancelled = field.data('cancelled');
+      const original = String(field.data('original'));
+      const name = String(input.val()).trim();
+      field.text(original).removeData('cancelled');
+      if (cancelled || !name || name === original) return;
+      $.post(`/api/tournaments/name/${tournamentId()}`, {name: name})
+          .done(() => field.text(name))
+          .fail(() => field.text(original));
+    });
   }
 
   // закрытие открытого модального окна по Esc (дублирует встроенное поведение

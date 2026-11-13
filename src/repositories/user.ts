@@ -509,6 +509,28 @@ class User {
     );
   }
 
+  /** ФИО редактируется в карточке игрока под админом; отчество необязательно. */
+  setName(id: number, lastname: string, firstname: string, patronymic: string | null) {
+    return this.db.run(
+        `UPDATE user
+         SET lastname   = ?,
+             firstname  = ?,
+             patronymic = ?
+         WHERE id = ?`,
+        [lastname, firstname, patronymic, id]
+    );
+  }
+
+  /** Дата рождения редактируется в карточке игрока под админом (YYYY-MM-DD). */
+  setBirthday(id: number, birthday: string) {
+    return this.db.run(
+        `UPDATE user
+         SET birthday = ?
+         WHERE id = ?`,
+        [birthday, id]
+    );
+  }
+
   /** Привязки пользователей приложения к id профиля на badminton4u.ru. */
   getLabSites() {
     return this.db.all('SELECT user_id, site_id FROM user_lab WHERE site_id IS NOT NULL');

@@ -44,6 +44,15 @@ router.post('/status/:status_id', ensureLoggedIn(), (req, res) => {
   res.promise(tournamentService.setStatus(Number(req.params.status_id)));
 });
 
+// название из шапки (hero) редактируется по клику под админом
+router.post('/name/:id', ensureLoggedIn(), (req, res) => {
+  const name = String(req.body.name || '').trim();
+  if (!name) {
+    return res.status(400).json({error: 'название не может быть пустым'});
+  }
+  res.promise(tournamentService.setName(Number(req.params.id), name));
+});
+
 router.get('/:id', (req, res) => {
   res.promise(tournamentService.getById(Number(req.params.id)));
 });

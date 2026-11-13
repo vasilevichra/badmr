@@ -133,8 +133,9 @@ dist
 .data/
 
 # IDE
-.idea/
+.idea/*
 
 # security sensitive data
 *specific*
 .proxyai/
+.superpowers/

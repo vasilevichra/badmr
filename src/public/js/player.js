@@ -94,7 +94,7 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         title: '<span class="no-selection">₽</span>',
         visible: loggedInUser && !everybodyPaid,
         formatter: (value, row) => row.paid ? `<i class="bi bi-check2"></i>` : `<i class="bi bi-dash-lg"></i>`,
-        class: 'text-center',
+        class: 'text-center paid-col',
       },
       {
         field: 'rating',

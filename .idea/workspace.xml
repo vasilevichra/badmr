@@ -5,40 +5,46 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7fcbda41-1436-4905-973a-6a7a3b93c845" name="Changes" comment="Fix #30">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/04399619-6bda-44fb-ac7f-8127bf09bb68.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/04399619-6bda-44fb-ac7f-8127bf09bb68/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/04399619-6bda-44fb-ac7f-8127bf09bb68/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4bca6927-5cd2-43f1-b02b-c95ebd3df6f6.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4bca6927-5cd2-43f1-b02b-c95ebd3df6f6/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4bca6927-5cd2-43f1-b02b-c95ebd3df6f6/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4ed93d43-9c3c-48a6-b906-15320e33d2e5.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4ed93d43-9c3c-48a6-b906-15320e33d2e5/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/4ed93d43-9c3c-48a6-b906-15320e33d2e5/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/72f99042-dfac-4aed-8e21-6d2267639e1a.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/72f99042-dfac-4aed-8e21-6d2267639e1a/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/72f99042-dfac-4aed-8e21-6d2267639e1a/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA/table/match.xdktBg.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA/table/match.xdktBg/trigger/delete_rating_when_match_deleted.qCfApA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/731c9db9-f260-4dc8-9e65-62b69229c337/storage_v2/_staging_/schema/main.uQUzAA/table/match.xdktBg/trigger/delete_rating_when_match_deleted.qCfApA.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.zip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a91a8e40-a792-4dbc-8ac9-36c32e71164b.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a91a8e40-a792-4dbc-8ac9-36c32e71164b/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/a91a8e40-a792-4dbc-8ac9-36c32e71164b/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c004d247-29c1-4a94-b2bf-b548f0090486.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c004d247-29c1-4a94-b2bf-b548f0090486/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c004d247-29c1-4a94-b2bf-b548f0090486/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/da3799e4-b863-4dda-8dbf-79f905e16a3d.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/da3799e4-b863-4dda-8dbf-79f905e16a3d/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/da3799e4-b863-4dda-8dbf-79f905e16a3d/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/bc89c158-04fe-4206-88f3-974aa10e2c2b.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/bc89c158-04fe-4206-88f3-974aa10e2c2b/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/bc89c158-04fe-4206-88f3-974aa10e2c2b/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/01-tables-up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/01-tables-up.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/03-data-up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/03-data-up.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/04-triggers-up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/04-triggers-up.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/bin/sync.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/src/bin/sync.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/game.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/group.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/group.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/lib.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/lib.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/player.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/player.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/js/select.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/select.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/index.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/index.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/modal/player/id.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/player/id.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/social.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/social.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/tournament-label.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament-label.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/achievements.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/achievements.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/game-form.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/game-form.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/select-form.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/select-form.ejs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/game.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/game.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/tournament.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/tournament.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/game.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/game.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/tournament.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/tournament.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/game.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/game.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/tournament.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/tournament.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/routes/player.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/routes/player.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/services/game.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/services/game.test.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -146,7 +152,7 @@
       <recent name="$PROJECT_DIR$/src/public" />
     </key>
   </component>
-  <component name="RunManager" selected="NPM Scripts.debug">
+  <component name="RunManager" selected="npm.release">
     <configuration name="debug" type="haulmont.webtools.run.configurations.npm" packageJsonPath="$PROJECT_DIR$/package.json" nodeRuntime="" packageManagerPath="" nodeOptions="" passParentEnvs="true" command="run" scriptName="compile" startBrowserAfterLaunch="false" browserUrl="" startBrowserWithDebugger="false">
       <method v="2" />
     </configuration>
@@ -247,12 +253,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="NPM Scripts.debug" />
-      <item itemvalue="NPM Scripts.dev" />
-      <item itemvalue="NPM Scripts.prod" />
-      <item itemvalue="NPM Scripts.release" />
-      <item itemvalue="NPM Scripts.test" />
+      <item itemvalue="Mocha.CommonService.ready" />
+      <item itemvalue="Mocha.formatFileSize function" />
+      <item itemvalue="npm.debug" />
+      <item itemvalue="npm.dev" />
+      <item itemvalue="npm.test" />
+      <item itemvalue="npm.prod" />
+      <item itemvalue="npm.release" />
     </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.release" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">

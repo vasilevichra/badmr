@@ -242,7 +242,21 @@ CREATE TABLE game
     match_id   INTEGER  NOT NULL CONSTRAINT match REFERENCES match,
     created_at DATETIME NOT NULL DEFAULT current_timestamp,
     lost_1_by  INTEGER,
-    lost_2_by  INTEGER
+    lost_2_by  INTEGER,
+    -- живое табло Новой лиги: счёт текущей игры (current = 1); при
+    -- завершении игры счёт переписывается в lost_X_by проигравшей
+    -- стороны, current сбрасывается — строка становится обычной игрой
+    score_1    INTEGER  NOT NULL DEFAULT 0,
+    score_2    INTEGER  NOT NULL DEFAULT 0,
+    -- подающий игрок (id из match.user_1..4_id) текущей игры; null —
+    -- не задан (в начале матча выставляется двойным кликом по игроку)
+    serve_user_id  INTEGER,
+    -- кто в паре стоит в «чётном» (правом) корте сейчас: пары меняются
+    -- кортами, выигрывая очко на своей подаче; в начале игры сбрасывается
+    -- к базе — первый в паре (user_1_id / user_3_id)
+    even_1_user_id INTEGER,
+    even_2_user_id INTEGER,
+    current    INTEGER  NOT NULL DEFAULT 0 CHECK (current IN (0, 1))
 );
 
 CREATE TABLE game_110

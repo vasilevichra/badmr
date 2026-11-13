@@ -26,56 +26,19 @@
     <% } %>
 </head>
 
-<body class="<%= device %>" data-tournament="<%= typeof tournament_id !== 'undefined' ? tournament_id : '' %>" data-tournament-status="<%= typeof tournament !== 'undefined' && tournament ? tournament.tournament_status_id : '' %>">
-<div class="container pt-3">
-    <% if (user) { %>
-        <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-    <% } %>
-    <div id="header" class="row align-items-center no-selection <% if (user) { %> closable <% } %>">
-        <% if (device !== 'phone') { %>
-            <div class="col-2 d-flex">
-                <div class="social">
-                    <%- include('social', {device: device}); %>
-                </div>
-            </div>
-        <% } %>
-        <div class="<% if (device !== 'phone') { %>col-10<% } else { %>col-12<% } %> d-flex justify-content-end">
-            <% if (user) { %>
-                <form action="/api/auth/logout" method="post" class="logout">
-                    <% if (device !== 'phone') { %>
-                        <div class="player-selectors">
-                            <%- include('tournament', {tournaments: tournaments}); %>
-                            <%# временно скрыт: селектор подразделения (include('unit', {units: units})), вернуть по необходимости %>
-                        </div>
-                    <% } %>
-                    <label class="user"><%= user.username %></label>
-                    <button class="btn<% if (device === 'phone') { %> me-2<% } %>" type="submit"><p class="bi bi-box-arrow-right" style="display:inline"></p></button>
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                </form>
-            <% } else { %>
-                <form action="/api/auth/login" method="get" class="login">
-                    <% if (device !== 'phone') { %>
-                        <%# селектор внутри формы — flex-центрирование ставит его
-                            на одну высоту с кнопкой «Войти» (#55) %>
-                        <%- include('tournament', {tournaments: tournaments}); %>
-                    <% } %>
-                    <button class="btn<% if (device === 'phone') { %> mx-2<% } %>" type="submit"><p class="bi bi-box-arrow-in-left"> Войти</p></button>
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                </form>
-            <% } %>
-        </div>
-    </div>
-    <% if (user) { %>
-        <hr class="hr-dashed"/>
-    <% } %>
-</div>
-
+<body class="<%= device %>" data-tournament="<%= typeof tournament_id !== 'undefined' ? tournament_id : '' %>" data-tournament-status="<%= typeof tournament !== 'undefined' && tournament ? tournament.tournament_status_id : '' %>" data-tournament-type="<%= typeof tournament_type !== 'undefined' ? tournament_type : '' %>" data-game-point="<%= typeof game_point !== 'undefined' ? game_point : '' %>" data-max-point="<%= typeof max_point !== 'undefined' ? max_point : '' %>">
 <%# просматриваемый турнир приходит из роута (/t/:id), иначе — текущий %>
 <% const current_tournament = typeof tournament !== 'undefined' ? tournament : tournaments.filter(t => t.current === 1)[0]; %>
 
-<div class="container">
-    <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-    <div id="tournament-info" class="row d-flex closable p-3">
+<%# Шапка варианта B: единая карточка — полоса (соцсети, селектор, вход)
+    и под ней герой-баннер турнира (#tournament-info). Схлопывается
+    одним шевроном (closable на #header) %>
+<div class="container pt-3">
+    <% if (user) { %><div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div><% } %>
+    <div id="header" class="no-selection header-card<% if (user) { %> closable<% } %>">
+        <%# для всех — единая плашка без полосы: и форма выхода, и гостевая
+            форма входа живут в баннере турнира (#tournament-info) %>
+        <div id="tournament-info" class="tournament-hero<% if (!user) { %> tournament-hero-first<% } %>">
         <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря']; %>
         <%# турнир завершился — бейджи телефона становятся серыми (архивными) %>
         <% const tournamentFinished = current_tournament.tournament_status_id === 3; %>
@@ -85,7 +48,8 @@
         <% const regEndH = regEndedAt.getHours(); %>
         <% const regEndM = regEndedAt.getMinutes(); %>
         <% const regEndDateStr = `${regEndedAt.getDate()} ${monthArray[regEndedAt.getMonth()]} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM <= 0 ? '0' + regEndM : regEndM}`; %>
-        <% const getSingleDateStrPhone = (d) => `${d.getDate()} ${monthArray[d.getMonth()].length > 4 ? monthArray[d.getMonth()].slice(0, 3) + '.' : monthArray[d.getMonth()]} ${d.getHours() <= 9 ? '0' + d.getHours() : d.getHours()}:${d.getMinutes() <= 0 ? '0' + d.getMinutes() : d.getMinutes()}`; %>
+        <%# компактная дата регистрации для баннера (как в макете: «13.01 15:15»); полная — в шере %>
+        <% const regEndCompactStr = `${String(regEndedAt.getDate()).padStart(2, '0')}.${String(regEndedAt.getMonth() + 1).padStart(2, '0')} ${regEndH <= 9 ? '0' + regEndH : regEndH}:${regEndM <= 0 ? '0' + regEndM : regEndM}`; %>
         <% const regEndUntilMillis = (regEndedAt - new Date()); %>
         <% const regEndUntilDays = Math.floor((regEndUntilMillis) / 1000 / 60 / 60 / 24); %>
         <% const regEndUntilHours = Math.floor((regEndUntilMillis - regEndUntilDays * 1000 * 60 * 60 * 24) / 1000 / 60 / 60); %>
@@ -98,32 +62,13 @@
         let regEndTimeTag = '';
         if (current_tournament.tournament_status_id === 1) {
             regEndTimeTag = `<time datetime="${regEndUntilDays}d ${regEndUntilHours}h ${regEndUntilMinutes}m ${regEndUntilSecs}s"></time>`;
-            regEndUntilStr = ` (осталось: ${regEndTimeTag})`;
+            regEndUntilStr = ` · осталось ${regEndTimeTag}`;
         } else {
             // «N назад» досчитывает клиент (calendarPartsSince из lib.js):
             // серверная строка устаревает сразу после рендера
-            regEndUntilStr = ` (<time class="reg-end-since" datetime="${regEndedAt.toISOString()}">сегодня</time>)`;
+            regEndUntilStr = ` · закончилась <time class="reg-end-since" datetime="${regEndedAt.toISOString()}">сегодня</time>`;
         }
 
-        const getRegEndPhoneStr = () => {
-            if (current_tournament.tournament_status_id !== 1) {
-                // компактный бейдж (только старшая единица) тоже заполняет клиент
-                return `<time class="reg-end-since-badge" datetime="${regEndedAt.toISOString()}">сегодня</time>`;
-            }
-            if (regEndUntilDays > 0) {
-              return `${regEndUntilDays}д`;
-            }
-            if (regEndUntilHours > 0) {
-                return `${regEndUntilHours}ч`;
-            }
-            if (regEndUntilMinutes > 0) {
-                return `${regEndUntilMinutes}м`;
-            }
-            if (regEndUntilSecs > 0) {
-                return `${regEndUntilSecs}с`;
-            }
-            return '';
-        }
         %>
         <% const durationHours = Math.trunc((endedAt - startedAt) / 36e5); %>
         <% const durationMinutesWithoutHours = Math.trunc(((endedAt - startedAt) - durationHours * 36e5) / 6e4); %>
@@ -150,27 +95,7 @@
 
             return `${startedAt.getDate()}.${startMonthNumStr}.${startedAt.getFullYear()} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr}.${endedAt.getFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
         }
-        const getDateStrPhone = () => {
-            if (!current_tournament.ended_at) { // окончание турнира не задано
-                return `${startedAt.getDate()} ${monthArray[startedAt.getMonth()]} ${startedH}:${startedM}`;
-            }
-            if (startedAt.getFullYear() === endedAt.getFullYear() && startedAt.getMonth() === endedAt.getMonth() && startedAt.getDate() === endedAt.getDate()) { // начало и окончание в один день
-                return `${endedAt.getDate()} ${monthArray[endedAt.getMonth()]} ${startedH}:${startedM}-${endedH}:${endedM}`;
-            }
-
-            const startMonthNum = startedAt.getMonth() + 1;
-            const startMonthNumStr = startMonthNum <= 9 ? '0' + startMonthNum : startMonthNum;
-            const endMonthNum = endedAt.getMonth() + 1;
-            const endMonthNumStr = endMonthNum <= 9 ? '0' + endMonthNum : endMonthNum;
-            if (startedAt.getFullYear() === endedAt.getFullYear()) { // начало и окончание в одном году
-                return `${startedAt.getDate()}.${startMonthNumStr} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr} ${endedH}:${endedM}`;
-            }
-
-            return `${startedAt.getDate()}.${startMonthNumStr}.${startedAt.getFullYear()} ${startedH}:${startedM} - ${endedAt.getDate()}.${endMonthNumStr}.${endedAt.getFullYear()} ${endedH}:${endedM}`; // начало и окончание в разных годах
-        }
         %>
-        <% const tournamentName = `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»` %>
-
         <%# текст кнопки «поделиться»: остаток регистрации ({REG_LEFT}) подставляет
             клиент при клике из обратного отсчёта (datetime атрибут <time>) %>
         <% const shareRegStr = `Регистрация до: ${regEndDateStr}{REG_LEFT}`; %>
@@ -188,67 +113,97 @@
            if (current_tournament.chat) { shareLines.push('', `Чат турнира: ${current_tournament.chat}`); }
         %>
 
-        <% if (device === 'phone') { %>
-            <div class="panel panel-default" style="font-size: 0.8rem;">
-                <div class="list-group">
-                    <span class="list-group-item text-center bg-body-tertiary">«<%= current_tournament.name %> / <%= current_tournament.type_name %>»
-                        <button class="btn btn-xs bi-share tournament-name-copy" data-share="<%= shareLines.join('\n') %>" title="Скопировать информацию о турнире" aria-label="Скопировать информацию о турнире"></button>
-                    </span>
-                    <span class="list-group-item">Дата: <%= getDateStrPhone() %><% if (current_tournament.ended_at) { %><span class="badge <%= tournamentFinished ? 'bg-secondary' : 'bg-badmr' %> float-start me-2"><%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %></span><% } %></span>
-                    <span class="list-group-item">Регистрация до: <%= getSingleDateStrPhone(regEndedAt) %><span class="badge <%= current_tournament.tournament_status_id === 1 ? 'bg-badmr' : tournamentFinished ? 'bg-secondary' : 'bg-danger' %> float-start me-2"><%- getRegEndPhoneStr() %></span><span class="d-none"><%- regEndTimeTag %></span></span>
-                    <% if (current_tournament.map_url) { %>
-                        <span class="list-group-item text-center text-truncate"><i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a></span>
-                    <% } else { %>
-                        <span class="list-group-item text-center text-truncate"><%= current_tournament.address %></span>
+        <%# Герой-баннер турнира (вариант B): единая разметка для десктопа и
+            телефона, размеры правит CSS (body.phone .tournament-hero-*).
+            Внутри сохранены все точки интеграции с клиентом:
+            time-отсчёт регистрации ({REG_LEFT} в шере, jquery.countdown),
+            .reg-end-since («N назад»), .registered-count (обновляется при
+            регистрации), .tournament-name-copy / .tournament-calendar /
+            .coords-copy %>
+        <% const regLeftPct = Number(settings.capacity) > 0
+            ? Math.min(100, Math.round(registered_count / Number(settings.capacity) * 100))
+            : 100; %>
+        <%# дата для баннера с «·»-разделителями, как в макете («13 января 2026 · 15:30–16:30»);
+            разные годы — откат к полной getDateStr() %>
+        <% const heroDateSameDay = startedAt.getFullYear() === endedAt.getFullYear() && startedAt.getMonth() === endedAt.getMonth() && startedAt.getDate() === endedAt.getDate(); %>
+        <% const heroDateStr = !current_tournament.ended_at
+            ? `${startedAt.getDate()} ${monthArray[startedAt.getMonth()]} ${startedAt.getFullYear()} · ${startedH}:${startedM}`
+            : (heroDateSameDay
+                ? `${endedAt.getDate()} ${monthArray[endedAt.getMonth()]} ${endedAt.getFullYear()} · ${startedH}:${startedM}–${endedH}:${endedM}`
+                : getDateStr()); %>
+        <% const heroDurationStr = current_tournament.ended_at ? `${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''}` : ''; %>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge tournament-hero-type"><%= current_tournament.type_name %></span>
+                <%# шере и календарь — сразу за бейджем типа; справа (ms-auto) —
+                    форма входа (гость) или форма выхода (селектор турнира,
+                    имя, выход) %>
+                <span class="d-flex gap-1">
+                    <button class="btn btn-xs bi-share tournament-hero-action tournament-name-copy" data-share="<%= shareLines.join('\n') %>" title="Скопировать информацию о турнире" aria-label="Скопировать информацию о турнире"></button>
+                    <% if (device !== 'phone') { %>
+                        <button class="btn btn-xs bi-calendar-plus tournament-hero-action tournament-calendar" data-name="<%= current_tournament.name %>" data-start="<%= current_tournament.started_at %>" data-end="<%= current_tournament.ended_at %>" data-location="<%= current_tournament.city %>, <%= current_tournament.address %>" title="Добавить событие в календарь" aria-label="Добавить событие турнира в календарь"></button>
                     <% } %>
-                    <% if (current_tournament.chat) { %>
-                        <span class="list-group-item text-center"><i class="bi bi-chat-dots btn-xs"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></span>
-                    <% } %>
-                    <span class="list-group-item text-center"><i class="bi bi-people"></i> <span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %><% if (current_tournament.rules) { %> | <i class="bi bi-journal-text"></i> <%- current_tournament.rules %><% } %> | <i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %><% if (Number(settings.matches) > 0) { %> | <i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %><%= settings.matches %><% } else { %> | <i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %>∞<% } %></span>
-                </div>
-            </div>
-        <% } else { %>
-            <div class="col-6">
-                <div><%= tournamentName %>
-                    <button class="btn btn-xs bi-share tournament-name-copy" data-share="<%= shareLines.join('\n') %>" title="Скопировать информацию о турнире" aria-label="Скопировать информацию о турнире"></button>
-                </div>
-                <div>Дата: <%= getDateStr() %>
-                    <% if (current_tournament.ended_at) { %> (<%= durationHours %>ч<%= durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : '' %>)<% } %>
-                    <button class="btn btn-xs bi-calendar tournament-calendar" data-name="<%= current_tournament.name %>" data-start="<%= current_tournament.started_at %>" data-end="<%= current_tournament.ended_at %>" data-location="<%= current_tournament.city %>, <%= current_tournament.address %>" title="Добавить событие в календарь" aria-label="Добавить событие турнира в календарь"></button>
-                </div>
-                <div>Регистрация до: <%= regEndDateStr %><%- regEndUntilStr %></div>
-            </div>
-            <div class="col-6 justify-content-end align-items-end">
-                <div class="row text-start">
-                    <% if (current_tournament.chat) { %>
-                        <div class="text-end"><i class="bi bi-chat-dots btn-xs"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат турнира</a></div>
-                    <% } %>
-                </div>
-                <div class="row text-start">
-                    <% if (current_tournament.latitude && current_tournament.longitude) { %>
-                        <div class="text-end"><button class="btn btn-xs bi-copy coords-copy" data-coords="<%= current_tournament.latitude %>, <%= current_tournament.longitude %>" title="Скопировать координаты" aria-label="Скопировать координаты"></button> <%= current_tournament.latitude %>, <%= current_tournament.longitude %>
+                </span>
+                <% if (user) { %>
+                    <form action="/api/auth/logout" method="post" class="logout ms-auto">
+                        <div class="player-selectors">
+                            <%- include('tournament', {tournaments: tournaments}); %>
+                            <%# временно скрыт: селектор подразделения (include('unit', {units: units})), вернуть по необходимости %>
                         </div>
-                    <% } %>
-                </div>
-                <div class="row text-start">
-                    <% if (current_tournament.map_url) { %>
-                        <a class="text-end" href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a>
-                    <% } else { %>
-                        <span><%= current_tournament.address %></span>
-                    <% } %>
-                </div>
-                <div class="row text-start">
-                    <div class="col text-end">
-                        <span class="me-1"><i class="bi bi-people"></i> <span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %></span>
-                        <% if (current_tournament.rules) { %><span class="me-1"><i class="bi bi-journal-text"></i> <%- current_tournament.rules %></span><% } %>
-                        <span><i class="bi bi-activity"></i> <%= settings.r_min %>-<%= settings.r_max %></span>
-                        <% if (tournament_type !== 2) { %><% if (Number(settings.matches) > 0) { %><span class="ms-1"><i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %><%= settings.matches %></span><% } else { %><span class="ms-1"><i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %>∞</span><% } %><% } %>
-                    </div>
-                </div>
+                        <label class="user"><%= user.username %></label>
+                        <%# выход — аккуратный крестик (btn-close) вместо большой кнопки %>
+                        <button type="submit" class="btn-close tournament-hero-logout<% if (device === 'phone') { %> me-2<% } %>" aria-label="Выйти"></button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    </form>
+                <% } else { %>
+                    <form action="/api/auth/login" method="get" class="login ms-auto tournament-hero-login">
+                        <%# селектор — только на десктопе: на телефоне в безлогиновой
+                            зоне он не влезает в ряд с кнопкой «Вход», переход
+                            между турнирами — по прямой ссылке (#55) %>
+                        <% if (device !== 'phone') { %>
+                            <%- include('tournament', {tournaments: tournaments}); %>
+                        <% } %>
+                        <button class="btn<% if (device === 'phone') { %> mx-2<% } %>" type="submit"><p class="bi bi-person"> Вход</p></button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    </form>
+                <% } %>
             </div>
-        <% } %>
+            <div class="tournament-hero-name<% if (user) { %> tournament-hero-name-edit<% } %>"<% if (user) { %> title="нажмите, чтобы редактировать"<% } %>><%= current_tournament.name %></div>
+            <div class="tournament-hero-meta">
+                <%= heroDateStr %><% if (device !== 'phone' && heroDurationStr) { %> · <%= heroDurationStr %><% } %>
+            </div>
+            <% if (device === 'phone') { %>
+                <%# телефон, как в макете: прогресс регистрации + подпись под ним %>
+                <div class="progress tournament-hero-progress mt-2" role="progressbar" aria-label="Заполненность турнира" aria-valuenow="<%= regLeftPct %>" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar<%= tournamentFinished ? ' bg-secondary' : '' %>" style="width: <%= regLeftPct %>%"></div>
+                </div>
+                <div class="tournament-hero-reg mt-1">рег. до <%= regEndCompactStr %><%- regEndUntilStr %></div>
+            <% } %>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                <% if (device !== 'phone') { %>
+                    <%# десктоп, как в макете: регистрация — первый чип ряда %>
+                    <span class="tournament-hero-chip"><i class="bi bi-hourglass-split"></i> рег. до <%= regEndCompactStr %><%- regEndUntilStr %></span>
+                <% } %>
+                <span class="tournament-hero-chip">
+                    <% if (current_tournament.map_url) { %>
+                        <i class="bi bi-geo-alt"></i> <a href="<%= current_tournament.map_url %>" target="_blank" rel="noopener noreferrer"><%= current_tournament.city %>, <%= current_tournament.address %></a>
+                    <% } else { %>
+                        <i class="bi bi-geo-alt"></i> <%= current_tournament.city %>, <%= current_tournament.address %>
+                    <% } %>
+                    <% if (current_tournament.latitude && current_tournament.longitude) { %><button class="btn btn-xs bi-copy coords-copy" data-coords="<%= current_tournament.latitude %>, <%= current_tournament.longitude %>" title="Скопировать координаты" aria-label="Скопировать координаты"></button><% } %>
+                </span>
+                <span class="tournament-hero-chip"><i class="bi bi-people"></i> <span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %></span>
+                <span class="tournament-hero-chip"><i class="bi bi-activity"></i> <%= settings.r_min %>–<%= settings.r_max %></span>
+                <% if (tournament_type !== 2) { %>
+                    <span class="tournament-hero-chip"><i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %><%= Number(settings.matches) > 0 ? settings.matches : '∞' %></span>
+                <% } %>
+                <% if (current_tournament.rules) { %><span class="tournament-hero-chip"><i class="bi bi-journal-text"></i> <%- current_tournament.rules %></span><% } %>
+                <% if (current_tournament.chat) { %><span class="tournament-hero-chip"><i class="bi bi-chat-dots"></i> <a href="<%= current_tournament.chat %>" target="_blank" rel="noopener noreferrer">Чат</a></span><% } %>
+            </div>
+        </div>
     </div>
-    <hr class="hr-dashed"/>
+    <% if (user) { %>
+        <hr class="hr-dashed"/>
+    <% } %>
 </div>
 
 <div id="tournament-window">

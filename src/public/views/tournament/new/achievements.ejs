@@ -32,8 +32,18 @@
             <div class="col-lg-12 col-md-12 col-sm-12 desc">
                 <div id="achievement-block" class="row justify-content-center mx-auto">
                     <% for (const [key, nomination] of Object.entries(achievements)) { %>
+                        <%# кнопка копирования в заголовке карточки (как у координат):
+                            смайлик + название + описание + значение + ФИ игроков
+                            (каждый с новой строки); кубок — у победителя, медаль —
+                            у остальных. Значение рейтинговых номинаций — текстом
+                            со знаком (как в rating-label) %>
+                        <% var copyValue = (key === 'rising_star' || key === 'consistent')
+                            ? (nomination.value >= 0 ? '+' : '') + String(Number(Number(nomination.value).toFixed(2))) + (key === 'consistent' ? ' за матч' : '')
+                            : units[key](nomination.value); %>
+                        <% var copyText = (key === 'winner' ? '🏆' : '🏅') + ' ' + achievementMeta[key].title + ' - ' + achievementMeta[key].description + ' (' + copyValue + '):\n'
+                            + nomination.users.map((u) => u.name).join('\n'); %>
                         <div class="col-auto text-center achievement-card p-3">
-                            <label class="form-label achievement-title"><i class="bi <%= achievementMeta[key].icon %>"></i> <%= achievementMeta[key].title %></label>
+                            <label class="form-label achievement-title"><i class="bi <%= achievementMeta[key].icon %>"></i> <%= achievementMeta[key].title %><button type="button" class="btn btn-xs bi-copy achievement-copy" data-copy="<%= copyText %>" title="Скопировать достижение" aria-label="Скопировать достижение"></button></label>
                             <div class="achievement-description"><%= achievementMeta[key].description %></div>
                             <% nomination.users.forEach((u) => { %>
                                 <div class="achievement-player no-selection" data-user-id="<%= u.user_id %>" role="button"><%- playerNameFormatter(u.user_id, u.name, u.sex, u.pic) %></div>

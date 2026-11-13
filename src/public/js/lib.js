@@ -92,32 +92,41 @@ const openPlayerWindow = (id) => {
     type: 'GET',
     url: `/api/ratings/${id}`,
     async: true,
-    success: data => new Chart(document.getElementById('player-window-rating').getContext('2d'), {
-      type: 'scatter',
-      data: {
-        datasets: [{
-          label: 'Рейтинг',
-          data: data,
-          showLine: true,
-          lineTension: 0.3,
-          borderColor: 'rgb(13, 110, 253)'
-        }],
-      },
-      options: {
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'month',
-              displayFormats: {
-                month: 'MMM yyyy'
-              }
-            }
-          },
-          y: {}
-        }
+    success: data => {
+      const canvas = document.getElementById('player-window-rating');
+      // графика нет: у нового игрока пустая история рейтинга, а canvas ещё
+      // не отрисовался (карточка грузится параллельным запросом)
+      if (!canvas || !data.length) {
+        canvas?.classList.add('d-none');
+        return;
       }
-    }),
+      new Chart(canvas.getContext('2d'), {
+        type: 'scatter',
+        data: {
+          datasets: [{
+            label: 'Рейтинг',
+            data: data,
+            showLine: true,
+            lineTension: 0.3,
+            borderColor: 'rgb(13, 110, 253)'
+          }],
+        },
+        options: {
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'month',
+                displayFormats: {
+                  month: 'MMM yyyy'
+                }
+              }
+            },
+            y: {}
+          }
+        }
+      });
+    },
   });
 }
 
@@ -476,6 +485,9 @@ const addScoreBoardHandlers = () => {
   let startY = 0;
   document.addEventListener('touchstart', (e) => {
     scoreEl = e.target.closest?.('.board-score') ?? null;
+    // табло Новой лиги (game.js) тоже имеет .board-score, но живёт
+    // на своих эндпоинтах и без data-team-1-id — его пропускаем
+    if (scoreEl && !scoreEl.hasAttribute('data-team-1-id')) scoreEl = null;
     if (scoreEl) startY = e.changedTouches[0].clientY;
   }, {passive: true});
   document.addEventListener('touchend', (e) => {
@@ -498,7 +510,19 @@ const addScoreBoardHandlers = () => {
   }, {passive: false});
 };
 
-const winValue = (lostValue) => lostValue <= 19 ? 21 : (lostValue + 2);
+const winValue = (lostValue) => {
+  // очки победителя в гейме. game_point/max_point — настройки турнира
+  // (data-атрибуты на body, проставляются в index.ejs); формула повторяет
+  // matchHistoryWinPoints из index.js: до game_point, при равном счёте —
+  // до разницы в 2, но не выше max_point. 21/31 — значения по умолчанию,
+  // когда настройка не передана (страницы без турнира).
+  // Баланса нет, когда game_point == max_point: гейм играется строго
+  // до game_point, никакого «до разницы в 2» при равном счёте
+  const gamePoint = Number(document.body.dataset.gamePoint) || 21;
+  const maxPoint = Number(document.body.dataset.maxPoint) || gamePoint + 10;
+  if (maxPoint <= gamePoint) return gamePoint;
+  return lostValue < gamePoint - 1 ? gamePoint : (lostValue < maxPoint - 1 ? lostValue + 2 : maxPoint);
+};
 
 const refresh = {
   block: {
@@ -695,6 +719,12 @@ $(document).on('click', '.tournament-name-copy', function () {
 
 $(document).on('click', '.coords-copy', function () {
   copyToClipboard(String($(this).data('coords')), () => showToast('Координаты скопированы', 'success'));
+});
+
+// копирование достижения (кнопка в заголовке карточки достижений):
+// смайлик, название, описание, значение и ФИ игроков
+$(document).on('click', '.achievement-copy', function () {
+  copyToClipboard(String($(this).data('copy')), () => showToast('Достижение скопировано', 'success'));
 });
 
 /** Скачивает .ics (RFC 5545) с событием турнира: клик по кнопке в шапке

@@ -30,6 +30,9 @@
         </div>
         <div class="game-form-buttons row">
             <div class="text-center">
+                <%# Табло (пока заглушка) — прозрачная жёлтая кнопка в стиле соседних
+    (outline-warning); клик ловит .game-form-button-board в game.js %>
+<button id="game-form-button-board-__i__" type="button" class="game-form-button-board btn btn-outline-warning no-selection" title="Табло" aria-label="Табло">Табло</button>
                 <button id="game-form-button-submit-__i__" type="submit" class="game-form-button-submit btn btn-outline-success" disabled>Завершить</button>
                 <button id="game-form-button-reset-__i__" type="reset" class="game-form-button-reset btn btn-outline-danger">Отменить</button>
             </div>
@@ -67,8 +70,58 @@
         </div>
         <div class="game-form-buttons row">
             <div class="text-center">
+                <%# Табло (пока заглушка) — прозрачная жёлтая кнопка в стиле соседних
+    (outline-warning); клик ловит .game-form-button-board в game.js %>
+<button id="game-form-button-board-__i__" type="button" class="game-form-button-board btn btn-outline-warning no-selection" title="Табло" aria-label="Табло">Табло</button>
                 <button id="game-form-button-submit-__i__" type="submit" class="game-form-button-submit btn btn-outline-success" disabled>Завершить</button>
                 <button id="game-form-button-reset-__i__" type="reset" class="game-form-button-reset btn btn-outline-danger">Отменить</button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<%# живое табло Новой лиги: то же табло, что и в 110, но без ручной смены
+    сторон (стороны меняет сервер: после каждой игры и в решающей игре на
+    половинном счёте), без названий команд (под счётом — аватары с именами
+    игроков) и без колонки разрядов; модалки создаёт game.js по одной на
+    матч, __i__ заменяется на id матча %>
+<template id="game-board-template">
+    <div class="modal fade game-board-modal" id="game-board-__i__" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    <div class="container-fluid">
+                        <div class="row vh-100 text-center no-selection justify-content-center">
+                            <div class="col game-board-col">
+                                <div class="row board-score game-board-score" data-team-number="1">0</div>
+                                <div class="row align-content-end justify-content-center board-avatars game-board-avatars">
+                                    <div class="col-auto px-1 game-board-players"></div>
+                                </div>
+                            </div>
+                            <div class="col-auto align-content-center board-game-types game-board-types">
+                                <%# смена сторон: только при счёте 0:0 (прячется на
+                                    первом очке — renderGameBoard); стороны между
+                                    играми и на половинном счёте решающей игры
+                                    меняет игра (game.js) %>
+                                <button type="button" class="board-swap" title="Сменить стороны" aria-label="Сменить стороны"><i class="bi bi-arrow-left-right"></i></button>
+                                <%# номера игр по порядку (матч — до двух побед,
+                                    максимум три): текущая выделена
+                                    (board-game-type-current), сыгранные — серым
+                                    (secondary-info); переключает game.js %>
+                                <div class="row board-game-type board-game-type-current game-board-game" data-game-number="1">1</div>
+                                <div class="row board-game-type game-board-game" data-game-number="2">2</div>
+                                <div class="row board-game-type game-board-game" data-game-number="3">3</div>
+                            </div>
+                            <div class="col game-board-col">
+                                <div class="row board-score game-board-score" data-team-number="2">0</div>
+                                <div class="row align-content-end justify-content-center board-avatars game-board-avatars">
+                                    <div class="col-auto px-1 game-board-players"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

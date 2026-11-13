@@ -192,6 +192,16 @@ class Tournament {
     );
   }
 
+  /** Название турнира редактируется в шапке (hero) под админом. */
+  setName(id: number, name: string) {
+    return this.db.run(
+        `UPDATE tournament
+         SET name = ?
+         WHERE id = ?`,
+        [name, id]
+    );
+  }
+
   setLostStatuses() {
     const lost = this.db.all<{ id: number }>(
         `SELECT id, tournament_status_id AS status, ended_at AS date

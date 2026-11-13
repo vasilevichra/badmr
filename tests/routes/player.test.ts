@@ -508,9 +508,6 @@ describe("Player page", () => {
     const { type_name } = db.prepare(
       "SELECT tt.name AS type_name FROM tournament t JOIN tournament_type tt ON tt.id = t.tournament_type_id WHERE t.id = 4",
     ).get() as { type_name: string };
-    const { name: city } = db.prepare(
-      "SELECT c.name AS name FROM tournament t JOIN gym g ON g.id = t.gym_id JOIN city c ON c.id = g.city_id WHERE t.id = 4",
-    ).get() as { name: string };
     const { id: matchId, created_at } = db.prepare(
       "SELECT id, created_at FROM match WHERE tournament_id = 4 ORDER BY id DESC LIMIT 1",
     ).get() as { id: number; created_at: string };
@@ -518,11 +515,11 @@ describe("Player page", () => {
       "SELECT delta FROM rating WHERE user_id = ? AND match_id = ?",
     ).get(u1, matchId) as { delta: number };
 
-    // стандартная подпись (как в селекторе турниров): #<id> <тип-инициалами> <город> <dd mmm. yyyy>
+    // стандартная подпись (как в селекторе турниров, partial tournament-label):
+    // #<id> <тип-инициалами> <dd.mm.yy> — без города, номер турнира его определяет
     const typeShort = (n: string) => { const w = n.trim().split(/\s+/); return w.length > 1 ? w.map(x => x[0].toUpperCase()).join('') : n.trim(); };
-    const monthShort = ['янв.', 'фев.', 'мар.', 'апр.', 'мая', 'июн.', 'июл.', 'авг.', 'сен.', 'окт.', 'ноя.', 'дек.'];
     const d = new Date(created_at.replace(' ', 'T') + 'Z');
-    const label = `#4 ${typeShort(type_name)} ${city} ${String(d.getDate()).padStart(2, '0')} ${monthShort[d.getMonth()]} ${d.getFullYear()}`;
+    const label = `#4 ${typeShort(type_name)} ${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(-2)}`;
 
     // компактная таблица: подпись турнира, пары колонками: пара игрока
     // (имя жирным) слева, соперники справа; счёт и дельта объединены

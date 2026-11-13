@@ -66,6 +66,40 @@
   --badmr-sex-border: #9e9fa1;
   /* зазор между ячейками таблицы Обзора в карточке игрока */
   --badmr-gap: #ffffff;
+  /* шапка и герой-баннер турнира: светлая тема */
+  --badmr-header-card-bg: #ffffff;
+  --badmr-header-card-border: #dee2e6;
+  --badmr-header-ctrl-bg: #e9ecef;
+  --badmr-header-ctrl-border: #ced4da;
+  --badmr-header-ctrl-color: #212529;
+  --badmr-hero-gradient: linear-gradient(120deg, #e8effc 0%, #ece5fa 60%, #f5e9fb 100%);
+  --badmr-hero-border: #d3dcf1;
+  --badmr-hero-color: #212529;
+  --badmr-hero-name: #212529;
+  --badmr-hero-muted: #56617a;
+  --badmr-hero-accent: #0b5ed7;
+  --badmr-hero-type-bg: rgba(13, 110, 253, 0.1);
+  --badmr-hero-type-border: rgba(13, 110, 253, 0.35);
+  --badmr-hero-chip-bg: rgba(255, 255, 255, 0.65);
+  --badmr-hero-chip-border: rgba(33, 37, 41, 0.14);
+  --badmr-hero-action: #6c757d;
+  --badmr-hero-progress-bg: rgba(33, 37, 41, 0.1);
+  --badmr-hero-progress-fill: linear-gradient(90deg, #0d6efd, #6f42c1);
+  --badmr-hero-progress-done: rgba(33, 37, 41, 0.3);
+  /* карточка-барометр «Подбора»: светлая тема */
+  --badmr-sel-track: #eef2f7;
+  --badmr-sel-bar-a: linear-gradient(90deg, #e7f0ff, #dbe9ff);
+  --badmr-sel-bar-b: linear-gradient(90deg, #d9f3e5, #c9eedd);
+  --badmr-sel-warn-bg: #fff3cd;
+  --badmr-sel-warn-fg: #8a6d00;
+  --badmr-sel-fav-fg: #0f5132;
+  --badmr-sel-trophy: #c99700;
+  --badmr-sel-court-bg: #212529;
+  --badmr-sel-court-fg: #ffffff;
+  --badmr-sel-board-bg: #212529;
+  --badmr-sel-board-fg: #ffd43b;
+  --badmr-sel-cap: #868e96;
+  --badmr-sel-dash: #e9ecef;
   color-scheme: light;
 }
 
@@ -83,6 +117,40 @@
   --badmr-sex-hover-bottom: #495057;
   --badmr-sex-border: #495057;
   --badmr-gap: #212529;
+  /* шапка и герой-баннер турнира: тёмная гамма из макета B */
+  --badmr-header-card-bg: #1b1f24;
+  --badmr-header-card-border: #2c3137;
+  --badmr-header-ctrl-bg: #262b32;
+  --badmr-header-ctrl-border: #3a4149;
+  --badmr-header-ctrl-color: #e9ecef;
+  --badmr-hero-gradient: linear-gradient(120deg, #1e2a45 0%, #2b2340 60%, #33204a 100%);
+  --badmr-hero-border: #3a4664;
+  --badmr-hero-color: #dee2e6;
+  --badmr-hero-name: #fff;
+  --badmr-hero-muted: #b8c2d9;
+  --badmr-hero-accent: #8db8ff;
+  --badmr-hero-type-bg: rgba(61, 139, 253, 0.18);
+  --badmr-hero-type-border: rgba(109, 140, 255, 0.4);
+  --badmr-hero-chip-bg: rgba(255, 255, 255, 0.07);
+  --badmr-hero-chip-border: rgba(255, 255, 255, 0.14);
+  --badmr-hero-action: #9aa7bd;
+  --badmr-hero-progress-bg: rgba(255, 255, 255, 0.12);
+  --badmr-hero-progress-fill: linear-gradient(90deg, #3d8bfd, #8f42f5);
+  --badmr-hero-progress-done: rgba(255, 255, 255, 0.35);
+  /* карточка-барометр «Подбора»: тёмная тема */
+  --badmr-sel-track: #21262d;
+  --badmr-sel-bar-a: linear-gradient(90deg, rgba(13, 110, 253, 0.35), rgba(13, 110, 253, 0.2));
+  --badmr-sel-bar-b: linear-gradient(90deg, rgba(25, 135, 84, 0.4), rgba(25, 135, 84, 0.22));
+  --badmr-sel-warn-bg: rgba(255, 193, 7, 0.16);
+  --badmr-sel-warn-fg: #ffe08a;
+  --badmr-sel-fav-fg: #8ff0b1;
+  --badmr-sel-trophy: #ffd43b;
+  --badmr-sel-court-bg: #495057;
+  --badmr-sel-court-fg: #f8f9fa;
+  --badmr-sel-board-bg: #343a40;
+  --badmr-sel-board-fg: #ffd43b;
+  --badmr-sel-cap: #8f9dc9;
+  --badmr-sel-dash: #2c3137;
   color-scheme: dark;
 }
 
@@ -288,6 +356,9 @@ input:focus::placeholder {
   padding-left: 0 !important;
 }
 
+/* селект турниров в шапке рендерится на всех устройствах; зазоры —
+   через gap формы, вертикальные отступы гасит .tournament-hero .tournament */
+
 .login {
   color: #007df9;
   /* селектор турниров и кнопка «Войти» — в одну строку по центру (#55) */
@@ -295,19 +366,8 @@ input:focus::placeholder {
   align-items: center;
 }
 
-/* контролы шапки (селектор, логин/выход) — по центру высоты строки,
-   как иконки соцсетей в соседней колонке; .col-10 только в desktop-DOM
-   (на телефоне шапка — col-12) */
-body.desktop #header .col-10 {
-  align-items: center;
-}
-
-/* у селекта в гостевой форме свои вертикальные отступы не нужны —
-   позицией рулит align-items: center; зазор до кнопки как у
-   подразделения в авторизованной зоне */
-.login .tournament {
-  margin: 0 0.5rem 0 0;
-}
+/* у селекта в гостевой форме вертикальные отступы не нужны —
+   позицией рулит align-items: center, зазором — gap формы */
 
 /* p внутри кнопок шапки: гасим bootstrap-овский margin-bottom — иначе
    текст «Войти»/иконка выхода всплывают над центром кнопки и не на
@@ -321,30 +381,27 @@ body.desktop #header .col-10 {
   margin: 0;
 }
 
-/* в phone-DOM лейбл пользователя и кнопка выхода — выровнены по центру
-   высоты (в block-форме inline-элементы стоят по базовой линии, и текст
-   лейбла всплывает над центром кнопки) */
-body.phone #header form.logout {
-  display: flex;
-  align-items: center;
+.tournament-hero-logout {
+  /* выход — аккуратный маленький крестик btn-close: 12px — по высоте
+     строчного текста логина (штатный btn-close — 24px); ещё более
+     приглушённый, чем дефолт btn-close; центрируется flex-формой */
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  align-self: center;
+  opacity: 0.4;
 }
 
-.social {
-  /*margin: 2.2em 0 0 0;*/
+.tournament-hero-logout:hover {
+  opacity: 0.8;
 }
+
+/* лейбл пользователя и кнопка выхода центрируются flex-формой плашки
+   (правило .tournament-hero form) */
 
 .tournament {
   margin: 1em 0 3em 0;
   position: relative;
-}
-
-/* перебивает bootstrap-верстку селекта; правый отступ — зазор после
-   селекта до следующего элемента шапки; отрицательный вертикальный
-   маржа-хак убран — в гостевой flex-форме он уводил селект вверх.
-   Селект турниров в шапке рендерится только в desktop-DOM; скоуп
-   не даёт правилу задевать closable-блок #tournament на странице */
-body.desktop #header #tournament {
-  margin: 0 0.5rem 0 0 !important;
 }
 
 .tournament-new-registration-input {
@@ -386,19 +443,204 @@ body.desktop #tournament-new-registration-hint > .row {
   position: relative;
 }
 
+/* небольшой зазор после селекта подразделения в шапке — даёт gap формы */
+#header #unit {
+  margin-right: 0;
+}
+
 .player-selectors {
   display: inline;
 }
 
-/* небольшой зазор после селекта подразделения в шапке */
-#header #unit {
-  margin-right: 0.5rem;
+/* Общее правило (не device-специфичное): шапка варианта B — единая плашка:
+   градиент баннера поднят на карточку (как у гостей), баннер прозрачный и
+   без обводки; цвета — через переменные --badmr-header-* / --badmr-hero-*
+   (светлые и тёмные значения заданы в :root / [data-bs-theme=dark]);
+   у залогиненных сверху служебная полоса, под ней с отступом — баннер */
+.header-card {
+  background: var(--badmr-hero-gradient);
+  border-radius: 14px;
+  /* по ширине таблицы игроков: таблица сидит в .container с паддингом
+     12px — карточке те же боковые отступы, левый/правый край совпадают */
+  margin: 0 12px;
+  overflow: hidden;
+  color: var(--badmr-hero-color);
 }
 
-/* зазор после селекта турниров в шапке: раньше он разделял селекты
-   турниров и подразделения, теперь — селект и имя пользователя */
-.player-selectors .tournament {
-  margin-right: 0.5rem;
+/* селектор турниров в баннере турнира — ghost-кнопка из макета;
+   margin: 0 гасит базовое .tournament { margin: 1em 0 3em 0 } */
+.tournament-hero .tournament {
+  background-color: var(--badmr-header-ctrl-bg);
+  border: 1px solid var(--badmr-header-ctrl-border);
+  border-radius: 10px;
+  color: var(--badmr-header-ctrl-color);
+  margin: 0 !important;
+  /* bootstrap-овский .form-select здесь не действует: гасим нативную
+     стрелку и рисуем свою, без повторения (repeat давал «⌄⌄⌄») */
+  appearance: none;
+  -webkit-appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23adb5bd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3E");
+}
+
+/* зазоры между контролами форм плашки (селектор, имя, кнопки) — через gap;
+   формы делаем flex (logout иначе блочный, gap бы не сработал) */
+.tournament-hero form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* лейбл пользователя и ghost-кнопки («Вход», выход) на плашке */
+.tournament-hero .user {
+  color: var(--badmr-header-ctrl-color);
+}
+
+.tournament-hero form .btn {
+  background: var(--badmr-header-ctrl-bg);
+  border: 1px solid var(--badmr-header-ctrl-border);
+  color: var(--badmr-header-ctrl-color);
+  border-radius: 10px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+/* Общее правило (не device-специфичное): ссылка VK в соцблоке —
+   текстовый логотип синим, как в макете шапки */
+.vk-link {
+  color: #0077ff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.vk-link:hover {
+  color: #3395ff;
+}
+
+.tournament-hero {
+  /* прозрачный баннер на градиентной плашке (единая карточка, как у гостей) */
+  background: transparent;
+  border: none;
+  border-radius: 14px;
+  margin: 12px 16px 16px;
+  padding: 1rem 1.1rem;
+  color: var(--badmr-hero-color);
+}
+
+/* у гостей полоса над баннером не рендерится — баннер прижат к верху
+   плашки; боковые/нижние отступы оставлены прежними (16px), чтобы
+   плашка держала исходный размер */
+.tournament-hero-first {
+  margin-top: 0;
+}
+
+.tournament-hero-type {
+  background: var(--badmr-hero-type-bg);
+  border: 1px solid var(--badmr-hero-type-border);
+  color: var(--badmr-hero-accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tournament-hero-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 0.3rem;
+  color: var(--badmr-hero-name);
+}
+
+/* Редактируемое название турнира в шапке — клик превращает его в input */
+.tournament-hero-name-edit {
+  cursor: text;
+}
+
+.tournament-hero-name-edit input {
+  width: 100%;
+}
+
+.tournament-hero-meta {
+  font-size: 0.875rem;
+  color: var(--badmr-hero-muted);
+}
+
+.tournament-hero-reg {
+  font-size: 0.875rem;
+  color: var(--badmr-hero-muted);
+}
+
+.tournament-hero-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--badmr-hero-progress-bg);
+}
+
+.tournament-hero-progress .progress-bar {
+  background: var(--badmr-hero-progress-fill);
+}
+
+.tournament-hero-progress .progress-bar.bg-secondary {
+  background: var(--badmr-hero-progress-done);
+}
+
+.tournament-hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--badmr-hero-chip-bg);
+  border: 1px solid var(--badmr-hero-chip-border);
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: var(--badmr-hero-color);
+}
+
+.tournament-hero-chip i {
+  color: var(--badmr-hero-accent);
+}
+
+.tournament-hero-chip a {
+  color: var(--badmr-hero-accent);
+}
+
+.tournament-hero-chip .btn-xs {
+  padding: 0;
+  border: none;
+  color: var(--badmr-hero-action);
+}
+
+.tournament-hero-action {
+  color: var(--badmr-hero-action);
+}
+
+body.phone .tournament-hero {
+  margin: 10px 12px 12px;
+  padding: 0.8rem 0.9rem;
+}
+
+body.phone .tournament-hero-name {
+  font-size: 1.2rem;
+}
+
+body.phone .tournament-hero-chip {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.55rem;
+  /* длинный адрес не влезает в экран: чип занимает всю доступную ширину
+     ряда, адрес переносится внутри пилюли на вторую строку */
+  white-space: normal;
+  max-width: 100%;
+}
+
+body.phone .tournament-hero-chip a {
+  overflow-wrap: anywhere;
 }
 
 .player-window-link {
@@ -413,102 +655,403 @@ body.desktop #tournament-new-registration-hint > .row {
   position: relative;
 }
 
-.select-form-table-2 {
-  margin: 1em;
+/* ===== Карточка-барометр «Подбора» =====
+   Две пары навстречу друг другу: крупные суммы рейтингов с полосами,
+   заполнение ∝ сумме (перевес считывается мгновенно); корт и «свободен»
+   между колонками; шанс и разница — у каждой пары отдельно; фаворит —
+   трофей и зелёная полоса. Цвета — через --badmr-sel-* (светлая/тёмная). */
+.select-baro {
+  background: var(--badmr-card-bg);
+  border: 1px solid var(--badmr-card-border);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 14px 16px;
+  /* ширина по содержимому (duel) — не растягивается на всю колонку */
+  width: fit-content;
+  max-width: 640px;
+  margin: 0 auto 14px;
+  /* сброс text-align:center контейнера #select-block — иначе внутренние
+     inline-блоки (например, вторая строка имён) центрируются */
+  text-align: left;
 }
 
-/* пометки в заголовке колонки «Имя»: название слева, дельта сильнейшей
-   пары и значок фаворита — группой у правого края */
-.select-mark-th .th-inner {
+/* плашки подбора — в линию с переносом, если есть место; форма —
+   inline-block, чтобы карточки стояли рядом и переносились как текст */
+#select-block {
+  text-align: center;
+}
+
+.select-form {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0 7px 14px;
+}
+
+.select-baro-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  gap: 0.25em;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.select-marks {
+/* правая колонка: сумма, имена и чипы прижаты к правому краю */
+.select-baro-col-r .select-baro-sigma,
+.select-baro-col-r .select-baro-names,
+.select-baro-col-r .select-baro-meta {
+  text-align: right;
+  justify-content: flex-end;
+}
+
+/* полоса правой колонки прижата к правому краю (ширина у неё px) */
+.select-baro-col-r .select-baro-bar {
+  margin-left: auto;
+}
+
+/* заполнение правой полосы растёт справа налево — зеркально левой */
+.select-baro-col-r .select-baro-bar i {
+  margin-left: auto;
+}
+
+.select-baro-favchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(25, 135, 84, 0.12);
+  color: var(--badmr-sel-fav-fg);
+}
+
+.select-baro-duel {
   display: flex;
-  align-items: center;
-  gap: 0.25em;
+  /* бейдж корта позиционируется абсолютно относительно duel */
+  position: relative;
+  /* небольшой вертикальный пробел между половинками, по центру */
+  justify-content: center;
+  gap: 6px;
 }
 
-/* едва заметный значок пары-фаворита при системе 50% */
-.select-favorite {
-  font-size: 0.9rem;
+.select-baro-col {
+  width: auto;
+  min-width: 0;
+}
+
+.select-baro-sigma {
+  /* по высоте соседнего бейджа корта (20px); высота зафиксирована, чтобы
+     полосы шанса обеих половинок были ровно на одной высоте */
+  height: 20px;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.select-baro-col.select-baro-fav .select-baro-sigma {
+  color: var(--badmr-sel-fav-fg);
+}
+
+.select-baro-trophy {
+  /* кубок — bootstrap-иконка, чуть ниже строки суммы: line-height 1
+     и выравнивание по базовой линии, чтобы не раздувать строку (иначе
+     полосы шанса половинок расходятся по высоте) */
+  font-size: 0.8em;
   line-height: 1;
-  opacity: 0.2;
-  pointer-events: none;
+  vertical-align: middle;
+  color: var(--badmr-sel-trophy);
+  margin-right: 2px;
 }
 
-/* перевес сильнейшей пары в баллах (+1.6) — еле заметный, в одном стиле
-   со значком фаворита */
-.select-delta {
-  font-weight: bold;
+/* кубок справа от суммы — в левой колонке (в правой кубок слева) */
+.select-baro-trophy-after {
+  margin-right: 0;
+  margin-left: 2px;
+}
+
+.select-baro-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--badmr-sel-track);
+  overflow: hidden;
+  margin: 6px 0 7px;
+}
+
+.select-baro-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--badmr-sel-bar-a);
+}
+
+.select-baro-fav .select-baro-bar i {
+  background: var(--badmr-sel-bar-b);
+}
+
+.select-baro-names {
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+
+/* строка имени — по содержимому (inline-block), подчёркивания при
+   наведении нет; ширину всей четвёрке игроков пары выставляет JS —
+   по самой длинной строке */
+.select-baro-name {
+  display: inline-block;
   white-space: nowrap;
-  font-size: 0.9rem;
-  opacity: 0.2;
+  cursor: pointer;
 }
 
-/* в «Подборе» на телефоне знак процента мельче числа: колонки
-   «Шанс» и «Разница» занимают меньше ширины */
-.select-pct {
-  font-size: 70%;
+/* аватар в строке имени — по центру строки текста */
+.select-baro-pic {
+  vertical-align: -6px;
+  border-radius: 50%;
 }
 
-/* числовые колонки подбора на телефоне: максимальные паддинги — половина
-   bootstrap (td 4px, .th-inner 6px), шрифт как в «Имени» (1rem). Ступени
-   включает JS (fitSelectTables), когда таблица не умещается на экране:
-   .select-compact — минимальные паддинги (шрифт ещё полный),
-   .select-tight — вдобавок минимальный шрифт. Селекторы с .bootstrap-table
-   .fixed-table-container — перебивают специфичность bootstrap-table */
+/* обёртка аватарки — якорь для точки статуса */
+.select-baro-ava {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+/* точка статуса игрока на углу аватарки (со стороны ФИО):
+   красная — играл в последних матчах (played), зелёная — не играл */
+.select-baro-dot {
+  position: absolute;
+  bottom: -1px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--badmr-card-bg);
+}
+
+.select-baro-dot-r {
+  right: -1px;
+}
+
+.select-baro-dot-l {
+  left: -1px;
+}
+
+.select-baro-dot-played {
+  background: #dc3545;
+}
+
+.select-baro-dot-idle {
+  background: #198754;
+}
+
+.select-baro-dot-played {
+  background: #dc3545;
+}
+
+.select-baro-dot-idle {
+  background: #198754;
+}
+
+/* верхняя строка половинки: сумма с кубком и чип Δ в одну линию;
+   чип ставится сразу после суммы (в правой половинке — зеркально,
+   перед суммой) */
+.select-baro-topline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* правая половинка зеркально: чип перед суммой, у правого края */
+.select-baro-col-r .select-baro-topline {
+  flex-direction: row-reverse;
+}
+
+.select-baro-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.select-baro-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.select-baro-chip-warn {
+  background: var(--badmr-sel-warn-bg);
+  color: var(--badmr-sel-warn-fg);
+}
+
+.select-baro-court {
+  /* бейдж корта — по центру между половинками, на уровне сумм;
+     абсолютное позиционирование: не участвует в раскладке и не
+     увеличивает ширину плашки выбора; выше строки суммы (20px),
+     вертикально отцентрован на ней (top -4px) */
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--badmr-sel-court-bg);
+  color: var(--badmr-sel-court-fg);
+  font-variant-numeric: tabular-nums;
+  z-index: 1;
+}
+
+.select-baro-foot {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--badmr-sel-dash);
+}
+
+/* «Табло»: тёмная кнопка с жёлтым экраном — акцент под превью-табло */
+.select-baro-board {
+  margin-right: auto;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--badmr-sel-board-bg);
+  color: var(--badmr-sel-board-fg);
+}
+
+/* иконка табло-«раскладушки» (инлайн-SVG из select-form.ejs) */
+.select-baro-board-ic {
+  width: 1.4em;
+  height: 1.4em;
+  vertical-align: -0.3em;
+}
+
+.select-baro-board:hover {
+  filter: brightness(1.2);
+}
+
+/* телефон: кнопка «Табло» — только иконка, колонки и чипы компактнее,
+   кнопки футера растягиваются */
+body.phone .select-baro-board span {
+  display: none;
+}
+
+body.phone .select-baro {
+  padding: 11px 12px;
+}
+
+body.phone .select-baro-sigma {
+  font-size: 14px;
+}
+
+body.phone .select-baro-names {
+  font-size: 12.5px;
+}
+
+body.phone .select-baro-chip {
+  font-size: 10.5px;
+  padding: 1px 7px;
+}
+
+body.phone .select-baro-foot {
+  gap: 6px;
+}
+
+body.phone .select-form-button-reset {
+  flex: 1;
+}
+
+body.phone .select-form-button-submit {
+  flex: 1.4;
+}
+
+/* превью-табло кандидатуры: тёмный экран в обеих темах — как настоящее
+   табло матча; составы пар по сторонам, счёт 0:0 до старта */
+.select-board-preview .modal-content {
+  background: #151a24;
+  color: #f8f9fa;
+  border: 1px solid #2c3137;
+  border-radius: 14px;
+}
+
+.select-board-header {
+  border-bottom: 1px solid #2c3137;
+}
+
+.select-board-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8f9dc9;
+}
+
+.select-board-duel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.select-board-team {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.select-board-team .select-baro-name {
+  display: inline;
+}
+
+.select-board-team-r {
+  text-align: right;
+}
+
+.select-board-score {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffd43b;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.select-board-note {
+  font-size: 11px;
+  color: #8f9dc9;
+  margin-top: 10px;
+  text-align: center;
+}
+
+body.phone .select-board-team {
+  font-size: 11.5px;
+}
+
+body.phone .select-board-score {
+  font-size: 21px;
+}
+
+/* Общее правило (не device-специфичное): чекбокс «выбрать всех» в шапке
+   таблицы игроков — по центру колонки (bootstrap-table прижимает его
+   влево внутри .th-inner) */
+#player-table thead th.bs-checkbox .th-inner .form-check-input {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 @media (max-width: 575.98px) {
-  td.select-num {
-    padding-left: 4px;
-    padding-right: 4px;
-  }
-
-  .bootstrap-table
-    .fixed-table-container
-    .select-form-table-1
-    th.select-num
-    .th-inner,
-  .bootstrap-table
-    .fixed-table-container
-    .select-form-table-2
-    th.select-num
-    .th-inner {
-    padding-left: 6px;
-    padding-right: 6px;
-  }
-
-  .select-compact td.select-num {
-    padding-left: 2px;
-    padding-right: 2px;
-  }
-
-  .bootstrap-table
-    .fixed-table-container
-    .select-compact.select-form-table-1
-    th.select-num
-    .th-inner,
-  .bootstrap-table
-    .fixed-table-container
-    .select-compact.select-form-table-2
-    th.select-num
-    .th-inner {
-    padding-left: 3px;
-    padding-right: 3px;
-  }
-
-  .select-tight td.select-num,
-  .bootstrap-table
-    .fixed-table-container
-    .select-tight
-    th.select-num
-    .th-inner {
-    font-size: 0.7rem;
-  }
-
   /* таблица «Игроки»: паддинги рейтинга и дельты вдвое меньше исходных,
      когда колонка оплаты видна или таблица не умещается на экране без
      прокрутки (класс .player-compact вешает fitPlayerTable): td
@@ -527,35 +1070,43 @@ body.desktop #tournament-new-registration-hint > .row {
   }
 }
 
-/* смёрженная ячейка колонки превышения среднего рейтинга */
-.select-form-table-1 td[rowspan],
-.select-form-table-2 td[rowspan] {
-  vertical-align: middle;
+/* Общее правило (не device-специфичное): узкие колонки в таблице игроков —
+   чекбокс доступности и оплаты «₽»; у сортируемой шапки чекбокса
+   bootstrap-table оставляет 30px справа под иконку сортировки */
+#player-table thead th.bs-checkbox .th-inner {
+  padding-right: 8px !important;
 }
 
-/* при наведении на смёрженную ячейку («Шанс»/«Разница») подсвечивается
-   только сама ячейка: rowspan-ячейка принадлежит строке первого игрока,
-   и штатный .table-hover красил бы всю его строку. Класс cell-hover-only
-   ставится из select.js на mouseenter/mouseleave смёрженной ячейки */
-.select-form-table-1.table-hover.cell-hover-only
-  > tbody
-  > tr
-  > td:not(td[rowspan]),
-.select-form-table-2.table-hover.cell-hover-only
-  > tbody
-  > tr
-  > td:not(td[rowspan]) {
-  background-color: var(--bs-table-bg);
+#player-table thead th.bs-checkbox,
+#player-table tbody td.bs-checkbox {
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
-.select-form-table-1.table-hover > tbody > tr > td[rowspan]:hover,
-.select-form-table-2.table-hover > tbody > tr > td[rowspan]:hover {
-  background-color: var(--bs-table-hover-bg);
+/* колонка оплаты «₽»: класс paid-col ставится в player.js */
+#player-table thead th[data-field="paid"],
+#player-table tbody td.paid-col {
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
-.select-form-buttons {
-  /* вертикальный пробел между таблицей пары и кнопками «Начать»/«Отменить» */
-  margin: 1em 0 3em 0;
+#player-table thead th[data-field="paid"] {
+  width: 34px;
+}
+
+/* Общее правило (не device-специфичное): редактируемое ФИО в шапке карточки
+   игрока — клик по заголовку превращает его в input */
+.player-window-name {
+  cursor: text;
+}
+
+.player-window-name input {
+  width: 100%;
+}
+
+/* Редактируемая дата рождения в карточке игрока — клик превращает поле в input */
+.player-window-birthday {
+  cursor: text;
 }
 
 .match {
@@ -593,6 +1144,17 @@ body.desktop #tournament-new-registration-hint > .row {
 
 .game-form-button-reset {
   margin: 0 0 3em 0;
+}
+
+.game-form-button-board {
+  /* «Табло» (пока заглушка) — прозрачная жёлтая кнопка (btn-outline-warning
+     в разметке) в стиле соседних «Завершить»/«Отменить»; обработчик —
+     .game-form-button-board в game.js */
+  margin: 0 0 3em 0;
+}
+
+.game-form-button-board:hover {
+  filter: brightness(1.2);
 }
 
 .game-form-horizontal-inputs {
@@ -1534,6 +2096,226 @@ a.lab-profile:hover {
 .board-player-name {
   font-size: 1.6vh;
   line-height: 1.2;
+}
+
+/* Значки на аватарке игрока табло Новой лиги: слева снизу — «палочки»
+   корта (две — чётный/правый, одна — нечётный/левый), справа снизу —
+   воланчик подающего. Аватарка — точка позиционирования. */
+.board-player-avatar {
+  position: relative;
+  display: inline-block;
+}
+
+.board-parity {
+  position: absolute;
+  left: -15px;
+  bottom: 24px;
+  width: 12px;
+  height: 12px;
+  /* под цвет текста ФИО: базовый цвет текста темы (чёрный в светлой, белый в тёмной) */
+  color: var(--bs-body-color, #000);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, .55));
+}
+
+/* SVG внутри <i> строчный и садится на базовую линию текста — уезжает
+   вниз бокса; блоком занимает бокс ровно */
+.board-parity svg {
+  display: block;
+}
+
+.board-serve {
+  position: absolute;
+  /* видимый зазор от аватара = как у двух палочек: 3px бокса + 2.2px
+     внутреннего отступа SVG-контента палочек */
+  right: -15.2px;
+  bottom: 25px;
+  /* 10px — видимая высота палочек (SVG занимает 10 из 12px бокса):
+     кружок выглядит ровно на одной высоте с ними */
+  width: 10px;
+  height: 10px;
+  /* кружок подающего — под цвет текста ФИО */
+  border-radius: 50%;
+  background: var(--bs-body-color, #000);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, .55));
+}
+
+/* у нечётного игрока одна палочка с бóльшим внутренним отступом SVG
+   (4.7px) — кружок отодвигается на тот же видимый зазор */
+.game-board-modal .board-player:has(.board-parity-odd) .board-serve {
+  right: -17.7px;
+}
+
+/* игрок с незаданной подачей на 0:0 — подсказка про двойной клик */
+.game-board-modal .board-player {
+  cursor: pointer;
+}
+
+/* Табло на телефоне — принудительный альбом: сама страница экран не
+   поворачивает (Screen Orientation Lock в iOS Safari не поддерживается),
+   поэтому в портретной ориентации модалку поворачиваем на 90° — телефон
+   во время игры держат боком. Все размеры табло заданы в vh/vw: при
+   повороте длинная сторона экрана становится шириной табло, поэтому
+   единицы в этом блоке меняются местами (vh↔vw). На Android Chrome
+   group.js поворачивает экран по-настоящему (fullscreen +
+   orientation.lock('landscape')), @media перестаёт совпадать и блок
+   не действует. Табло на десктопе и в альбомной ориентации не задевается. */
+@media (orientation: portrait) {
+  body.phone [id^="tournament-groups-board-"] .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vh;
+    height: 100vw;
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  /* .row.vh-100 внутри повёрнутой модалки — высота табло теперь 100vw */
+  body.phone [id^="tournament-groups-board-"] .modal-content .row.vh-100 {
+    height: 100% !important;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-team-name {
+    height: 6vw;
+    padding: 0 2vh;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-score {
+    height: 73vw;
+    font-size: 37vh;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-score.winner::after {
+    top: 66vw;
+    width: 6vw;
+    height: 6vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-spark {
+    width: 0.6vw;
+    height: 0.6vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-game-types {
+    height: 73vw;
+    margin-top: 6vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-swap {
+    top: 11.7vw;
+    font-size: 3vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-swap-plate-title {
+    font-size: 9vw;
+    margin-bottom: 4vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-break-overlay .board-swap-plate-title {
+    font-size: 5vw;
+    margin-bottom: 1vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-swap-plate-subtitle {
+    font-size: 3.5vw;
+    margin-bottom: 1vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-swap-players {
+    gap: 6vh;
+    margin-bottom: 4vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-swap-players .board-player-name {
+    font-size: 2.6vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-swap-overlay .btn-primary {
+    font-size: 6vw;
+    padding: 1.5vw 6vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-break-seconds {
+    font-size: 37vh;
+    margin-bottom: 4vw;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-game-type {
+    font-size: 1.6vh;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-game-type-current {
+    font-size: 2.2vh;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-avatars [data-type]:not([hidden]) {
+    gap: 2vh;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-player-name {
+    font-size: 1.6vw;
+  }
+}
+
+/* Табло Новой лиги (game-form.ejs, game.js): счёт и аватары с именами
+   игроков под счётом (названий команд нет). Игроки пары — в линию,
+   как в 110 (зазор — визуальный пробел). Базовые размеры. */
+.game-board-players {
+  display: flex;
+  gap: 2vw;
+  align-items: flex-end;
+}
+
+.game-board-avatars {
+  height: 10vh;
+}
+
+/* Кнопка смены сторон (как в 110): в 110 она absolute от .modal и
+   попадает на уровень названий команд; здесь якорим к колонке номеров
+   игр (position: relative, высота — как у счёта) и ставим над номерами.
+   Видна только при 0:0 — hidden управляет renderGameBoard */
+.game-board-types {
+  /* сбрасываем margin-top 110-правила и центрируем номера по высоте
+     счёта (колонка тянется на высоту счёта — 73vh) */
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+.game-board-modal .board-swap {
+  top: 36%;
+  transform: translateX(-50%);
+}
+
+/* Табло Новой лиги на телефоне — принудительный альбом, как у табло 110
+   (выше): CSS-поворот там, где нативный lock недоступен (iOS). Единицы
+   vh↔vw меняются местами, как и в блоке 110. */@media (orientation: portrait) {
+  body.phone .game-board-modal .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vh;
+    height: 100vw;
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  body.phone .game-board-modal .modal-content .row.vh-100 {
+    height: 100% !important;
+  }
+
+  body.phone .game-board-modal .game-board-avatars {
+    height: 10vw;
+  }
+
+  body.phone .game-board-modal .board-score {
+    height: 73vw;
+    font-size: 37vh;
+  }
+
+  body.phone .game-board-modal .board-player-name {
+    font-size: 1.6vw;
+  }
 }
 
 /*.select2-dropdown .select2-results__option[aria-selected=true] {*/

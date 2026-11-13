@@ -282,6 +282,37 @@ BEGIN
       AND tournament_id IN (SELECT id FROM tournament AS t WHERE t.available = 1);
 END;
 
+-- Живое табло Новой лиги пишет игру иначе: строка создаётся INSERT'ом без
+-- счёта (current = 1), а результат (lost_X_by) проставляется UPDATE'ом
+-- последнего очка — триггер выше (AFTER INSERT) к этому моменту уже
+-- отработал, и корт с игроками оставались занятыми до конца турнира.
+-- Дублируем освобождение ресурсов на проставление результата UPDATE'ом
+CREATE TRIGGER enable_resources_when_game_result_updated
+    AFTER UPDATE
+    ON game
+    WHEN (new.lost_1_by IS NOT NULL OR new.lost_2_by IS NOT NULL)
+     AND (old.lost_1_by IS NULL AND old.lost_2_by IS NULL)
+     AND ((SELECT count(g.lost_1_by)
+           FROM game g
+           WHERE g.match_id = new.match_id) = (SELECT cast(value AS int)
+                                               FROM settings
+                                               WHERE name = 'wins') OR (SELECT count(g.lost_2_by)
+                                                                        FROM game g
+                                                                        WHERE g.match_id = new.match_id) = (SELECT cast(value AS int)
+                                                                                                            FROM settings
+                                                                                                            WHERE name = 'wins'))
+BEGIN
+    UPDATE court SET available = 1 WHERE id IN (SELECT court_id FROM match WHERE id = new.match_id);
+
+    UPDATE tournament_user
+    SET available = 1
+    WHERE (user_id IN (SELECT user_1_id FROM match WHERE id = new.match_id)
+        OR user_id IN (SELECT user_2_id FROM match WHERE id = new.match_id)
+        OR user_id IN (SELECT user_3_id FROM match WHERE id = new.match_id)
+        OR user_id IN (SELECT user_4_id FROM match WHERE id = new.match_id))
+      AND tournament_id IN (SELECT id FROM tournament AS t WHERE t.available = 1);
+END;
+
 CREATE TRIGGER disable_court_and_tournament_users_by_match_created
     AFTER INSERT
     ON match

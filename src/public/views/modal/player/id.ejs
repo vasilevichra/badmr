@@ -16,7 +16,8 @@
                             <div class="row gy-4">
                                 <div class="col-12">
                                     <div class="card widget-card border-light shadow-sm">
-                                        <div class="card-header text-bg-primary text-truncate"><%= user.lastname %> <%= user.firstname %> <%= user.patronymic %></div>
+                                        <% // под логином имя редактируется по клику (index.js): Enter/фокус — сохранить, Esc — отмена %>
+                                        <div class="card-header text-bg-primary text-truncate<% if (login) { %> player-window-name<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" title="нажмите, чтобы редактировать"<% } %>><%= user.lastname %> <%= user.firstname %><%= user.patronymic ? ' ' + user.patronymic : '' %></div>
                                         <div class="card-body">
                                             <div class="text-center mb-3">
                                                 <img class="img-fluid"
@@ -28,12 +29,22 @@
                                             <div class="text-center text-secondary"><%= region.name %></div>
                                             <div class="text-center text-secondary mb-2"><%= state.name %></div>
                                             </p>
-                                            <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
-                                                'октября', 'ноября', 'декабря']; %>
+                                            <% const monthArray = ['января', 'февралья', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
+                                                'октября', 'ноября', 'декабря'];
+                                                // знак зодиака: границы смены знака по дням месяцев,
+                                                // signs[0] — Козерог (до 20 января и с 22 декабря)
+                                                const zodiacBounds = [20, 19, 21, 20, 21, 22, 23, 23, 23, 23, 22, 22];
+                                                const zodiacSigns = ['♑', '♒', '♓', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑'];
+                                                const zodiac = (birthday) => {
+                                                    const m = Number(birthday.slice(5, 7));
+                                                    const d = Number(birthday.slice(8, 10));
+                                                    // \uFE0E — текстовый вариант глифа (не эмодзи), не выше строки
+                                                    return zodiacSigns[d >= zodiacBounds[m - 1] ? m : m - 1] + '\uFE0E';
+                                                }; %>
                                             <p>
-                                            <div class="text-center text-secondary"><i class="bi bi-cake2"> </i><%= user.birthday.slice(
+                                            <div class="text-center text-secondary<% if (login) { %> player-window-birthday<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" data-birthday="<%= user.birthday %>" title="нажмите, чтобы редактировать"<% } %>><i class="bi bi-cake2"> </i><%= user.birthday.slice(
                                                         -2) %> <%= monthArray[Number(user.birthday.slice(5, 7)) - 1] %>
-                                                <% if (login && login.id === user.id) { %> <%= user.birthday.slice(0, 4) %> (<%= user.age %>)
+                                                <% if (login) { %> <%= user.birthday.slice(0, 4) %> (<%= user.age %>) <%= zodiac(user.birthday) %>
                                                 <% } %>
                                             </div>
                                             <div class="text-center text-secondary">через <%= days_until_birthday.days %> д.</div>

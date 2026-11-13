@@ -1,20 +1,56 @@
 <template id="select-form-template">
     <form id="select-form-__i__" class="select-form">
-        <div class="row justify-content-center">
-            <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
-                <table id="select-form-table-1-__i__" class="select-form-table-1 table table-responsive mx-auto w-auto "></table>
+        <div class="select-baro">
+            <div class="select-baro-top">
+                <span class="select-baro-favchip no-selection" id="select-baro-favchip-__i__" hidden><i class="bi bi-trophy-fill"></i> фаворит</span>
             </div>
-        </div>
-        <div class="row justify-content-center">
-            <div class="col-auto col-lg-6 col-md-4 col-sm-4 desc">
-                <table id="select-form-table-2-__i__" class="select-form-table-2 table table-responsive mx-auto w-auto"></table>
+            <div class="select-baro-duel">
+                <div class="select-baro-col" id="select-baro-col-1-__i__">
+                    <div class="select-baro-topline">
+                        <div class="select-baro-sigma no-selection" id="select-baro-sigma-1-__i__"></div>
+                        <div class="select-baro-meta" id="select-baro-meta-1-__i__"></div>
+                    </div>
+                    <div class="select-baro-bar"><i id="select-baro-fill-1-__i__"></i></div>
+                    <div class="select-baro-names" id="select-baro-names-1-__i__"></div>
+                </div>
+                <%# бейдж корта — по центру между половинками, на уровне сумм %>
+                <span class="select-baro-court no-selection" id="select-baro-court-__i__"></span>
+                <div class="select-baro-col select-baro-col-r" id="select-baro-col-2-__i__">
+                    <div class="select-baro-topline">
+                        <div class="select-baro-sigma no-selection" id="select-baro-sigma-2-__i__"></div>
+                        <div class="select-baro-meta" id="select-baro-meta-2-__i__"></div>
+                    </div>
+                    <div class="select-baro-bar"><i id="select-baro-fill-2-__i__"></i></div>
+                    <div class="select-baro-names" id="select-baro-names-2-__i__"></div>
+                </div>
             </div>
-        </div>
-        <div class="select-form-buttons row">
-            <div class="text-center">
+            <div class="select-baro-foot">
+                <button id="select-form-button-reset-__i__" type="reset" class="select-form-button-reset btn btn-outline-secondary">Отменить</button>
                 <button id="select-form-button-submit-__i__" type="submit" class="select-form-button-submit btn btn-primary">Начать</button>
-                <button id="select-form-button-reset-__i__" type="reset" class="select-form-button-reset btn btn-danger">Отменить</button>
             </div>
         </div>
     </form>
+</template>
+
+<%# превью-табло кандидатуры: составы пар и счёт 0:0 до старта матча;
+    живое табло (матч_110) открывается после создания матча %>
+<template id="select-board-template">
+    <div class="modal fade select-board-preview" id="select-board-__i__" tabindex="-1" data-bs-theme="dark" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content select-board-content">
+                <div class="modal-header select-board-header">
+                    <span class="select-board-title no-selection" id="select-board-title-__i__"></span>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body select-board-body">
+                    <div class="select-board-duel">
+                        <div class="select-board-team" id="select-board-team-1-__i__"></div>
+                        <div class="select-board-score no-selection">0&nbsp;:&nbsp;0</div>
+                        <div class="select-board-team select-board-team-r" id="select-board-team-2-__i__"></div>
+                    </div>
+                    <div class="select-board-note no-selection">превью — счёт появится после «Начать»</div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>

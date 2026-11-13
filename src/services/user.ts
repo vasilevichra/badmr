@@ -167,6 +167,8 @@ class User {
   getRating = (id: number) => this.user.getRating(id);
   getCalibration = (id: number) => this.user.getCalibration(id);
   setRating = (id: number, rating: number) => this.user.setRating(id, rating);
+  setName = (id: number, lastname: string, firstname: string, patronymic: string | null) => this.user.setName(id, lastname, firstname, patronymic);
+  setBirthday = (id: number, birthday: string) => this.user.setBirthday(id, birthday);
   getDaysUntilBirthday = (id: number) => this.user.getDaysUntilBirthday(id);
   getMatchesCount = (id: number, tournamentId?: number) => this.user.getMatchesCount(id, tournamentId);
   getGamesCount = (id: number, tournamentId?: number) => this.user.getGamesCount(id, tournamentId);
