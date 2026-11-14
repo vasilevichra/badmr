@@ -956,8 +956,23 @@ body.phone .select-baro-sigma {
   font-size: 14px;
 }
 
+/* телефон: в строках барометра рейтинг и число матчей не показываем —
+   экономим ширину плашки (рейтинг/матчи видны в таблице «Игроки») */
+body.phone .select-baro-name .secondary-info {
+  display: none;
+}
+
+/* телефон: шрифт и аватарки строк масштабируются коэффициентом
+   --baro-fit (подбирает JS, когда плашка не влезает в экран); верхний
+   предел — 12.5px, ниже шрифта таблицы «Игроки» (16px) */
 body.phone .select-baro-names {
-  font-size: 12.5px;
+  font-size: calc(12.5px * var(--baro-fit, 1));
+}
+
+body.phone .select-baro-pic {
+  width: calc(20px * var(--baro-fit, 1));
+  height: calc(20px * var(--baro-fit, 1));
+  vertical-align: calc(-6px * var(--baro-fit, 1));
 }
 
 body.phone .select-baro-chip {
@@ -2359,6 +2374,28 @@ body.phone .game-board-modal .game-board-avatars {
   body.phone .game-board-modal .board-score {
     height: 73vw;
     font-size: 37vh;
+  }
+
+  /* зазор между напарниками пары: торчащие наружу мячик подачи и
+     палочки чётности (~15px с каждой стороны) слипались при базовых 2vw */
+  body.phone .game-board-modal .game-board-players {
+    gap: 10vw;
+  }
+
+  /* номера игр крупнее (базовые 1.6vw/2.2vw на телефоне — 6-8px) */
+  body.phone .game-board-modal .board-game-type {
+    font-size: 4vw;
+  }
+
+  body.phone .game-board-modal .board-game-type-current {
+    font-size: 5.5vw;
+  }
+
+  /* центр колонки номеров — на середине высоты счёта: колонка тянется
+     на высоту ряда (100vw в повороте), нижний отступ (100vw − 73vw)
+     поднимает центр блока номеров с 50vw до 36.5vw */
+  body.phone .game-board-modal .game-board-types {
+    margin-bottom: 27vw;
   }
 
   body.phone .game-board-modal .board-player-name {

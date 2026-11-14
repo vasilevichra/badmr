@@ -624,7 +624,8 @@ document.addEventListener('touchstart', (e) => {
   const scoreEl = e.target.closest?.('.game-board-score') ?? null;
   if (!scoreEl) return;
   const state = gameBoardState.get(Number(scoreEl.closest('.modal').id.replace('game-board-', '')));
-  if (state) state._touch = e.changedTouches[0].clientY;
+  const t = e.changedTouches[0];
+  if (state) state._touch = {x: t.clientX, y: t.clientY};
 }, {passive: true});
 
 // скролл подменяет touchend на touchcancel — свайп по счёту/игроку
@@ -647,11 +648,25 @@ document.addEventListener('touchend', (e) => {
   if (!scoreEl) return;
   const state = gameBoardState.get(Number(scoreEl.closest('.modal').id.replace('game-board-', '')));
   if (!state || state._touch === null) return;
-  const dy = e.changedTouches[0].clientY - state._touch;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - state._touch.x;
+  const dy = t.clientY - state._touch.y;
   state._touch = null;
-  if (Math.abs(dy) < 30) return; // не свайп: тап обрабатывает click
+  // на телефоне в портрете контент повёрнут CSS на 90°: свайп «вверх по
+  // табло» — движение пальца вправо по экрану (контентный верх = экранный
+  // право), поэтому ось и знак — по dx; в ландшафте поворота нет — dy
+  const rotated = document.body.classList.contains('phone')
+      && window.matchMedia('(orientation: portrait)').matches;
+  const dist = rotated ? dx : dy;
+  const across = rotated ? dy : dx;
+  if (Math.abs(dist) < 30) {
+    // жест поперёк рабочей оси — не свайп и не тап: гасим синтетический
+    // click, чтобы случайное очко не добавилось
+    if (Math.abs(across) >= 30) e.preventDefault();
+    return; // короткое касание: тап обрабатывает click
+  }
   e.preventDefault(); // гасим синтетический click, иначе очко задвоится
-  gameBoardScore(scoreEl, dy < 0);
+  gameBoardScore(scoreEl, rotated ? dist > 0 : dist < 0);
 }, {passive: false});
 
 $(document).on('click', '.game-board-score', function () {

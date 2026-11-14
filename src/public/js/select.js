@@ -136,6 +136,29 @@ const renderReadyForms = (ready) => {
     $(`#select-baro-col-1-${i}, #select-baro-col-2-${i}`)
         .css('width', `${barWidth}px`);
 
+    // телефон: если плашка шире экрана — пропорционально ужимаем шрифт
+    // и аватарки (CSS var --baro-fit), каждый раз пересчитывая ширины
+    // строк по новому шрифту; пол в 0.55 — ниже текст нечитаем
+    if (isPhone()) {
+      const baro = $(`#select-form-${i} .select-baro`).get(0);
+      const block = document.getElementById('select-block');
+      if (baro && block) {
+        // .select-form: margin 0 7px по бокам
+        const avail = block.clientWidth - 14;
+        let fit = 1;
+        baro.style.setProperty('--baro-fit', fit);
+        for (let guard = 0; guard < 6 && baro.offsetWidth > avail && fit > 0.55; guard++) {
+          fit = Math.max(0.55, fit * avail / baro.offsetWidth);
+          baro.style.setProperty('--baro-fit', fit);
+          const lines = $(`#select-form-${i} .select-baro-name`).toArray();
+          lines.forEach(el => { el.style.width = ''; });
+          const w = Math.max(...lines.map(el => el.offsetWidth));
+          lines.forEach(el => { el.style.width = `${w}px`; });
+          $(`#select-baro-col-1-${i}, #select-baro-col-2-${i}`).css('width', `${w}px`);
+        }
+      }
+    }
+
     // бейдж корта между половинками
     $(`#select-baro-court-${i}`).text(field.court ? `Корт №${field.court}` : 'Корт —');
 
