@@ -1,13 +1,42 @@
-<%# Выпадающий список турниров (#55).
-    Подпись пункта — стандартный partial tournament-label («#3 НЛ Дзержинск 01 окт. 2026»).
-    Смена выбора только переходит на выбранный турнир (/t/:id), глобальный
+<%# Кнопка выбора турнира с попапом-плитками (#55, макет E).
+    Компактная кнопка «🏆 #N» вместо селекта; клик открывает попап:
+    сегменты «Все / Идёт / Заверш.» + плитки турниров (имя, тип, дата,
+    статус, игроки/матчи). Клик по плитке — переход /t/:id, глобальный
     current не меняется: регистрация игроков пишет в current-турнир
     (registerByIds), и переключение из шапки уводило новых игроков
     не в тот турнир. Current меняется явно: галочка при создании
-    и radio «Текущий?» в таблице турниров. %>
+    и radio «Текущий?» в таблице турниров. Логика — index.js (.tournament-switch). %>
 <% const selected_tournament_id = typeof tournament_id !== 'undefined' ? tournament_id : tournaments.filter(t => t.current === 1)[0].id; %>
-<select id="tournament" class="tournament form-select-sm w-auto" onchange="location.href = '/t/' + this.value;" required>
-    <% tournaments.forEach(tournament => { %>
-        <option value="<%= tournament.id %>" <% if (tournament.id === selected_tournament_id) { %>selected <% } %> ><%- include('tournament-label', {id: tournament.id, type_name: tournament.type_name, city: tournament.city, date: tournament.started_at}) %></option>
-    <% }); %>
-</select>
+<% const plural = (n, one, few, many) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many); }; %>
+<% const ddmmyy = (date) => { const d = typeof date === 'string' ? new Date(date.replace(' ', 'T') + 'Z') : date; return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getFullYear()).slice(-2); }; %>
+<div class="tournament-switch" id="tournament-switch">
+    <button type="button" id="tournament-switch-btn" class="tournament-switch-btn" aria-haspopup="true" aria-expanded="false" title="Выбрать турнир">
+        <i class="bi bi-trophy"></i><b>#<%= selected_tournament_id %></b> <i class="tournament-switch-caret" aria-hidden="true"></i>
+    </button>
+    <div id="tournament-popup" class="tournament-popup" hidden>
+        <div class="tournament-popup-head">
+            <span class="tournament-popup-title">Турниры</span>
+            <span class="tournament-popup-seg">
+                <button type="button" class="on" data-filter="all">Все</button>
+                <button type="button" data-filter="active">Идёт</button>
+                <button type="button" data-filter="done">Заверш.</button>
+            </span>
+        </div>
+        <div class="tournament-popup-grid">
+            <% tournaments.forEach(tournament => { %>
+                <% const active = [1, 2].includes(tournament.tournament_status_id); %>
+                <div class="tournament-tile<% if (tournament.id === selected_tournament_id) { %> current<% } %>"
+                     data-group="<%= active ? 'active' : 'done' %>" data-goto="/t/<%= tournament.id %>"
+                     role="button" tabindex="0">
+                    <div class="tournament-tile-top">
+                        <b>#<%= tournament.id %></b>
+                        <span class="tournament-tile-st<%= active ? ' live' : '' %>"><%= tournament.status_name.toLowerCase() %></span>
+                    </div>
+                    <div class="tournament-tile-name"><%= tournament.name %></div>
+                    <div class="tournament-tile-meta"><%= tournament.type_name %> · <%= ddmmyy(tournament.started_at) %></div>
+                    <div class="tournament-tile-counts"><b><%= tournament.players_count %></b> <%= plural(tournament.players_count, 'игрок', 'игрока', 'игроков') %> · <b><%= tournament.matches_count %></b> <%= plural(tournament.matches_count, 'матч', 'матча', 'матчей') %></div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>

@@ -34,7 +34,7 @@
     и под ней герой-баннер турнира (#tournament-info). Схлопывается
     одним шевроном (closable на #header) %>
 <div class="container pt-3">
-    <% if (user) { %><div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div><% } %>
+    <% if (user) { %><div class="row toggler-row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div><% } %>
     <div id="header" class="no-selection header-card<% if (user) { %> closable<% } %>">
         <%# для всех — единая плашка без полосы: и форма выхода, и гостевая
             форма входа живут в баннере турнира (#tournament-info) %>

@@ -107,8 +107,8 @@ describe("Tournament page", () => {
 
     assert.strictEqual(res.status, 200);
     assert.match(html, /ДЗР-Д/);
-    // в переключателе выбран просматриваемый турнир, а не текущий
-    assert.match(html, /<option value="3" selected/);
+    // на кнопке переключателя турниров — просматриваемый турнир, а не текущий
+    assert.match(html, /id="tournament-switch-btn"[\s\S]*?<b>#3<\/b>/);
   });
 
   it("должен открыть турнир типа 110 по ссылке", async () => {

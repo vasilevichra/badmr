@@ -433,6 +433,58 @@ $(document).ready(() => {
       });
     }
   });
+
+  // попап выбора турнира (#55, макет E): кнопка «🏆 #N» в шапке открывает
+  // плитки турниров с сегментами Все/Идёт/Заверш.; клик по плитке — /t/:id.
+  // Попап переносится в body: .header-card режет absolute-детей через
+  // overflow: hidden; позицию на десктопе считает JS от кнопки, на телефоне
+  // (body.phone) шторку снизу ставит CSS
+  const switchWrap = $('#tournament-switch');
+  if (switchWrap.length) {
+    const popup = $('#tournament-popup').appendTo('body');
+    const switchBtn = $('#tournament-switch-btn');
+    const closePopup = () => {
+      popup.attr('hidden', true);
+      switchBtn.attr('aria-expanded', 'false');
+    };
+    switchBtn.on('click', (e) => {
+      e.stopPropagation();
+      if (popup.attr('hidden') === undefined) {
+        closePopup();
+        return;
+      }
+      if (document.body.classList.contains('phone')) {
+        // шторку снизу ставит CSS — инлайн от десктопного открытия мешает
+        popup.css({top: '', right: ''});
+      } else {
+        const rect = switchBtn[0].getBoundingClientRect();
+        popup.css({top: rect.bottom + 6, right: Math.max(8, window.innerWidth - rect.right)});
+      }
+      popup.removeAttr('hidden');
+      switchBtn.attr('aria-expanded', 'true');
+    });
+    $(document).on('click', (e) => {
+      if (!$(e.target).closest('#tournament-switch').length && !$(e.target).closest('#tournament-popup').length) closePopup();
+    });
+    // fixed-попап не ездит вместе со страницей — при скролле/ресайзе закрываем
+    $(window).on('scroll resize', () => {
+      if (popup.attr('hidden') === undefined) closePopup();
+    });
+    popup.find('.tournament-popup-seg button').on('click', function () {
+      popup.find('.tournament-popup-seg button').removeClass('on');
+      $(this).addClass('on');
+      const filter = $(this).data('filter');
+      popup.find('.tournament-tile').each((i, el) => {
+        $(el).toggleClass('d-none', filter !== 'all' && $(el).data('group') !== filter);
+      });
+    });
+    popup.find('.tournament-tile').on('click keydown', (e) => {
+      if (e.type === 'click' || e.key === 'Enter' || e.key === ' ') {
+        const goto = $(e.currentTarget).data('goto');
+        if (goto) location.href = goto;
+      }
+    });
+  }
 });
 
 // тонкий прогресс-бар турнира (между «Игроками» и «Подбором»): доля сыгранных

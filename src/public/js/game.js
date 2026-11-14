@@ -19,7 +19,7 @@ const onMatchFinished = () => {
   selectButton.trigger('click');
 };
 
-const renderGames = () => {
+const renderGames = (skipFinished = false) => {
   $.getJSON("/api/matches/unfinished", matches => {
     unfinishedMatches = matches;
     const unfinishedIds = new Set(matches.map(m => Number(m.id)));
@@ -28,7 +28,9 @@ const renderGames = () => {
       seenUnfinished.delete(id);
       if (deletedUnfinished.has(id)) {
         deletedUnfinished.delete(id);
-      } else {
+      } else if (!skipFinished) {
+        // табло передаёт skipFinished: матч с табло завершается в обработчике
+        // закрытия модалки (история + Подбор — после выхода из модалки)
         onMatchFinished();
       }
     }
@@ -599,9 +601,17 @@ const gameBoardResult = (matchId, el, result, up) => {
     }
     if (result.match_over) {
       // матч окончен: форма уходит в историю — пересоздаём блок игр,
-      // табло закрываем
-      bootstrap.Modal.getInstance($(`#game-board-${matchId}`)[0])?.hide();
-      renderGames();
+      // табло закрываем; на выходе из модалки — обновляем историю матчей
+      // и сразу запускаем Подбор (renderGames(true) — без своего вызова
+      // Подбора: он сработает в обработчике закрытия модалки)
+      const modalEl = $(`#game-board-${matchId}`)[0];
+      $(modalEl).one('hidden.bs.modal', () => {
+        refresh.block.by.id('match-history-block');
+        $('#match-history-container').removeClass('d-none');
+        onMatchFinished();
+      });
+      bootstrap.Modal.getInstance(modalEl)?.hide();
+      renderGames(true);
     }
     return;
   }
