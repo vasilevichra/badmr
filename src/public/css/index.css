@@ -1294,7 +1294,8 @@ body.phone .tournament {
 }
 
 .select-baro-names {
-  font-size: 15.5px;
+  /* как в таблице «Игроки» (16px) */
+  font-size: 16px;
   line-height: 1.5;
 }
 
@@ -1488,14 +1489,15 @@ body.phone .select-baro-name .secondary-info {
   display: none;
 }
 
-/* телефон: шрифт и аватарки строк масштабируются коэффициентом
-   --baro-fit (подбирает JS, когда плашка не влезает в экран); верхний
-   предел — 12.5px, ниже шрифта таблицы «Игроки» (16px) */
+/* телефон: шрифт строк — как в таблице «Игроки» (16px); множитель
+   --baro-fit (подбирает JS) сжимает его только когда плашка целиком
+   не влезает в экран */
 body.phone .select-baro-names {
-  font-size: calc(12.5px * var(--baro-fit, 1));
+  font-size: calc(16px * var(--baro-fit, 1));
 }
 
 body.phone .select-baro-pic {
+  /* аватарка — как в таблице «Игроки» (20px); --baro-fit — см. выше */
   width: calc(20px * var(--baro-fit, 1));
   height: calc(20px * var(--baro-fit, 1));
   vertical-align: calc(-6px * var(--baro-fit, 1));
