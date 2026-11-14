@@ -165,10 +165,13 @@ class Game110 {
       return this.boardState(this.getById(g!.id) as never);
     }
     const winnerScore = updated[`score_${winner}`];
-    // граница партии — счёт победителя кратен 11: чётность/подачу не
-    // пересчитываем, стык партий (следующий разряд, наследование
-    // половин, подача победителя) оформляет type-pos
-    if (winnerScore % 11 === 0) {
+    const loserScore = updated[`score_${winner === 1 ? 2 : 1}`];
+    // граница партии — счёт победителя кратен 11 И он лидер: чётность/
+    // подачу не пересчитываем, стык партий (следующий разряд,
+    // наследование половин, подача победителя) оформляет type-pos.
+    // Догоняющая, добравшаяся до пройденного кратного 11 (напр. 15:11),
+    // партию не закрывает — очко пересчитывается как обычное
+    if (winnerScore % 11 === 0 && winnerScore > loserScore) {
       if (winnerScore === 110) {
         // 110-е очко выигрывает матч: автозачёта за последнюю партию нет
         this.db.run(
@@ -200,6 +203,11 @@ class Game110 {
     // подающий всегда сам игрок
     if (servingTeam === winner && roster[winner].length === 2) {
       even[winner] = roster[winner].find(p => p !== even[winner]);
+    }
+    // пустой ростер победителя (состав изменился между розыгрышами):
+    // пересчитывать некому — чётность и подачу не трогаем
+    if (roster[winner].length === 0) {
+      return this.boardState(this.getById(g!.id) as never);
     }
     const serverUser = roster[winner].length === 2 && winnerScore % 2 !== 0
         ? roster[winner].find(p => p !== even[winner])!
@@ -262,9 +270,11 @@ class Game110 {
     if (updated[`score_${scorer}`] === scorerScoreBefore) {
       return this.boardState(updated);
     }
-    // уменьшаемый счёт стоял на границе партии: чётность/подача уже
-    // относятся к стыку партий (type-pos), не к откатываемому очку
-    if (scorerScoreBefore % 11 === 0) {
+    // уменьшаемый счёт стоял на границе партии (кратен 11 у лидера):
+    // чётность/подача уже относятся к стыку партий (type-pos), не к
+    // откатываемому очку. Догоняющая от кратного 11 (15:11 → 15:10) —
+    // откатывается как обычное очко
+    if (scorerScoreBefore % 11 === 0 && scorerScoreBefore > (scorer === 1 ? g.score_2 : g.score_1)) {
       return this.boardState(updated);
     }
     // эвристика НЛ: уменьшение счёта подающей пары = очко выиграно на
@@ -300,8 +310,17 @@ class Game110 {
     return this.boardState(this.getById(g.id) as never);
   }
 
+  /** Граница партии: ненулевой счёт кратен 11 у лидера ровно с одной
+   *  стороны, или 0:0 (0 кратен 11 арифметически — границей не является).
+   *  Кратный 11 счёт догоняющей (напр. 15:11) — середина партии. */
+  private static isPartyBoundary(score1: number, score2: number): boolean {
+    const b1 = score1 > 0 && score1 % 11 === 0 && score1 > score2;
+    const b2 = score2 > 0 && score2 % 11 === 0 && score2 > score1;
+    return b1 !== b2 || (score1 === 0 && score2 === 0);
+  }
+
   /** Ручной свап чётности кортов пары (судья свайпом по игроку) —
-   *  только на границе партии: ровно один счёт кратен 11 или 0:0.
+   *  только на границе партии.
    *  В середине партии чётность и подача определяются очками, ручной
    *  перенос сломал бы инвариант «подаёт по чётности счёта». Если подаёт
    *  игрок свапаемой пары, подача переезжает на корт по чётности счёта. */
@@ -309,11 +328,7 @@ class Game110 {
     const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
     if (!g) return null;
     const team = (teamNumber === "1" ? 1 : 2) as 1 | 2;
-    // граница партии: ненулевой счёт кратен 11 ровно у одной стороны,
-    // или 0:0 (0 кратен 11 арифметически — границей не является)
-    const b1 = g.score_1 > 0 && g.score_1 % 11 === 0;
-    const b2 = g.score_2 > 0 && g.score_2 % 11 === 0;
-    if (!(b1 !== b2 || (g.score_1 === 0 && g.score_2 === 0))) return null;
+    if (!Game110.isPartyBoundary(g.score_1, g.score_2)) return null;
     const roster = this.rosters(g, teamId1, teamId2);
     const stored = team === 1 ? g.even_1_user_id : g.even_2_user_id;
     const even = stored !== null && roster[team].includes(stored) ? stored : roster[team][0];
@@ -348,11 +363,8 @@ class Game110 {
   setTypePosByTeamIds(teamId1: number, teamId2: number, typePos: number, tournamentId?: number): Board110State | null {
     const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
     if (!g) return null;
-    if (!Number.isInteger(typePos) || typePos < 0 || typePos >= 10) return null;
-    // граница партии — как в swap (0 кратен 11 арифметически, но не граница)
-    const b1 = g.score_1 > 0 && g.score_1 % 11 === 0;
-    const b2 = g.score_2 > 0 && g.score_2 % 11 === 0;
-    if (!(b1 !== b2 || (g.score_1 === 0 && g.score_2 === 0))) return null;
+    if (!Number.isInteger(typePos) || typePos < 0 || typePos >= BOARD_GROUPS.length * 2) return null;
+    if (!Game110.isPartyBoundary(g.score_1, g.score_2)) return null;
     const oldRoster = this.rosters(g, teamId1, teamId2);
     const newRoster = {
       1: this.groupPlayers(teamId1, typePos),
@@ -373,7 +385,8 @@ class Game110 {
     // при 0:0 подачи ещё нет (или выставлена судьёй) — не трогаем
     let serve = g.serve_user_id;
     if (g.score_1 !== 0 || g.score_2 !== 0) {
-      const winner = (b1 ? 1 : 2) as 1 | 2;
+      // граница гарантирована — лидер с кратным 11 счётом ровно один
+      const winner = (g.score_1 > g.score_2 ? 1 : 2) as 1 | 2;
       const wEven = winner === 1 ? even1 : even2;
       const wScore = winner === 1 ? g.score_1 : g.score_2;
       serve = newRoster[winner].length === 2 && wScore % 2 !== 0

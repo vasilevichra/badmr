@@ -206,9 +206,8 @@ const PARITY_EVEN_SVG_110 = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x
 const PARITY_ODD_SVG_110 = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="4.7" y="1" width="2.6" height="10" rx="1.3" fill="currentColor"/></svg>';
 
 // состояние табло на пару команд (modalId = tournament-groups-board-<t1>-<t2>):
-// even1/even2 — чётные игроки команд, serve — подающий, typePos — индекс
-// строки разряда (0..9, «•» не нумеруется). Обновляется ответами
-// increase/decrease/serve/swap/type-pos и restoreBoardScores
+// even1/even2 — чётные игроки команд, serve — подающий. Обновляется
+// ответами increase/decrease/serve/swap/type-pos и restoreBoardScores
 const board110State = new Map();
 
 // сохранение Board110State из ответа роутов и перерисовка маркеров
@@ -218,7 +217,6 @@ const updateBoard110State = (modal, state) => {
     even1: state.even_1_user_id,
     even2: state.even_2_user_id,
     serve: state.serve_user_id,
-    typePos: state.game_type_pos,
   });
   renderBoardMarkers(modal);
 };
@@ -274,8 +272,15 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   let increasedValue = parseInt(el.textContent) + 1;
   el.textContent = increasedValue;
   const modal = el.closest('.modal');
+  // стык партий (type-pos) отправляется из колбэка ответа increase —
+  // порядок запросов гарантирован; при реверсе сервер увидел бы счёт
+  // до границы, отказал бы — game_type_pos остался бы старым
+  let afterIncrease = null;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`,
-      {}, (state) => updateBoard110State(modal, state));
+      {}, (state) => {
+        updateBoard110State(modal, state);
+        if (afterIncrease) afterIncrease();
+      });
   // тактильный и звуковой отклик на каждое очко; на границе партии
   // свой отдельный сигнал (flashPartyWin) — короткий не дублируем.
   // navigator.vibrate нет на iOS Safari — там остаётся только бип
@@ -322,15 +327,18 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
       advanceBoardGameType(el);
       // стык партий на сервере: новый разряд строки, наследование половин
       // и подача победителя. Индекс — среди строк без разделителя «•»
-      // (0..9, два круга по пять разрядов)
+      // (0..9, два круга по пять разрядов); сам POST — из колбэка
+      // ответа increase (afterIncrease, порядок гарантирован)
       const rows = Array.from(modal.querySelectorAll('.board-game-types .board-game-type'))
           .filter((r) => r.textContent.trim() !== '•');
       const current = modal.querySelector('.board-game-type-current');
-      const typePos = rows.indexOf(current);
-      if (typePos !== -1) {
-        $.post(`/api/games/current110/type-pos?team_1_id=${team_1_id}&team_2_id=${team_2_id}&type_pos=${typePos}`,
-            {}, (state) => updateBoard110State(modal, state));
-      }
+      afterIncrease = () => {
+        const typePos = rows.indexOf(current);
+        if (typePos !== -1) {
+          $.post(`/api/games/current110/type-pos?team_1_id=${team_1_id}&team_2_id=${team_2_id}&type_pos=${typePos}`,
+              {}, (state) => updateBoard110State(modal, state));
+        }
+      };
       // перевернуть табло
       // создать новую игру
       // убрать статус текущей у предыдущей

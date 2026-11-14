@@ -129,6 +129,12 @@ describe("Game routes", () => {
       assert.strictEqual(state.serve_user_id, even);
     });
 
+    it("POST /current110/swap без team_number — отказ (пустое тело)", async () => {
+      const {team1, team2} = await seedMatch110();
+      const res = await post(`${base}/current110/swap?team_1_id=${team1}&team_2_id=${team2}`);
+      assert.strictEqual(await res.text(), "");
+    });
+
     it("POST /current110/type-pos меняет разряд на границе и наследует половины", async () => {
       const {team1, team2, matchId} = await seedMatch110();
       db.run("UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?", [matchId]);

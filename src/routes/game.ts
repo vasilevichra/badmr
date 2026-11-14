@@ -59,9 +59,14 @@ router.post('/current110/serve', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.setCurrentServeByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), Number(req.query.user_id), requestedTournament(req)));
 });
 
-// свайп судьи по игроку — ручной свап чётности кортов пары
+// свайп судьи по игроку — ручной свап чётности кортов пары.
+// team_number валидируем явно: String(undefined) = "undefined" при
+// молчаливой коэрсии свапнул бы команду 2
 router.post('/current110/swap', ensureLoggedIn(), (req, res) => {
-  res.promise(gameService.swapCurrentEvenByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number), requestedTournament(req)));
+  const teamNumber = req.query.team_number;
+  res.promise(teamNumber === "1" || teamNumber === "2"
+      ? gameService.swapCurrentEvenByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), teamNumber, requestedTournament(req))
+      : null);
 });
 
 // смена текущего разряда табло — из колбэка ответа increase (порядок гарантирован)
