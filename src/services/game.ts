@@ -30,6 +30,10 @@ class Game {
   decreaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.decreaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
   /** Подача на 0:0 — тап/двойной клик судьи по чётному игроку пары. */
   setCurrentServeByTeamIds = (teamId1: number, teamId2: number, userId: number, tournamentId?: number) => this.game110.setCurrentServeByTeamIds(teamId1, teamId2, userId, tournamentId);
+  /** Свап чётности пары судьёй — только на границе партии. */
+  swapCurrentEvenByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.swapCurrentEvenByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
+  /** Смена разряда табло — из колбэка ответа increase (порядок гарантирован). */
+  setTypePosByTeamIds = (teamId1: number, teamId2: number, typePos: number, tournamentId?: number) => this.game110.setTypePosByTeamIds(teamId1, teamId2, typePos, tournamentId);
 
   /** Живое табло Новой лиги: текущая игра матча (может быть null —
    *  табло показывает 0:0, игра создаётся первым очком). */

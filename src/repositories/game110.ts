@@ -236,18 +236,157 @@ class Game110 {
 
   /** Минус очко (корректировка): только у идущего матча, счёт не ниже 0.
    *  Автозачёт и finished не трогаем — убавление не отменяет сыгранную
-   *  партию, судья правит счёт вручную. */
-  decreaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
+   *  партию, судья правит счёт вручную. Чётность и подача откатываются
+   *  по эвристике НЛ «очко выиграно подачей»; на границе партии (убавляемый
+   *  счёт кратен 11) не трогаются — откатываемое очко разыгрывали игроки
+   *  уже закрытого разряда. */
+  decreaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
     // матча нет или он уже завершён — декремента нет
-    if (!g) return;
-    const scorer = teamNumber === "1" ? "1" : "2";
+    if (!g) return null;
+    const scorer = (teamNumber === "1" ? 1 : 2) as 1 | 2;
+    const roster = this.rosters(g, teamId1, teamId2);
+    const servingTeam = g.serve_user_id
+        ? (roster[1].includes(g.serve_user_id) ? 1 : 2) as 1 | 2
+        : null;
+    const scorerScoreBefore = scorer === 1 ? g.score_1 : g.score_2;
     this.db.run(
         `UPDATE game_110
          SET score_${scorer} = score_${scorer} - 1
          WHERE id = ? AND score_${scorer} > 0`,
-        [g!.id]
+        [g.id]
     );
+    const updated = this.getById(g.id) as unknown as Game110BoardRow;
+    // уменьшать было нечего (счёт уже 0): очка не было — подачу и
+    // чётность не откатываем, иначе повторный свайп вниз на 0:0 свапнет пару
+    if (updated[`score_${scorer}`] === scorerScoreBefore) {
+      return this.boardState(updated);
+    }
+    // уменьшаемый счёт стоял на границе партии: чётность/подача уже
+    // относятся к стыку партий (type-pos), не к откатываемому очку
+    if (scorerScoreBefore % 11 === 0) {
+      return this.boardState(updated);
+    }
+    // эвристика НЛ: уменьшение счёта подающей пары = очко выиграно на
+    // своей подаче (откат смены кортов + подающий по чётности нового
+    // счёта); другой пары = на приёме (подача возвращается бывшей
+    // подающей паре, корты не менялись). Одиночный разряд: напарника
+    // нет — корты не откатываются
+    const even: Record<1 | 2, number | undefined> = {
+      1: g.even_1_user_id !== null && roster[1].includes(g.even_1_user_id) ? g.even_1_user_id : roster[1][0],
+      2: g.even_2_user_id !== null && roster[2].includes(g.even_2_user_id) ? g.even_2_user_id : roster[2][0]
+    };
+    let serverUser: number | null = null;
+    if (servingTeam !== null) {
+      if (servingTeam === scorer && roster[scorer].length === 2) {
+        even[scorer] = roster[scorer].find(p => p !== even[scorer]);
+        const newScore = updated[`score_${scorer}`];
+        serverUser = newScore % 2 === 0 ? even[scorer]! : roster[scorer].find(p => p !== even[scorer])!;
+      } else {
+        const stScore = updated[`score_${servingTeam}`];
+        serverUser = stScore % 2 === 0
+            ? even[servingTeam] ?? null
+            : roster[servingTeam].length === 2
+                ? roster[servingTeam].find(p => p !== even[servingTeam])!
+                : even[servingTeam] ?? null;
+      }
+    }
+    this.db.run(
+        `UPDATE game_110
+         SET serve_user_id = ?, even_1_user_id = ?, even_2_user_id = ?
+         WHERE id = ?`,
+        [serverUser, even[1] ?? g.even_1_user_id, even[2] ?? g.even_2_user_id, g.id]
+    );
+    return this.boardState(this.getById(g.id) as never);
+  }
+
+  /** Ручной свап чётности кортов пары (судья свайпом по игроку) —
+   *  только на границе партии: ровно один счёт кратен 11 или 0:0.
+   *  В середине партии чётность и подача определяются очками, ручной
+   *  перенос сломал бы инвариант «подаёт по чётности счёта». Если подаёт
+   *  игрок свапаемой пары, подача переезжает на корт по чётности счёта. */
+  swapCurrentEvenByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
+    if (!g) return null;
+    const team = (teamNumber === "1" ? 1 : 2) as 1 | 2;
+    // граница партии: ненулевой счёт кратен 11 ровно у одной стороны,
+    // или 0:0 (0 кратен 11 арифметически — границей не является)
+    const b1 = g.score_1 > 0 && g.score_1 % 11 === 0;
+    const b2 = g.score_2 > 0 && g.score_2 % 11 === 0;
+    if (!(b1 !== b2 || (g.score_1 === 0 && g.score_2 === 0))) return null;
+    const roster = this.rosters(g, teamId1, teamId2);
+    const stored = team === 1 ? g.even_1_user_id : g.even_2_user_id;
+    const even = stored !== null && roster[team].includes(stored) ? stored : roster[team][0];
+    const other = roster[team].find(p => p !== even);
+    // неполная пара (один игрок в разряде) — свапать некого
+    if (other === undefined) return this.boardState(g);
+    this.db.run(
+        `UPDATE game_110 SET even_${team}_user_id = ? WHERE id = ?`,
+        [other, g.id]
+    );
+    const serveTeam = g.serve_user_id
+        ? (roster[1].includes(g.serve_user_id) ? 1 : 2) as 1 | 2
+        : null;
+    if (serveTeam === team) {
+      const teamScore = team === 1 ? g.score_1 : g.score_2;
+      const serverUser = teamScore % 2 === 0 ? other : even;
+      this.db.run(
+          `UPDATE game_110 SET serve_user_id = ? WHERE id = ?`,
+          [serverUser, g.id]
+      );
+    }
+    return this.boardState(this.getById(g.id) as never);
+  }
+
+  /** Смена текущего разряда табло (клиент отправляет индекс строки из
+   *  колбэка ответа increase — порядок гарантирован). Только на границе
+   *  партии (как swap). Пересчитывает чётность по наследованию половин
+   *  (позиция even-игрока в старой группе → та же позиция в новой) и
+   *  подачу: подаёт победитель прошлой партии — сторона, чей счёт кратен
+   *  11, игроком нового ростера на корте по чётности её счёта. При 0:0
+   *  подача не трогается (не задана или выставлена судьёй). */
+  setTypePosByTeamIds(teamId1: number, teamId2: number, typePos: number, tournamentId?: number): Board110State | null {
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
+    if (!g) return null;
+    if (!Number.isInteger(typePos) || typePos < 0 || typePos >= 10) return null;
+    // граница партии — как в swap (0 кратен 11 арифметически, но не граница)
+    const b1 = g.score_1 > 0 && g.score_1 % 11 === 0;
+    const b2 = g.score_2 > 0 && g.score_2 % 11 === 0;
+    if (!(b1 !== b2 || (g.score_1 === 0 && g.score_2 === 0))) return null;
+    const oldRoster = this.rosters(g, teamId1, teamId2);
+    const newRoster = {
+      1: this.groupPlayers(teamId1, typePos),
+      2: this.groupPlayers(teamId2, typePos)
+    };
+    // наследование половин: even-игрок новой группы — с той же позиции
+    // группы (первый/второй), что и в прошлом разряде; вне старого
+    // ростера — база (первый)
+    const evenNew = (team: 1 | 2): number | null => {
+      const stored = team === 1 ? g.even_1_user_id : g.even_2_user_id;
+      const idx = stored !== null ? oldRoster[team].indexOf(stored) : 0;
+      const i = idx === -1 ? 0 : idx;
+      return newRoster[team][i] ?? newRoster[team][0] ?? null;
+    };
+    const even1 = evenNew(1);
+    const even2 = evenNew(2);
+    // подача: победитель прошлой партии — сторона, чей счёт кратен 11;
+    // при 0:0 подачи ещё нет (или выставлена судьёй) — не трогаем
+    let serve = g.serve_user_id;
+    if (g.score_1 !== 0 || g.score_2 !== 0) {
+      const winner = (b1 ? 1 : 2) as 1 | 2;
+      const wEven = winner === 1 ? even1 : even2;
+      const wScore = winner === 1 ? g.score_1 : g.score_2;
+      serve = newRoster[winner].length === 2 && wScore % 2 !== 0
+          ? newRoster[winner].find(p => p !== wEven) ?? wEven
+          : wEven;
+    }
+    this.db.run(
+        `UPDATE game_110
+         SET game_type_pos = ?, even_1_user_id = ?, even_2_user_id = ?, serve_user_id = ?
+         WHERE id = ?`,
+        [typePos, even1, even2, serve, g.id]
+    );
+    return this.boardState(this.getById(g.id) as never);
   }
 
   create(match_110_id: number) {

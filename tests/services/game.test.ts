@@ -390,6 +390,123 @@ describe("Game", () => {
     });
   });
 
+  describe("decreaseCurrentByTeamIds: чётность и подача (110)", () => {
+    it("повторное уменьшение до 0 не меняет состояние (счёт не изменился — не откатываем)", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const roster1 = (await teamOrderService.avatars(team1))["СП"];
+      await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id);
+      await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+
+      const after = await gameService.decreaseCurrentByTeamIds(team1, team2, "1");
+      const again = await gameService.decreaseCurrentByTeamIds(team1, team2, "1");
+
+      assert.deepStrictEqual(again, after);
+    });
+
+    it("уменьшение счёта на границе партии не трогает чётность и подачу", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const roster1 = (await teamOrderService.avatars(team1))["СП"];
+      await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id);
+      for (let i = 0; i < 11; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      const before = await gameService.getCurrentByTeamIds(team1, team2) as Game110Row;
+
+      await gameService.decreaseCurrentByTeamIds(team1, team2, "1");
+
+      const g = await gameService.getCurrentByTeamIds(team1, team2) as Game110Row;
+      assert.strictEqual(g.score_1, 10);
+      assert.strictEqual(g.even_1_user_id, before.even_1_user_id);
+      assert.strictEqual(g.serve_user_id, before.serve_user_id);
+    });
+
+    it("уменьшение счёта подающей пары откатывает смену кортов и подачу", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const roster1 = (await teamOrderService.avatars(team1))["СП"];
+      await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id);
+      await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+
+      const r = await gameService.decreaseCurrentByTeamIds(team1, team2, "1") as Game110Row;
+
+      assert.strictEqual(r.even_1_user_id, roster1[0].id);
+      assert.strictEqual(r.serve_user_id, roster1[0].id);
+    });
+  });
+
+  describe("swapCurrentEvenByTeamIds (110)", () => {
+    it("меняет чётность пары на границе партии, подающий переезжает по чётности счёта", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const roster1 = (await teamOrderService.avatars(team1))["СП"];
+      await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id);
+
+      const r = await gameService.swapCurrentEvenByTeamIds(team1, team2, "1") as Game110Row;
+
+      assert.strictEqual(r.even_1_user_id, roster1[1].id);
+      // счёт 0:0 — чётный корт, подаёт новый чётный игрок
+      assert.strictEqual(r.serve_user_id, roster1[1].id);
+    });
+
+    it("отказывает в середине партии (7:5)", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      for (let i = 0; i < 7; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      for (let i = 0; i < 5; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "2");
+      assert.strictEqual(await gameService.swapCurrentEvenByTeamIds(team1, team2, "1"), null);
+    });
+
+    it("отказывает при 11:11 (оба счёта кратны 11 — не граница)", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      for (let i = 0; i < 11; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      for (let i = 0; i < 6; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "2");
+      assert.strictEqual(await gameService.swapCurrentEvenByTeamIds(team1, team2, "1"), null);
+    });
+  });
+
+  describe("setTypePosByTeamIds (110)", () => {
+    it("наследует половины и назначает подачу победителю прошлой партии из нового ростера", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const sp1 = (await teamOrderService.avatars(team1))["СП"]; // [Игрок1, Игрок2]
+      await gameService.setCurrentServeByTeamIds(team1, team2, sp1[0].id);
+      // команда 1 закрывает партию 11:5 — победитель
+      for (let i = 0; i < 11; i++) await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      // судья свапнул чётность команды 1 в старом разряде
+      await gameService.swapCurrentEvenByTeamIds(team1, team2, "1");
+
+      // переход к следующему разряду (строка 1 = ЖО первого круга)
+      const r = await gameService.setTypePosByTeamIds(team1, team2, 1) as Game110Row;
+
+      const jo1 = (await teamOrderService.avatars(team1))["ЖО"];
+      const jo2 = (await teamOrderService.avatars(team2))["ЖО"];
+      // свапнутость наследуется: чётным в новой группе — второй игрок
+      // (ЖО из одного игрока — он же второй в СП, тот же человек)
+      assert.strictEqual(r.even_1_user_id, jo1[0].id);
+      // база 2-й команды: первый (единственный) игрок группы
+      assert.strictEqual(r.even_2_user_id, jo2[0].id);
+      // подача: победитель (команда 1), её счёт 11 — нечётный корт;
+      // в одиночном разряде подает сам игрок нового ростера
+      assert.strictEqual(r.serve_user_id, jo1[0].id);
+      assert.strictEqual(r.game_type_pos, 1);
+    });
+
+    it("отказывает вне границы партии", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      assert.strictEqual(await gameService.setTypePosByTeamIds(team1, team2, 1), null);
+    });
+  });
+
   // редактирование матча по карандашу в истории: применение пачки игр
   // одним запросом — обновить изменённые, удалить очищенные, создать
   // новые с экстраполированным временем, один каскадный пересчёт в конце
