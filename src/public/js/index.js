@@ -557,14 +557,18 @@ $(document).ready(() => {
   }
 });
 
-// тонкий прогресс-бар турнира (между «Игроками» и «Подбором»): доля сыгранных
-// матчей от примерного общего числа. Остаток ограничен тем, чтобы каждый
-// невыключенный (enabled) игрок сыграл минимум matches из настроек:
-//   нужно матчей ≈ ceil(Σ max(0, matches − сыграно_игроком) / 4)
-// незавершённые матчи не считаются сыгранными — их участники исключаются и
-// из «сыграно», и из остатка; вызывается при загрузке страницы, при первом
-// «Начать» в Подборе (select.js, с принудительным показом) и после
-// сохранения результатов матча (game.js)
+// тонкий прогресс-бар турнира (между «Игроками» и «Подбором»):
+//   турнир с ограничением по матчам — доля сыгранных матчей от примерного
+//   общего числа. Остаток ограничен тем, чтобы каждый невыключенный
+//   (enabled) игрок сыграл минимум matches из настроек:
+//     нужно матчей ≈ ceil(Σ max(0, matches − сыграно_игроком) / 4)
+//   незавершённые матчи не считаются сыгранными — их участники исключаются
+//   и из «сыграно», и из остатка;
+//   турнир без ограничения (matches = 0) — доля прошедших дней от
+//   старт→конец турнира; без даты конца прогресс не считаем — бар скрыт.
+// Вызывается при загрузке страницы, при первом «Начать» в Подборе
+// (select.js, с принудительным показом) и после сохранения результатов
+// матча (game.js)
 const renderTournamentProgress = (force = false) => {
   if (!$('#tournament-progress').length) return;
   Promise.all([
@@ -573,6 +577,25 @@ const renderTournamentProgress = (force = false) => {
     $.getJSON(withTournament('/api/matches/unfinished')),
   ]).then(([rows, settingRows, unfinished]) => {
     const matchesTarget = Number(settingRows.find((row) => row.name === 'matches')?.value ?? 0);
+    if (!matchesTarget) {
+      // без ограничения по матчам матчей-прогресс не имеет смысла
+      // (остаток всегда 0) — прогресс по прошедшим дням турнира
+      $.getJSON(withTournament('/api/tournaments/current/')).then((t) => {
+        if (!t.started_at || !t.ended_at) return;
+        const start = new Date(String(t.started_at).replace(' ', 'T'));
+        const end = new Date(String(t.ended_at).replace(' ', 'T'));
+        const span = end - start;
+        if (!(span > 0)) return;
+        const percent = Math.min(100, Math.max(0, Math.round(100 * (Date.now() - start) / span)));
+        const elapsedDays = Math.floor(Math.min(Math.max((Date.now() - start) / 86400000, 0), span / 86400000));
+        $('#tournament-progress').removeClass('d-none')
+        .attr('title', `Прошло ${elapsedDays} из ${Math.round(span / 86400000)} дней турнира`)
+        .find('.progress-bar')
+        .css('width', `${percent}%`)
+        .attr('aria-valuenow', percent);
+      });
+      return;
+    }
     const unfinishedByUser = {};
     for (const match of unfinished) {
       for (const i of [1, 2, 3, 4]) {

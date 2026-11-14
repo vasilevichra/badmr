@@ -237,13 +237,18 @@ const selectFormTemplate = (counter) => $('#select-form-template').html().replac
 const selectBoardTemplate = (counter) => $('#select-board-template').html().replaceAll('__i__', counter);
 
 // имя игрока для барометра: на телефоне — «Фамилия И.» (как в
-// playerNameFormatter), на десктопе — полное
+// playerNameFormatter), на десктопе — полное. Уже краткое из вьюхи
+// («Юра», «Юра В.», «Юра В. А.» — дизамбигуация до уникальности)
+// возвращается как есть
 const shortName = (name) => {
   if (!isPhone()) {
     return name;
   }
   const names = name.split(/\s/);
-  return `${names[0]} ${names[1]?.charAt(0) ?? ''}.`;
+  if (names.length < 2 || names[1].endsWith('.')) {
+    return name;
+  }
+  return `${names[0]} ${names[1].charAt(0)}.`;
 }
 
 const showSelectButton = (force) => {

@@ -3,6 +3,33 @@ import DB, { type RunResult } from "../db.ts";
 import SettingsService from '../services/settings.ts';
 const settingsService = new SettingsService();
 
+/** Имя игрока в подборке/незавершённых матчах: краткое имя; неуникальное
+ *  среди участников турнира (available = 1, archived != 1) — с первой
+ *  буквой фамилии («Юра В.»); если это не вернуло уникальность — ещё и
+ *  с первой буквой отчества («Юра В. А.»); крайний случай (дубликат и
+ *  там) — полное ФИО; без краткого — ФИО. Зеркально вьюхе ready
+ *  (02-views-up.sql). */
+const tournamentNameExpr = (u: string, tournamentId: string) => `CASE
+    WHEN ${u}.shortname IS NULL THEN ${u}.lastname || ' ' || ${u}.firstname
+    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
+          WHERE stu.tournament_id = ${tournamentId} AND stu.available = 1 AND stu.archived != 1
+            AND su.shortname = ${u}.shortname) = 1
+        THEN ${u}.shortname
+    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
+          WHERE stu.tournament_id = ${tournamentId} AND stu.available = 1 AND stu.archived != 1
+            AND su.shortname = ${u}.shortname
+            AND substr(su.lastname, 1, 1) = substr(${u}.lastname, 1, 1)) = 1
+        THEN ${u}.shortname || ' ' || substr(${u}.lastname, 1, 1) || '.'
+    WHEN ${u}.patronymic IS NOT NULL
+         AND (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
+              WHERE stu.tournament_id = ${tournamentId} AND stu.available = 1 AND stu.archived != 1
+                AND su.shortname = ${u}.shortname
+                AND substr(su.lastname, 1, 1) = substr(${u}.lastname, 1, 1)
+                AND coalesce(substr(su.patronymic, 1, 1), '') = substr(${u}.patronymic, 1, 1)) = 1
+        THEN ${u}.shortname || ' ' || substr(${u}.lastname, 1, 1) || '. ' || substr(${u}.patronymic, 1, 1) || '.'
+    ELSE rtrim(${u}.lastname || ' ' || ${u}.firstname || ' ' || coalesce(${u}.patronymic, ''))
+END`;
+
 interface GetInfoRow {
   match_id: number;
   game_id: number;
@@ -99,41 +126,13 @@ class Match {
                 (SELECT pic FROM user_pic WHERE user_id = m.user_2_id) AS pic2,
                 (SELECT pic FROM user_pic WHERE user_id = m.user_3_id) AS pic3,
                 (SELECT pic FROM user_pic WHERE user_id = m.user_4_id) AS pic4,
-                -- имя в блоке «Игры»: краткое имя игрока; неуникальное среди
-                -- участников турнира — с первой буквой фамилии («Юра В.»);
-                -- без краткого — ФИО (история игр остаётся с полными ФИО)
-                CASE
-                    WHEN u1.shortname IS NULL THEN u1.lastname || ' ' || u1.firstname
-                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
-                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
-                            AND su.shortname = u1.shortname) > 1
-                        THEN u1.shortname || ' ' || substr(u1.lastname, 1, 1) || '.'
-                    ELSE u1.shortname
-                END                                                  AS name1,
-                CASE
-                    WHEN u2.shortname IS NULL THEN u2.lastname || ' ' || u2.firstname
-                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
-                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
-                            AND su.shortname = u2.shortname) > 1
-                        THEN u2.shortname || ' ' || substr(u2.lastname, 1, 1) || '.'
-                    ELSE u2.shortname
-                END                                                  AS name2,
-                CASE
-                    WHEN u3.shortname IS NULL THEN u3.lastname || ' ' || u3.firstname
-                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
-                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
-                            AND su.shortname = u3.shortname) > 1
-                        THEN u3.shortname || ' ' || substr(u3.lastname, 1, 1) || '.'
-                    ELSE u3.shortname
-                END                                                  AS name3,
-                CASE
-                    WHEN u4.shortname IS NULL THEN u4.lastname || ' ' || u4.firstname
-                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
-                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
-                            AND su.shortname = u4.shortname) > 1
-                        THEN u4.shortname || ' ' || substr(u4.lastname, 1, 1) || '.'
-                    ELSE u4.shortname
-                END                                                  AS name4,
+                -- имя в блоке «Игры»: tournamentNameExpr — дизамбигуация
+                -- краткого имени до уникальности (см. комментарий к ней);
+                -- история игр остаётся с полными ФИО
+                ${tournamentNameExpr('u1', 'm.tournament_id')}       AS name1,
+                ${tournamentNameExpr('u2', 'm.tournament_id')}       AS name2,
+                ${tournamentNameExpr('u3', 'm.tournament_id')}       AS name3,
+                ${tournamentNameExpr('u4', 'm.tournament_id')}       AS name4,
                 c.number                                             AS court
          FROM match m
                   JOIN user u1 on u1.id = m.user_1_id

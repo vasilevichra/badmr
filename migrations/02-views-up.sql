@@ -32,7 +32,9 @@ SELECT r.tournament_id,
        END AS won
 FROM (SELECT
        -- имя в подборке: краткое имя игрока; неуникальное среди участников
-       -- турнира — с первой буквой фамилии («Юра В.»); без краткого — ФИО
+       -- турнира — с первой буквой фамилии («Юра В.»); если это не вернуло
+       -- уникальность — ещё и с первой буквой отчества («Юра В. А.»);
+       -- крайний случай (дубликат и там) — полное ФИО; без краткого — ФИО
        CASE
            WHEN u.shortname IS NULL THEN u.lastname || ' ' || u.firstname
            WHEN (SELECT count(*)
@@ -40,9 +42,27 @@ FROM (SELECT
                           JOIN tournament_user stu ON stu.user_id = su.id
                               AND stu.tournament_id = t.id
                               AND stu.available = 1 AND stu.archived != 1
-                 WHERE su.shortname = u.shortname) > 1
+                 WHERE su.shortname = u.shortname) = 1
+               THEN u.shortname
+           WHEN (SELECT count(*)
+                 FROM user su
+                          JOIN tournament_user stu ON stu.user_id = su.id
+                              AND stu.tournament_id = t.id
+                              AND stu.available = 1 AND stu.archived != 1
+                 WHERE su.shortname = u.shortname
+                   AND substr(su.lastname, 1, 1) = substr(u.lastname, 1, 1)) = 1
                THEN u.shortname || ' ' || substr(u.lastname, 1, 1) || '.'
-           ELSE u.shortname
+           WHEN u.patronymic IS NOT NULL
+                AND (SELECT count(*)
+                     FROM user su
+                              JOIN tournament_user stu ON stu.user_id = su.id
+                                  AND stu.tournament_id = t.id
+                                  AND stu.available = 1 AND stu.archived != 1
+                     WHERE su.shortname = u.shortname
+                       AND substr(su.lastname, 1, 1) = substr(u.lastname, 1, 1)
+                       AND coalesce(substr(su.patronymic, 1, 1), '') = substr(u.patronymic, 1, 1)) = 1
+               THEN u.shortname || ' ' || substr(u.lastname, 1, 1) || '. ' || substr(u.patronymic, 1, 1) || '.'
+           ELSE rtrim(u.lastname || ' ' || u.firstname || ' ' || coalesce(u.patronymic, ''))
        END                              AS name,
              u.id                             AS user_id,
              round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1) AS rating,

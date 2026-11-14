@@ -1131,6 +1131,19 @@ body.phone .container:not(.pt-3) > .row > .toggler {
   margin-bottom: 10px;
 }
 
+/* телефон: секционные блоки без нижнего поля 3em — оно опускало шеврон
+   следующего блока на 48px вниз, и шеврон «Истории/Кортов/Настроек»
+   висел заметно ниже, чем над шапкой и «Игроками» (у тех блоков
+   нижнего поля нет). Теперь шеврон везде сидит одинаково высоко */
+body.phone .game,
+body.phone .match-history,
+body.phone .cort,
+body.phone .achievement,
+body.phone .settings,
+body.phone .tournament {
+  margin-bottom: 0;
+}
+
 .player-window-link {
   font-family: var(--bs-body-font-family);
   font-size: var(--bs-body-font-size);
@@ -1461,6 +1474,12 @@ body.phone .select-baro {
 
 body.phone .select-baro-duel {
   justify-content: space-between;
+}
+
+/* телефон: точку статуса у короткого имени в Подборе не показываем —
+   статус «играл/не играл» виден в таблице «Игроки» */
+body.phone .select-baro-dot {
+  display: none;
 }
 
 /* телефон: в строках барометра рейтинг и число матчей не показываем —
