@@ -24,10 +24,10 @@ class Game {
   }
 
   getById = (id: number) => this.game.getById(id);
-  getCurrentByTeamIds = (teamId1: number, teamId2: number) => this.game110.getCurrentByTeamIds(teamId1, teamId2);
-  getResults = () => this.game110.getResults();
-  increaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string) => this.game110.increaseCurrentByTeamIds(teamId1, teamId2, teamNumber);
-  decreaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string) => this.game110.decreaseCurrentByTeamIds(teamId1, teamId2, teamNumber);
+  getCurrentByTeamIds = (teamId1: number, teamId2: number, tournamentId?: number) => this.game110.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
+  getResults = (tournamentId?: number) => this.game110.getResults(tournamentId);
+  increaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.increaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
+  decreaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.decreaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
 
   /** Живое табло Новой лиги: текущая игра матча (может быть null —
    *  табло показывает 0:0, игра создаётся первым очком). */

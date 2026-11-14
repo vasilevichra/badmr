@@ -27,10 +27,10 @@ router.get('/find', (req, res) => {
 });
 
 router.post('/enable/:ids', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.enable(String(req.params.ids).split(',').map(Number)));
+  res.promise(userService.enable(String(req.params.ids).split(',').map(Number), requestedTournament(req)));
 });
 router.post('/disable/:ids', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.disable(String(req.params.ids).split(',').map(Number)));
+  res.promise(userService.disable(String(req.params.ids).split(',').map(Number), requestedTournament(req)));
 });
 
 router.get('/archived', ensureLoggedIn(), (req, res) => {
@@ -38,19 +38,19 @@ router.get('/archived', ensureLoggedIn(), (req, res) => {
 });
 
 router.post('/archive/:id', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.archive(Number(req.params.id)));
+  res.promise(userService.archive(Number(req.params.id), requestedTournament(req)));
 });
 
 router.post('/archive', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.archiveAll());
+  res.promise(userService.archiveAll(requestedTournament(req)));
 });
 
 router.post('/unarchive/:id', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.unarchive(Number(req.params.id)));
+  res.promise(userService.unarchive(Number(req.params.id), requestedTournament(req)));
 });
 
 router.post('/unarchive', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.unarchiveAll());
+  res.promise(userService.unarchiveAll(requestedTournament(req)));
 });
 
 router.get('/', (req, res) => {
@@ -58,11 +58,11 @@ router.get('/', (req, res) => {
 });
 
 router.get('/select/:city_id', ensureLoggedIn(), (req, res) => {
-  res.promise({results: userService.select(Number(req.params.city_id))});
+  res.promise({results: userService.select(Number(req.params.city_id), requestedTournament(req))});
 });
 
 router.get('/registered/:id', (req, res) => {
-  res.promise(userService.isRegistered(Number(req.params.id)));
+  res.promise(userService.isRegistered(Number(req.params.id), requestedTournament(req)));
 });
 
 router.get('/rating/:id', (req, res) => {
@@ -101,11 +101,11 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/register/:ids', (req, res) => {
-  res.promise(userService.registerByIds(String(req.params.ids).split(',').map(Number)));
+  res.promise(userService.registerByIds(String(req.params.ids).split(',').map(Number), requestedTournament(req)));
 });
 
 router.post('/deregister/:ids', ensureLoggedIn(), (req, res) => {
-  res.promise(userService.deregisterByIds(String(req.params.ids).split(',').map(Number)));
+  res.promise(userService.deregisterByIds(String(req.params.ids).split(',').map(Number), requestedTournament(req)));
 });
 
 router.post('/rating/:id', ensureLoggedIn(), (req, res) => {
@@ -145,7 +145,7 @@ router.post('/shortname/:id', ensureLoggedIn(), (req, res) => {
 router.post('/lab', (req, res) => {
   // краул идёт в фоне — ответ не ждёт обхода (он может длиться минуты),
   // иначе браузер абортит запрос и таблица висит «идёт загрузка»
-  void userService.labCrawlBackground();
+  void userService.labCrawlBackground(requestedTournament(req));
   res.promise(Promise.resolve());
 });
 

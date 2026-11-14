@@ -14,16 +14,16 @@ class Court {
     this.db = new Repository().db;
   }
 
+  /** Турнир запроса: явный id или фолбэк на глобальный current. */
+  private tournamentExpr(tournamentId?: number) {
+    return tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
+  }
+
   create(tournament_id?: number) {
-    return tournament_id ?
-        this.db.run(
-            `INSERT INTO court (tournament_id, number)
-             VALUES (?, (SELECT count() + 1 FROM court c JOIN tournament t on t.id = c.tournament_id WHERE t.id = ?))`,
-            [tournament_id, tournament_id]
-        ) :
-        this.db.run(
+    const tournament = this.tournamentExpr(tournament_id);
+    return this.db.run(
         `INSERT INTO court (tournament_id, number)
-         VALUES ((SELECT id FROM tournament WHERE current = 1), (SELECT count() + 1 FROM court c JOIN tournament t on t.id = c.tournament_id WHERE t.current = 1))`
+         VALUES (${tournament}, (SELECT count() + 1 FROM court c JOIN tournament t on t.id = c.tournament_id WHERE t.id = ${tournament}))`
     );
   }
 
@@ -45,40 +45,41 @@ class Court {
     );
   }
 
-  enableAll() {
+  enableAll(tournamentId?: number) {
     return this.db.run(
         `UPDATE court
          SET available = 1
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = ${this.tournamentExpr(tournamentId)}
            AND id NOT IN (SELECT court_id FROM match WHERE finished = 0)
            AND id NOT IN (SELECT court_id FROM match_110 WHERE finished = 0)`,
     );
   }
 
-  enable(number: number) {
+  enable(number: number, tournamentId?: number) {
     return this.db.run(
         `UPDATE court
          SET available = 1
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = ${this.tournamentExpr(tournamentId)}
            AND number = ?`,
         [number]
     );
   }
 
   /** Корт занят, пока на нём идёт незавершённый матч (обычный или 110). */
-  countBusy(number: number) {
+  countBusy(number: number, tournamentId?: number) {
+    const tournament = this.tournamentExpr(tournamentId);
     const result = this.db.get<{ count: number }>(
         `SELECT (SELECT count(*)
                  FROM match m
                           JOIN court c ON m.court_id = c.id
-                 WHERE c.tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                 WHERE c.tournament_id = ${tournament}
                    AND c.number = ?
                    AND m.finished = 0)
                       +
                  (SELECT count(*)
                   FROM match_110 m
                            JOIN court c ON m.court_id = c.id
-                  WHERE c.tournament_id = (SELECT id FROM tournament WHERE current = 1)
+                  WHERE c.tournament_id = ${tournament}
                     AND c.number = ?
                     AND m.finished = 0) AS count`,
         [number, number]
@@ -86,19 +87,19 @@ class Court {
     return result!.count;
   }
 
-  disableAll() {
+  disableAll(tournamentId?: number) {
     return this.db.run(
         `UPDATE court
          SET available = 0
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)`
+         WHERE tournament_id = ${this.tournamentExpr(tournamentId)}`
     );
   }
 
-  disable(number: number) {
+  disable(number: number, tournamentId?: number) {
     return this.db.run(
         `UPDATE court
          SET available = 0
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = ${this.tournamentExpr(tournamentId)}
            AND number = ?`,
         [number]
     );
@@ -124,14 +125,14 @@ class Court {
     );
   }
 
-  deleteAll() {
+  deleteAll(tournamentId?: number) {
     return this.db.run(
         `DELETE
          FROM court
          WHERE id IN (SELECT c.id
                       FROM court c
                                JOIN tournament t ON t.id = c.tournament_id
-                      WHERE t.current = 1
+                      WHERE t.id = ${this.tournamentExpr(tournamentId)}
                         AND t.available = 1)`
     );
   }

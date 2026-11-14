@@ -15,7 +15,7 @@ router.get('/:name', (req, res) => {
 });
 
 router.post('/:name', (req, res) => {
-  res.promise(() => settingsService.set(req.params.name, req.body.value));
+  res.promise(() => settingsService.set(req.params.name, req.body.value, requestedTournament(req)));
 });
 
 export default router;

@@ -16,25 +16,26 @@ class Match {
     this.db = new Repository().db;
   }
 
-  create(team_1_id: number, team_2_id: number) {
+  create(team_1_id: number, team_2_id: number, tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
     return this.db.run(
         `INSERT INTO match_110 (tournament_id,
                                team_1_id,
                                team_2_id,
                                court_id)
-         VALUES ((SELECT id FROM tournament WHERE current = 1),
+         VALUES (${tournament},
                  ?,
                  ?,
-                 (SELECT c.id FROM court c JOIN tournament t on c.tournament_id = t.id WHERE c.available = 1 AND t.current = 1 ORDER BY c.id LIMIT 1))`,
+                 (SELECT c.id FROM court c JOIN tournament t on c.tournament_id = t.id WHERE c.available = 1 AND t.id = ${tournament} ORDER BY c.id LIMIT 1))`,
         [team_1_id, team_2_id]
     );
   }
 
-  /** Отдых команд текущего турнира: с какого момента команда ждёт —
-   *  created_at последнего сыгранного матча, без сыгранных — старт турнира.
-   *  played — число сыгранных матчей команды. */
-  rests() {
-    const current = `(SELECT id FROM tournament WHERE current = 1)`;
+  /** Отдых команд турнира (без параметра — текущего): с какого момента
+   *  команда ждёт — created_at последнего сыгранного матча, без сыгранных —
+   *  старт турнира. played — число сыгранных матчей команды. */
+  rests(tournamentId?: number) {
+    const tournament = tournamentId ?? `(SELECT id FROM tournament WHERE current = 1)`;
     const restStarts = this.db.all<{team_id: number, rest_start: string}>(
         `SELECT t.id                                          AS team_id,
                 COALESCE((SELECT MAX(m.created_at)
@@ -45,13 +46,13 @@ class Match {
                          tt.started_at)                     AS rest_start
          FROM team t
                   JOIN tournament tt on tt.id = t.tournament_id
-         WHERE tt.current = 1`
+         WHERE tt.id = ${tournament}`
     );
     const played = new Map(this.db.all<{team_id: number, played: number}>(
         `SELECT team_id, COUNT(*) AS played FROM (
-             SELECT team_1_id AS team_id FROM match_110 WHERE finished = 1 AND tournament_id = ${current}
+             SELECT team_1_id AS team_id FROM match_110 WHERE finished = 1 AND tournament_id = ${tournament}
              UNION ALL
-             SELECT team_2_id AS team_id FROM match_110 WHERE finished = 1 AND tournament_id = ${current}
+             SELECT team_2_id AS team_id FROM match_110 WHERE finished = 1 AND tournament_id = ${tournament}
          ) GROUP BY team_id`
     ).map(row => [row.team_id, row.played]));
     return {restStarts, played};

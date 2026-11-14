@@ -3,25 +3,26 @@ const router = Express.Router();
 import { ensureLoggedIn } from 'connect-ensure-login';
 import MatchService from '../services/match.ts';
 import RatingService from '../services/rating.ts';
+import requestedTournament from '../tournament-request.ts';
 const matchService = new MatchService();
 const ratingService = new RatingService();
 
 router.get('/unfinished', (req, res) => {
-  res.promise(matchService.getAllUnfinished());
+  res.promise(matchService.getAllUnfinished(requestedTournament(req)));
 });
 
 router.get('/:user_id', ensureLoggedIn(), (req, res) => {
-  res.promise(matchService.getAllByUser(Number(req.params.user_id)));
+  res.promise(matchService.getAllByUser(Number(req.params.user_id), requestedTournament(req)));
 });
 
 router.post('/create', ensureLoggedIn(), (req, res) => {
   const {user_1_id, user_2_id, user_3_id, user_4_id} = req.body;
-  res.promise(matchService.create(user_1_id, user_2_id, user_3_id, user_4_id));
+  res.promise(matchService.create(user_1_id, user_2_id, user_3_id, user_4_id, requestedTournament(req)));
 });
 
 router.post('/create110', ensureLoggedIn(), (req, res) => {
   const {team_1_id, team_2_id} = req.body;
-  res.promise(matchService.create110(team_1_id, team_2_id));
+  res.promise(matchService.create110(team_1_id, team_2_id, requestedTournament(req)));
 });
 
 router.post('/delete/:id', ensureLoggedIn(), (req, res) => {

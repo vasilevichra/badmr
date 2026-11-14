@@ -165,7 +165,7 @@ const renderTournamentPage = (
         settingsService.states(),                  // 2
         settingsService.regions(),                 // 3
         settingsService.cities(),                  // 4
-        groupService.getAll(),                     // 5
+        groupService.getAll(t.id),                 // 5
         tournamentService.registeredCount(t.id),   // 6
         settingsService.getSettings(t.id)          // 7
       ];
@@ -186,7 +186,7 @@ const renderTournamentPage = (
         settings: promises[7],
         timezone: settingsService.getTimezone(),
         // отдых команд: с какого момента ждёт каждая (для матрицы игр)
-        teamRests: matchService.rests(),
+        teamRests: matchService.rests(t.id),
         // аватары табло по разрядам: сеяние команды с фолбэком на сильнейших
         // подходящего пола (для каждой команды групп — один расчёт)
         boardAvatars: Object.values(promises[5] as Record<string, Record<string, Record<string, { team_id: number }[]>>>)
@@ -225,17 +225,6 @@ router.get(
       res.locals.filter = null;
 
       const t = tournamentService.getById(Number(req.params.id)) as { id: number; tournament_type_id: number; tournament_status_id: number } | undefined;
-
-      // кросс-турнирность: матчи (подбор, живое табло, сохранение через
-      // форму) всегда создаются в текущем турнире, а страница показывает
-      // свой — идущий (статус 2 «Идёт») не-текущий турнир редиректим на
-      // текущий, иначе игроки играют на одной странице, а история
-      // появляется на другой. Регистрация (1) и завершённые (3, 4)
-      // остаются на своих страницах
-      const current = tournamentService.getCurrent() as { id: number } | undefined;
-      if (t && t.tournament_status_id === 2 && current && t.id !== current.id) {
-        return res.redirect(`/t/${current.id}`);
-      }
 
       renderTournamentPage(req, res, t);
     }

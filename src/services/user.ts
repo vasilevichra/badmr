@@ -90,7 +90,7 @@ class User {
 
   create = (lastname: string, firstname: string, patronymic: string, rating: number, sex: number, city_id: number, birthday: string, shortname: string | null = null) => this.user.create(lastname, firstname, patronymic, rating, sex, city_id, birthday, shortname);
   getAll = (tournamentId?: number) => this.user.getAll(tournamentId);
-  select = (city_id: number) => this.user.select(city_id);
+  select = (city_id: number, tournamentId?: number) => this.user.select(city_id, tournamentId);
   getArchived = (tournamentId?: number) => this.user.getArchived(tournamentId);
   getById = (id: number) => this.user.getById(id);
   /** Локальный игрок по логину badminton4u, если привязка есть в user_lab. */
@@ -153,17 +153,17 @@ class User {
     }
     return found;
   };
-  registerAll = () => this.user.registerAll();
-  enable = (ids: number[]) => this.user.enable(ids);
-  disable = (ids: number[]) => this.user.disable(ids);
-  registerByIds = (ids: number[]) => this.user.registerByIds(ids);
-  deregisterAll = () => this.user.deregisterAll();
-  deregisterByIds = (ids: number[]) => this.user.deregisterByIds(ids);
-  isRegistered = (id: number) => this.user.isRegistered(id);
-  archive = (id: number) => this.user.archive(id);
-  archiveAll = () => this.user.archiveAll();
-  unarchive = (id: number) => this.user.unarchive(id);
-  unarchiveAll = () => this.user.unarchiveAll();
+  registerAll = (tournamentId?: number) => this.user.registerAll(tournamentId);
+  enable = (ids: number[], tournamentId?: number) => this.user.enable(ids, tournamentId);
+  disable = (ids: number[], tournamentId?: number) => this.user.disable(ids, tournamentId);
+  registerByIds = (ids: number[], tournamentId?: number) => this.user.registerByIds(ids, tournamentId);
+  deregisterAll = (tournamentId?: number) => this.user.deregisterAll(tournamentId);
+  deregisterByIds = (ids: number[], tournamentId?: number) => this.user.deregisterByIds(ids, tournamentId);
+  isRegistered = (id: number, tournamentId?: number) => this.user.isRegistered(id, tournamentId);
+  archive = (id: number, tournamentId?: number) => this.user.archive(id, tournamentId);
+  archiveAll = (tournamentId?: number) => this.user.archiveAll(tournamentId);
+  unarchive = (id: number, tournamentId?: number) => this.user.unarchive(id, tournamentId);
+  unarchiveAll = (tournamentId?: number) => this.user.unarchiveAll(tournamentId);
   getRating = (id: number) => this.user.getRating(id);
   getCalibration = (id: number) => this.user.getCalibration(id);
   setRating = (id: number, rating: number) => this.user.setRating(id, rating);
@@ -416,13 +416,13 @@ class User {
 
   /** Фоновый запуск обхода: ответ роута не ждёт окончания обхода,
    *  повторные вызовы во время идущего обхода не создают параллельный. */
-  labCrawlBackground = async (): Promise<void> => {
+  labCrawlBackground = async (tournamentId?: number): Promise<void> => {
     if (this.crawling) {
       return;
     }
     this.crawling = true;
     try {
-      await this.labCrawl();
+      await this.labCrawl(tournamentId);
     } catch (error) {
       // фоновая задача — некому отдать ошибку, только лог
       console.error('labCrawl:', error);
@@ -433,10 +433,10 @@ class User {
 
   crawling = false;
 
-  labCrawl = async () => {
-    // только участники текущего турнира и только с устаревшим кешем
-    // (crawl_cache_m минут) — свежие данные уже в user_lab
-    const users = await this.user.getLabCrawlUsers(Number(settingsService.get('crawl_cache_m')));
+  labCrawl = async (tournamentId?: number) => {
+    // только участники указанного (по умолчанию текущего) турнира и только
+    // с устаревшим кешем (crawl_cache_m минут) — свежие данные уже в user_lab
+    const users = await this.user.getLabCrawlUsers(Number(settingsService.get('crawl_cache_m')), tournamentId);
     const found: LabPlayer[] = [];
     for (const [index, user] of users.entries()) {
       try {

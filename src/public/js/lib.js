@@ -11,12 +11,23 @@ const tournamentStatus = () => {
   return s === undefined || s === '' ? undefined : Number(s);
 };
 
-// добавляет ?tournament=<id> к read-URL раздела, если турнир задан;
-// write-запросы параметр не получают: мутации идут по глобальному current
+// добавляет ?tournament=<id> к URL, если турнир задан.
+// Для write-запросов параметр добавляет глобальный ajaxPrefilter ниже
 const withTournament = (url) => {
   const id = tournamentId();
   return id ? `${url}${url.includes('?') ? '&' : '?'}tournament=${id}` : url;
 };
+
+// ко всем запросам (чтение и мутация) со страницы турнира добавляем
+// ?tournament=<id>: расчёты и изменения идут по турниру, открытому в
+// браузере, а не по глобальному current. URL, уже содержащие tournament=,
+// и абсолютные адреса не трогаем
+$.ajaxPrefilter((options) => {
+  const id = tournamentId();
+  const url = options.url || '';
+  if (!id || /^https?:\/\//i.test(url) || url.includes('tournament=')) return;
+  options.url = `${url}${url.includes('?') ? '&' : '?'}tournament=${id}`;
+});
 
 
 $.ajaxSetup({

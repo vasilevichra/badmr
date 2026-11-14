@@ -92,26 +92,30 @@ class Match {
     this.db = new Repository().db;
   }
 
-  getAll() {
+  /** Турнир запроса: явный id или фолбэк на глобальный current. */
+  private tournamentExpr(tournamentId?: number) {
+    return tournamentId ?? '(SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)';
+  }
+
+  getAll(tournamentId?: number) {
     return this.db.all(
         `SELECT *
          FROM match m
-         WHERE m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)`
+         WHERE m.tournament_id = ${this.tournamentExpr(tournamentId)}`
     );
   }
 
-  hasUnfinished() {
+  hasUnfinished(tournamentId?: number) {
     return this.db.get(
         `SELECT count(m.id) > 0 AS has
          FROM match m
                   JOIN tournament t on t.id = m.tournament_id
-         WHERE t.current = 1
-           AND t.available = 1
+         WHERE t.id = ${this.tournamentExpr(tournamentId)}
            AND m.finished = 0`
     );
   }
 
-  getAllUnfinished() {
+  getAllUnfinished(tournamentId?: number) {
     return this.db.all(
         `SELECT m.id                                                   AS id,
                 m.user_1_id                                            AS user_1_id,
@@ -140,7 +144,7 @@ class Match {
                   JOIN user u3 on u3.id = m.user_3_id
                   JOIN user u4 on u4.id = m.user_4_id
                   JOIN court c on c.id = m.court_id
-         WHERE m.tournament_id = (SELECT t.id FROM tournament t WHERE t.current = 1 AND t.available = 1)
+         WHERE m.tournament_id = ${this.tournamentExpr(tournamentId)}
            AND m.finished = 0`
     );
   }
@@ -426,7 +430,8 @@ class Match {
     );
   }
 
-  create(user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number) {
+  create(user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number, tournamentId?: number) {
+    const tournament = this.tournamentExpr(tournamentId);
     return this.db.run(
         `INSERT INTO match (tournament_id,
                             user_1_id,
@@ -434,12 +439,12 @@ class Match {
                             user_3_id,
                             user_4_id,
                             court_id)
-         VALUES ((SELECT id FROM tournament WHERE current = 1),
+         VALUES (${tournament},
                  ?,
                  ?,
                  ?,
                  ?,
-                 (SELECT c.id FROM court c JOIN tournament t ON c.tournament_id = t.id WHERE t.current = 1 AND c.available = 1 ORDER BY c.id ASC LIMIT 1))`,
+                 (SELECT c.id FROM court c JOIN tournament t ON c.tournament_id = t.id WHERE t.id = ${tournament} AND c.available = 1 ORDER BY c.id ASC LIMIT 1))`,
         [user_1_id, user_2_id, user_3_id, user_4_id]
     );
   }

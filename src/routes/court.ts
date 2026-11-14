@@ -14,23 +14,23 @@ router.get('/:id', ensureLoggedIn(), (req, res) => {
 });
 
 router.post('/create', ensureLoggedIn(), (req, res) => {
-  res.promise(courtService.create());
+  res.promise(courtService.create(requestedTournament(req)));
 });
 
 router.post('/enable', ensureLoggedIn(), (req, res) => {
-  res.promise(courtService.enableAll());
+  res.promise(courtService.enableAll(requestedTournament(req)));
 });
 
 router.post('/enable/:number', ensureLoggedIn(), (req, res) => {
-  res.promise(courtService.enable(Number(req.params.number)));
+  res.promise(courtService.enable(Number(req.params.number), requestedTournament(req)));
 });
 
 router.post('/disable', ensureLoggedIn(), (req, res) => {
-  res.promise(courtService.disableAll());
+  res.promise(courtService.disableAll(requestedTournament(req)));
 });
 
 router.post('/disable/:number', ensureLoggedIn(), (req, res) => {
-  res.promise(courtService.disable(Number(req.params.number)));
+  res.promise(courtService.disable(Number(req.params.number), requestedTournament(req)));
 });
 
 router.post('/delete/:id', ensureLoggedIn(), (req, res) => {

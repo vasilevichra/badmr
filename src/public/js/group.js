@@ -69,7 +69,6 @@ renderGroups = () => {
       dataType: "json",
       contentType: "application/json",
       data: JSON.stringify({
-        tournament_id: 2, // todo /api/tournaments/current
         group_id: groupId,
         name: String($('#tournament-groups-team-add-add-name').val()),
         city_id: getSelectedId('tournament-groups-team-add-select-city'),
@@ -527,7 +526,7 @@ const updateBoardAvatars = (modal) => {
 const restoreBoardScores = (modal) => {
   const [teamId1, teamId2] = modal.id.match(/^tournament-groups-board-(\d+)-(\d+)$/)?.slice(1).map(Number) ?? [];
   if (!teamId1) return;
-  $.get(`/api/games/current110?team_1_id=${teamId1}&team_2_id=${teamId2}`).then(game => {
+  $.get(withTournament(`/api/games/current110?team_1_id=${teamId1}&team_2_id=${teamId2}`)).then(game => {
     if (!game) return;
     const left = modal.querySelector('#board-score-l');
     const right = modal.querySelector('#board-score-r');
@@ -575,7 +574,7 @@ $(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => {
 // Один запрос на страницу; после закрытия табло перерисовываем —
 // только что доигранный/возобновлённый матч сразу показывает счёт
 const renderFinishedMatchScores = () => {
-  $.get('/api/games/110/results').then(results => {
+  $.get(withTournament('/api/games/110/results')).then(results => {
     // кнопка возобновления — только залогиненным (как ▶ в EJS);
     // флаг выставляет group.ejs на таблице матрицы
     const signedIn = document.querySelector('table.tournament-groups-table-games[data-signed-in="1"]') !== null;

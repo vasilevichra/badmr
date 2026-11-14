@@ -14,7 +14,7 @@ class Group {
   }
 
   select = () => this.group.select();
-  getAll = () => this.group.getAll();
+  getAll = (tournamentId?: number) => this.group.getAll(tournamentId);
 }
 
 export default Group;

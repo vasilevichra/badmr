@@ -47,12 +47,13 @@ class User {
     );
   }
 
-  select(city_id: number) {
+  select(city_id: number, tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
     return this.db.all(`SELECT u.id, u.lastname || ' ' || u.firstname AS text
                         FROM user u
                                  LEFT JOIN team_user tu ON u.id = tu.user_id
                                  LEFT JOIN team t ON tu.team_id = t.id
-                                 LEFT JOIN tournament tt ON t.tournament_id = tt.id AND tt.current = 1
+                                 LEFT JOIN tournament tt ON t.tournament_id = tt.id AND tt.id = ${tournament}
                                  LEFT JOIN tournament_user ttu ON tt.id = ttu.tournament_id AND ttu.archived = 0
                         WHERE u.city_id = ?
                           AND tu.user_id IS NULL`,
@@ -158,23 +159,23 @@ class User {
     );
   }
 
-  enable(ids: number[]) {
+  enable(ids: number[], tournamentId?: number) {
     return this.db.run(
         `UPDATE tournament_user
          SET available = 1
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
            AND user_id IN (SELECT value FROM json_each(?))`,
-        [JSON.stringify(ids)]
+        [tournamentId ?? null, JSON.stringify(ids)]
     );
   }
 
-  disable(ids: number[]) {
+  disable(ids: number[], tournamentId?: number) {
     return this.db.run(
         `UPDATE tournament_user
          SET available = 0
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
            AND user_id IN (SELECT value FROM json_each(?))`,
-        [JSON.stringify(ids)]
+        [tournamentId ?? null, JSON.stringify(ids)]
     );
   }
 
@@ -355,20 +356,22 @@ class User {
     return {id: user!.id};
   }
 
-  registerAll() {
+  registerAll(tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT t.id FROM tournament t WHERE t.current = 1)';
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, created_at)
-         SELECT (SELECT t.id FROM tournament t WHERE t.current = 1), u.id, 1, datetime('now')
+         SELECT ${tournament}, u.id, 1, datetime('now')
          FROM user u
          WHERE true
          ON CONFLICT DO NOTHING`
     );
   }
 
-  registerByIds(ids: number[]) {
+  registerByIds(ids: number[], tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT t.id FROM tournament t WHERE t.current = 1)';
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
-         SELECT (SELECT t.id FROM tournament t WHERE t.current = 1), u.id, 1, 0, datetime('now')
+         SELECT ${tournament}, u.id, 1, 0, datetime('now')
          FROM user u
          WHERE u.id IN (SELECT value FROM json_each(?))
          ON CONFLICT DO UPDATE SET available = 1,
@@ -377,30 +380,31 @@ class User {
     );
   }
 
-  deregisterAll() {
+  deregisterAll(tournamentId?: number) {
     return this.db.run(
         `DELETE
          FROM tournament_user
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)`
+         WHERE tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [tournamentId ?? null]
     );
   }
 
-  deregisterByIds(ids: number[]) {
+  deregisterByIds(ids: number[], tournamentId?: number) {
     return this.db.run(
         `DELETE
          FROM tournament_user
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
            AND user_id IN (SELECT value FROM json_each(?))`,
-        [JSON.stringify(ids)]
+        [tournamentId ?? null, JSON.stringify(ids)]
     );
   }
 
-  isRegistered(id: number) {
+  isRegistered(id: number, tournamentId?: number) {
     return this.db.get(
         `SELECT count(tu.id) == 1 AS registered FROM tournament_user tu
          JOIN tournament t on t.id = tu.tournament_id
-         WHERE tu.user_id = ? AND t.current = 1`,
-        [id]
+         WHERE tu.user_id = ? AND t.id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [id, tournamentId ?? null]
     );
   }
 
@@ -414,43 +418,47 @@ class User {
     );
   }
 
-  archive(id: number) {
+  archive(id: number, tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
-         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 0, 1, datetime('now'))
+         VALUES (${tournament}, ?, 0, 1, datetime('now'))
          ON CONFLICT DO UPDATE SET archived  = 1,
                                    available = 0`,
         [id]
     );
   }
 
-  archiveAll() {
+  archiveAll(tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
-         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1, datetime('now')
+         SELECT ${tournament}, id, 0, 1, datetime('now')
          FROM players
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = ${tournament}
          ON CONFLICT DO UPDATE SET available = 0,
                                    archived  = 1`
     );
   }
 
-  unarchive(id: number) {
+  unarchive(id: number, tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
-         VALUES ((SELECT id FROM tournament WHERE current = 1), ?, 1, 0, datetime('now'))
+         VALUES (${tournament}, ?, 1, 0, datetime('now'))
          ON CONFLICT DO UPDATE SET available = 1,
                                    archived  = 0`,
         [id]
     );
   }
 
-  unarchiveAll() {
+  unarchiveAll(tournamentId?: number) {
+    const tournament = tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
     return this.db.run(
         `INSERT INTO tournament_user (tournament_id, user_id, available, archived, created_at)
-         SELECT (SELECT id FROM tournament WHERE current = 1), id, 0, 1, datetime('now')
+         SELECT ${tournament}, id, 0, 1, datetime('now')
          FROM players
-         WHERE tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE tournament_id = ${tournament}
          ON CONFLICT DO UPDATE SET available = 1,
                                    archived  = 0`
     );
@@ -549,7 +557,7 @@ class User {
 
   /** Участники текущего турнира, чьи лабораторные данные устарели:
    *  обхода не было вовсе или он старше cache_min минут. */
-  getLabCrawlUsers(cacheMin: number) {
+  getLabCrawlUsers(cacheMin: number, tournamentId?: number) {
     return this.db.all(
         `SELECT p.id        AS user_id,
                 p.name      AS name,
@@ -558,10 +566,10 @@ class User {
                 ul.crawled_at AS crawled_at
          FROM players p
                   LEFT JOIN user_lab ul ON ul.user_id = p.id
-         WHERE p.tournament_id = (SELECT id FROM tournament WHERE current = 1)
+         WHERE p.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
            AND (ul.crawled_at IS NULL
                 OR ul.crawled_at < datetime('now', '-' || ? || ' minutes'))`,
-        [cacheMin]
+        [tournamentId ?? null, cacheMin]
     );
   }
 

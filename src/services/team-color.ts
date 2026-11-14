@@ -14,7 +14,7 @@ class TeamColor {
 
   }
 
-  select = () => this.teamColor.select();
+  select = (tournamentId?: number) => this.teamColor.select(tournamentId);
 }
 
 export default TeamColor;

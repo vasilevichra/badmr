@@ -122,9 +122,9 @@ class Settings {
     // тип без своего списка (Новая лига и др.) — все настройки, кроме 110-шных
     return rows.filter(row => !Settings.ONLY_110.has(row.name));
   };
-  set = async (name: string, value: string) => {
+  set = async (name: string, value: string, tournamentId?: number) => {
     await this.assertValid(name, String(value));
-    return this.settings.set(name, value);
+    return this.settings.set(name, value, tournamentId);
   };
   getSettings = (tournamentId?: number) => this.settings.getSettings(tournamentId);
   getTimezone = (tournamentId?: number) => this.settings.getTimezone(tournamentId);

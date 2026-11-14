@@ -27,7 +27,11 @@ class Group {
          FROM "group"`);
   }
 
-  getAll() {
+  /** Группы с командами и игроками. Без параметра — текущий турнир,
+   *  с id — указанный (страницы архивных турниров показывают свои группы
+   *  и матрицы игр). */
+  getAll(tournamentId?: number) {
+    const tournamentFilter = tournamentId ? 'tt.id = ?' : 'tt.current = 1';
     const result = this.db.all<GroupRow>(
         `SELECT t.group_id                                        AS group_id,
                 g.name                                            AS group_name,
@@ -48,14 +52,14 @@ class Group {
                 ul.rating_2                                       AS user_lab_rating_2
          FROM "group" g
                   JOIN team t on g.id = t.group_id
-                  JOIN tournament tt on tt.id = t.tournament_id AND tt.current = 1
+                  JOIN tournament tt on tt.id = t.tournament_id AND ${tournamentFilter}
                   JOIN team_user tu on tu.team_id = t.id
                   JOIN team_color tc on t.team_color_id = tc.id
                   JOIN city c on t.city_id = c.id
                   JOIN user u on tu.user_id = u.id
                   LEFT JOIN user_pic up on u.id = up.user_id
                   LEFT JOIN user_lab ul on u.id = ul.user_id
-         ORDER BY g.id DESC`);
+         ORDER BY g.id DESC`, tournamentId ? [tournamentId] : []);
     const groupedByGroup = Object.groupBy(result as GroupRow[], (row: GroupRow) => row.group_id);
     const groups: Record<string, Partial<Record<number, GroupRow[]>>>[] = [];
 

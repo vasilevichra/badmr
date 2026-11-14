@@ -33,7 +33,7 @@ router.get('/played/', (req, res) => {
 router.post('/pay/:user_id', ensureLoggedIn(), (req, res) => {
   // 0 или 1 — валидные значения; пусто/мусор/отсутствие параметра — платёж по умолчанию (1)
   const paid = req.query.paid === '0' ? 0 : req.query.paid === '1' ? 1 : 1;
-  res.promise(tournamentService.pay(Number(req.params.user_id), paid));
+  res.promise(tournamentService.pay(Number(req.params.user_id), paid, requestedTournament(req)));
 });
 
 router.get('/registered/count', (req, res) => {
@@ -41,7 +41,7 @@ router.get('/registered/count', (req, res) => {
 });
 
 router.post('/status/:status_id', ensureLoggedIn(), (req, res) => {
-  res.promise(tournamentService.setStatus(Number(req.params.status_id)));
+  res.promise(tournamentService.setStatus(Number(req.params.status_id), requestedTournament(req)));
 });
 
 // название из шапки (hero) редактируется по клику под админом

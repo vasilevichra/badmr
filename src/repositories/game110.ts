@@ -23,13 +23,17 @@ class Game110 {
     );
   }
 
-  getCurrentByTeamIds(teamId1: number, teamId2: number) {
+  /** Идущая игра матча пары. Без tournamentId — текущий турнир (мутации
+   *  счёта всегда идут по нему); с id — указанный турнир (чтение со
+   *  страниц архивных турниров). */
+  getCurrentByTeamIds(teamId1: number, teamId2: number, tournamentId?: number) {
+    const tournamentFilter = tournamentId ? 't.id = ?' : 't.current = 1';
     return this.db.get<{ id: number }>(
         `SELECT g.*
          FROM game_110 g
                   JOIN match_110 m on g.match_110_id = m.id
                   JOIN tournament t on t.id = m.tournament_id
-         WHERE t.current = 1
+         WHERE ${tournamentFilter}
            AND m.finished = 0
            AND m.team_1_id = ?
            AND m.team_2_id = ?
@@ -40,7 +44,7 @@ class Game110 {
                        WHERE m2.tournament_id = m.tournament_id
                          AND m2.team_1_id = m.team_1_id
                          AND m2.team_2_id = m.team_2_id)`,
-        [teamId1, teamId2]
+        tournamentId ? [tournamentId, teamId1, teamId2] : [teamId1, teamId2]
     );
   }
 
@@ -49,23 +53,28 @@ class Game110 {
    *  в ячейках матрицы: финишировавший — только счёт, идущий —
    *  счёт + кнопка возобновления. По паре берём только последний
    *  матч (клик ▶ может насоздавать несколько матчей одной пары). */
-  getResults() {
+  /** Счёты матчей 110 турнира (без параметра — текущего) для ячеек
+   *  матрицы: по паре берём только последний матч (клик ▶ может
+   *  насоздавать несколько матчей одной пары). */
+  getResults(tournamentId?: number) {
+    const tournamentFilter = tournamentId ? 't.id = ?' : 't.current = 1';
     return this.db.all<{ team_1_id: number, team_2_id: number, score_1: number, score_2: number, finished: number }>(
         `SELECT m.team_1_id, m.team_2_id, m.finished, g.score_1, g.score_2
          FROM match_110 m
                   JOIN game_110 g ON g.match_110_id = m.id
                   JOIN tournament t ON t.id = m.tournament_id
-         WHERE t.current = 1
+         WHERE ${tournamentFilter}
            AND m.id = (SELECT MAX(m2.id) FROM match_110 m2
                        WHERE m2.tournament_id = m.tournament_id
                          AND m2.team_1_id = m.team_1_id
                          AND m2.team_2_id = m.team_2_id)
-           AND g.id = (SELECT MAX(g2.id) FROM game_110 g2 WHERE g2.match_110_id = m.id)`
+           AND g.id = (SELECT MAX(g2.id) FROM game_110 g2 WHERE g2.match_110_id = m.id)`,
+        tournamentId ? [tournamentId] : []
     );
   }
 
-  increaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string) {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2);
+  increaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) {
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
     // матча нет или он уже завершён — инкремента нет
     if (!g) return;
     const winner = teamNumber === "1" ? "1" : "2";
@@ -109,8 +118,8 @@ class Game110 {
   /** Минус очко (корректировка): только у идущего матча, счёт не ниже 0.
    *  Автозачёт и finished не трогаем — убавление не отменяет сыгранную
    *  партию, судья правит счёт вручную. */
-  decreaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string) {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2);
+  decreaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) {
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
     // матча нет или он уже завершён — декремента нет
     if (!g) return;
     const scorer = teamNumber === "1" ? "1" : "2";

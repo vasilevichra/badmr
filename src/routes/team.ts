@@ -8,15 +8,17 @@ const teamUserService = new TeamUserService();
 import TeamColorService from '../services/team-color.ts';
 const teamColorService = new TeamColorService();
 import TeamOrderService from '../services/team-order.ts';
+import requestedTournament from '../tournament-request.ts';
 const teamOrderService = new TeamOrderService();
 
 router.get('/colors/select', ensureLoggedIn(), (req, res) => {
-  res.promise({results: teamColorService.select()});
+  res.promise({results: teamColorService.select(requestedTournament(req))});
 });
 
 router.post('/create', ensureLoggedIn(), (req, res) => {
   const {tournament_id, group_id, name, city_id, team_color_id} = req.body;
-  res.promise(teamService.create(Number(tournament_id), Number(group_id), name, Number(city_id), Number(team_color_id)));
+  // приоритет — явный tournament_id из body (легаси-клиенты), иначе параметр запроса
+  res.promise(teamService.create(Number(tournament_id || requestedTournament(req)), Number(group_id), name, Number(city_id), Number(team_color_id)));
 });
 
 router.post('/users/create', ensureLoggedIn(), (req, res) => {

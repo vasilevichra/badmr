@@ -2,10 +2,11 @@ import Express from 'express';
 const router = Express.Router();
 import { ensureLoggedIn } from 'connect-ensure-login';
 import GameService from '../services/game.ts';
+import requestedTournament from '../tournament-request.ts';
 const gameService = new GameService();
 
 router.get('/current110', (req, res) => {
-  res.promise(gameService.getCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id)));
+  res.promise(gameService.getCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), requestedTournament(req)));
 });
 
 // живое табло Новой лиги: текущая игра матча (null — игры ещё нет).
@@ -33,11 +34,11 @@ router.post('/current/swap', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.swapCurrentEvenByMatchId(Number(req.query.match_id), String(req.query.team_number)));
 });
 
-// счёты матчей 110 текущего турнира (флаг finished) — для показа
-// в ячейках матрицы: финишировавший — только счёт, идущий — счёт
-// и кнопка возобновления
+// счёты матчей 110 турнира со страницы (параметр ?tournament= от
+// withTournament; без него — текущий) — для показа в ячейках матрицы:
+// финишировавший — только счёт, идущий — счёт и кнопка возобновления
 router.get('/110/results', (req, res) => {
-  res.promise(gameService.getResults());
+  res.promise(gameService.getResults(requestedTournament(req)));
 });
 
 router.get('/:id', (req, res) => {
@@ -45,12 +46,12 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/current110/increase', ensureLoggedIn(), (req, res) => {
-  res.promise(gameService.increaseCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number)));
+  res.promise(gameService.increaseCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number), requestedTournament(req)));
 });
 
 // минус очко — корректировка счёта судьёй (свайп вниз по полю счёта)
 router.post('/current110/decrease', ensureLoggedIn(), (req, res) => {
-  res.promise(gameService.decreaseCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number)));
+  res.promise(gameService.decreaseCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number), requestedTournament(req)));
 });
 
 router.post('/create', ensureLoggedIn(), (req, res) => {

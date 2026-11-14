@@ -271,12 +271,13 @@ class Tournament {
     return data?.paid;
   }
 
-  pay(user_id: number, paid: number = 1) {
+  pay(user_id: number, paid: number = 1, tournamentId?: number) {
     return this.db.run(
         `UPDATE tournament_user
          SET paid = ?
-         WHERE user_id = ?`,
-        [paid, user_id]
+         WHERE user_id = ?
+           AND tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
+        [paid, user_id, tournamentId ?? null]
     );
   }
 
