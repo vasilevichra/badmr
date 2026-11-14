@@ -580,20 +580,47 @@ const flashPartyWin = (el) => {
 // синтетический click после свайпа, иначе очко задвоится
 const addScoreBoardHandlers = () => {
   let scoreEl = null;
-  let startY = 0;
+  let start = null;
   document.addEventListener('touchstart', (e) => {
     scoreEl = e.target.closest?.('.board-score') ?? null;
     // табло Новой лиги (game.js) тоже имеет .board-score, но живёт
     // на своих эндпоинтах и без data-team-1-id — его пропускаем
     if (scoreEl && !scoreEl.hasAttribute('data-team-1-id')) scoreEl = null;
-    if (scoreEl) startY = e.changedTouches[0].clientY;
+    if (scoreEl) {
+      const t = e.changedTouches[0];
+      start = {x: t.clientX, y: t.clientY};
+    }
   }, {passive: true});
+  // скролл подменяет touchend на touchcancel — свайп теряется; жёстко
+  // гасим перемещение для жестов, начавшихся на счёте (touch-action: none
+  // в CSS внутри повёрнутого контейнера iOS надёжно не работает)
+  document.addEventListener('touchmove', (e) => {
+    if (e.target.closest?.('.board-score')?.hasAttribute('data-team-1-id')) e.preventDefault();
+  }, {passive: false});
+  document.addEventListener('touchcancel', () => {
+    scoreEl = null;
+    start = null;
+  });
   document.addEventListener('touchend', (e) => {
     if (!scoreEl) return;
     const el = scoreEl;
     scoreEl = null;
-    const dy = e.changedTouches[0].clientY - startY;
-    if (Math.abs(dy) < 30) return; // не свайп: тап обрабатывает click
+    const dx = e.changedTouches[0].clientX - start.x;
+    const dy = e.changedTouches[0].clientY - start.y;
+    start = null;
+    // на телефоне в портрете контент повёрнут CSS на 90°: свайп «вверх по
+    // табло» — движение пальца вправо по экрану (контентный верх = экранный
+    // право), поэтому ось и знак — по dx; в ландшафте поворота нет — dy
+    const rotated = document.body.classList.contains('phone')
+        && window.matchMedia('(orientation: portrait)').matches;
+    const dist = rotated ? dx : dy;
+    const across = rotated ? dy : dx;
+    if (Math.abs(dist) < 30) {
+      // жест поперёк рабочей оси — не свайп и не тап: гасим синтетический
+      // click, чтобы случайное очко не добавилось
+      if (Math.abs(across) >= 30) e.preventDefault();
+      return; // короткое касание: тап обрабатывает click
+    }
     e.preventDefault(); // гасим синтетический click, иначе очко задвоится
     // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ
     // "team-1Id" — читаем атрибуты напрямую. data-team-number переезжает
@@ -603,10 +630,122 @@ const addScoreBoardHandlers = () => {
       Number(el.getAttribute('data-team-2-id')),
       Number(el.getAttribute('data-team-number')),
     ];
-    if (dy > 0) decreaseBoardScore(el, ...args);
+    // вверх по табло (в портрете — вправо по экрану) — +1 очко, вниз — минус
+    if (rotated ? dist < 0 : dist > 0) decreaseBoardScore(el, ...args);
     else increaseBoardScore(el, ...args);
   }, {passive: false});
 };
+
+// ===== табло 110: жесты судьи по игрокам =====
+// свайп к напарнику — ручной свап чётности кортов пары, тап по чётному
+// на 0:0 — задать первого подающего. Только для модалок 110
+// (tournament-groups-board-*): у НЛ (game-board-*) свои обработчики.
+// Сервер повторно валидирует условия и на отказ возвращает пустой ответ
+
+// id команд из id модалки (tournament-groups-board-<t1>-<t2>)
+const board110TeamIds = (modal) => modal.id.replace('tournament-groups-board-', '').split('-').map(Number);
+
+// тап/двойной клик по чётному игроку на 0:0 — подача
+const servePlayerTap110 = (playerEl) => {
+  const modal = playerEl.closest('.modal');
+  const state = board110State.get(modal.id);
+  if (!state) return;
+  const scores = [...modal.querySelectorAll('.board-score')].map((s) => Number(s.textContent));
+  if (scores.some((s) => s !== 0)) return; // подача только на 0:0
+  const userId = Number(playerEl.getAttribute('data-user-id'));
+  if (userId !== state.even1 && userId !== state.even2) return; // только чётному
+  const [team1, team2] = board110TeamIds(modal);
+  $.post(`/api/games/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${userId}`,
+      {}, (result) => updateBoard110State(modal, result));
+};
+
+// свайп к напарнику / клик по игроку — свап чётности кортов пары
+const swapPlayerParity110 = (playerEl) => {
+  const modal = playerEl.closest('.modal');
+  const team = playerEl.closest('.col')?.querySelector('.board-score')?.getAttribute('data-team-number');
+  if (!team) return;
+  const [team1, team2] = board110TeamIds(modal);
+  $.post(`/api/games/current110/swap?team_1_id=${team1}&team_2_id=${team2}&team_number=${team}`,
+      {}, (result) => {
+        if (!result) return; // отказ движка (вне границы) — без отклика
+        updateBoard110State(modal, result);
+        navigator.vibrate?.(30);
+        boardBeep(440, 0.08, 0.15);
+      });
+};
+
+// тач-жесты по игроку (мобайл). preventDefault гасит синтетические
+// click/dblclick, чтобы тап не сработал как десктопный
+let playerTouch110 = null;
+document.addEventListener('touchstart', (e) => {
+  const playerEl = e.target.closest?.('.board-player') ?? null;
+  if (!playerEl || !playerEl.closest('[id^="tournament-groups-board-"]')) return;
+  const t = e.changedTouches[0];
+  playerTouch110 = {el: playerEl, x: t.clientX, y: t.clientY};
+}, {passive: true});
+
+document.addEventListener('touchmove', (e) => {
+  // жёстко гасим скролл для жестов, начавшихся на игроках табло 110
+  if (playerTouch110) e.preventDefault();
+}, {passive: false});
+
+document.addEventListener('touchcancel', () => {
+  playerTouch110 = null;
+});
+
+document.addEventListener('touchend', (e) => {
+  const playerEl = e.target.closest?.('.board-player') ?? null;
+  if (!playerEl || !playerTouch110 || playerTouch110.el !== playerEl) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - playerTouch110.x;
+  const dy = t.clientY - playerTouch110.y;
+  playerTouch110 = null;
+  e.preventDefault();
+  const state = board110State.get(playerEl.closest('.modal').id);
+  if (!state) return;
+  // ось — как у счёта: на телефоне в портрете контент повёрнут CSS,
+  // рабочая ось — dx; в ландшафте — dy
+  const rotated = document.body.classList.contains('phone')
+      && window.matchMedia('(orientation: portrait)').matches;
+  const dist = rotated ? dx : dy;
+  const across = rotated ? dy : dx;
+  if (Math.abs(dist) < 30) {
+    if (Math.abs(across) >= 30) return; // поперечный жест — не тап
+    state._tapHandled = Date.now(); // страховка: если preventDefault не погасил click
+    servePlayerTap110(playerEl);
+    return;
+  }
+  // направление «к напарнику»: первый в ячейке группы — вниз,
+  // второй — вверх (вверх в портрете — вправо по экрану)
+  const cellPlayers = [...playerEl.closest('[data-type]').querySelectorAll('.board-player')];
+  const up = rotated ? dist > 0 : dist < 0;
+  const towardPartner = cellPlayers.indexOf(playerEl) === 0 ? !up : up;
+  if (!towardPartner) return;
+  swapPlayerParity110(playerEl);
+}, {passive: false});
+
+// десктоп: клик по игроку — свап чётности. Откладывается на 250мс и
+// отменяется dblclick'ом — двойной клик означает подачу, а не два свапа
+let playerClickTimer110 = null;
+$(document).on('click', '[id^="tournament-groups-board-"] .board-player', function () {
+  const state = board110State.get(this.closest('.modal').id);
+  if (!state) return;
+  if (state._tapHandled && Date.now() - state._tapHandled < 500) return; // мобильный тап
+  if (playerClickTimer110 !== null) return; // второй клик даблклика
+  const el = this;
+  playerClickTimer110 = setTimeout(() => {
+    playerClickTimer110 = null;
+    swapPlayerParity110(el);
+  }, 250);
+});
+
+$(document).on('dblclick', '[id^="tournament-groups-board-"] .board-player', function () {
+  if (playerClickTimer110 !== null) {
+    clearTimeout(playerClickTimer110);
+    playerClickTimer110 = null;
+  }
+  servePlayerTap110(this);
+});
 
 const winValue = (lostValue) => {
   // очки победителя в гейме. game_point/max_point — настройки турнира
