@@ -962,6 +962,9 @@ body.desktop #tournament-new-registration-hint > .row {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  /* единый вертикальный ритм героя: ~10px «чернилами» между всеми
+     строками (чипы ниже несут mt-2 = 8px + линии строк) */
+  margin-top: 10px;
 }
 
 /* телефон: воздух между строкой логина (email + выход) и названием турнира —
@@ -994,6 +997,8 @@ body.phone .tournament-hero-name-row {
 .tournament-hero-meta {
   font-size: 0.875rem;
   color: var(--badmr-hero-muted);
+  /* единый ритм: см. .tournament-hero-name-row (2px линий строки → 8px) */
+  margin-top: 8px;
 }
 
 .tournament-hero-reg {
@@ -1034,6 +1039,12 @@ body.phone .tournament-hero-name-row {
 
 .tournament-hero-chip a {
   color: var(--badmr-hero-accent);
+}
+
+/* чип «7/15» без зазоров: gap inline-flex-а вставляет воздух и после
+   иконки, и между числом и «/ёмкостью» — должно читаться как одно число */
+.tournament-hero-chip-tight {
+  gap: 0;
 }
 
 .tournament-hero-chip .btn-xs {
