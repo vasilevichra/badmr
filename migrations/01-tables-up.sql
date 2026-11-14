@@ -268,6 +268,14 @@ CREATE TABLE game_110
     game_type_id INTEGER  NOT NULL CONSTRAINT game_type REFERENCES game_type,
     score_1      INTEGER  NOT NULL DEFAULT 0,
     score_2      INTEGER  NOT NULL DEFAULT 0,
+    -- чётность/подача табло: как в game (Новая лига), но ростер пары
+    -- вычисляется по разряду текущей строки (game_type_pos)
+    even_1_user_id INTEGER NULL,
+    even_2_user_id INTEGER NULL,
+    serve_user_id  INTEGER NULL,
+    -- индекс текущей строки разряда на табло (0..9, «•» не нумеруется):
+    -- сервер не знает разряд из счёта (автозачёт/корректировки его ломают)
+    game_type_pos  INTEGER NOT NULL DEFAULT 0,
     current      INTEGER NOT NULL DEFAULT 0,
     CHECK (current IN (0, 1)),
     CHECK (score_1 >= 0 AND score_1 <= 110),
