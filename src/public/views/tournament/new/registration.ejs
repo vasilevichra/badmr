@@ -1,4 +1,4 @@
-<% if (user || tournament.tournament_status_id === 1) { %>
+<% if ((user && !tournamentOver) || tournament.tournament_status_id === 1) { %>
     <div class="container">
         <% if (user) { %>
             <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
@@ -37,6 +37,10 @@
                                 <div class="col-auto text-start d-none">
                                     <label class="control-label secondary-info no-selection">Отчество <span class="text-danger">*</span></label>
                                     <input type="text" name="pn" class="form-control fw-bold required" style="border: none; background-color: transparent;" size="0" value="" autocomplete="off" required disabled>
+                                </div>
+                                <div class="col-auto text-start d-none">
+                                    <label class="control-label secondary-info no-selection">Кратко</label>
+                                    <input type="text" name="sn" class="form-control" style="border: none; background-color: transparent;" size="8" value="" autocomplete="off" placeholder="Юра, Лиза…">
                                 </div>
                                 <div class="col-auto text-end d-none">
                                     <label class="control-label secondary-info no-selection">Аккаунт</label>

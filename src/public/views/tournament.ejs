@@ -1,8 +1,8 @@
 <%# Кнопка выбора турнира с попапом-плитками (#55, макет E).
     Компактная кнопка «🏆 #N» вместо селекта; клик открывает попап:
-    сегменты «Все / Идёт / Заверш.» + плитки турниров (имя, тип, дата,
-    статус, игроки/матчи). Клик по плитке — переход /t/:id, глобальный
-    current не меняется: регистрация игроков пишет в current-турнир
+    чипы-фильтры (статус + категория цветной точкой) + плитки турниров
+    (имя, тип, дата, статус, игроки/матчи). Клик по плитке — переход /t/:id,
+    глобальный current не меняется: регистрация игроков пишет в current-турнир
     (registerByIds), и переключение из шапки уводило новых игроков
     не в тот турнир. Current меняется явно: галочка при создании
     и radio «Текущий?» в таблице турниров. Логика — index.js (.tournament-switch). %>
@@ -16,23 +16,28 @@
     <div id="tournament-popup" class="tournament-popup" hidden>
         <div class="tournament-popup-head">
             <span class="tournament-popup-title">Турниры</span>
-            <span class="tournament-popup-seg">
-                <button type="button" class="on" data-filter="all">Все</button>
-                <button type="button" data-filter="active">Идёт</button>
-                <button type="button" data-filter="done">Заверш.</button>
-            </span>
+        </div>
+        <%# все фильтры — чипы одним переносимым рядом; категория — с цветной
+            точкой в цвет бейджа плитки (dot-u<id>), статус — обычные %>
+        <div class="tournament-popup-chips">
+            <button type="button" class="on" data-filter="all">Все</button>
+            <button type="button" data-filter="active">Идёт</button>
+            <button type="button" data-filter="done">Заверш.</button>
+            <% units.filter(u => u.id !== 1).forEach(u => { %>
+                <button type="button" data-unit="<%= u.id %>"><i class="tournament-popup-dot dot-u<%= u.id %>"></i><%= u.name.toLowerCase() %></button>
+            <% }); %>
         </div>
         <div class="tournament-popup-grid">
             <% tournaments.forEach(tournament => { %>
                 <% const active = [1, 2].includes(tournament.tournament_status_id); %>
                 <div class="tournament-tile<% if (tournament.id === selected_tournament_id) { %> current<% } %>"
-                     data-group="<%= active ? 'active' : 'done' %>" data-goto="/t/<%= tournament.id %>"
+                     data-group="<%= active ? 'active' : 'done' %>" data-unit="<%= tournament.unit_id %>" data-goto="/t/<%= tournament.id %>"
                      role="button" tabindex="0">
                     <div class="tournament-tile-top">
                         <b>#<%= tournament.id %></b>
                         <span class="tournament-tile-st<%= active ? ' live' : '' %>"><%= tournament.status_name.toLowerCase() %></span>
                     </div>
-                    <div class="tournament-tile-name"><%= tournament.name %></div>
+                    <div class="tournament-tile-name"><%= tournament.name %><% if (tournament.unit_id !== 1) { %> <span class="tournament-tile-unit unit-u<%= tournament.unit_id %>"><%= tournament.unit_name.toLowerCase() %></span><% } %></div>
                     <div class="tournament-tile-meta"><%= tournament.type_name %> · <%= ddmmyy(tournament.started_at) %></div>
                     <div class="tournament-tile-counts"><b><%= tournament.players_count %></b> <%= plural(tournament.players_count, 'игрок', 'игрока', 'игроков') %> · <b><%= tournament.matches_count %></b> <%= plural(tournament.matches_count, 'матч', 'матча', 'матчей') %></div>
                 </div>

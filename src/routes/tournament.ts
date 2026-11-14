@@ -62,7 +62,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/create', ensureLoggedIn(), (req, res) => {
-  const {user, club, gym, type, name, reg, start, end, cap, courts, rmin, rmax, rules, cur,
+  const {user, club, gym, type, unit, name, reg, start, end, cap, courts, rmin, rmax, rules, cur,
          matches, wins, game_point, max_point, fee, calibration_matches, calibration_days} = req.body;
   const toUTC = (dateString: string) => moment(new Date(dateString)).utc().format('YYYY-MM-DD HH:mm:ss');
   const current = cur === 'on' ? 1 : 0;
@@ -90,7 +90,7 @@ router.post('/create', ensureLoggedIn(), (req, res) => {
         rmax ? String(rmax) : '',
         rules ? String(rules) : '',
         current,
-        undefined,
+        unit ? Number(unit) : undefined,
         {matches, wins, game_point, max_point, fee, calibration_matches, calibration_days}
     );
   });

@@ -185,7 +185,7 @@ describe("Player page", () => {
     assert.strictEqual(res.status, 200);
     assert.match(html, /Достижения/);
     assert.match(html, /Пулемётчик/);
-    assert.match(html, /Очень старался, но ничего не получилось/);
+    assert.match(html, /Ну как так\?/);
     assert.match(html, /Черепаха/);
   });
 

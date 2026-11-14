@@ -236,8 +236,8 @@ describe("Achievement", () => {
 
     // u1,u2 — 6 номинаций
     assert.deepStrictEqual(achievementService.getNominationsByUser(u1, 4), [
-      {icon: "bi-emoji-frown", title: "Очень старался, но ничего не получилось", description: "Больше всех проигранных матчей с перевесом по забитым очкам"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт", description: "Чаще всех выигрывал первую игру матча"},
-      {icon: "bi-emoji-dizzy", title: "Почти смог", description: "Больше всех проигранных игр со своим счётом 20 и больше"}, {icon: "bi-bullseye", title: "Разгром", description: "Больше всех игр, выигранных с разницей 15 очков и больше"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар", description: "Больше всех побед над разными парами соперников"}, {icon: "bi-clock-history", title: "Черепаха", description: "Больше всех минут, проведённых в играх"}
+      {icon: "bi-emoji-frown", title: "Ну как так?", description: "Больше всех проигранных матчей с перевесом по забитым очкам"}, {icon: "bi-rocket-takeoff-fill", title: "Быстрый старт", description: "Чаще всех выигрывал первую игру матча"},
+      {icon: "bi-emoji-dizzy", title: "Недожиматель", description: "Больше всех проигранных игр со своим счётом 20 и больше"}, {icon: "bi-bullseye", title: "Разгром", description: "Больше всех игр, выигранных с разницей 15 очков и больше"}, {icon: "bi-cloud-lightning-fill", title: "Гроза пар", description: "Больше всех побед над разными парами соперников"}, {icon: "bi-clock-history", title: "Черепаха", description: "Больше всех минут, проведённых в играх"}
     ]);
     // партнёр по команде имеет те же номинации
     assert.deepStrictEqual(achievementService.getNominationsByUser(u2, 4),

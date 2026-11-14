@@ -72,6 +72,7 @@ class User {
                 coalesce(up.pic, ul.img)                                                  AS pic,
                 c.name                                                                    AS city,
                 u.city_id,
+                u.shortname,
                 ul.rating_1,
                 ul.rating_2,
                 ul.site_login,
@@ -343,12 +344,12 @@ class User {
     );
   }
 
-  create(lastname: string, firstname: string, patronymic: string, rating: number, sex: number, city_id: number, birthday: string) {
+  create(lastname: string, firstname: string, patronymic: string, rating: number, sex: number, city_id: number, birthday: string, shortname: string | null = null) {
     const user = this.db.get<{ id: number }>(
-        `INSERT INTO user (lastname, firstname, patronymic, sex, city_id, birthday)
-         VALUES (?, ?, ?, ?, ?, ?)
+        `INSERT INTO user (lastname, firstname, patronymic, shortname, sex, city_id, birthday)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
          RETURNING id`,
-        [lastname, firstname, patronymic, sex, city_id, birthday]
+        [lastname, firstname, patronymic, shortname, sex, city_id, birthday]
     );
     this.setRating(user!.id, Number(rating));
     return {id: user!.id};
@@ -518,6 +519,16 @@ class User {
              patronymic = ?
          WHERE id = ?`,
         [lastname, firstname, patronymic, id]
+    );
+  }
+
+  /** Короткое имя редактируется в карточке игрока; пустая строка — сброс. */
+  setShortname(id: number, shortname: string | null) {
+    return this.db.run(
+        `UPDATE user
+         SET shortname = ?
+         WHERE id = ?`,
+        [shortname, id]
     );
   }
 

@@ -88,7 +88,7 @@ class User {
     this.user = new UserRepository();
   }
 
-  create = (lastname: string, firstname: string, patronymic: string, rating: number, sex: number, city_id: number, birthday: string) => this.user.create(lastname, firstname, patronymic, rating, sex, city_id, birthday);
+  create = (lastname: string, firstname: string, patronymic: string, rating: number, sex: number, city_id: number, birthday: string, shortname: string | null = null) => this.user.create(lastname, firstname, patronymic, rating, sex, city_id, birthday, shortname);
   getAll = (tournamentId?: number) => this.user.getAll(tournamentId);
   select = (city_id: number) => this.user.select(city_id);
   getArchived = (tournamentId?: number) => this.user.getArchived(tournamentId);
@@ -168,6 +168,7 @@ class User {
   getCalibration = (id: number) => this.user.getCalibration(id);
   setRating = (id: number, rating: number) => this.user.setRating(id, rating);
   setName = (id: number, lastname: string, firstname: string, patronymic: string | null) => this.user.setName(id, lastname, firstname, patronymic);
+  setShortname = (id: number, shortname: string | null) => this.user.setShortname(id, shortname);
   setBirthday = (id: number, birthday: string) => this.user.setBirthday(id, birthday);
   getDaysUntilBirthday = (id: number) => this.user.getDaysUntilBirthday(id);
   getMatchesCount = (id: number, tournamentId?: number) => this.user.getMatchesCount(id, tournamentId);

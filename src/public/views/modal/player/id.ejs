@@ -29,6 +29,14 @@
                                             <div class="text-center text-secondary"><%= region.name %></div>
                                             <div class="text-center text-secondary mb-2"><%= state.name %></div>
                                             </p>
+                                            <% // короткое имя: показывается всем, если задано; владелец
+                                               // (и админ) редактирует по клику — как дату рождения;
+                                               // у залогиненного строка видна всегда, чтобы можно было задать %>
+                                            <% if (user.shortname || login) { %>
+                                            <h5 class="text-center mb-1<% if (login) { %> player-window-shortname<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" data-original-text="<%= user.shortname ?? '' %>" title="нажмите, чтобы редактировать"<% } %>>
+                                                <% if (user.shortname) { %><span class="fw-bold">«<%= user.shortname %>»</span><% } else { %><span class="opacity-50">не задано</span><% } %>
+                                            </h5>
+                                            <% } %>
                                             <% const monthArray = ['января', 'февралья', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
                                                 'октября', 'ноября', 'декабря'];
                                                 // знак зодиака: границы смены знака по дням месяцев,

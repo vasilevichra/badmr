@@ -99,11 +99,42 @@ class Match {
                 (SELECT pic FROM user_pic WHERE user_id = m.user_2_id) AS pic2,
                 (SELECT pic FROM user_pic WHERE user_id = m.user_3_id) AS pic3,
                 (SELECT pic FROM user_pic WHERE user_id = m.user_4_id) AS pic4,
-                u1.lastname || ' ' || u1.firstname                     AS name1,
-                u2.lastname || ' ' || u2.firstname                     AS name2,
-                u3.lastname || ' ' || u3.firstname                     AS name3,
-                u4.lastname || ' ' || u4.firstname                     AS name4,
-                c.number                                               AS court
+                -- имя в блоке «Игры»: краткое имя игрока; неуникальное среди
+                -- участников турнира — с первой буквой фамилии («Юра В.»);
+                -- без краткого — ФИО (история игр остаётся с полными ФИО)
+                CASE
+                    WHEN u1.shortname IS NULL THEN u1.lastname || ' ' || u1.firstname
+                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
+                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
+                            AND su.shortname = u1.shortname) > 1
+                        THEN u1.shortname || ' ' || substr(u1.lastname, 1, 1) || '.'
+                    ELSE u1.shortname
+                END                                                  AS name1,
+                CASE
+                    WHEN u2.shortname IS NULL THEN u2.lastname || ' ' || u2.firstname
+                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
+                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
+                            AND su.shortname = u2.shortname) > 1
+                        THEN u2.shortname || ' ' || substr(u2.lastname, 1, 1) || '.'
+                    ELSE u2.shortname
+                END                                                  AS name2,
+                CASE
+                    WHEN u3.shortname IS NULL THEN u3.lastname || ' ' || u3.firstname
+                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
+                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
+                            AND su.shortname = u3.shortname) > 1
+                        THEN u3.shortname || ' ' || substr(u3.lastname, 1, 1) || '.'
+                    ELSE u3.shortname
+                END                                                  AS name3,
+                CASE
+                    WHEN u4.shortname IS NULL THEN u4.lastname || ' ' || u4.firstname
+                    WHEN (SELECT count(*) FROM user su JOIN tournament_user stu ON stu.user_id = su.id
+                          WHERE stu.tournament_id = m.tournament_id AND stu.available = 1 AND stu.archived != 1
+                            AND su.shortname = u4.shortname) > 1
+                        THEN u4.shortname || ' ' || substr(u4.lastname, 1, 1) || '.'
+                    ELSE u4.shortname
+                END                                                  AS name4,
+                c.number                                             AS court
          FROM match m
                   JOIN user u1 on u1.id = m.user_1_id
                   JOIN user u2 on u2.id = m.user_2_id

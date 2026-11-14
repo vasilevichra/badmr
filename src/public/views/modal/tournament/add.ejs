@@ -31,6 +31,14 @@
                                         <select id="tournament-add-select-type" name="type" class="select2 form-control" required></select>
                                         <label class="control-label">Тип <span class="text-danger">*</span></label>
                                     </div>
+                                    <div class="form-floating">
+                                        <select id="tournament-add-select-unit" name="unit" class="select2 form-control" required>
+                                            <% units.forEach(u => { %>
+                                                <option value="<%= u.id %>" <% if (u.current === 1) { %>selected<% } %>><%= u.name %></option>
+                                            <% }); %>
+                                        </select>
+                                        <label class="control-label">Категория</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

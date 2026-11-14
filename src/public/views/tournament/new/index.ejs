@@ -1,4 +1,7 @@
-<%- include('registration', {tournament: tournament} ); %>
+<%# турнир завершён или отменён — регистрации и управления кортами нет:
+    матчи больше не играются (ср. routes/web/player.ts: currentTournamentFinished) %>
+<% const tournamentOver = [3, 4].includes(tournament.tournament_status_id); %>
+<%- include('registration', {tournament: tournament, tournamentOver: tournamentOver} ); %>
 
 <% if (registered_count > 0) { %>
 <div class="container">
@@ -93,7 +96,7 @@
     </div>
     <hr class="hr-dashed"/>
 </div>
-<% if (user) { %>
+<% if (user && !tournamentOver) { %>
     <div class="container">
         <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
         <div id="cort" class="cort closable">

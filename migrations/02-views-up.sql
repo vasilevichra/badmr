@@ -30,7 +30,20 @@ SELECT r.tournament_id,
                           WHERE m.tournament_id = r.tournament_id
                             AND r.user_id IN (m.user_1_id, m.user_2_id, m.user_3_id, m.user_4_id)))
        END AS won
-FROM (SELECT u.lastname || ' ' || u.firstname AS name,
+FROM (SELECT
+       -- имя в подборке: краткое имя игрока; неуникальное среди участников
+       -- турнира — с первой буквой фамилии («Юра В.»); без краткого — ФИО
+       CASE
+           WHEN u.shortname IS NULL THEN u.lastname || ' ' || u.firstname
+           WHEN (SELECT count(*)
+                 FROM user su
+                          JOIN tournament_user stu ON stu.user_id = su.id
+                              AND stu.tournament_id = t.id
+                              AND stu.available = 1 AND stu.archived != 1
+                 WHERE su.shortname = u.shortname) > 1
+               THEN u.shortname || ' ' || substr(u.lastname, 1, 1) || '.'
+           ELSE u.shortname
+       END                              AS name,
              u.id                             AS user_id,
              round((coalesce(r.previous, 0) + coalesce(r.delta, 0)), 1) AS rating,
              count(DISTINCT m.id)             AS matches,

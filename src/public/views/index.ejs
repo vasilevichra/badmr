@@ -72,6 +72,15 @@
         %>
         <% const durationHours = Math.trunc((endedAt - startedAt) / 36e5); %>
         <% const durationMinutesWithoutHours = Math.trunc(((endedAt - startedAt) - durationHours * 36e5) / 6e4); %>
+        <%# длительность: до суток — часы («1129ч»), больше — дни с остатком
+            часов («47д 1ч»); минуты показываем только у коротких турниров %>
+        <% const durationDays = Math.trunc(durationHours / 24); %>
+        <% const durationHoursWithoutDays = durationHours % 24; %>
+        <% const durationStr = current_tournament.ended_at
+            ? (durationHours > 24
+                ? `${durationDays}д${durationHoursWithoutDays > 0 ? ` ${durationHoursWithoutDays}ч` : ''}`
+                : `${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''}`)
+            : ''; %>
 
         <% const startedH = startedAt.getHours() <= 9 ? '0' + startedAt.getHours() : startedAt.getHours(); %>
         <% const startedM = startedAt.getMinutes() <= 0 ? '0' + startedAt.getMinutes() : startedAt.getMinutes(); %>
@@ -103,7 +112,7 @@
               `https://badmr.ru/t/${current_tournament.id}`,
               '',
               `Турнир: «${current_tournament.name} / ${current_tournament.type_name}»`,
-              `Дата: ${getDateStr()}${current_tournament.ended_at ? ` (${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''})` : ''}`,
+              `Дата: ${getDateStr()}${durationStr ? ` (${durationStr})` : ''}`,
               shareRegStr,
               'Адрес:',
               `${current_tournament.city}, ${current_tournament.address}`,
@@ -131,7 +140,7 @@
             : (heroDateSameDay
                 ? `${endedAt.getDate()} ${monthArray[endedAt.getMonth()]} ${endedAt.getFullYear()} · ${startedH}:${startedM}–${endedH}:${endedM}`
                 : getDateStr()); %>
-        <% const heroDurationStr = current_tournament.ended_at ? `${durationHours}ч${durationMinutesWithoutHours > 0 ? ` ${durationMinutesWithoutHours}м` : ''}` : ''; %>
+        <% const heroDurationStr = durationStr; %>
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="badge tournament-hero-type"><%= current_tournament.type_name %></span>
                 <%# шере и календарь — сразу за бейджем типа; справа (ms-auto) —
@@ -152,7 +161,7 @@
                     </form>
                 <% } else { %>
                     <form action="/api/auth/login" method="get" class="login ms-auto tournament-hero-login">
-                        <button class="btn<% if (device === 'phone') { %> mx-2<% } %>" type="submit"><p class="bi bi-person"> Вход</p></button>
+                        <button class="btn" type="submit"><p class="bi bi-person"> Вход</p></button>
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     </form>
                 <% } %>

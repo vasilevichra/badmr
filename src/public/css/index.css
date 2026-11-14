@@ -47,6 +47,165 @@
     U+2215, U+FEFF, U+FFFD;
 }
 
+/* жирные и промежуточные начертания: все используемые в css веса (500/600/
+   700/800) — реальными файлами Raleway, без фейкового синтеза браузером;
+   сабсеты и unicode-range — зеркально 400 */
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 500;
+  src: url("../fonts/raleway-500-cyrillic-ext.woff") format("woff");
+  unicode-range:
+    U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 500;
+  src: url("../fonts/raleway-500-cyrillic.woff") format("woff");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 500;
+  src: url("../fonts/raleway-500-latin-ext.woff") format("woff");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 500;
+  src: url("../fonts/raleway-500-latin.woff") format("woff");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 600;
+  src: url("../fonts/raleway-600-cyrillic-ext.woff") format("woff");
+  unicode-range:
+    U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 600;
+  src: url("../fonts/raleway-600-cyrillic.woff") format("woff");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 600;
+  src: url("../fonts/raleway-600-latin-ext.woff") format("woff");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 600;
+  src: url("../fonts/raleway-600-latin.woff") format("woff");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/raleway-700-cyrillic-ext.woff") format("woff");
+  unicode-range:
+    U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/raleway-700-cyrillic.woff") format("woff");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/raleway-700-latin-ext.woff") format("woff");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 700;
+  src: url("../fonts/raleway-700-latin.woff") format("woff");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 800;
+  src: url("../fonts/raleway-800-cyrillic-ext.woff") format("woff");
+  unicode-range:
+    U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 800;
+  src: url("../fonts/raleway-800-cyrillic.woff") format("woff");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 800;
+  src: url("../fonts/raleway-800-latin-ext.woff") format("woff");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Raleway";
+  font-style: normal;
+  font-weight: 800;
+  src: url("../fonts/raleway-800-latin.woff") format("woff");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
 /* Ночная тема по требованию ОС (#56): жёсткие светлые цвета вынесены в
    переменные; [data-bs-theme=dark] на <html> ставит скрипт из theme.ejs
    по prefers-color-scheme. Компоненты bootstrap перекрашиваются сами,
@@ -410,7 +569,9 @@ input:focus::placeholder {
    Цвета — через bootstrap-переменные: работает в тёмной теме. */
 .tournament-switch {
   position: relative;
-  display: inline-block;
+  /* inline-flex, а не inline-block: блок с line-height добавлял под кнопкой
+     строку-пустоту, и в ряду с названием турнира кнопка висела ниже центра */
+  display: inline-flex;
 }
 
 .tournament-switch-btn {
@@ -423,13 +584,20 @@ input:focus::placeholder {
   border-radius: 999px;
   background: var(--badmr-hero-type-bg);
   color: var(--badmr-hero-accent);
-  padding: 3px 11px;
+  padding: 2px 11px;
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1.4;
   cursor: pointer;
+}
+
+/* кубок чуть меньше текста — на дефолтном размере выглядит крупнее бейджа;
+   глиф внутри em-квадрата сидит чуть выше центра строки — компенсирую */
+.tournament-switch-btn .bi-trophy {
+  font-size: 0.85em;
+  transform: translateY(0.5px);
 }
 
 .tournament-switch-btn:hover {
@@ -471,8 +639,7 @@ input:focus::placeholder {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--bs-border-color);
+  padding: 10px 14px 0;
   position: sticky;
   top: 0;
   background: var(--bs-body-bg);
@@ -484,26 +651,66 @@ input:focus::placeholder {
   font-size: 14px;
 }
 
-.tournament-popup-seg {
-  display: inline-flex;
-  border: 1px solid var(--bs-border-color);
-  border-radius: 8px;
-  overflow: hidden;
+/* фильтры попапа — чипы одним переносимым рядом (макет C): статус обычные,
+   категория — с цветной точкой в цвет бейджа плитки */
+.tournament-popup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px 10px;
 }
 
-.tournament-popup-seg button {
-  border: none;
+.tournament-popup-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
   background: transparent;
   color: var(--bs-body-color);
   font-size: 12px;
-  padding: 4px 12px;
+  line-height: 1.4;
+  padding: 2px 11px;
   cursor: pointer;
 }
 
-.tournament-popup-seg button.on {
+.tournament-popup-chips button.on {
   background: var(--bs-body-color);
+  border-color: var(--bs-body-color);
   color: var(--bs-body-bg);
   font-weight: 600;
+}
+
+.tournament-popup-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+/* на активном (тёмном) чипе точка светлеет, чтобы осталась видимой */
+.tournament-popup-chips button.on .tournament-popup-dot {
+  filter: brightness(1.7) saturate(.65);
+}
+
+/* цвета категорий: детский — голубой, взрослые — фиолетовый; точка в чипе
+   и бейдж на плитке окрашены одинаково */
+.tournament-popup-dot.dot-u2 {
+  background: #8b5cf6;
+}
+
+.tournament-popup-dot.dot-u3 {
+  background: #0d6efd;
+}
+
+.tournament-tile-unit.unit-u2 {
+  background: color-mix(in srgb, #8b5cf6 15%, transparent);
+  color: #8b5cf6;
+}
+
+.tournament-tile-unit.unit-u3 {
+  background: color-mix(in srgb, #0d6efd 15%, transparent);
+  color: #0d6efd;
 }
 
 .tournament-popup-grid {
@@ -550,6 +757,18 @@ input:focus::placeholder {
 .tournament-tile-st.live {
   background: color-mix(in srgb, var(--bs-success) 18%, transparent);
   color: var(--bs-success);
+}
+
+/* отметка категории (unit) на плитке: «детский»/«взрослые»; у категории
+   «все» отметки нет */
+.tournament-tile-unit {
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 8px;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--bs-info) 15%, transparent);
+  color: var(--bs-info);
 }
 
 .tournament-tile-name {
@@ -745,6 +964,12 @@ body.desktop #tournament-new-registration-hint > .row {
   flex-wrap: wrap;
 }
 
+/* телефон: воздух между строкой логина (email + выход) и названием турнира —
+   строки соседние, без отступа сливаются в сплошной блок */
+body.phone .tournament-hero-name-row {
+  margin-top: 14px;
+}
+
 .tournament-hero-name-row .tournament-hero-name {
   margin-top: 0;
 }
@@ -833,6 +1058,14 @@ body.phone .toggler-row .toggler {
   position: static;
 }
 
+/* телефон: шапочный шеврон в потоке и его строка занимает 24px, из-за этого
+   пунктирная линия после свёрнутой карточки уезжает вниз на эту высоту.
+   Компенсирую margin-top, чтобы линия встала по центру глифа, как у
+   остальных блоков (там шеврон абсолютный поверх нулевой строки) */
+body.phone .container.pt-3 > .hr-dashed {
+  margin-top: -13px;
+}
+
 body.phone .tournament-hero-name {
   font-size: 1.2rem;
 }
@@ -877,6 +1110,25 @@ body.phone .tournament-hero .user {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* телефон: кнопка «Вход» в строке бейджа типа — компактная, как бейдж,
+   иначе (дефолтный .btn с крупным шрифтом и p-отступом внутри) она высокой
+   батоном уезжает на отдельную строку и торчит над рядом */
+.tournament-hero .login button > p {
+  margin: 0;
+}
+
+body.phone .tournament-hero form.login .btn {
+  font-size: 0.8rem;
+  padding: 2px 10px;
+}
+
+/* телефон: шеврон блока в потоке над карточкой; без отступа он вплотную
+   к таблице/контенту блока (шапка .pt-3 не трогается — под неё подогнан
+   компенсирующий margin-top её пунктирной линии) */
+body.phone .container:not(.pt-3) > .row > .toggler {
+  margin-bottom: 10px;
 }
 
 .player-window-link {
@@ -1395,6 +1647,16 @@ body.phone .select-board-score {
   cursor: text;
 }
 
+/* короткое имя: инпут правки — на всю строку, текст по центру, как у h5 */
+.player-window-shortname {
+  cursor: text;
+}
+
+.player-window-shortname input {
+  width: 100%;
+  text-align: center;
+}
+
 .match {
   margin: 1em 0 3em 0;
   position: relative;
@@ -1864,12 +2126,18 @@ body.phone .select-board-score {
   color: rgba(128, 128, 128, 0.3);
 }
 
-/* индикация калибровки рейтинга в таблице игроков: мини-бар прогресса
-   серии в стиле колонки «Сыграно» вместо прежней блёклой точки-светофора.
-   Красный (серия не начата) — пустой трек, тонированный красным;
-   жёлтый/зелёный — заливка цветом светофора */
+/* индикация калибровки рейтинга в таблице игроков: на десктопе мини-бар
+   прогресса серии в стиле колонки «Сыграно», на телефоне — маленькая
+   полупрозрачная точка-светофор (бар на телефоне не влезает в колонку).
+   Оба прижаты к правому краю колонки «Имя» (margin-left:auto во
+   флекс-обёртке .player-name-cell) */
 .player-calibration-bar {
   margin: 0 0 0 6px;
+}
+
+/* заливка калибровки прижата к правому краю: полоска тает слева направо */
+.player-calibration-bar i {
+  margin-left: auto;
 }
 
 .player-calibration-bar.player-calibration-red {
@@ -1888,16 +2156,40 @@ body.phone .select-board-score {
   background: rgba(25, 135, 84, 0.9);
 }
 
-/* индикаторы после имени (бар калибровки, за ним тортик) — у правого края
-   колонки «Имя»: всё содержимое ячейки в флекс-обёртке .player-name-cell
-   (player.js), бар получает margin-left:auto */
+.player-calibration {
+  font-size: 1.4em;
+  line-height: 0;
+}
+
+.player-calibration-red {
+  color: rgba(220, 53, 69, 0.45);
+}
+
+.player-calibration-yellow {
+  color: rgba(255, 193, 7, 0.55);
+}
+
+.player-calibration-green {
+  color: rgba(25, 135, 84, 0.45);
+}
+
 #player-table .player-name-cell {
   display: flex;
   align-items: center;
 }
 
-#player-table .player-calibration-bar {
+#player-table .player-calibration-bar,
+#player-table .player-calibration {
   margin-left: auto;
+}
+
+/* телефон — точка, десктоп — бар */
+body.phone #player-table .player-calibration-bar {
+  display: none;
+}
+
+body:not(.phone) #player-table .player-calibration {
+  display: none;
 }
 
 /* еле заметный тортик со свечами в самом конце колонки «Имя» (#54) */

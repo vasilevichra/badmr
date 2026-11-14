@@ -34,11 +34,11 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
     showRefresh: loggedInUser && isNotPhone(),
     undefinedText: '<math><mo>&minus;</mo></math>',
     onPostBody: () => {
-      // если содержимое ячейки имени не вмещается (длинное ФИО), бар
+      // если содержимое ячейки имени не вмещается (длинное ФИО), точку
       // калибровки прячем — имя важнее; перепроверяется после каждой
       // перерисовки тела таблицы (загрузка, сортировка, поиск)
       document.querySelectorAll('#player-table .player-name-cell').forEach(cell => {
-        const bar = cell.querySelector('.player-calibration-bar');
+        const bar = cell.querySelector('.player-calibration');
         if (bar) bar.classList.toggle('d-none', cell.scrollWidth - cell.clientWidth > 1);
       });
     },
@@ -71,22 +71,28 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         title: '<span class="no-selection">Имя</span>',
         sortable: true,
         formatter: (value, row) => {
-            // индикация калибровки рейтинга: мини-бар в стиле «Сыграно»,
-            // работает на убывание — заливка показывает, сколько матчей
-            // серии осталось. Красный — начало (до 1/3 сыграно), жёлтый —
-            // середина (1/3–2/3), зелёный — конец серии (от 2/3);
-            // после последнего матча серии бар исчезает.
-            // У завершённого турнира бара нет — калибровка по законченным
-            // матчам уже не актуальна (#53)
-            const bar = row.calibrating && row.calibration_series < calibrationMatches && tournamentStatus() !== 3
-                ? '<span class="player-matches-bar player-calibration-bar player-calibration-' +
-                  (row.calibration_series === 0 || calibrationMatches <= 0 || row.calibration_series / calibrationMatches < 1 / 3
-                      ? 'red'
-                      : row.calibration_series / calibrationMatches < 2 / 3 ? 'yellow' : 'green') +
-                  '" title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"><i style="width:' +
-                  (calibrationMatches > 0 ? Math.min(100, Math.round(100 * (calibrationMatches - row.calibration_series) / calibrationMatches)) : 0) +
-                  '%"></i></span>'
+            // индикация калибровки рейтинга: на десктопе — мини-бар в стиле
+            // «Сыграно» (заливка тает слева направо), на телефоне —
+            // ненавязчивая точка-светофор. Оба рендерятся всегда, видимость
+            // разграничивает CSS (body.phone); цвет по доле сыгранных матчей
+            // серии: красный — начало (до 1/3), жёлтый — середина (1/3–2/3),
+            // зелёный — серия близка к концу (от 2/3); после последнего
+            // матча серии индикатор исчезает.
+            // У завершённого турнира индикатора нет — калибровка по
+            // законченным матчам уже не актуальна (#53)
+            const calibrating = row.calibrating && row.calibration_series < calibrationMatches && tournamentStatus() !== 3;
+            const color = calibrating
+                ? (row.calibration_series === 0 || calibrationMatches <= 0 || row.calibration_series / calibrationMatches < 1 / 3
+                    ? 'red'
+                    : row.calibration_series / calibrationMatches < 2 / 3 ? 'yellow' : 'green')
                 : '';
+            const title = 'title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"';
+            const indicator = !calibrating
+                ? ''
+                : '<span class="player-matches-bar player-calibration-bar player-calibration-' + color + '" ' + title + '><i style="width:' +
+                  (calibrationMatches > 0 ? Math.min(100, Math.round(100 * (calibrationMatches - row.calibration_series) / calibrationMatches)) : 0) +
+                  '%"></i></span>' +
+                  '<i class="bi bi-dot player-calibration player-calibration-' + color + '" ' + title + '></i>';
             // всё содержимое ячейки — в одном флекс-span (.player-name-cell):
             // бар калибровки прижимается margin-left:auto к правому краю
             // колонки «Имя», за ним тортик; кнопки настроек — в контейнере
@@ -94,7 +100,7 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
             // рисуются по нажатию «Настройки»
             return '<span class="player-name-cell">' +
                 this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()) +
-                bar +
+                indicator +
                 // еле заметный тортик со свечами в самом конце колонки —
                 // у того, чей день рождения на текущей неделе (#54)
                 (isBirthdayThisWeek(row.birthday)

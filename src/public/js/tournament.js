@@ -56,6 +56,13 @@ $('#tournament-add-select-type')
   },
 });
 
+// категории (unit) отрендерены сервером в modal/tournament/add.ejs
+$('#tournament-add-select-unit')
+.select2({
+  dropdownParent: $('#tournament-add'),
+  minimumResultsForSearch: Infinity,
+});
+
 if (loggedInUser) {
   $('#tournament-add input[name=user]').attr('value', loggedInUser.id);
 }

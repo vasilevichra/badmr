@@ -385,6 +385,51 @@ $(document).ready(() => {
           .fail(() => field.text(original));
     });
 
+    // короткое имя в карточке редактируется по клику так же, как дата
+    // рождения: Enter или смена фокуса — сохранить, Esc — отмена;
+    // пустой ввод — сброс (строка возвращается к «не задано»)
+    $('#player-window').on('click', '.player-window-shortname', function () {
+      const field = $(this);
+      if (field.find('input').length) return;
+      const original = String(field.data('original-text'));
+      field.data('original', original)
+          .data('original-html', field.html())
+          .removeData('cancelled')
+          .html($('<input>', {type: 'text', class: 'form-control form-control-sm', value: original, placeholder: 'Юра, Лиза…'}));
+      const input = field.find('input').get(0);
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    });
+
+    $('#player-window').on('keydown', '.player-window-shortname input', function (event) {
+      if (event.key === 'Escape') {
+        $(this).closest('.player-window-shortname').data('cancelled', true);
+        $(this).trigger('blur');
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        $(this).trigger('blur');
+      }
+    });
+
+    $('#player-window').on('blur', '.player-window-shortname input', function () {
+      const input = $(this);
+      const field = input.closest('.player-window-shortname');
+      if (!field.length) return;
+      const cancelled = field.data('cancelled');
+      const original = String(field.data('original-text'));
+      const originalHtml = String(field.data('original-html'));
+      const shortname = String(input.val()).trim();
+      // ввод закрывается сразу: разметка возвращается к исходной (иконка +
+      // имя); после сохранения карточка перезагружается — иконка и
+      // data-original-text в разметке обновятся вместе с ней
+      field.html(originalHtml).removeData('cancelled').removeData('original').removeData('original-html');
+      if (cancelled || shortname === original) return;
+      const userId = field.data('user-id');
+      $.post(`/api/users/shortname/${userId}`, {shortname: shortname})
+          .done(() => openPlayerWindow(userId))
+          .fail(() => {});
+    });
+
   }
 
   // название турнира в шапке (hero) редактируется по клику под админом:
@@ -462,15 +507,13 @@ $(document).ready(() => {
         popup.css({top: '', right: ''});
       } else {
         const rect = switchBtn[0].getBoundingClientRect();
-        popup.css({top: rect.bottom + 6, right: Math.max(8, window.innerWidth - rect.right)});
         popup.removeAttr('hidden');
-        // правое краевое позиционирование тянет попап влево от кнопки;
-        // если он вылез за левый край (кнопка у левого края окна) —
-        // раскрываем в другую сторону: левый край от кнопки, но не дальше
-        // 8px от правого края вьюпорта
-        if (popup[0].getBoundingClientRect().left < 8) {
-          popup.css({right: '', left: Math.min(rect.left, window.innerWidth - popup[0].offsetWidth - 8)});
-        }
+        // попап раскрывается от левого края кнопки вправо (кнопка стоит
+        // в ряду с названием, у левого края шапки — правое краевое
+        // позиционирование уводило попап через весь экран); если не
+        // влезает — прижимаем к правому краю вьюпорта с отступом 8px
+        const left = Math.max(8, Math.min(rect.left, window.innerWidth - popup[0].offsetWidth - 8));
+        popup.css({top: rect.bottom + 6, right: '', left: left});
         switchBtn.attr('aria-expanded', 'true');
         return;
       }
@@ -484,12 +527,25 @@ $(document).ready(() => {
     $(window).on('scroll resize', () => {
       if (popup.attr('hidden') === undefined) closePopup();
     });
-    popup.find('.tournament-popup-seg button').on('click', function () {
-      popup.find('.tournament-popup-seg button').removeClass('on');
-      $(this).addClass('on');
-      const filter = $(this).data('filter');
+    popup.find('.tournament-popup-chips button').on('click', function () {
+      // два независимых фильтра — статус и категория (unit); плитка видна,
+      // когда проходит оба. У категории отдельного чипа «все» нет: повторный
+      // клик по активному чипу сбрасывает фильтр
+      const isUnit = this.dataset.filter === undefined;
+      const attr = isUnit ? 'data-unit' : 'data-filter';
+      const $same = popup.find(`.tournament-popup-chips button[${attr}]`);
+      if (isUnit && $(this).hasClass('on')) {
+        $(this).removeClass('on');
+      } else {
+        $same.removeClass('on');
+        $(this).addClass('on');
+      }
+      const filter = popup.find('.tournament-popup-chips button.on[data-filter]').data('filter') ?? 'all';
+      const unit = popup.find('.tournament-popup-chips button.on[data-unit]').data('unit') ?? 0;
       popup.find('.tournament-tile').each((i, el) => {
-        $(el).toggleClass('d-none', filter !== 'all' && $(el).data('group') !== filter);
+        const $el = $(el);
+        $el.toggleClass('d-none', (filter !== 'all' && $el.data('group') !== filter) ||
+                                  (unit !== 0 && $el.data('unit') !== unit));
       });
     });
     popup.find('.tournament-tile').on('click keydown', (e) => {

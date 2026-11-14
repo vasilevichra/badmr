@@ -3,7 +3,8 @@
   const playerNameFormatter = (id, name, sex, pic, isMobile = false) => {
     if (isMobile) {
       const names = name.split(/\s/);
-      name = `${names[0]} ${names[1].charAt(0)}.`;
+      // имя может прийти уже коротким («Юра» или «Юра В.») — второго слова нет
+      name = names[1] ? `${names[0]} ${names[1].charAt(0)}.` : names[0];
     }
 
     return `<span class="no-selection text-nowrap">${playerAvatarFormatter(pic, name, sex)}&nbsp;${name}` + (isMobile ? '</span>' : `<span class="secondary-info">&nbsp;#<span class="user-id">${id}</span></span></span>`);

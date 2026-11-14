@@ -147,6 +147,7 @@ CREATE TABLE user
     lastname        TEXT    NOT NULL,
     firstname       TEXT    NOT NULL,
     patronymic      TEXT,
+    shortname       TEXT,
     phone           TEXT UNIQUE,
     email           TEXT UNIQUE,
     hashed_password BLOB,

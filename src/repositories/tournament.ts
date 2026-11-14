@@ -109,6 +109,7 @@ class Tournament {
     // счётчики игроков/матчей на плитку
     return this.db.all(
         `SELECT t.*, c.name AS city, tt.name AS type_name, ts.name AS status_name,
+                u.name AS unit_name,
                 g.latitude, g.longitude, g.address, g.map_url,
                 (SELECT count(*) FROM tournament_user tu WHERE tu.tournament_id = t.id) AS players_count,
                 (SELECT count(*) FROM match m WHERE m.tournament_id = t.id) AS matches_count
@@ -117,6 +118,7 @@ class Tournament {
                   JOIN city c ON c.id = g.city_id
                   JOIN tournament_type tt ON tt.id = t.tournament_type_id
                   JOIN tournament_status ts ON ts.id = t.tournament_status_id
+                  JOIN unit u ON u.id = t.unit_id
          ORDER BY id DESC`
     );
   }

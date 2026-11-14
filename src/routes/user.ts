@@ -12,9 +12,9 @@ const tournamentService = new TournamentService();
 // const parseForm = Express.urlencoded({ extended: false });
 
 router.post('/create', (req, res) => {
-  const {ln, fn, pn, account, rate, sex, city, bd, tel, mail} = req.body;
+  const {ln, fn, pn, sn, account, rate, sex, city, bd, tel, mail} = req.body;
   const userSex = sex === 'on' ? 1 : 0;
-  res.promise(userService.create(ln, fn, pn, account ? 1.4 * Number(rate) : rate, userSex, city, bd));
+  res.promise(userService.create(ln, fn, pn, account ? 1.4 * Number(rate) : rate, userSex, city, bd, sn || null));
 });
 
 router.get('/find', (req, res) => {
@@ -130,6 +130,16 @@ router.post('/birthday/:id', ensureLoggedIn(), (req, res) => {
     return res.status(400).json({error: 'нужна дата в формате ГГГГ-ММ-ДД'});
   }
   res.promise(userService.setBirthday(Number(req.params.id), birthday));
+});
+
+// короткое имя из карточки игрока редактируется по клику под админом;
+// пустое значение — сброс (NULL)
+router.post('/shortname/:id', ensureLoggedIn(), (req, res) => {
+  const shortname = String(req.body.shortname || '').trim();
+  if (shortname.length > 30) {
+    return res.status(400).json({error: 'короткое имя длиннее 30 символов'});
+  }
+  res.promise(userService.setShortname(Number(req.params.id), shortname || null));
 });
 
 router.post('/lab', (req, res) => {
