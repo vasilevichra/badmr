@@ -194,7 +194,7 @@
                     <% } %>
                     <% if (current_tournament.latitude && current_tournament.longitude) { %><button class="btn btn-xs bi-copy coords-copy" data-coords="<%= current_tournament.latitude %>, <%= current_tournament.longitude %>" title="Скопировать координаты" aria-label="Скопировать координаты"></button><% } %>
                 </span>
-                <span class="tournament-hero-chip"><i class="bi bi-people"></i> <span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %></span>
+                <span class="tournament-hero-chip"><i class="bi bi-people"></i><span class="registered-count"><%= registered_count %></span>/<%= settings.capacity %></span>
                 <span class="tournament-hero-chip"><i class="bi bi-activity"></i> <%= settings.r_min %>–<%= settings.r_max %></span>
                 <% if (tournament_type !== 2) { %>
                     <span class="tournament-hero-chip"><i class="bi bi-hash"></i> <%= Number(settings.calibration_matches) > 0 ? settings.calibration_matches + '/' : '' %><%= Number(settings.matches) > 0 ? settings.matches : '∞' %></span>
