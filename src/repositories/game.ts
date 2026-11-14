@@ -235,6 +235,11 @@ class Game {
         `SELECT score_1, score_2 FROM game WHERE id = ?`,
         [g.id]
     )!;
+    // уменьшать было нечего (счёт уже 0): очка не было — подачу и чётность
+    // не откатываем, иначе повторный свайп вниз на 0:0 свапнет пару
+    if (updated[`score_${scorer}`] === g[`score_${scorer}`]) {
+      return this.state(match_id, g);
+    }
     // подача и чётность до корректировки (null — база/не задана)
     const even = {1: g.even_1_user_id ?? match.user_1_id, 2: g.even_2_user_id ?? match.user_3_id};
     const servingTeam = g.serve_user_id

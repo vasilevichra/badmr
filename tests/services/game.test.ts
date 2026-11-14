@@ -203,6 +203,22 @@ describe("Game", () => {
     });
   });
 
+  describe("decreaseCurrentByMatchId", () => {
+    it("повторное уменьшение на 0:0 не свапает чётность (счёт не меняется — подачи и чётность не откатываются)", async () => {
+      const { ids, matchId } = await seedUnfinishedMatch();
+      await gameService.setCurrentServeByMatchId(matchId, ids[0]);
+      await gameService.increaseCurrentByMatchId(matchId, "1");
+      const after = await gameService.decreaseCurrentByMatchId(matchId, "1") as { even_1_user_id: number };
+
+      // баг: счёт уже 0, UPDATE не срабатывает, но откат подачи/чётности
+      // по эвристике «очко выиграно подачей» выполнялся — пара свапалась
+      const again = await gameService.decreaseCurrentByMatchId(matchId, "1") as { even_1_user_id: number, score_1: number };
+
+      assert.strictEqual(again.even_1_user_id, after.even_1_user_id);
+      assert.strictEqual(again.score_1, 0);
+    });
+  });
+
   describe("increaseCurrentByTeamIds", () => {
     it("должен увеличить счёт первой команды", async () => {
       const { team1, team2, match110Id } = await seedMatch110();
