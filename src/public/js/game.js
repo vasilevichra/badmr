@@ -627,6 +627,21 @@ document.addEventListener('touchstart', (e) => {
   if (state) state._touch = e.changedTouches[0].clientY;
 }, {passive: true});
 
+// скролл подменяет touchend на touchcancel — свайп по счёту/игроку
+// теряется; жёстко гасим перемещение для жестов, начавшихся на них
+// (touch-action: none в CSS внутри повёрнутого контейнера iOS
+// надёжно не работает), и сбрасываем стартовые координаты при отмене
+document.addEventListener('touchmove', (e) => {
+  if (e.target.closest?.('.game-board-score, .board-player')) e.preventDefault();
+}, {passive: false});
+
+document.addEventListener('touchcancel', () => {
+  for (const s of gameBoardState.values()) {
+    s._touch = null;
+    s._playerTouch = null;
+  }
+});
+
 document.addEventListener('touchend', (e) => {
   const scoreEl = e.target.closest?.('.game-board-score') ?? null;
   if (!scoreEl) return;

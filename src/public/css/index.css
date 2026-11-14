@@ -2109,6 +2109,7 @@ a.lab-profile:hover {
 .board-parity {
   position: absolute;
   left: -15px;
+  /* центр аватарки 60px: (60 − 12) / 2 */
   bottom: 24px;
   width: 12px;
   height: 12px;
@@ -2128,6 +2129,8 @@ a.lab-profile:hover {
   /* видимый зазор от аватара = как у двух палочек: 3px бокса + 2.2px
      внутреннего отступа SVG-контента палочек */
   right: -15.2px;
+  /* на 1px ниже палочек: кружок 10px против 10px видимых палочек
+     в 12px боксе */
   bottom: 25px;
   /* 10px — видимая высота палочек (SVG занимает 10 из 12px бокса):
      кружок выглядит ровно на одной высоте с ними */
@@ -2150,12 +2153,49 @@ a.lab-profile:hover {
   cursor: pointer;
 }
 
+/* всё ниже — только телефон: десктопное табло в покое. Как у табло 110:
+   контент ровно в экран — row.vh-100 вместе с дефолтным паддингом
+   modal-body давали вертикальный скролл */
+body.phone .game-board-modal .modal-body {
+  overflow: hidden;
+  padding: 0 0 0 0 !important;
+  margin: 0 0 0 0 !important;
+}
+
 /* свайпы по игрокам (свап чётности) и по полю счёта (минус очко) не
    должны превращаться в скролл модалки: она не всегда на весь экран,
    а скролл перехватывает жест до touchend */
-.game-board-modal .board-player,
-.game-board-modal .game-board-score {
+body.phone .game-board-modal .board-player,
+body.phone .game-board-modal .game-board-score {
   touch-action: none;
+}
+
+/* аватарки игроков Новой лиги мельче, чем на табло 110 (60px) —
+   освобождаем место крупным ФИ */
+body.phone .game-board-modal .board-player-avatar img {
+  width: 44px;
+  height: 44px;
+}
+
+/* ФИ крупнее базовых 1.6vh (десктоп) */
+body.phone .game-board-modal .board-player-name {
+  font-size: 2.4vh;
+}
+
+/* телефон: аватарки 44px — палочки и кружок подачи пересажены
+   по центру новой аватарки */
+body.phone .game-board-modal .board-parity {
+  bottom: 16px;
+}
+
+body.phone .game-board-modal .board-serve {
+  bottom: 17px;
+}
+
+/* контейнер аватаров под 44px-аватарки (базовые 10vh на низких
+   экранах уже аватарки) */
+body.phone .game-board-modal .game-board-avatars {
+  height: 12vh;
 }
 
 /* Табло на телефоне — принудительный альбом: сама страница экран не
@@ -2313,7 +2353,7 @@ a.lab-profile:hover {
   }
 
   body.phone .game-board-modal .game-board-avatars {
-    height: 10vw;
+    height: 12vw;
   }
 
   body.phone .game-board-modal .board-score {
@@ -2322,7 +2362,7 @@ a.lab-profile:hover {
   }
 
   body.phone .game-board-modal .board-player-name {
-    font-size: 1.6vw;
+    font-size: 2.4vw;
   }
 }
 
