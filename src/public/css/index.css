@@ -1308,9 +1308,10 @@ body.phone .tournament {
   cursor: pointer;
 }
 
-/* аватар в строке имени — по центру строки текста */
+/* аватар в строке имени — по центру строки текста (16px шрифт,
+   24px строка) */
 .select-baro-pic {
-  vertical-align: -6px;
+  vertical-align: -4px;
   border-radius: 50%;
 }
 
@@ -1500,7 +1501,7 @@ body.phone .select-baro-pic {
   /* аватарка — как в таблице «Игроки» (20px); --baro-fit — см. выше */
   width: calc(20px * var(--baro-fit, 1));
   height: calc(20px * var(--baro-fit, 1));
-  vertical-align: calc(-6px * var(--baro-fit, 1));
+  vertical-align: calc(-4px * var(--baro-fit, 1));
 }
 
 body.phone .select-baro-chip {
@@ -1586,12 +1587,19 @@ body.phone .select-board-score {
 }
 
 /* Общее правило (не device-специфичное): чекбокс «выбрать всех» в шапке
-   таблицы игроков — по центру колонки (bootstrap-table прижимает его
-   влево внутри .th-inner) */
-#player-table thead th.bs-checkbox .th-inner .form-check-input {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+   таблицы игроков — ровно по центру колонки. margin-auto не работает:
+   .form-check несёт padding-left 1.5em (чекбокс уезжает вправо), а место
+   под каретку сортировки сдвигает обёртку влево — поэтому абсолют */
+#player-table thead th.bs-checkbox {
+  position: relative;
+}
+
+#player-table thead th.bs-checkbox .form-check-input {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
 
 /* «Сыграно» при лимите матчей турнира: мини-бар прогресса перед числом
