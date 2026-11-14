@@ -2409,22 +2409,21 @@ body.phone .game-board-modal .game-board-avatars {
 
   /* колонка номеров и свапа — ровно по высоте счёта: общее 110-правило
      задаёт .board-game-types height 73vh, но в повороте vh — длинная
-     сторона экрана и колонка вытягивается вниз; 73vw = высоте счёта —
-     justify-center отцентрует их по середине счёта */
+     сторона экрана и колонка вытягивается вниз; 73vw = высоте счёта.
+     Номера зафиксированы от верха колонки (центр блока 25.25 + 22.5/2
+     = 36.5vw = середина счёта): скрытие/показ свапа при старте игры
+     больше не двигает номера */
   body.phone .game-board-modal .game-board-types {
     height: 73vw;
     margin-top: 0;
-    /* свап в потоке над номерами (absolute налезал на них): padding
-       снизу компенсирует его высоту с зазором — номера остаются
-       отцентрованы по счёту */
-    padding-bottom: 13vw;
+    justify-content: flex-start;
+    padding-top: 25.25vw;
   }
 
+  /* свап — по центру между верхом колонки и номерами игр (25.25/2) */
   body.phone .game-board-modal .board-swap {
-    position: static;
-    top: auto;
-    transform: none;
-    margin-bottom: 5vw;
+    top: 12.6vw;
+    transform: translate(-50%, -50%);
   }
 
   body.phone .game-board-modal .board-player-name {
