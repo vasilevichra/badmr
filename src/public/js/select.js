@@ -159,7 +159,8 @@ const renderReadyForms = (ready) => {
     }
 
     // бейдж корта между половинками
-    $(`#select-baro-court-${i}`).text(field.court ? `Корт №${field.court}` : 'Корт —');
+    // бейдж корта: на телефоне — только номер (место в плашке ограничено)
+    $(`#select-baro-court-${i}`).text(field.court ? (isPhone() ? `${field.court}` : `Корт №${field.court}`) : 'Корт —');
 
     // превью-табло кандидатуры: составы пар и корт, счёт 0:0
     $(`#select-board-title-${i}`).text(`Корт №${field.court ?? '—'} · кандидатура ${i + 1}`);
