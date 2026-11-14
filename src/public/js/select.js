@@ -136,19 +136,18 @@ const renderReadyForms = (ready) => {
     $(`#select-baro-col-1-${i}, #select-baro-col-2-${i}`)
         .css('width', `${barWidth}px`);
 
-    // телефон: если плашка шире экрана — пропорционально ужимаем шрифт
-    // и аватарки (CSS var --baro-fit), каждый раз пересчитывая ширины
-    // строк по новому шрифту; пол в 0.55 — ниже текст нечитаем
+    // телефон: плашка растянута на ширину экрана (CSS); если строки с
+    // ФИ и аватарками не умещаются — пропорционально ужимаем шрифт и
+    // аватарки (CSS var --baro-fit), каждый раз пересчитывая ширины
+    // строк по новому шрифту; пол в 0.55 — ниже текст нечитаем.
+    // Переполнение меряем scrollWidth: ширина плашки теперь задана CSS
     if (isPhone()) {
       const baro = $(`#select-form-${i} .select-baro`).get(0);
-      const block = document.getElementById('select-block');
-      if (baro && block) {
-        // .select-form: margin 0 7px по бокам
-        const avail = block.clientWidth - 14;
+      if (baro) {
         let fit = 1;
         baro.style.setProperty('--baro-fit', fit);
-        for (let guard = 0; guard < 6 && baro.offsetWidth > avail && fit > 0.55; guard++) {
-          fit = Math.max(0.55, fit * avail / baro.offsetWidth);
+        for (let guard = 0; guard < 6 && baro.scrollWidth > baro.clientWidth && fit > 0.55; guard++) {
+          fit = Math.max(0.55, fit * baro.clientWidth / baro.scrollWidth);
           baro.style.setProperty('--baro-fit', fit);
           const lines = $(`#select-form-${i} .select-baro-name`).toArray();
           lines.forEach(el => { el.style.width = ''; });

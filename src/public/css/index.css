@@ -956,6 +956,17 @@ body.phone .select-baro-sigma {
   font-size: 14px;
 }
 
+/* телефон: плашка подбора — на всю ширину экрана (форма block вместо
+   inline-block), ФИ и аватарки подгоняет fit-логика в select.js */
+body.phone .select-form {
+  display: block;
+}
+
+body.phone .select-baro {
+  width: auto;
+  max-width: none;
+}
+
 /* телефон: в строках барометра рейтинг и число матчей не показываем —
    экономим ширину плашки (рейтинг/матчи видны в таблице «Игроки») */
 body.phone .select-baro-name .secondary-info {
@@ -2384,18 +2395,25 @@ body.phone .game-board-modal .game-board-avatars {
 
   /* номера игр крупнее (базовые 1.6vw/2.2vw на телефоне — 6-8px) */
   body.phone .game-board-modal .board-game-type {
-    font-size: 4vw;
+    font-size: 4.5vw;
   }
 
   body.phone .game-board-modal .board-game-type-current {
-    font-size: 5.5vw;
+    font-size: 6vw;
   }
 
-  /* центр колонки номеров — на середине высоты счёта: колонка тянется
-     на высоту ряда (100vw в повороте), нижний отступ (100vw − 73vw)
-     поднимает центр блока номеров с 50vw до 36.5vw */
+  /* колонка номеров и свапа — ровно по высоте счёта: общее 110-правило
+     задаёт .board-game-types height 73vh, но в повороте vh — длинная
+     сторона экрана и колонка вытягивается вниз; 73vw = высоте счёта —
+     justify-center отцентрует их по середине счёта */
   body.phone .game-board-modal .game-board-types {
-    margin-bottom: 27vw;
+    height: 73vw;
+    margin-top: 0;
+  }
+
+  body.phone .game-board-modal .board-swap {
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 
   body.phone .game-board-modal .board-player-name {
