@@ -44,3 +44,8 @@ DELETE FROM user WHERE id > 127;
 
 -- текущим остаётся тестовый турнир 4
 UPDATE tournament SET current = CASE WHEN id = 4 THEN 1 ELSE 0 END;
+
+-- имена турниров тоже уводятся живым дампом (прод переименовывает),
+-- тесты ожидают фикстурные
+UPDATE tournament SET name = 'ДЗР-Д' WHERE id = 3;
+UPDATE tournament SET name = 'Новая Лига' WHERE id = 4;

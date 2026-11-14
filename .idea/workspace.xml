@@ -5,46 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7fcbda41-1436-4905-973a-6a7a3b93c845" name="Changes" comment="Fix #30">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/978de13b-7b33-4ced-9ffd-bdc6db058358/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/bc89c158-04fe-4206-88f3-974aa10e2c2b.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/bc89c158-04fe-4206-88f3-974aa10e2c2b/storage_v2/_src_/schema/main.uQUzAA.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/bc89c158-04fe-4206-88f3-974aa10e2c2b/storage_v2/_src_/schema/main.uQUzAA.zip" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/01-tables-up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/01-tables-up.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/03-data-up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/03-data-up.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/04-triggers-up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/04-triggers-up.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/bin/sync.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/src/bin/sync.mjs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/css/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/js/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/game.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/js/group.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/group.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/js/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/js/lib.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/lib.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/js/player.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/player.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/js/select.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/js/select.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/views/index.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/index.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/views/modal/player/id.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/modal/player/id.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/views/social.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/social.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/views/tournament-label.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament-label.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/achievements.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/achievements.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/game-form.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/game-form.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/public/views/tournament/new/select-form.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/public/views/tournament/new/select-form.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/game.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/game.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/tournament.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/tournament.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/game.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/game.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/tournament.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/tournament.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/routes/user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/game.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/game.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/tournament.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/tournament.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/routes/player.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/routes/player.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/services/game.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/services/game.test.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

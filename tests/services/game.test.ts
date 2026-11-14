@@ -177,6 +177,27 @@ describe("Game", () => {
       assert.strictEqual(await gameService.getCurrentByTeamIds(1, 3), undefined);
     });
 
+  describe("swapCurrentEvenByMatchId", () => {
+    it("должен поменять чётность пары при 0:0", async () => {
+      const { ids, matchId } = await seedUnfinishedMatch();
+
+      const result = await gameService.swapCurrentEvenByMatchId(matchId, "1") as { even_1_user_id: number };
+
+      assert.strictEqual(result.even_1_user_id, ids[1]);
+    });
+
+    it("не должен менять чётность при ненулевом счёте", async () => {
+      const { ids, matchId } = await seedUnfinishedMatch();
+      await gameService.increaseCurrentByMatchId(matchId, "1");
+
+      const result = await gameService.swapCurrentEvenByMatchId(matchId, "1");
+      const game = await gameService.getCurrentByMatchId(matchId) as { even_1_user_id: number | null };
+
+      assert.strictEqual(result, null);
+      assert.strictEqual(game.even_1_user_id, ids[0]);
+    });
+  });
+
     it("должен вернуть пустой ответ когда матча между командами нет", async () => {
       assert.strictEqual(await gameService.getCurrentByTeamIds(1, 2), undefined);
     });

@@ -303,8 +303,9 @@ class Game {
 
   /** Ручной свап чётности кортов пары (судья свайпом по игроку): игроки
    *  пары меняются кортами — even_X_user_id становится напарник.
-   *  Подача (кто подаёт) не меняется — меняется только корт. Игра при
-   *  отсутствии создаётся (чётность базы, подача не задана). */
+   *  Только при 0:0 (коррекция стартовой расстановки). Если подаёт игрок
+   *  свапаемой пары, подача переезжает на корт по чётности счёта пары.
+   *  Игра при отсутствии создаётся (чётность базы, подача не задана). */
   swapCurrentEvenByMatchId(match_id: number, team_number: string) {
     const match = this.db.get<{ id: number, finished: number, user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number }>(
         `SELECT id, finished, user_1_id, user_2_id, user_3_id, user_4_id FROM match WHERE id = ?`,
@@ -314,6 +315,10 @@ class Game {
     const team = (team_number === "1" ? 1 : 2) as 1 | 2;
     const roster = {1: [match.user_1_id, match.user_2_id], 2: [match.user_3_id, match.user_4_id]};
     let g = this.getCurrentByMatchId(match_id);
+    // свап чётности — коррекция стартовой расстановки, только при 0:0:
+    // при идущем счёте чётность и подача определяются очками, ручной
+    // перенос сломал бы инвариант «подаёт по чётности счёта»
+    if (g && g.id !== null && (g.score_1 !== 0 || g.score_2 !== 0)) return null;
     if (!g || g.id === null) {
       this.db.run(
           `INSERT INTO game (match_id, current, even_1_user_id, even_2_user_id, serve_user_id)

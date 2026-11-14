@@ -644,9 +644,13 @@ $(document).on('click', '.game-board-score', function () {
 });
 
 // свап чётности пары (общий для десктоп-клика и мобильного свайпа):
-// игроки пары меняются кортами, подача (кто подаёт) не меняется
+// игроки пары меняются кортами, подача следует за чётностью счёта пары.
+// Только при 0:0 — при идущем счёте чётность определяют очки
 const swapPlayerParity = (playerEl) => {
   const matchId = Number(playerEl.closest('.modal').id.replace('game-board-', ''));
+  const modal = playerEl.closest('.modal');
+  const scores = [...modal.querySelectorAll('.game-board-score')].map(el => Number(el.textContent));
+  if (scores.some(s => s !== 0)) return;
   const team = playerEl.closest('.game-board-col')?.querySelector('.game-board-score')?.getAttribute('data-team-number');
   if (!team) return;
   $.post(`/api/games/current/swap?match_id=${matchId}&team_number=${team}`,

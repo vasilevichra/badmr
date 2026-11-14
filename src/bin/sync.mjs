@@ -93,7 +93,13 @@ const syncProdToDev = () => {
         continue;
       }
       dev.exec(`DELETE FROM main."${t}";`);
-      dev.exec(`INSERT INTO main."${t}" SELECT * FROM sync."${t}";`);
+      // копируем по именам колонок (в порядке dev), а не SELECT *:
+      // порядок колонок в прод-базе может отличаться от dev (миграция
+      // вставляет новые колонки в середину, ALTER на живой базе — в конец)
+      const prodCols = new Set(columns(prod, t).map(c => c.name));
+      const shared = columns(dev, t).map(c => c.name).filter(c => prodCols.has(c))
+          .map(c => `"${c}"`);
+      dev.exec(`INSERT INTO main."${t}" (${shared.join(", ")}) SELECT ${shared.join(", ")} FROM sync."${t}";`);
       synced.push(t);
     }
     // выравниваем счётчики автоинкремента по фактическому max(id)
