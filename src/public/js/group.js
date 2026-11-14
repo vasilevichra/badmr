@@ -534,6 +534,20 @@ const restoreBoardScores = (modal) => {
     right.textContent = game.score_2;
     const swap = modal.querySelector('.board-swap');
     if (swap && (game.score_1 !== 0 || game.score_2 !== 0)) swap.hidden = true;
+    // строка текущего разряда — по состоянию игры на сервере: матч мог
+    // уйти на следующий разряд, пока табло было закрыто
+    const rows = Array.from(modal.querySelectorAll('.board-game-types .board-game-type'))
+        .filter(r => r.textContent.trim() !== '•');
+    const target = rows[game.game_type_pos];
+    const current = modal.querySelector('.board-game-type-current');
+    if (target && current && target !== current) {
+      current.classList.remove('board-game-type-current');
+      target.classList.add('board-game-type-current');
+      markBoardPlayedTypes(modal);
+      updateBoardAvatars(modal);
+    }
+    // чётность/подача текущей строки — в общее состояние табло (lib.js)
+    updateBoard110State(modal, game);
   });
 };
 $(document).on('shown.bs.modal', '[id^="tournament-groups-board-"]', event => {

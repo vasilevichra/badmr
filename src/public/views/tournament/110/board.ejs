@@ -52,7 +52,7 @@
                                 <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>
                                     <div class="col-auto px-1" data-type="<%= avatarType %>" hidden>
                                         <% teamAvatars[0][avatarType].forEach(player => { %>
-                                            <div class="board-player">
+                                            <div class="board-player" data-user-id="<%= player.id %>">
                                                 <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
                                                 <div class="board-player-name"><%= player.name %></div>
                                             </div>
@@ -89,7 +89,7 @@
                                 <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>
                                     <div class="col-auto px-1" data-type="<%= avatarType %>" hidden>
                                         <% teamAvatars[1][avatarType].forEach(player => { %>
-                                            <div class="board-player">
+                                            <div class="board-player" data-user-id="<%= player.id %>">
                                                 <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
                                                 <div class="board-player-name"><%= player.name %></div>
                                             </div>

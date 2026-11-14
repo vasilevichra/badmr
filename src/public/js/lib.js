@@ -197,19 +197,91 @@ const playerRatingGroupsStyle = (rating, B_max, C_max, D_max, E_max, F_max, G_ma
 
 const date2DatabaseFormat = (date = new Date()) => date.toISOString().replace('T', ' ').substring(0, 19);
 
+// ===== живое табло 110: чётность кортов и подача =====
+
+// разметка маркеров — как на табло Новой лиги (game.js): палочки корта
+// у пар (две — чётный/правый корт, одна — нечётный/левый), воланчик
+// у подающего. В одиночных разрядах (МО/ЖО) палочек нет — корт один
+const PARITY_EVEN_SVG_110 = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2.2" y="1" width="2.6" height="10" rx="1.3" fill="currentColor"/><rect x="7.2" y="1" width="2.6" height="10" rx="1.3" fill="currentColor"/></svg>';
+const PARITY_ODD_SVG_110 = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="4.7" y="1" width="2.6" height="10" rx="1.3" fill="currentColor"/></svg>';
+
+// состояние табло на пару команд (modalId = tournament-groups-board-<t1>-<t2>):
+// even1/even2 — чётные игроки команд, serve — подающий, typePos — индекс
+// строки разряда (0..9, «•» не нумеруется). Обновляется ответами
+// increase/decrease/serve/swap/type-pos и restoreBoardScores
+const board110State = new Map();
+
+// сохранение Board110State из ответа роутов и перерисовка маркеров
+const updateBoard110State = (modal, state) => {
+  if (!state) return;
+  board110State.set(modal.id, {
+    even1: state.even_1_user_id,
+    even2: state.even_2_user_id,
+    serve: state.serve_user_id,
+    typePos: state.game_type_pos,
+  });
+  renderBoardMarkers(modal);
+};
+
+// игроки видимой группы разряда колонки табло: [{id, avatar}] в порядке DOM
+const board110ColumnPlayers = (modal, scoreEl) => {
+  const type = modal.querySelector('.board-game-type-current')?.textContent.trim();
+  const column = scoreEl.closest('.col');
+  const cell = type && column.querySelector(`[data-type="${type}"]`);
+  return cell ? Array.from(cell.querySelectorAll('.board-player'), (p) => ({
+    id: Number(p.getAttribute('data-user-id')),
+    avatar: p.querySelector('.board-player-avatar'),
+    player: p,
+  })) : [];
+};
+
+// маркеры чётности/подачи на табло 110: палочки — только в парных
+// разрядах (МП/ЖП/СП) и только если чётный из состояния в ростере группы;
+// чётный игрок переставляется первым. Воланчик — у подающего игрока
+// своей колонки (в любом разряде). Колонка ↔ команда — по data-team-number
+// счёта колонки (меняется при смене сторон)
+const renderBoardMarkers = (modal) => {
+  const state = board110State.get(modal.id);
+  if (!state) return;
+  for (const scoreId of ['board-score-l', 'board-score-r']) {
+    const scoreEl = modal.querySelector(`#${scoreId}`);
+    const team = Number(scoreEl.getAttribute('data-team-number'));
+    const players = board110ColumnPlayers(modal, scoreEl);
+    const even = team === 1 ? state.even1 : state.even2;
+    // парный разряд: у обоих игроков по палочкам; база (чётный неизвестен
+    // или вне ростера группы) — без палочек
+    const paired = players.length === 2 && players.some(p => p.id === even);
+    players.forEach((p, i) => {
+      p.avatar.querySelector('.board-parity')?.remove();
+      p.avatar.querySelector('.board-serve')?.remove();
+      if (paired) {
+        p.avatar.insertAdjacentHTML('beforeend', `<i class="board-parity ${p.id === even ? 'board-parity-even' : 'board-parity-odd'}" title="${p.id === even ? 'Чётный корт' : 'Нечётный корт'}" aria-hidden="true">${p.id === even ? PARITY_EVEN_SVG_110 : PARITY_ODD_SVG_110}</i>`);
+      }
+      if (state.serve !== null && p.id === state.serve) {
+        p.avatar.insertAdjacentHTML('beforeend', '<i class="board-serve" title="Подаёт" aria-hidden="true"></i>');
+      }
+      // чётный — первым в ячейке группы
+      if (paired && p.id === even && i === 1) {
+        p.player.parentElement.prepend(p.player);
+      }
+    });
+  }
+};
+
 const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   // матч до 110 очков: дальше счёт не увеличивается
   if (parseInt(el.textContent) >= 110) return;
   let increasedValue = parseInt(el.textContent) + 1;
   el.textContent = increasedValue;
-  $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
+  const modal = el.closest('.modal');
+  $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`,
+      {}, (state) => updateBoard110State(modal, state));
   // тактильный и звуковой отклик на каждое очко; на границе партии
   // свой отдельный сигнал (flashPartyWin) — короткий не дублируем.
   // navigator.vibrate нет на iOS Safari — там остаётся только бип
   navigator.vibrate?.(30);
   if (increasedValue % 11 !== 0) boardBeep();
   // кнопка смены сторон видна только при 0:0
-  const modal = el.closest('.modal');
   const swap = modal.querySelector('.board-swap');
   if (swap) swap.hidden = true;
   // очко набрано лидером матча (у кого строго больше очков) — от этого
@@ -248,6 +320,17 @@ const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
       // игры, вычисленный от текущего типа
       showBoardBreakPlate(modal, Number(modal.getAttribute('data-game-break')) || 0);
       advanceBoardGameType(el);
+      // стык партий на сервере: новый разряд строки, наследование половин
+      // и подача победителя. Индекс — среди строк без разделителя «•»
+      // (0..9, два круга по пять разрядов)
+      const rows = Array.from(modal.querySelectorAll('.board-game-types .board-game-type'))
+          .filter((r) => r.textContent.trim() !== '•');
+      const current = modal.querySelector('.board-game-type-current');
+      const typePos = rows.indexOf(current);
+      if (typePos !== -1) {
+        $.post(`/api/games/current110/type-pos?team_1_id=${team_1_id}&team_2_id=${team_2_id}&type_pos=${typePos}`,
+            {}, (state) => updateBoard110State(modal, state));
+      }
       // перевернуть табло
       // создать новую игру
       // убрать статус текущей у предыдущей
@@ -343,7 +426,8 @@ const decreaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   if (parseInt(el.textContent) <= 0) return;
   el.textContent = parseInt(el.textContent) - 1;
   boardBeep(220, 0.1, 0.2);
-  $.post(`/api/games/current110/decrease?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`);
+  $.post(`/api/games/current110/decrease?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`,
+      {}, (state) => updateBoard110State(el.closest('.modal'), state));
 };
 
 // салют при выигранном матче: лёгкие искры вокруг счёта, каждая
@@ -437,6 +521,9 @@ const advanceBoardGameType = (el) => {
   next.classList.add('board-game-type-current');
   markBoardPlayedTypes(modal);
   if (typeof updateBoardAvatars === 'function') updateBoardAvatars(modal);
+  // маркеры прошлого разряда у новых игроков не значат ничего: прячем —
+  // состояние обновит ответ type-pos (отправляет increaseBoardScore)
+  renderBoardMarkers(modal);
 };
 
 // уже сыгранные игры табло (строки выше текущей, без разделителя «•»)
