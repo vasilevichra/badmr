@@ -56,4 +56,29 @@ if (baseline) {
   }
 }
 
+/** Идемпотентный ensure-ALTER: правки уже применённых миграций на месте
+ *  повторно не накатываются (applied → skip), а существующим базам —
+ *  включая упакованное Electron-приложение с BADMR_DATA — нужны новые
+ *  колонки game_110 (ветка табло 110). ADD COLUMN в SQLite не
+ *  идемпотентен — проверяем схему. Для свежих баз колонки приходят из
+ *  миграции, блок ничего не делает. */
+if (db.prepare("SELECT count() AS count FROM sqlite_master WHERE type = 'table' AND name = 'game_110'").get() !== undefined) {
+  const columns = new Set(
+      (db.prepare("PRAGMA table_info(game_110)").all() as { name: string }[]).map(c => c.name)
+  );
+  // типы повторяют 01-tables-up.sql
+  const ensure = [
+    ["even_1_user_id", "INTEGER NULL"],
+    ["even_2_user_id", "INTEGER NULL"],
+    ["serve_user_id", "INTEGER NULL"],
+    ["game_type_pos", "INTEGER NOT NULL DEFAULT 0"],
+  ] as const;
+  for (const [name, type] of ensure) {
+    if (!columns.has(name)) {
+      db.exec(`ALTER TABLE game_110 ADD COLUMN ${name} ${type}`);
+      console.log(`Ensured: game_110.${name}`);
+    }
+  }
+}
+
 db.close();
