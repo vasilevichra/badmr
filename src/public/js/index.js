@@ -50,6 +50,7 @@ $(document).ready(() => {
       calibrationMatches: values.calibration_matches,
       hasGames: Boolean(played),
       everybodyPaid: Boolean(paid),
+      matchesTarget: values.matches,
     });
   });
   renderSelect();
@@ -384,45 +385,48 @@ $(document).ready(() => {
           .fail(() => field.text(original));
     });
 
-    // название турнира в шапке (hero) редактируется по клику под админом:
-    // Enter или смена фокуса — сохранить, Esc — отмена; класс
-    // tournament-hero-name-edit присутствует в разметке только у залогиненного
-    $('.tournament-hero-name-edit').on('click', function () {
-      const field = $(this);
-      if (field.find('input').length) return;
-      const original = field.text().trim();
-      field.data('original', original)
-          .removeData('cancelled')
-          .text('')
-          .append($('<input>', {type: 'text', class: 'form-control form-control-sm', value: original}));
-      const input = field.find('input').get(0);
-      input.focus();
-      input.setSelectionRange(input.value.length, input.value.length);
-    });
-
-    $('.tournament-hero-name-edit').on('keydown', 'input', function (event) {
-      if (event.key === 'Escape') {
-        $(this).closest('.tournament-hero-name-edit').data('cancelled', true);
-        $(this).trigger('blur');
-      } else if (event.key === 'Enter') {
-        event.preventDefault();
-        $(this).trigger('blur');
-      }
-    });
-
-    $('.tournament-hero-name-edit').on('blur', 'input', function () {
-      const input = $(this);
-      const field = input.closest('.tournament-hero-name-edit');
-      const cancelled = field.data('cancelled');
-      const original = String(field.data('original'));
-      const name = String(input.val()).trim();
-      field.text(original).removeData('cancelled');
-      if (cancelled || !name || name === original) return;
-      $.post(`/api/tournaments/name/${tournamentId()}`, {name: name})
-          .done(() => field.text(name))
-          .fail(() => field.text(original));
-    });
   }
+
+  // название турнира в шапке (hero) редактируется по клику под админом:
+  // Enter или смена фокуса — сохранить, Esc — отмена; класс
+  // tournament-hero-name-edit присутствует в разметке только у залогиненного.
+  // Вне if ($('#player-window').length): модалка игрока есть не во всех
+  // вёрстках (нет на странице 110), а название редактируется везде
+  $('.tournament-hero-name-edit').on('click', function () {
+    const field = $(this);
+    if (field.find('input').length) return;
+    const original = field.text().trim();
+    field.data('original', original)
+        .removeData('cancelled')
+        .text('')
+        .append($('<input>', {type: 'text', class: 'form-control form-control-sm', value: original}));
+    const input = field.find('input').get(0);
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  });
+
+  $('.tournament-hero-name-edit').on('keydown', 'input', function (event) {
+    if (event.key === 'Escape') {
+      $(this).closest('.tournament-hero-name-edit').data('cancelled', true);
+      $(this).trigger('blur');
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      $(this).trigger('blur');
+    }
+  });
+
+  $('.tournament-hero-name-edit').on('blur', 'input', function () {
+    const input = $(this);
+    const field = input.closest('.tournament-hero-name-edit');
+    const cancelled = field.data('cancelled');
+    const original = String(field.data('original'));
+    const name = String(input.val()).trim();
+    field.text(original).removeData('cancelled');
+    if (cancelled || !name || name === original) return;
+    $.post(`/api/tournaments/name/${tournamentId()}`, {name: name})
+        .done(() => field.text(name))
+        .fail(() => field.text(original));
+  });
 
   // закрытие открытого модального окна по Esc (дублирует встроенное поведение
   // Bootstrap: работает и для модалок, созданных без фокуса внутри окна)
@@ -459,6 +463,16 @@ $(document).ready(() => {
       } else {
         const rect = switchBtn[0].getBoundingClientRect();
         popup.css({top: rect.bottom + 6, right: Math.max(8, window.innerWidth - rect.right)});
+        popup.removeAttr('hidden');
+        // правое краевое позиционирование тянет попап влево от кнопки;
+        // если он вылез за левый край (кнопка у левого края окна) —
+        // раскрываем в другую сторону: левый край от кнопки, но не дальше
+        // 8px от правого края вьюпорта
+        if (popup[0].getBoundingClientRect().left < 8) {
+          popup.css({right: '', left: Math.min(rect.left, window.innerWidth - popup[0].offsetWidth - 8)});
+        }
+        switchBtn.attr('aria-expanded', 'true');
+        return;
       }
       popup.removeAttr('hidden');
       switchBtn.attr('aria-expanded', 'true');

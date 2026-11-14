@@ -145,10 +145,6 @@
                 </span>
                 <% if (user) { %>
                     <form action="/api/auth/logout" method="post" class="logout ms-auto">
-                        <div class="player-selectors">
-                            <%- include('tournament', {tournaments: tournaments}); %>
-                            <%# временно скрыт: селектор подразделения (include('unit', {units: units})), вернуть по необходимости %>
-                        </div>
                         <label class="user"><%= user.username %></label>
                         <%# выход — аккуратный крестик (btn-close) вместо большой кнопки %>
                         <button type="submit" class="btn-close tournament-hero-logout<% if (device === 'phone') { %> me-2<% } %>" aria-label="Выйти"></button>
@@ -156,18 +152,16 @@
                     </form>
                 <% } else { %>
                     <form action="/api/auth/login" method="get" class="login ms-auto tournament-hero-login">
-                        <%# селектор — только на десктопе: на телефоне в безлогиновой
-                            зоне он не влезает в ряд с кнопкой «Вход», переход
-                            между турнирами — по прямой ссылке (#55) %>
-                        <% if (device !== 'phone') { %>
-                            <%- include('tournament', {tournaments: tournaments}); %>
-                        <% } %>
                         <button class="btn<% if (device === 'phone') { %> mx-2<% } %>" type="submit"><p class="bi bi-person"> Вход</p></button>
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     </form>
                 <% } %>
             </div>
-            <div class="tournament-hero-name<% if (user) { %> tournament-hero-name-edit<% } %>"<% if (user) { %> title="нажмите, чтобы редактировать"<% } %>><%= current_tournament.name %></div>
+            <%# выбор турнира — слева от названия (#55): кнопка «🏆 #N» + попап-плитки %>
+            <div class="tournament-hero-name-row">
+                <%- include('tournament', {tournaments: tournaments}); %>
+                <div class="tournament-hero-name<% if (user) { %> tournament-hero-name-edit<% } %>"<% if (user) { %> title="нажмите, чтобы редактировать"<% } %>><%= current_tournament.name %></div>
+            </div>
             <div class="tournament-hero-meta">
                 <%= heroDateStr %><% if (device !== 'phone' && heroDurationStr) { %> · <%= heroDurationStr %><% } %>
             </div>

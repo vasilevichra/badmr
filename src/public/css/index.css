@@ -417,19 +417,23 @@ input:focus::placeholder {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid var(--bs-border-color);
+  /* стиль бейджа типа турнира («НОВАЯ ЛИГА») — кнопка не выбивается
+     из шапки: те же фон/бордер/акцент и типографика */
+  border: 1px solid var(--badmr-hero-type-border);
   border-radius: 999px;
-  background: var(--bs-body-bg);
-  color: var(--bs-body-color);
+  background: var(--badmr-hero-type-bg);
+  color: var(--badmr-hero-accent);
   padding: 3px 11px;
-  font-size: 13px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   line-height: 1.4;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .tournament-switch-btn:hover {
-  border-color: var(--bs-secondary-color);
+  border-color: var(--badmr-hero-accent);
 }
 
 /* шеврон — CSS-бордер вместо bi-глифа: в em-квадрате шрифтовой стрелки
@@ -730,6 +734,19 @@ body.desktop #tournament-new-registration-hint > .row {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+/* выбор турнира слева от названия: кнопка «🏆 #N» + редактируемое имя
+   в одном ряду (кнопка не участвует в клике-редактировании имени) */
+.tournament-hero-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tournament-hero-name-row .tournament-hero-name {
+  margin-top: 0;
 }
 
 .tournament-hero-name {
@@ -1301,6 +1318,25 @@ body.phone .select-board-score {
   margin-right: auto;
 }
 
+/* «Сыграно» при лимите матчей турнира: мини-бар прогресса перед числом
+   (макет E). Ширина бара фикс — колонка не «дышит» при сортировке */
+.player-matches-bar {
+  display: inline-block;
+  vertical-align: middle;
+  width: 56px;
+  height: 4px;
+  margin-right: 6px;
+  border-radius: 2px;
+  background: var(--bs-secondary-bg);
+  overflow: hidden;
+}
+
+.player-matches-bar i {
+  display: block;
+  height: 100%;
+  background: var(--bs-primary);
+}
+
 @media (max-width: 575.98px) {
   /* таблица «Игроки»: паддинги рейтинга и дельты вдвое меньше исходных,
      когда колонка оплаты видна или таблица не умещается на экране без
@@ -1828,24 +1864,40 @@ body.phone .select-board-score {
   color: rgba(128, 128, 128, 0.3);
 }
 
-/* ненавязчивая индикация калибровки рейтинга в таблице игроков:
-   маленькая полупрозрачная точка-светофор после имени */
-.player-calibration {
-  font-size: 1.4em;
-  line-height: 0;
-  vertical-align: -0.12em;
+/* индикация калибровки рейтинга в таблице игроков: мини-бар прогресса
+   серии в стиле колонки «Сыграно» вместо прежней блёклой точки-светофора.
+   Красный (серия не начата) — пустой трек, тонированный красным;
+   жёлтый/зелёный — заливка цветом светофора */
+.player-calibration-bar {
+  margin: 0 0 0 6px;
 }
 
-.player-calibration-red {
-  color: rgba(220, 53, 69, 0.45);
+.player-calibration-bar.player-calibration-red {
+  background: rgba(220, 53, 69, 0.25);
 }
 
-.player-calibration-yellow {
-  color: rgba(255, 193, 7, 0.55);
+.player-calibration-bar.player-calibration-red i {
+  background: rgba(220, 53, 69, 0.6);
 }
 
-.player-calibration-green {
-  color: rgba(25, 135, 84, 0.45);
+.player-calibration-bar.player-calibration-yellow i {
+  background: rgba(255, 193, 7, 0.9);
+}
+
+.player-calibration-bar.player-calibration-green i {
+  background: rgba(25, 135, 84, 0.9);
+}
+
+/* индикаторы после имени (бар калибровки, за ним тортик) — у правого края
+   колонки «Имя»: всё содержимое ячейки в флекс-обёртке .player-name-cell
+   (player.js), бар получает margin-left:auto */
+#player-table .player-name-cell {
+  display: flex;
+  align-items: center;
+}
+
+#player-table .player-calibration-bar {
+  margin-left: auto;
 }
 
 /* еле заметный тортик со свечами в самом конце колонки «Имя» (#54) */

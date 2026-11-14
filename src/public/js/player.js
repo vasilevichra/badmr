@@ -23,7 +23,7 @@ const isBirthdayThisWeek = (birthday) => {
   return false;
 };
 
-const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibrationMatches, hasGames, everybodyPaid}) => {
+const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibrationMatches, hasGames, everybodyPaid, matchesTarget}) => {
   $('#player-table')
   .bootstrapTable({
     url: withTournament('/api/users/'),
@@ -33,6 +33,15 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
     /*pagination: true, pageSize: 20, pageNumber: 1,*/
     showRefresh: loggedInUser && isNotPhone(),
     undefinedText: '<math><mo>&minus;</mo></math>',
+    onPostBody: () => {
+      // если содержимое ячейки имени не вмещается (длинное ФИО), бар
+      // калибровки прячем — имя важнее; перепроверяется после каждой
+      // перерисовки тела таблицы (загрузка, сортировка, поиск)
+      document.querySelectorAll('#player-table .player-name-cell').forEach(cell => {
+        const bar = cell.querySelector('.player-calibration-bar');
+        if (bar) bar.classList.toggle('d-none', cell.scrollWidth - cell.clientWidth > 1);
+      });
+    },
     columns: [
       {
         field: '#',
@@ -61,32 +70,42 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         field: 'name',
         title: '<span class="no-selection">Имя</span>',
         sortable: true,
-        formatter: (value, row) =>
-            this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()) +
-            // ненавязчивая индикация калибровки рейтинга: точка-светофор после
-            // имени. Красная — серия не начата (сид или протухший рейтинг),
-            // жёлтая — начало серии, зелёная — серия близка к концу;
-            // после последнего матча серии точка исчезает.
-            // У завершённого турнира точки нет — калибровка по законченным
+        formatter: (value, row) => {
+            // индикация калибровки рейтинга: мини-бар в стиле «Сыграно»,
+            // работает на убывание — заливка показывает, сколько матчей
+            // серии осталось. Красный — начало (до 1/3 сыграно), жёлтый —
+            // середина (1/3–2/3), зелёный — конец серии (от 2/3);
+            // после последнего матча серии бар исчезает.
+            // У завершённого турнира бара нет — калибровка по законченным
             // матчам уже не актуальна (#53)
-            (row.calibrating && row.calibration_series < calibrationMatches && tournamentStatus() !== 3
-                ? '<i class="bi bi-dot player-calibration player-calibration-' +
-                  (row.calibration_series === 0 || calibrationMatches <= 0
+            const bar = row.calibrating && row.calibration_series < calibrationMatches && tournamentStatus() !== 3
+                ? '<span class="player-matches-bar player-calibration-bar player-calibration-' +
+                  (row.calibration_series === 0 || calibrationMatches <= 0 || row.calibration_series / calibrationMatches < 1 / 3
                       ? 'red'
                       : row.calibration_series / calibrationMatches < 2 / 3 ? 'yellow' : 'green') +
-                  '" title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"></i>'
-                : '') +
-            // еле заметный тортик со свечами в самом конце колонки —
-            // у того, чей день рождения на текущей неделе (#54)
-            (isBirthdayThisWeek(row.birthday)
-                ? '<i class="bi bi-cake2 player-birthday" title="С днём рождения!"></i>'
-                : '') +
-            // кнопки в контейнере нулевой ширины: не влияют на ширину колонки «Имя»,
-            // поверх неё рисуются по нажатию «Настройки»
-            '<span class="player-settings-buttons">' +
-            '<button class="player-settings btn btn-outline-danger btn-xs mx-1' + (isPlayerSettingsOn() ? '' : ' d-none') + '" onclick="$.post(`/api/users/deregister/` + $(this).closest(`td`).find(`.user-id`).text()); event.stopPropagation(); refresh.table.player();"><i class="bi bi-trash3"></i> Удалить</button>' +
-            '<button class="player-settings btn btn-outline-warning btn-xs' + (isPlayerSettingsOn() ? '' : ' d-none') + '" onclick="$.post(`/api/users/archive/` + $(this).closest(`td`).find(`.user-id`).text()); event.stopPropagation(); refresh.table.player(); refresh.table.archive();"><i class="bi bi-archive"></i> Архив</button>' +
-            '</span>',
+                  '" title="Калибровка рейтинга (' + row.calibration_series + ' из ' + calibrationMatches + ')"><i style="width:' +
+                  (calibrationMatches > 0 ? Math.min(100, Math.round(100 * (calibrationMatches - row.calibration_series) / calibrationMatches)) : 0) +
+                  '%"></i></span>'
+                : '';
+            // всё содержимое ячейки — в одном флекс-span (.player-name-cell):
+            // бар калибровки прижимается margin-left:auto к правому краю
+            // колонки «Имя», за ним тортик; кнопки настроек — в контейнере
+            // нулевой ширины, не влияют на ширину колонки, поверх неё
+            // рисуются по нажатию «Настройки»
+            return '<span class="player-name-cell">' +
+                this.share.playerNameFormatter(row.id, value, row.sex, row.pic, isPhone()) +
+                bar +
+                // еле заметный тортик со свечами в самом конце колонки —
+                // у того, чей день рождения на текущей неделе (#54)
+                (isBirthdayThisWeek(row.birthday)
+                    ? '<i class="bi bi-cake2 player-birthday" title="С днём рождения!"></i>'
+                    : '') +
+                '<span class="player-settings-buttons">' +
+                '<button class="player-settings btn btn-outline-danger btn-xs mx-1' + (isPlayerSettingsOn() ? '' : ' d-none') + '" onclick="$.post(`/api/users/deregister/` + $(this).closest(`td`).find(`.user-id`).text()); event.stopPropagation(); refresh.table.player();"><i class="bi bi-trash3"></i> Удалить</button>' +
+                '<button class="player-settings btn btn-outline-warning btn-xs' + (isPlayerSettingsOn() ? '' : ' d-none') + '" onclick="$.post(`/api/users/archive/` + $(this).closest(`td`).find(`.user-id`).text()); event.stopPropagation(); refresh.table.player(); refresh.table.archive();"><i class="bi bi-archive"></i> Архив</button>' +
+                '</span>' +
+                '</span>';
+        },
         cellStyle: (value, row) => playerSexStyle(row.sex),
       },
       {
@@ -148,6 +167,15 @@ const renderPlayers = ({B_max, C_max, D_max, E_max, F_max, G_max, H_max, calibra
         visible: hasGames,
         align: 'center',
         sortable: true,
+        // при лимите матчей турнира (настройка «matches», 0 = ∞) — прогресс
+        // к лимиту, как в макете E; без лимита — просто число
+        formatter: matchesTarget > 0
+          ? value => {
+              const percent = Math.min(100, Math.round(100 * value / matchesTarget));
+              return `<span class="player-matches-bar" title="Сыграно ${value} из ${matchesTarget} матчей">`
+                  + `<i style="width:${percent}%"></i></span>${value}`;
+            }
+          : undefined,
       },
       {
         field: 'city',
