@@ -4,6 +4,7 @@ import GameService from "../../src/services/game.ts";
 import Game110Repository from "../../src/repositories/game110.ts";
 import MatchService from "../../src/services/match.ts";
 import TeamService from "../../src/services/team.ts";
+import TeamOrderService from "../../src/services/team-order.ts";
 import TeamUserService from "../../src/services/team-user.ts";
 import UserService from "../../src/services/user.ts";
 import Repository from "../../src/repositories/common.ts";
@@ -32,12 +33,18 @@ interface Game110Row {
   score_1: number;
   score_2: number;
   current: number;
+  // чётность кортов, подача и индекс разряда (live-табло 110)
+  serve_user_id: number | null;
+  even_1_user_id: number | null;
+  even_2_user_id: number | null;
+  game_type_pos: number;
 }
 
 const gameService = new GameService();
 const game110Repository = new Game110Repository();
 const matchService = new MatchService();
 const teamService = new TeamService();
+const teamOrderService = new TeamOrderService();
 const teamUserService = new TeamUserService();
 const userService = new UserService();
 const db = new Repository().db;
@@ -64,11 +71,13 @@ const seedUnfinishedMatch = async (): Promise<{ ids: number[]; matchId: number }
   return { ids, matchId: match.id };
 };
 
-// создаёт две команды с двумя игроками в каждой и матч 110 между ними
+// создаёт две команды с двумя игроками в каждой и матч 110 между ними.
+// Пол чередуется (м+ж в каждой команде): аватары парных разрядов
+// (СП = м+ж) резолвятся фолбэком «сильнейший подходящего пола»
 const seedMatch110 = async (): Promise<{ team1: number; team2: number; match110Id: number }> => {
   const ids: number[] = [];
   for (let i = 1; i <= 4; i++) {
-    const { id } = await userService.create(`Игрок${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
+    const { id } = await userService.create(`Игрок${i}`, `Имя${i}`, "Отчество", 500, i % 2 === 1 ? 1 : 0, 1, "1990-01-01");
     ids.push(id);
   }
 
@@ -309,6 +318,75 @@ describe("Game", () => {
       )!;
       assert.strictEqual(game.score_1, 110);
       assert.strictEqual(game.score_2, 45);
+    });
+  });
+
+  describe("increaseCurrentByTeamIds: чётность и подача (110)", () => {
+    it("очко на своей подаче в одиночке: подающий остаётся сам", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      const p1 = (await teamOrderService.avatars(team1))["МО"][0];
+      await gameService.setCurrentServeByTeamIds(team1, team2, p1.id);
+
+      const r = await gameService.increaseCurrentByTeamIds(team1, team2, "1") as Game110Row;
+
+      assert.strictEqual(r.score_1, 1);
+      assert.strictEqual(r.serve_user_id, p1.id);
+    });
+
+    it("очко на своей подаче в паре: пара меняется кортами, подающий — по чётности счёта", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      // парный разряд: строка 4 = СП первого круга
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const roster1 = (await teamOrderService.avatars(team1))["СП"]; // [чётный, напарник]
+      await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id);
+
+      const r = await gameService.increaseCurrentByTeamIds(team1, team2, "1") as Game110Row;
+
+      // счёт 1 нечётный → подающий — напарник нового чётного
+      assert.strictEqual(r.even_1_user_id, roster1[1].id);
+      assert.strictEqual(r.serve_user_id, roster1[0].id);
+    });
+
+    it("очко на приёме не меняет корты пары", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const roster1 = (await teamOrderService.avatars(team1))["СП"];
+      const roster2 = (await teamOrderService.avatars(team2))["СП"];
+      await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id);
+
+      const r = await gameService.increaseCurrentByTeamIds(team1, team2, "2") as Game110Row;
+
+      // счёт 2-й команды 1 (нечётный) → подающий — напарник чётного
+      assert.strictEqual(r.serve_user_id, roster2[1].id);
+      const g = await gameService.getCurrentByTeamIds(team1, team2) as Game110Row;
+      assert.strictEqual(g.even_1_user_id, roster1[0].id);
+      assert.strictEqual(g.even_2_user_id, roster2[0].id);
+    });
+  });
+
+  describe("setCurrentServeByTeamIds (110)", () => {
+    it("выставляет подачу чётному игроку на 0:0 и отказывает не-чётному и вне ростера", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      const roster1 = (await teamOrderService.avatars(team1))["СП"];
+
+      const ok = await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id) as Game110Row;
+      assert.strictEqual(ok.serve_user_id, roster1[0].id);
+      assert.strictEqual(await gameService.setCurrentServeByTeamIds(team1, team2, roster1[1].id), null);
+      assert.strictEqual(await gameService.setCurrentServeByTeamIds(team1, team2, 999999), null);
+    });
+
+    it("отказывает при ненулевом счёте", async () => {
+      const { team1, team2, match110Id } = await seedMatch110();
+      await gameService.create110(match110Id);
+      db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
+      await gameService.increaseCurrentByTeamIds(team1, team2, "1");
+      const roster1 = (await teamOrderService.avatars(team1))["СП"];
+      assert.strictEqual(await gameService.setCurrentServeByTeamIds(team1, team2, roster1[0].id), null);
     });
   });
 

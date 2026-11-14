@@ -137,8 +137,9 @@ class TeamOrder {
    *  сеяния — фолбэк: сильнейший подходящего пола из состава (для пары
    *  второй — без уже взятого в разряд: CHECK md11 != md12 и т.п.). */
   avatars(team_id: number) {
-    const players = this.db.all<{id: number, name: string, sex: number, pic: string | null, rating: number}>(
-        `SELECT tu.id,
+    const players = this.db.all<{id: number, team_user_id: number, name: string, sex: number, pic: string | null, rating: number}>(
+        `SELECT tu.user_id AS id,
+                tu.id AS team_user_id,
                 u.lastname || ' ' || u.firstname AS name,
                 u.sex,
                 coalesce(up.pic, ul.img)         AS pic,
@@ -155,12 +156,13 @@ class TeamOrder {
         `SELECT ms1, ws1, md11, md12, wd11, wd12, xd11, xd12 FROM team_order_110 WHERE team_id = ?`,
         [team_id]
     ) ?? {};
-    const byId = new Map(players.map(p => [p.id, p]));
+    // сеяние хранит team_user id — резолвим по нему, наружу отдаём user id
+    const byTeamUserId = new Map(players.map(p => [p.team_user_id, p]));
     const strongest = (sex: number, exclude: number[] = []) => players
         .filter(p => p.sex === sex && !exclude.includes(p.id))
         .sort((a, b) => b.rating - a.rating)[0] ?? null;
     const pick = (position: string, sex: number, exclude: number[] = []) =>
-        (order[position] ? byId.get(order[position]!) : null) ?? strongest(sex, exclude);
+        (order[position] ? byTeamUserId.get(order[position]!) : null) ?? strongest(sex, exclude);
     const pair = (first: string, second: string, sex: number) => {
       const p1 = pick(first, sex);
       const p2 = pick(second, sex, p1 ? [p1.id] : []);

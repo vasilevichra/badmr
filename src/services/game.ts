@@ -28,6 +28,8 @@ class Game {
   getResults = (tournamentId?: number) => this.game110.getResults(tournamentId);
   increaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.increaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
   decreaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.decreaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
+  /** Подача на 0:0 — тап/двойной клик судьи по чётному игроку пары. */
+  setCurrentServeByTeamIds = (teamId1: number, teamId2: number, userId: number, tournamentId?: number) => this.game110.setCurrentServeByTeamIds(teamId1, teamId2, userId, tournamentId);
 
   /** Живое табло Новой лиги: текущая игра матча (может быть null —
    *  табло показывает 0:0, игра создаётся первым очком). */
