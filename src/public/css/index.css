@@ -957,7 +957,8 @@ body.phone .select-baro-sigma {
 }
 
 /* телефон: плашка подбора — на всю ширину экрана (форма block вместо
-   inline-block), ФИ и аватарки подгоняет fit-логика в select.js */
+   inline-block), ФИ и аватарки подгоняет fit-логика в select.js;
+   половинки прижаты к краям плашки, бейдж корта — по центру */
 body.phone .select-form {
   display: block;
 }
@@ -965,6 +966,10 @@ body.phone .select-form {
 body.phone .select-baro {
   width: auto;
   max-width: none;
+}
+
+body.phone .select-baro-duel {
+  justify-content: space-between;
 }
 
 /* телефон: в строках барометра рейтинг и число матчей не показываем —
@@ -2409,11 +2414,17 @@ body.phone .game-board-modal .game-board-avatars {
   body.phone .game-board-modal .game-board-types {
     height: 73vw;
     margin-top: 0;
+    /* свап в потоке над номерами (absolute налезал на них): padding
+       снизу компенсирует его высоту с зазором — номера остаются
+       отцентрованы по счёту */
+    padding-bottom: 13vw;
   }
 
   body.phone .game-board-modal .board-swap {
-    top: 50%;
-    transform: translate(-50%, -50%);
+    position: static;
+    top: auto;
+    transform: none;
+    margin-bottom: 5vw;
   }
 
   body.phone .game-board-modal .board-player-name {
