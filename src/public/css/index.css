@@ -1229,12 +1229,15 @@ body.phone .container:not(.pt-3) > .row > .toggler {
 
 .select-baro-sigma {
   /* по высоте соседнего бейджа корта (20px); высота зафиксирована, чтобы
-     полосы шанса обеих половинок были ровно на одной высоте */
+     полосы шанса обеих половинок были ровно на одной высоте;
+     nowrap: сумма с кубком не переносится на полосу шанса при узкой
+     колонке (короткие имена) */
   height: 20px;
   font-size: 16px;
   line-height: 20px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .select-baro-col.select-baro-fav .select-baro-sigma {
@@ -1354,9 +1357,11 @@ body.phone .container:not(.pt-3) > .row > .toggler {
 }
 
 .select-baro-meta {
+  /* Δ-чипы под именами напарников */
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  margin-top: 5px;
 }
 
 .select-baro-chip {
@@ -1403,8 +1408,6 @@ body.phone .container:not(.pt-3) > .row > .toggler {
   justify-content: flex-end;
   align-items: center;
   margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--badmr-sel-dash);
 }
 
 /* «Табло»: тёмная кнопка с жёлтым экраном — акцент под превью-табло */

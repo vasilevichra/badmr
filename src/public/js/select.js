@@ -125,11 +125,21 @@ const renderReadyForms = (ready) => {
     fillColumn(1, players1, sigma1, field.chance1, pairExcess(players1));
     fillColumn(2, players2, sigma2, field.chance2, pairExcess(players2));
 
+    // бейдж корта между половинками; на телефоне — только номер (место
+    // в плашке ограничено)
+    $(`#select-baro-court-${i}`).text(field.court ? (isPhone() ? `${field.court}` : `Корт №${field.court}`) : 'Корт —');
+
     // строки «имя · числа» — по содержимому: самая длинная из 4 игроков
     // пары задаёт ширину остальным строкам; эта же ширина — колонкам и
-    // полосам шанса (колонка ровно по ширине шанса, симметрично)
+    // полосам шанса (колонка ровно по ширине шанса, симметрично).
+    // Нижняя граница — сумма с кубком: короткие имена сузили строки
+    // имён, и без неё сумма сжималась — кубок переносился на полосу
     const nameLines = $(`#select-form-${i} .select-baro-name`).toArray();
-    const barWidth = Math.max(...nameLines.map(el => el.offsetWidth));
+    const barWidthOf = () => Math.max(
+        ...nameLines.map(el => el.offsetWidth),
+        ...[1, 2].map(side =>
+            document.querySelector(`#select-baro-sigma-${side}-${i}`).scrollWidth));
+    const barWidth = barWidthOf();
     nameLines.forEach(el => {
       el.style.width = `${barWidth}px`;
     });
@@ -151,16 +161,14 @@ const renderReadyForms = (ready) => {
           baro.style.setProperty('--baro-fit', fit);
           const lines = $(`#select-form-${i} .select-baro-name`).toArray();
           lines.forEach(el => { el.style.width = ''; });
-          const w = Math.max(...lines.map(el => el.offsetWidth));
+          const w = barWidthOf();
           lines.forEach(el => { el.style.width = `${w}px`; });
           $(`#select-baro-col-1-${i}, #select-baro-col-2-${i}`).css('width', `${w}px`);
         }
       }
     }
 
-    // бейдж корта между половинками
-    // бейдж корта: на телефоне — только номер (место в плашке ограничено)
-    $(`#select-baro-court-${i}`).text(field.court ? (isPhone() ? `${field.court}` : `Корт №${field.court}`) : 'Корт —');
+    // клик по имени — карточка игрока (в карточке и на превью-табло)
 
     // превью-табло кандидатуры: составы пар и корт, счёт 0:0
     $(`#select-board-title-${i}`).text(`Корт №${field.court ?? '—'} · кандидатура ${i + 1}`);
