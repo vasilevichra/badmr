@@ -54,6 +54,21 @@ router.post('/current110/decrease', ensureLoggedIn(), (req, res) => {
   res.promise(gameService.decreaseCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number), requestedTournament(req)));
 });
 
+// подача на 0:0 — тап/двойной клик судьи по чётному игроку пары
+router.post('/current110/serve', ensureLoggedIn(), (req, res) => {
+  res.promise(gameService.setCurrentServeByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), Number(req.query.user_id), requestedTournament(req)));
+});
+
+// свайп судьи по игроку — ручной свап чётности кортов пары
+router.post('/current110/swap', ensureLoggedIn(), (req, res) => {
+  res.promise(gameService.swapCurrentEvenByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), String(req.query.team_number), requestedTournament(req)));
+});
+
+// смена текущего разряда табло — из колбэка ответа increase (порядок гарантирован)
+router.post('/current110/type-pos', ensureLoggedIn(), (req, res) => {
+  res.promise(gameService.setTypePosByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), Number(req.query.type_pos), requestedTournament(req)));
+});
+
 router.post('/create', ensureLoggedIn(), (req, res) => {
   const {match_id, lost_1_by, lost_2_by, created_at} = req.body;
   res.promise(gameService.create(match_id, lost_1_by || null, lost_2_by || null, created_at));

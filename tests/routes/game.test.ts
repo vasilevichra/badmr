@@ -4,6 +4,7 @@ import Express, { type Express as App } from "express";
 import GameRouter from "../../src/routes/game.ts";
 import MatchRouter from "../../src/routes/match.ts";
 import UserRouter from "../../src/routes/user.ts";
+import TeamRouter from "../../src/routes/team.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
 import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
@@ -20,11 +21,13 @@ app.use((req, _res, next) => {
 app.use("/api/games", GameRouter);
 app.use("/api/matches", MatchRouter);
 app.use("/api/users", UserRouter);
+app.use("/api/teams", TeamRouter);
 
 const server = app.listen(0);
 const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/games`;
 const matchesBase = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/matches`;
 const usersBase = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/users`;
+const teamsBase = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/teams`;
 const db = new Repository().db;
 
 after(async () => {
@@ -54,6 +57,96 @@ const seedMatch = async (): Promise<number> => {
 describe("Game routes", () => {
   beforeEach(async () => {
     await clean();
+  });
+
+  describe("current110 serve/swap/type-pos (live-табло 110)", () => {
+    // матч 110 двух команд по HTTP: пользователи, регистрация, команды,
+    // составы, матч, игра строки
+    const seedMatch110 = async (): Promise<{ team1: number; team2: number; matchId: number }> => {
+      const ids: number[] = [];
+      for (let i = 1; i <= 4; i++) {
+        const res = await post(`${usersBase}/create`, {
+          ln: `Игрок${i}`, fn: `Имя${i}`, pn: "Отчество", rate: 500,
+          sex: i % 2 === 1 ? "on" : "off", city: 1, bd: "1990-01-01",
+        });
+        ids.push(((await res.json()) as { id: number }).id);
+      }
+      await post(`${usersBase}/register/${ids.join(",")}`);
+      const team1 = ((await (await post(`${teamsBase}/create`, {
+        tournament_id: 1, group_id: 1, name: "Команда 1", city_id: 1, team_color_id: 1,
+      })).json()) as { id: number }).id;
+      const team2 = ((await (await post(`${teamsBase}/create`, {
+        tournament_id: 1, group_id: 1, name: "Команда 2", city_id: 1, team_color_id: 2,
+      })).json()) as { id: number }).id;
+      for (const [teamId, pair] of [[team1, ids.slice(0, 2)], [team2, ids.slice(2)]]) {
+        for (const userId of pair) {
+          await post(`${teamsBase}/users/create`, {team_id: teamId, user_id: userId, group_id: 1});
+        }
+      }
+      const matchId = ((await (await post(`${matchesBase}/create110`, {
+        team_1_id: team1, team_2_id: team2,
+      })).json()) as { id: number }).id;
+      await post(`${base}/create110/${matchId}`);
+      return {team1, team2, matchId};
+    };
+
+    it("POST /current110/serve задаёт подачу чётному игроку на 0:0", async () => {
+      const {team1, team2, matchId} = await seedMatch110();
+      db.run("UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?", [matchId]);
+      const roster = db.all<{ user_id: number }>(
+          `SELECT user_id FROM team_user WHERE team_id = ? ORDER BY id`, [team1]);
+      const even = roster[0].user_id;
+
+      const res = await post(`${base}/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${even}`);
+      assert.strictEqual(res.status, 200);
+      const state = await res.json() as { serve_user_id: number; game_type_pos: number };
+      assert.strictEqual(state.serve_user_id, even);
+      assert.strictEqual(state.game_type_pos, 4);
+
+      // не-чётный игрок — отказ (пустое тело)
+      const other = roster[1].user_id;
+      const denied = await post(`${base}/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${other}`);
+      assert.strictEqual(await denied.text(), "");
+    });
+
+    it("POST /current110/swap меняет чётность пары на границе партии", async () => {
+      const {team1, team2, matchId} = await seedMatch110();
+      db.run("UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?", [matchId]);
+      const roster = db.all<{ user_id: number }>(
+          `SELECT user_id FROM team_user WHERE team_id = ? ORDER BY id`, [team1]);
+      const [even, other] = roster.map(r => r.user_id);
+      await post(`${base}/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${even}`);
+      // 11:0 — граница партии
+      for (let i = 0; i < 11; i++) {
+        await post(`${base}/current110/increase?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      }
+
+      const res = await post(`${base}/current110/swap?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      assert.strictEqual(res.status, 200);
+      const state = await res.json() as { even_1_user_id: number; serve_user_id: number };
+      assert.strictEqual(state.even_1_user_id, other);
+      // счёт 11 — нечётный корт, подаёт нечётный игрок (бывший чётный)
+      assert.strictEqual(state.serve_user_id, even);
+    });
+
+    it("POST /current110/type-pos меняет разряд на границе и наследует половины", async () => {
+      const {team1, team2, matchId} = await seedMatch110();
+      db.run("UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?", [matchId]);
+      for (let i = 0; i < 11; i++) {
+        await post(`${base}/current110/increase?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      }
+
+      const res = await post(`${base}/current110/type-pos?team_1_id=${team1}&team_2_id=${team2}&type_pos=5`);
+      assert.strictEqual(res.status, 200);
+      const state = await res.json() as { game_type_pos: number; score_1: number };
+      assert.strictEqual(state.game_type_pos, 5);
+      assert.strictEqual(state.score_1, 11);
+
+      // вне границы — отказ: 12:5 (никакая сторона не кратна 11)
+      await post(`${base}/current110/increase?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      const denied = await post(`${base}/current110/type-pos?team_1_id=${team1}&team_2_id=${team2}&type_pos=6`);
+      assert.strictEqual(await denied.text(), "");
+    });
   });
 
   describe("POST /create, GET /:id", () => {
