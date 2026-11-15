@@ -213,8 +213,9 @@ const PARITY_EVEN_SVG_110 = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x
 const PARITY_ODD_SVG_110 = '<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="4.7" y="1" width="2.6" height="10" rx="1.3" fill="currentColor"/></svg>';
 
 // состояние табло на пару команд (modalId = tournament-groups-board-<t1>-<t2>):
-// even1/even2 — чётные игроки команд, serve — подающий. Обновляется
-// ответами increase/decrease/serve/swap/type-pos и restoreBoardScores
+// even1/even2 — чётные игроки команд, serve — подающий, party1/party2 —
+// очки текущей партии (гейт свапа чётности «только до первого очка»).
+// Обновляется ответами increase/decrease/serve/swap/type-pos и restoreBoardScores
 const board110State = new Map();
 
 // сохранение Board110State из ответа роутов и перерисовка маркеров
@@ -224,6 +225,9 @@ const updateBoard110State = (modal, state) => {
     even1: state.even_1_user_id,
     even2: state.even_2_user_id,
     serve: state.serve_user_id,
+    // старые ответы роутов (кэш SW) без колонок — партия считается начатой
+    party1: state.party_score_1 ?? 1,
+    party2: state.party_score_2 ?? 1,
   });
   renderBoardMarkers(modal);
 };
@@ -797,7 +801,8 @@ const board110TeamIds = (modal) => modal.id.replace('tournament-groups-board-', 
 
 // тап/клик по игроку: на 0:0 чётному — подача, нечётному — свап чётности
 // (судья сначала выставляет, кто чётный, затем тапом по нему — подачу);
-// в игре — свап чётности (кто на каком корте), сервер пересчитывает
+// в игре — свап чётности (кто на каком корте; только до первого очка
+// партии — гейт в swapPlayerParity110), сервер пересчитывает
 // подачу по чётности счёта, так что инвариант подачи не ломается
 const playerTap110 = (playerEl) => {
   const modal = playerEl.closest('.modal');
@@ -828,9 +833,17 @@ const servePlayerTap110 = (playerEl) => {
       {}, (result) => updateBoard110State(modal, result));
 };
 
-// свайп к напарнику / клик по игроку — свап чётности кортов пары
+// свайп к напарнику / клик по игроку — свап чётности кортов пары.
+// Только в начале партии, до первого очка (партийные счёты из состояния,
+// единственная точка входа — покрывает и тап, и свайп); после очка —
+// низкий бип отказа. Сервер гейтит то же условием на party_score
 const swapPlayerParity110 = (playerEl) => {
   const modal = playerEl.closest('.modal');
+  const state = board110State.get(modal.id);
+  if (state && (state.party1 !== 0 || state.party2 !== 0)) {
+    boardBeep(220, 0.1, 0.2);
+    return;
+  }
   const team = playerEl.closest('.col')?.querySelector('.board-score')?.getAttribute('data-team-number');
   if (!team) return;
   const [team1, team2] = board110TeamIds(modal);

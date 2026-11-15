@@ -16,6 +16,8 @@ export interface Board110State {
   even_2_user_id: number | null;
   serve_user_id: number | null;
   game_type_pos: number;
+  party_score_1: number;
+  party_score_2: number;
 }
 
 /** Строка игры 110 с колонками чётности/подачи (live-табло). */
@@ -28,6 +30,8 @@ type Game110BoardRow = {
   even_2_user_id: number | null;
   serve_user_id: number | null;
   game_type_pos: number;
+  party_score_1: number;
+  party_score_2: number;
 };
 
 class Game110 {
@@ -115,7 +119,8 @@ class Game110 {
   private boardState(g: {
     score_1: number, score_2: number,
     even_1_user_id: number | null, even_2_user_id: number | null,
-    serve_user_id: number | null, game_type_pos: number
+    serve_user_id: number | null, game_type_pos: number,
+    party_score_1: number, party_score_2: number
   }): Board110State {
     return {
       score_1: g.score_1,
@@ -123,7 +128,9 @@ class Game110 {
       even_1_user_id: g.even_1_user_id,
       even_2_user_id: g.even_2_user_id,
       serve_user_id: g.serve_user_id,
-      game_type_pos: g.game_type_pos
+      game_type_pos: g.game_type_pos,
+      party_score_1: g.party_score_1,
+      party_score_2: g.party_score_2
     };
   }
 
@@ -149,7 +156,10 @@ class Game110 {
         : null;
     this.db.run(
         `UPDATE game_110
-         SET score_${winner} = score_${winner} + 1
+         SET score_${winner} = score_${winner} + 1,
+             -- партийный счёт — для гейта свапа чётности; кламп до 11 —
+             -- партия не длиннее 11 очков, страховая защита инварианта
+             party_score_${winner} = MIN(party_score_${winner} + 1, 11)
          WHERE id = ? AND score_${winner} < 110`,
         [g!.id]
     );
@@ -260,7 +270,10 @@ class Game110 {
     const scorerScoreBefore = scorer === 1 ? g.score_1 : g.score_2;
     this.db.run(
         `UPDATE game_110
-         SET score_${scorer} = score_${scorer} - 1
+         SET score_${scorer} = score_${scorer} - 1,
+             -- партийный счёт убывает вместе с матчевым; кламп от нуля —
+             -- судейская коррекция ниже нуля партийный счёт не уводит
+             party_score_${scorer} = MAX(party_score_${scorer} - 1, 0)
          WHERE id = ? AND score_${scorer} > 0`,
         [g.id]
     );
@@ -302,7 +315,10 @@ class Game110 {
               : prevRoster[scorer].find(p => p !== evenScorer) ?? evenScorer;
       this.db.run(
           `UPDATE game_110
-           SET game_type_pos = ?, serve_user_id = ?, even_1_user_id = ?, even_2_user_id = ?
+           SET game_type_pos = ?, serve_user_id = ?, even_1_user_id = ?, even_2_user_id = ?,
+               -- убавляемое очко закрывало партию — она открывается заново,
+               -- партийные счёты в ноль вместе с разрядом
+               party_score_1 = 0, party_score_2 = 0
            WHERE id = ?`,
           [prevPos, serverUser, even1, even2, g.id]
       );
@@ -351,13 +367,18 @@ class Game110 {
   }
 
   /** Ручной свап чётности кортов пары (судья свайпом по игроку) —
-   *  в любой момент счёта. Чётность — это только то, кто на каком корте;
+   *  только в начале партии, до первого набранного очка: расстановка
+   *  по кортам фиксируется на партию, после очка двигать нельзя.
+   *  Чётность — это только то, кто на каком корте;
    *  инвариант «подаёт по чётности счёта» сохраняется: если подаёт игрок
    *  свапаемой пары, подача переезжает на корт по чётности счёта, подача
    *  другой пары от свапа не зависит. */
   swapCurrentEvenByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
     const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
     if (!g) return null;
+    // партия начата (есть очко) — смена чётности запрещена до следующей
+    // партии (type-pos / откат границы decrease)
+    if (g.party_score_1 !== 0 || g.party_score_2 !== 0) return null;
     const team = (teamNumber === "1" ? 1 : 2) as 1 | 2;
     const roster = this.rosters(g, teamId1, teamId2);
     const stored = team === 1 ? g.even_1_user_id : g.even_2_user_id;
@@ -425,7 +446,9 @@ class Game110 {
     }
     this.db.run(
         `UPDATE game_110
-         SET game_type_pos = ?, even_1_user_id = ?, even_2_user_id = ?, serve_user_id = ?
+         SET game_type_pos = ?, even_1_user_id = ?, even_2_user_id = ?, serve_user_id = ?,
+             -- type-pos оформляет старт партии — партийные счёты в ноль
+             party_score_1 = 0, party_score_2 = 0
          WHERE id = ?`,
         [typePos, even1, even2, serve, g.id]
     );

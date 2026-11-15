@@ -109,24 +109,45 @@ describe("Game routes", () => {
       assert.strictEqual(await denied.text(), "");
     });
 
-    it("POST /current110/swap меняет чётность пары на границе партии", async () => {
+    it("POST /current110/swap меняет чётность пары в начале партии (0:0)", async () => {
       const {team1, team2, matchId} = await seedMatch110();
       db.run("UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?", [matchId]);
       const roster = db.all<{ user_id: number }>(
           `SELECT user_id FROM team_user WHERE team_id = ? ORDER BY id`, [team1]);
       const [even, other] = roster.map(r => r.user_id);
       await post(`${base}/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${even}`);
-      // 11:0 — граница партии
-      for (let i = 0; i < 11; i++) {
-        await post(`${base}/current110/increase?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
-      }
 
       const res = await post(`${base}/current110/swap?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
       assert.strictEqual(res.status, 200);
       const state = await res.json() as { even_1_user_id: number; serve_user_id: number };
       assert.strictEqual(state.even_1_user_id, other);
-      // счёт 11 — нечётный корт, подаёт нечётный игрок (бывший чётный)
-      assert.strictEqual(state.serve_user_id, even);
+      // 0:0 — чётный корт, подача остаётся у чётного (после свапа это other)
+      assert.strictEqual(state.serve_user_id, other);
+    });
+
+    it("POST /current110/swap после первого очка партии — отказ, после type-pos — снова разрешён", async () => {
+      const {team1, team2, matchId} = await seedMatch110();
+      db.run("UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?", [matchId]);
+      const roster = db.all<{ user_id: number }>(
+          `SELECT user_id FROM team_user WHERE team_id = ? ORDER BY id`, [team1]);
+      const [even, other] = roster.map(r => r.user_id);
+
+      // первое очко партии — свап запрещён
+      await post(`${base}/current110/increase?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      const denied = await post(`${base}/current110/swap?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      assert.strictEqual(await denied.text(), "");
+
+      // 11:0 — граница партии, type-pos оформляет старт следующей (СП
+      // круга 2 — парный ростер): свап снова разрешён
+      for (let i = 1; i < 11; i++) {
+        await post(`${base}/current110/increase?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      }
+      const tpState = await (await post(`${base}/current110/type-pos?team_1_id=${team1}&team_2_id=${team2}&type_pos=9`)).json() as { even_1_user_id: number };
+      const res = await post(`${base}/current110/swap?team_1_id=${team1}&team_2_id=${team2}&team_number=1`);
+      assert.strictEqual(res.status, 200);
+      const state = await res.json() as { even_1_user_id: number };
+      // чётность переехала на второго игрока ростера
+      assert.strictEqual(state.even_1_user_id, roster.map(r => r.user_id).find(id => id !== tpState.even_1_user_id));
     });
 
     it("POST /current110/swap без team_number — отказ (пустое тело)", async () => {

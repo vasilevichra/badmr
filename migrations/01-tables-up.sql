@@ -276,10 +276,18 @@ CREATE TABLE game_110
     -- индекс текущей строки разряда на табло (0..9, «•» не нумеруется):
     -- сервер не знает разряд из счёта (автозачёт/корректировки его ломают)
     game_type_pos  INTEGER NOT NULL DEFAULT 0,
+    -- счёт текущей партии (сбрасывается в 0 на старте партии — type-pos,
+    -- границе decrease, инкремент/декремент вместе со счётом матча):
+    -- гейт свапа чётности «только до первого очка партии» из кумулятивного
+    -- счёта матча не выводим (11:6 — либо граница, либо партия 2 при 11:5)
+    party_score_1 INTEGER  NOT NULL DEFAULT 0,
+    party_score_2 INTEGER  NOT NULL DEFAULT 0,
     current      INTEGER NOT NULL DEFAULT 0,
     CHECK (current IN (0, 1)),
     CHECK (score_1 >= 0 AND score_1 <= 110),
-    CHECK (score_2 >= 0 AND score_2 <= 110)
+    CHECK (score_2 >= 0 AND score_2 <= 110),
+    CHECK (party_score_1 >= 0 AND party_score_1 <= 11),
+    CHECK (party_score_2 >= 0 AND party_score_2 <= 11)
 );
 
 CREATE TABLE game_type
