@@ -2493,6 +2493,27 @@ a.lab-profile:hover {
   width: auto;
 }
 
+/* торцы табло — тонкие полоски в цветах команд (как vr-полоски у составов):
+   левый торец — команда 1, правый — команда 2; на телефоне modal-content
+   повёрнут вместе с полосками, торцы остаются торцами. pointer-events
+   снят — тап по краю счёта не должен попадать в полоску */
+.board-team-strip {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.board-team-strip-left {
+  left: 0;
+}
+
+.board-team-strip-right {
+  right: 0;
+}
+
 /* iOS Safari: повёрнутая модалка шире вьюпорта (100dvh при 320 ширине —
    592px), и движок «надувает» текст широких блоков при отрисовке
    (text autosizing): подгон посчитан верно (по замерам оверлея), а на
