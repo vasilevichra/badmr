@@ -141,6 +141,10 @@
                 ? `${endedAt.getDate()} ${monthArray[endedAt.getMonth()]} ${endedAt.getFullYear()} · ${startedH}:${startedM}–${endedH}:${endedM}`
                 : getDateStr()); %>
         <% const heroDurationStr = durationStr; %>
+            <%# ряды-идентификатор турнира — одна группа: бейдж типа+выход,
+                название, дата. Плотнее остального (gap 6px против 10px
+                у .tournament-hero), чтобы не смотрелись разрозненными %>
+            <div class="tournament-hero-main">
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="badge tournament-hero-type"><%= current_tournament.type_name %></span>
                 <%# шере и календарь — сразу за бейджем типа; справа (ms-auto) —
@@ -174,6 +178,7 @@
             <div class="tournament-hero-meta">
                 <%= heroDateStr %><% if (device !== 'phone' && heroDurationStr) { %> · <%= heroDurationStr %><% } %>
             </div>
+            </div><%# /.tournament-hero-main %>
             <% if (device === 'phone') { %>
                 <%# телефон, как в макете: прогресс регистрации + подпись под ним %>
                 <div class="progress tournament-hero-progress" role="progressbar" aria-label="Заполненность турнира" aria-valuenow="<%= regLeftPct %>" aria-valuemin="0" aria-valuemax="100">

@@ -962,6 +962,16 @@ body.desktop #tournament-new-registration-hint > .row {
   text-transform: uppercase;
 }
 
+/* ряды-идентификатор турнира (бейдж+выход, название, дата) — одна группа:
+   внутренний гэп плотнее ритма .tournament-hero (6px против 10px),
+   снаружи группа отделяется обычным гэпом героя */
+.tournament-hero-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
 /* выбор турнира слева от названия: кнопка «🏆 #N» + редактируемое имя
    в одном ряду (кнопка не участвует в клике-редактировании имени) */
 .tournament-hero-name-row {
