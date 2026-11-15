@@ -1062,7 +1062,10 @@ body.desktop #tournament-new-registration-hint > .row {
 }
 
 body.phone .tournament-hero {
-  margin: 10px 12px 12px;
+  /* боковые margin нулевые: 12px даёт padding .container — тот же отступ,
+     что у колонок матрицы/составов (row компенсирует padding отрицательными
+     margin), иначе шапка уже карточек команд */
+  margin: 10px 0 12px;
   padding: 0.8rem 0.9rem;
 }
 
@@ -1071,6 +1074,14 @@ body.phone .tournament-hero {
    телефоне карточка почти у края экрана и глиф заходит на её угол */
 body.phone .toggler-row .toggler {
   position: static;
+}
+
+/* телефон: боковые margin обёртки шапки нулевые — 12px даёт padding
+   .container, как у колонок матрицы/составов (иначе шапка дважды
+   сдвинута: 12px обёртки + 12px контейнера = 24px) */
+body.phone .header-card {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /* телефон: шапочный шеврон в потоке и его строка занимает 24px, из-за этого
