@@ -2477,6 +2477,17 @@ a.lab-profile:hover {
   width: auto;
 }
 
+/* iOS Safari: повёрнутая модалка шире вьюпорта (100dvh при 320 ширине —
+   592px), и движок «надувает» текст широких блоков при отрисовке
+   (text autosizing): подгон посчитан верно (по замерам оверлея), а на
+   экране кегль в ~1.8 раза больше и названия уезжают. Запрет надувания
+   внутри табло — замер и отрисовка совпадают */
+body.phone [id^="tournament-groups-board-"] .modal-content,
+body.phone [id^="tournament-groups-board-"] .modal-content * {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
 .board-score {
   height: 73vh;
   font-size: 37vw;
