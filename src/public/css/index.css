@@ -2689,6 +2689,7 @@ a.lab-profile:hover {
 .board-swap-players {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 6vw;
   margin-bottom: 4vh;
 }
@@ -2698,12 +2699,13 @@ a.lab-profile:hover {
 }
 
 /* Общее правило (не device-специфичное). Кнопка «Продолжить» на плашках
-   (смена сторон и пауза) — крупная иконка play вместо текста: читается
-   с корта, кликается с телефона. */
+   (смена сторон и пауза) — крупная иконка play между парами игроков:
+   читается с корта, кликается с телефона. */
 .board-swap-overlay .btn-primary {
-  font-size: 6vh;
+  font-size: 7vh;
   line-height: 1;
-  padding: 1.5vh 6vh;
+  padding: 1.5vh 4vh;
+  border-radius: 2vh;
 }
 
 /* Общее правило (не device-специфичное). Цифры обратного отсчёта паузы
@@ -2982,8 +2984,9 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
   }
 
   body.phone [id^="tournament-groups-board-"] .board-swap-overlay .btn-primary {
-    font-size: 6vw;
-    padding: 1.5vw 6vw;
+    font-size: 12vw;
+    padding: 2.5vw 7vw;
+    border-radius: 4vw;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-break-seconds {
