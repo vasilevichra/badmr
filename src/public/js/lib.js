@@ -886,23 +886,25 @@ document.addEventListener('touchend', (e) => {
   board110TouchHandledAt = Date.now();
   const state = board110State.get(playerEl.closest('.modal').id);
   if (!state) return;
-  // ось — как у счёта: на телефоне в портрете контент повёрнут CSS,
-  // рабочая ось — dx; в ландшафте — dy
+  // ось жеста — ось «к напарнику», не ось счёта: пара внутри ячейки —
+  // flex-ряд по контентному X, при CSS-повороте портрета он ложится на
+  // экранную вертикаль (напарник сверху/снизу), в ландшафте — на
+  // горизонталь (напарник слева/справа). Как в НЛ: там свайп по игроку
+  // всегда по dy (контент НЛ в портрете повёрнут так же)
   const rotated = document.body.classList.contains('phone')
       && window.matchMedia('(orientation: portrait)').matches;
-  const dist = rotated ? dx : dy;
-  const across = rotated ? dy : dx;
+  const dist = rotated ? dy : dx;
+  const across = rotated ? dx : dy;
   if (Math.abs(dist) < 30) {
     if (Math.abs(across) >= 30) return; // поперечный жест — не тап
     state._tapHandled = Date.now(); // страховка: если preventDefault не погасил click
     playerTap110(playerEl);
     return;
   }
-  // направление «к напарнику»: первый в ячейке группы — вниз,
-  // второй — вверх (вверх в портрете — вправо по экрану)
+  // направление «к напарнику»: первый в ячейке группы — контентно левее
+  // (в портрете — экранный верх, в ландшафте — слева), второй — правее
   const cellPlayers = [...playerEl.closest('[data-type]').querySelectorAll('.board-player')];
-  const up = rotated ? dist > 0 : dist < 0;
-  const towardPartner = cellPlayers.indexOf(playerEl) === 0 ? !up : up;
+  const towardPartner = cellPlayers.indexOf(playerEl) === 0 ? dist > 0 : dist < 0;
   if (!towardPartner) return;
   swapPlayerParity110(playerEl);
 }, {passive: false});
