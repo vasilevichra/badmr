@@ -2988,7 +2988,10 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
   }
 
   body.phone [id^="tournament-groups-board-"] .board-break-seconds {
-    font-size: 37vh;
+    /* vw, а не vh: в портрете vh — длинная сторона экрана, при 37vh
+       (≈312px) плашка не помещается в модалку (высота 100vw ≈ 390px)
+       и кнопка «Продолжить» обрезается за нижним краем */
+    font-size: 36vw;
     margin-bottom: 4vw;
   }
 
