@@ -1126,8 +1126,11 @@ body.phone .tournament-switch-btn {
 }
 
 body.phone .tournament-hero form.logout {
-  /* форма селектор+имя+выход занимает всю оставшуюся ширину строки
-     (ms-auto сжимает её до контента, длинный email вылезал за экран) */
+  /* форма почта+выход — самым верхним рядом героя (обмен местами
+     с бейджем типа: order -1 + вся ширина строки переносят её выше;
+     иначе длинный email вылезал за экран) */
+  order: -1;
+  width: 100%;
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
@@ -1136,7 +1139,10 @@ body.phone .tournament-hero form.logout {
 }
 
 body.phone .tournament-hero .user {
-  flex: 1 1 auto;
+  /* почта прижата вправо, к крестику выхода; при нехватке ширины
+     сжимается с многоточием (min-width: 0 обязан для ellipsis) */
+  flex: 0 1 auto;
+  margin-left: auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
