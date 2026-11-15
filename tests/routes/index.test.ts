@@ -14,6 +14,8 @@ import type { AddressInfo } from "node:net";
 const app: App = Express();
 app.set("views", path.resolve(import.meta.dirname, "../../src/public/views"));
 app.set("view engine", "ejs");
+// версия статики: в реальном приложении задаётся в app.ts
+app.locals.jsVer = () => 0;
 // заглушка express-useragent: обычный десктопный браузер
 app.use((req, res, next) => {
   (req as unknown as { useragent: { isDesktop: boolean } }).useragent = { isDesktop: true };
@@ -235,6 +237,7 @@ describe("Tournament page for guest", () => {
   const guestApp: App = Express();
   guestApp.set("views", path.resolve(import.meta.dirname, "../../src/public/views"));
   guestApp.set("view engine", "ejs");
+  guestApp.locals.jsVer = () => 0;
   guestApp.use((req, res, next) => {
     (req as unknown as { useragent: { isDesktop: boolean } }).useragent = { isDesktop: true };
     (req as unknown as { isAuthenticated: () => boolean }).isAuthenticated = () => false;

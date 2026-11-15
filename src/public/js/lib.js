@@ -1019,8 +1019,14 @@ const copyToClipboard = (text, onDone) => {
 };
 
 $(document).on('shown.bs.modal', (e) => {
-  // названия команд на табло: общий подобранный размер после отрисовки
-  if (e.target.querySelector('.board-team-name')) fitBoardTeamNames(e.target);
+  // названия команд на табло: общий подобранный размер после отрисовки.
+  // iOS Safari: в момент shown замер может быть нулевым/устаревшим —
+  // перемеряем несколько раз, пока модалка открыта
+  if (!e.target.querySelector('.board-team-name')) return;
+  fitBoardTeamNames(e.target);
+  [150, 400, 1000].forEach((ms) => setTimeout(() => {
+    if (e.target.classList.contains('show')) fitBoardTeamNames(e.target);
+  }, ms));
 });
 
 // перемер названий открытого табло: веб-шрифт Raleway мог догрузиться
@@ -1051,6 +1057,11 @@ if (typeof ResizeObserver === 'function') {
     });
   });
   document.querySelectorAll('.modal .board-team-name span').forEach((s) => boardNameRO.observe(s));
+  // и за контейнером табло: его ширина = 100dvh, на iOS dvh живой — тулбар
+  // Safari складывается/раскладывается, колонки сужаются/растут, а ширина
+  // nowrap-спана при этом не меняется (overflow наружу) — без этого
+  // наблюдателя перемер по сужению не приходит, названия уезжают
+  document.querySelectorAll('[id^="tournament-groups-board-"] .modal-content').forEach((m) => boardNameRO.observe(m));
 }
 $(document).on('click', '.tournament-name-copy', function () {
   // текст шеры собран в data-share; {REG_LEFT} — скобка про регистрацию:
