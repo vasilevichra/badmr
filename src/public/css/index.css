@@ -2615,6 +2615,15 @@ a.lab-profile:hover {
   display: none;
 }
 
+/* Табло 110: кнопка смены сторон крупнее базовой (на телефоне 3vh/vw
+   плохо видна). top сдвинут на полразницы кеглей, чтобы центр иконки
+   остался на середине текста названий (11.7 − (6 − 3) / 2). НЛ задаёт
+   размер отдельно — здесь не задета. */
+[id^="tournament-groups-board-"] .board-swap {
+  top: 10.2vh;
+  font-size: 6vh;
+}
+
 /* Общее правило (не device-специфичное). Плашка смены сторон: закрывает
    табло целиком, пряча счёт и типы игр, пока стороны не подтверждены
    кнопкой «Продолжить». */
@@ -2945,8 +2954,8 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
   }
 
   body.phone [id^="tournament-groups-board-"] .board-swap {
-    top: 11.7vw;
-    font-size: 3vw;
+    top: 10.2vw;
+    font-size: 6vw;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-swap-plate-title {

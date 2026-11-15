@@ -487,14 +487,15 @@ const swapBoardSidesEl = (modal) => {
 };
 
 // ручная смена сторон (кнопка между названиями): доступна только при 0:0,
-// кнопка прячется на первом очке. Повторные нажатия меняют стороны обратно
+// кнопка прячется на первом очке. Повторные нажатия меняют стороны обратно.
+// Без плашки — при 0:0 играть ещё не начали, счёт недоступен только
+// визуально; плашка осталась для автосмены сторон на границах партий
 const swapBoardSides = (btn) => {
   const modal = btn.closest('.modal');
   const left = modal.querySelector('#board-score-l');
   const right = modal.querySelector('#board-score-r');
   if (parseInt(left.textContent) !== 0 || parseInt(right.textContent) !== 0) return;
   swapBoardSidesEl(modal);
-  showBoardSwapPlate(modal);
 };
 
 // плашка смены сторон: закрывает табло целиком (счёт и типы игр не видны),
@@ -661,7 +662,16 @@ const servePlayerTap110 = (playerEl) => {
   const scores = [...modal.querySelectorAll('.board-score')].map((s) => Number(s.textContent));
   if (scores.some((s) => s !== 0)) return; // подача только на 0:0
   const userId = Number(playerEl.getAttribute('data-user-id'));
-  if (userId !== state.even1 && userId !== state.even2) return; // только чётному
+  // чётность пары: хранимая, а без неё (матч только начался, в БД NULL) —
+  // база, первый игрок группы колонки; сервер резолвит NULL так же.
+  // Одиночки: пары/чётности нет, подача — у единственного игрока
+  const evenOf = (teamNumber) => {
+    const stored = teamNumber === 1 ? state.even1 : state.even2;
+    if (stored !== null && stored !== undefined) return stored;
+    const scoreEl = modal.querySelector(teamNumber === 1 ? '#board-score-l' : '#board-score-r');
+    return board110ColumnPlayers(modal, scoreEl)[0]?.id;
+  };
+  if (userId !== evenOf(1) && userId !== evenOf(2)) return; // только чётному
   const [team1, team2] = board110TeamIds(modal);
   $.post(`/api/games/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${userId}`,
       {}, (result) => updateBoard110State(modal, result));
@@ -942,6 +952,19 @@ $(document).on('shown.bs.modal', (e) => {
   // названия команд на табло: общий подобранный размер после отрисовки
   if (e.target.querySelector('.board-team-name')) fitBoardTeamNames(e.target);
 });
+
+// перемер названий открытого табло: веб-шрифт Raleway мог догрузиться
+// после открытия (первое открытие на телефоне) — ширины текста меняются,
+// и подобранный кегль перестаёт умещаться; ресайз — смена ориентации,
+// у колонок другая ширина. Размер по-прежнему общий для обеих команд —
+// по самому длинному названию
+const refitOpenBoardNames = () => {
+  const modal = [...document.querySelectorAll('.modal')]
+      .find((m) => m.classList.contains('show') && m.querySelector('.board-team-name'));
+  if (modal) fitBoardTeamNames(modal);
+};
+document.fonts?.ready.then(refitOpenBoardNames);
+window.addEventListener('resize', refitOpenBoardNames);
 $(document).on('click', '.tournament-name-copy', function () {
   // текст шеры собран в data-share; {REG_LEFT} — скобка про регистрацию:
   // есть отсчёт (статус «Регистрация») → остаток в полных сутках или
