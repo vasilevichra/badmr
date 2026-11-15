@@ -3073,6 +3073,18 @@ body.phone .tournament-mobile-matrix-col {
   max-width: 100%;
 }
 
+/* ряд составов команд (таблицы игроков) — предыдущий сосед строки
+   матрицы; колонки на всю ширину, как карточки матрицы, таблица игрока
+   растягивается на оставшуюся от цветной полосы (vr) ширину */
+body.phone .tournament-mobile-rosters-row > .col-auto {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+body.phone .tournament-mobile-rosters-row .tournament-groups-team {
+  flex: 1 1 auto;
+}
+
 .tournament-mobile-matrix-team {
   border: 1px solid var(--bs-border-color);
   border-radius: 10px;

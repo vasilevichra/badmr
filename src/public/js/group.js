@@ -606,7 +606,11 @@ const buildMobileMatrix = () => {
   document.querySelectorAll('table.tournament-groups-table-games').forEach((table) => {
     const host = table.parentElement; // .d-flex — таблица + скрытые модалки
     host.parentElement.classList.add('tournament-mobile-matrix-col');
-    host.parentElement.parentElement.classList.add('tournament-mobile-matrix-row');
+    const matrixRow = host.parentElement.parentElement;
+    matrixRow.classList.add('tournament-mobile-matrix-row');
+    // ряд составов (таблицы игроков) — предыдущий сосед строки матрицы:
+    // колонкам составов задаётся та же полная ширина, что у карточек
+    matrixRow.previousElementSibling?.classList.add('tournament-mobile-rosters-row');
 
     // название команды из ячейки/шапки без блока отдыха
     const cellTeamName = (td) => {
