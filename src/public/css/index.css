@@ -3065,14 +3065,12 @@ body.phone .tournament-mobile-matrix {
   margin-bottom: 3em;
 }
 
-/* колонка .col-auto с матрицей — на всю ширину экрана: у .row дефолтные
-   отрицательные margin уже выводят её за паддинг блока (390px), нулями
-   паддингов колонки карточки идут от края до края */
+/* колонка .col-auto с матрицей — на всю ширину строки, но со стандартными
+   гаттерами Bootstrap (12px), как у плашек команд в шапке: содержимое
+   карточек не прижато к краям экрана */
 body.phone .tournament-mobile-matrix-col {
   flex: 0 0 100%;
   max-width: 100%;
-  padding-left: 0;
-  padding-right: 0;
 }
 
 .tournament-mobile-matrix-team {
