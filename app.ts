@@ -79,9 +79,13 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 // один и тот же origin) подменяет телефонную версию десктопной, а no-cache
 // гарантирует ревалидацию после перезапуска сервера. Service worker тоже
 // опирается на Vary: caches.match различает записи по заголовкам запроса.
+// no-store, а не no-cache: Safari (iOS) при ревалидации HTML всё равно
+// подмешивает закэшированный HTML, если сервер недоступен в момент запроса,
+// и держит старые ссылки на js/css — телефон исполняет прежний код после
+// релиза. HTML динамический (csrf, сессия) — кэшировать нечего вовсе
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
   res.vary('User-Agent');
-  res.set('Cache-Control', 'no-cache');
+  res.set('Cache-Control', 'no-store, must-revalidate');
   next();
 });
 

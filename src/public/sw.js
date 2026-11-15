@@ -1,13 +1,15 @@
 /* Service worker для PWA-режима badmr.ru.
  * Стратегии:
- *  - статика (/css, /js, /assets) — cache-first с ревалидацией при
- *    обновлении кеша;
+ *  - статика (/css, /js, /assets) — network-first: свежий файл всегда,
+ *    кэш — только фолбэк для оффлайна. Раньше было cache-first — Safari
+ *    неделями исполнял старый js после релиза (подгон названий табло
+ *    не доходил до телефонов);
  *  - навигации и прочие документы — только сеть, без кеширования:
  *    разметка зависит от User-Agent (phone/desktop), а Cache API в
  *    Safari не учитывает Vary: User-Agent (см. fetch-обработчик).
- * При любых изменениях набора кешируемых файлов поднимать VERSION —
- * иначе клиенты останутся на старой статике. */
-const VERSION = 'v4';
+ * При любых изменениях набора кешируемых файлов или стратегий поднимать
+ * VERSION — иначе клиенты останутся на старой статике. */
+const VERSION = 'v5';
 const CACHE = `badmr-${VERSION}`;
 const STATIC_PREFIXES = ['/css/', '/js/', '/assets/'];
 
@@ -42,18 +44,18 @@ self.addEventListener('fetch', (event) => {
     const isStatic = STATIC_PREFIXES.some((p) => url.pathname.startsWith(p));
 
     if (isStatic) {
-        // cache-first: статика без no-cache, обновляем в фоне
+        // network-first: свежая статика при любой онлайн-загрузке, кэш —
+        // только оффлайн-фолбэк. Свежий ответ кладём в кэш для оффлайна
         event.respondWith((async () => {
-            const cached = await caches.match(event.request);
-            if (cached) {
-                fetch(event.request).then((res) => {
-                    if (res.ok) caches.open(CACHE).then((c) => c.put(event.request, res.clone()));
-                }).catch(() => {});
-                return cached;
+            try {
+                const res = await fetch(event.request);
+                if (res.ok) caches.open(CACHE).then((c) => c.put(event.request, res.clone()));
+                return res;
+            } catch {
+                const cached = await caches.match(event.request);
+                if (cached) return cached;
+                throw new Error('offline and not cached');
             }
-            const res = await fetch(event.request);
-            if (res.ok) caches.open(CACHE).then((c) => c.put(event.request, res.clone()));
-            return res;
         })());
         return;
     }
