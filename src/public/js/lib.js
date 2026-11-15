@@ -2,7 +2,7 @@ const csrfToken = () => $('meta[name="csrf-token"]').attr('content');
 
 // ВРЕМЕННО (диагностика на реальном iPhone, ?boarddebug=1): сборщик ошибок
 // в самом начале lib.js — ловит и то, что падает до инициализации страницы
-const LIB_BUILD = '2026-11-15-1245';
+const LIB_BUILD = '2026-11-15-1250';
 window.__boardErrs = [];
 window.addEventListener('error', (e) => window.__boardErrs.push(String(e.message)));
 window.addEventListener('unhandledrejection', (e) => window.__boardErrs.push('rejection: ' + e.reason));
@@ -1087,6 +1087,8 @@ if (new URLSearchParams(location.search).has('boarddebug')) {
     const lines = [
       `lib: ${LIB_BUILD}`,
       `inner: ${window.innerWidth}x${window.innerHeight}`,
+      `vv: ${window.visualViewport ? `${visualViewport.scale.toFixed(2)}x ${Math.round(visualViewport.width)}x${Math.round(visualViewport.height)} off:${Math.round(visualViewport.offsetTop)}/${Math.round(visualViewport.offsetLeft)}` : '-'}`,
+      `doc: ${document.documentElement.clientWidth}x${document.documentElement.clientHeight}`,
       `dvh: ${CSS.supports('width', '100dvh')}`,
       `errs: ${JSON.stringify(window.__boardErrs.slice(-6))}`,
     ];
@@ -1097,8 +1099,9 @@ if (new URLSearchParams(location.search).has('boarddebug')) {
       modal.querySelectorAll('.board-team-name').forEach((n, i) => {
         const span = n.querySelector('span');
         const cs = getComputedStyle(n);
-        lines.push(`name${i}: "${n.textContent.trim().slice(0, 25)}"`);
-        lines.push(`  inline:${n.style.fontSize || '-'} calc:${cs.fontSize} cw:${n.clientWidth} pad:${cs.paddingLeft}/${cs.paddingRight}`);
+        const tsa = cs.webkitTextSizeAdjust || cs.textSizeAdjust || '-';
+        lines.push(`name${i}: "${n.textContent.trim().slice(0, 25)}" tsa:${tsa}`);
+        lines.push(`  inline:${n.style.fontSize || '-'} calc:${cs.fontSize} cw:${n.clientWidth} ch:${n.clientHeight} pad:${cs.paddingLeft}/${cs.paddingRight}`);
         lines.push(`  spanW:${span ? span.offsetWidth : 'NO SPAN'} spanRect:${span ? Math.round(span.getBoundingClientRect().width) : '-'} nameRect:${Math.round(n.getBoundingClientRect().width)}x${Math.round(n.getBoundingClientRect().height)}`);
       });
     } else {
