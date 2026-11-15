@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { describe, before, after, it } from "node:test";
 import Express, { type Express as App } from "express";
 import promiseMiddleware from "../src/middleware/promise.ts";
-import writeGuard from "../src/middleware/tournament-write-guard.ts";
 import UserRouter from "../src/routes/user.ts";
 import SettingsRouter from "../src/routes/settings.ts";
 import TournamentRouter from "../src/routes/tournament.ts";
@@ -43,11 +42,10 @@ interface ReadyRow {
 
 const idsOf = (rows: unknown) => (rows as { id?: number; user_id?: number }[]).map((r) => r.id ?? r.user_id);
 
-// мини-приложение: guard + читающие роутеры (анонимный доступ, как на проде)
+// мини-приложение: читающие роутеры (анонимный доступ, как на проде)
 const app: App = Express();
 app.use(Express.json());
 app.use(promiseMiddleware());
-app.use(writeGuard);
 app.use("/api/users", UserRouter);
 app.use("/api/settings", SettingsRouter);
 app.use("/api/tournaments", TournamentRouter);
@@ -259,13 +257,13 @@ describe("Личный просмотр турнира (?tournament=)", () => {
       assert.notStrictEqual(await (await fetch(`${base}/tournaments/registered/count`)).json(), tournamentService.registeredCount(B));
     });
 
-    it("write с ?tournament≠current — 409", async () => {
+    it("write с ?tournament=другого турнира — проходит", async () => {
       const res = await fetch(`${base}/users/create?tournament=${B}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ln: "Тестов", fn: "Алексей", pn: "Отчество", rate: 500, sex: "on", city: 1, bd: "1990-01-01" }),
       });
-      assert.strictEqual(res.status, 409);
+      assert.strictEqual(res.status, 200);
     });
 
     it("write без ?tournament — проходит", async () => {

@@ -20,7 +20,7 @@
     <link rel="stylesheet" type="text/css" href="/css/bootstrap-utilities.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/select2.min.css"/>
     <link rel="stylesheet" type="text/css" href="/css/select2-bootstrap-5-theme.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/index.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/index.css?v=<%= jsVer('css/index.css') %>"/>
     <% if (user) { %>
         <link rel="stylesheet" type="text/css" href="/css/loggedin.css">
     <% } %>
@@ -303,17 +303,19 @@
 <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2000;"></div>
 <script type="text/javascript" src="/js/express-useragent.global.min.js"></script>
 <script type="text/javascript" src="/js/sex.js"></script>
-<script type="text/javascript" src="/js/lib.js"></script>
-<script type="text/javascript" src="/js/share.js"></script>
-<script type="text/javascript" src="/js/tournament.js"></script>
-<script type="text/javascript" src="/js/settings.js"></script>
-<script type="text/javascript" src="/js/court.js"></script>
-<script type="text/javascript" src="/js/player.js"></script>
-<script type="text/javascript" src="/js/select.js"></script>
-<script type="text/javascript" src="/js/game.js"></script>
-<script type="text/javascript" src="/js/archive.js"></script>
-<script type="text/javascript" src="/js/group.js"></script>
-<script type="text/javascript" src="/js/index.js"></script>
+<% /* ?v= — mtime файла: после релиза браузер (особенно iOS Safari)
+      не должен подмешивать старый JS/CSS из кэша к новой странице */ %>
+<script type="text/javascript" src="/js/lib.js?v=<%= jsVer('js/lib.js') %>"></script>
+<script type="text/javascript" src="/js/share.js?v=<%= jsVer('js/share.js') %>"></script>
+<script type="text/javascript" src="/js/tournament.js?v=<%= jsVer('js/tournament.js') %>"></script>
+<script type="text/javascript" src="/js/settings.js?v=<%= jsVer('js/settings.js') %>"></script>
+<script type="text/javascript" src="/js/court.js?v=<%= jsVer('js/court.js') %>"></script>
+<script type="text/javascript" src="/js/player.js?v=<%= jsVer('js/player.js') %>"></script>
+<script type="text/javascript" src="/js/select.js?v=<%= jsVer('js/select.js') %>"></script>
+<script type="text/javascript" src="/js/game.js?v=<%= jsVer('js/game.js') %>"></script>
+<script type="text/javascript" src="/js/archive.js?v=<%= jsVer('js/archive.js') %>"></script>
+<script type="text/javascript" src="/js/group.js?v=<%= jsVer('js/group.js') %>"></script>
+<script type="text/javascript" src="/js/index.js?v=<%= jsVer('js/index.js') %>"></script>
 
 </body>
 </html>

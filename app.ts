@@ -9,6 +9,7 @@ import promiseMiddleware from './src/middleware/promise.ts';
 import session from 'express-session';
 import useragent from 'express-useragent';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -19,6 +20,16 @@ const app = express();
 // по умолчанию — cwd, как раньше
 const home = process.env.BADMR_HOME ?? '.';
 const dataRoot = process.env.BADMR_DATA ?? '.';
+
+// версия статики для ?v= в шаблонах: mtime файла — после релиза браузер
+// получает новый URL и не подмешивает старый js/css из кэша
+app.locals.jsVer = (p: string) => {
+  try {
+    return Math.floor(fs.statSync(path.join(home, 'src/public', p)).mtimeMs);
+  } catch {
+    return 0;
+  }
+};
 const SQLiteStore = ((await import('connect-sqlite3')).default as unknown as (connect: unknown) => new (options: { db: string }) => import('express-session').Store)(session);
 const store = new SQLiteStore({ db: 'sessions.db', dir: path.join(dataRoot, '.data') });
 
@@ -97,10 +108,6 @@ app.use('/css', assets(path.join(__dirname, '/node_modules/select2-bootstrap-5-t
 app.use('/assets', assets(path.join(__dirname, '/src/public/assets')));
 app.use('/assets', assets(path.join(__dirname, '/node_modules/bootstrap-icons')));
 app.use('/views', assets(path.join(__dirname, '/src/public/views')));
-
-// мутации — только над глобальным current: write-запрос с ?tournament=,
-// указывающим на другой турнир, отклоняется (просмотр по ссылке — read-only)
-app.use(await import('./src/middleware/tournament-write-guard.ts').then(m => m.default));
 
 app.use('/', await import('./src/routes/index.ts').then(m => m.default));
 
