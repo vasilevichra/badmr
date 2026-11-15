@@ -412,6 +412,9 @@ const fitBoardTeamNames = (modal) => {
   const names = modal.querySelectorAll('.board-team-name');
   if (names.length !== 2) return;
   names.forEach((n) => { n.style.fontSize = ''; });
+  // скрытая модалка меряется нулями: деление дало бы NaN/Infinity и
+  // «подгон» молча не применился — ждём реальной отрисовки
+  if (Array.from(names).some((n) => avail(n) <= 0 || n.querySelector('span').offsetWidth <= 0)) return;
   // доступная ширина: колонка минус боковые паддинги самой строки названия
   const avail = (n) => {
     const cs = getComputedStyle(n);
@@ -434,8 +437,16 @@ const decreaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   if (parseInt(el.textContent) <= 0) return;
   el.textContent = parseInt(el.textContent) - 1;
   boardBeep(220, 0.1, 0.2);
+  // возврат на 0:0 — кнопка смены сторон возвращается (прячется на первом очке)
+  const modal = el.closest('.modal');
+  const left = modal.querySelector('#board-score-l');
+  const right = modal.querySelector('#board-score-r');
+  if (parseInt(left.textContent) === 0 && parseInt(right.textContent) === 0) {
+    const swap = modal.querySelector('.board-swap');
+    if (swap) swap.hidden = false;
+  }
   $.post(`/api/games/current110/decrease?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`,
-      {}, (state) => updateBoard110State(el.closest('.modal'), state));
+      {}, (state) => updateBoard110State(modal, state));
 };
 
 // салют при выигранном матче: лёгкие искры вокруг счёта, каждая
@@ -654,13 +665,16 @@ const addScoreBoardHandlers = () => {
 // id команд из id модалки (tournament-groups-board-<t1>-<t2>)
 const board110TeamIds = (modal) => modal.id.replace('tournament-groups-board-', '').split('-').map(Number);
 
-// тап/двойной клик по чётному игроку на 0:0 — подача
-const servePlayerTap110 = (playerEl) => {
+// тап/клик по игроку: на 0:0 чётному — подача, нечётному — свап чётности
+// (судья сначала выставляет, кто чётный, затем тапом по нему — подачу);
+// в игре — свап чётности, сервер разрешает его только на границе партий,
+// между границами чётность и подача вычисляются автоматически
+const playerTap110 = (playerEl) => {
   const modal = playerEl.closest('.modal');
+  const scores = [...modal.querySelectorAll('.board-score')].map((s) => Number(s.textContent));
+  if (scores.some((s) => s !== 0)) return swapPlayerParity110(playerEl);
   const state = board110State.get(modal.id);
   if (!state) return;
-  const scores = [...modal.querySelectorAll('.board-score')].map((s) => Number(s.textContent));
-  if (scores.some((s) => s !== 0)) return; // подача только на 0:0
   const userId = Number(playerEl.getAttribute('data-user-id'));
   // чётность пары: хранимая, а без неё (матч только начался, в БД NULL) —
   // база, первый игрок группы колонки; сервер резолвит NULL так же.
@@ -671,9 +685,16 @@ const servePlayerTap110 = (playerEl) => {
     const scoreEl = modal.querySelector(teamNumber === 1 ? '#board-score-l' : '#board-score-r');
     return board110ColumnPlayers(modal, scoreEl)[0]?.id;
   };
-  if (userId !== evenOf(1) && userId !== evenOf(2)) return; // только чётному
+  if (userId === evenOf(1) || userId === evenOf(2)) servePlayerTap110(playerEl);
+  else swapPlayerParity110(playerEl);
+};
+
+// тап/двойной клик по чётному игроку на 0:0 — подача (условия уже
+// проверены в playerTap110)
+const servePlayerTap110 = (playerEl) => {
+  const modal = playerEl.closest('.modal');
   const [team1, team2] = board110TeamIds(modal);
-  $.post(`/api/games/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${userId}`,
+  $.post(`/api/games/current110/serve?team_1_id=${team1}&team_2_id=${team2}&user_id=${Number(playerEl.getAttribute('data-user-id'))}`,
       {}, (result) => updateBoard110State(modal, result));
 };
 
@@ -730,7 +751,7 @@ document.addEventListener('touchend', (e) => {
   if (Math.abs(dist) < 30) {
     if (Math.abs(across) >= 30) return; // поперечный жест — не тап
     state._tapHandled = Date.now(); // страховка: если preventDefault не погасил click
-    servePlayerTap110(playerEl);
+    playerTap110(playerEl);
     return;
   }
   // направление «к напарнику»: первый в ячейке группы — вниз,
@@ -742,27 +763,13 @@ document.addEventListener('touchend', (e) => {
   swapPlayerParity110(playerEl);
 }, {passive: false});
 
-// десктоп: клик по игроку — свап чётности. Откладывается на 250мс и
-// отменяется dblclick'ом — двойной клик означает подачу, а не два свапа
-let playerClickTimer110 = null;
+// десктоп: клик по игроку — та же семантика, что тап на телефоне
+// (0:0: чётный — подача, нечётный — свап чётности; в игре — свап)
 $(document).on('click', '[id^="tournament-groups-board-"] .board-player', function () {
   const state = board110State.get(this.closest('.modal').id);
   if (!state) return;
   if (state._tapHandled && Date.now() - state._tapHandled < 500) return; // мобильный тап
-  if (playerClickTimer110 !== null) return; // второй клик даблклика
-  const el = this;
-  playerClickTimer110 = setTimeout(() => {
-    playerClickTimer110 = null;
-    swapPlayerParity110(el);
-  }, 250);
-});
-
-$(document).on('dblclick', '[id^="tournament-groups-board-"] .board-player', function () {
-  if (playerClickTimer110 !== null) {
-    clearTimeout(playerClickTimer110);
-    playerClickTimer110 = null;
-  }
-  servePlayerTap110(this);
+  playerTap110(this);
 });
 
 const winValue = (lostValue) => {
