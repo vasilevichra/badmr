@@ -453,7 +453,7 @@ const fitBoardTeamNames = (modal) => {
   // рисуется в canvas — растр автосайзинг не масштабирует, кегль на экране
   // совпадает с расчётным. Сам span остаётся в потоке скрытым: по нему
   // мерится ширина текста, в нём живёт текст при смене сторон.
-  // Сверху 0.8: названия мельче, чем «впритык» к колонке. Только iOS
+  // Кегль ограничен высотой полосы названия. Только iOS
   // (в Android Chrome поворот нативный, без transform — надувания нет)
   if (document.body.classList.contains('phone') && /iP(hone|ad|od)/.test(navigator.userAgent)) {
     drawBoardTeamNames(modal);
@@ -485,7 +485,10 @@ const drawBoardTeamNames = (modal) => {
     const cs = getComputedStyle(span);
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
-    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${parseFloat(n.style.fontSize || cs.fontSize) * 0.8}px ${cs.fontFamily}`;
+    // кегль ограничен высотой полосы названия (на телефоне 6vw): ширину
+    // даёт подгон по span, выше полосы рисовать нельзя — обрежется
+    const fs = Math.min(parseFloat(n.style.fontSize || cs.fontSize), h * 0.95);
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${fs}px ${cs.fontFamily}`;
     ctx.fillStyle = cs.color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -556,6 +559,14 @@ const swapBoardSidesEl = (modal) => {
   // без измеряемого узла и отвалился до переоткрытия модалки
   const nameSpans = modal.querySelectorAll('.board-team-name span');
   [nameSpans[0].textContent, nameSpans[1].textContent] = [nameSpans[1].textContent, nameSpans[0].textContent];
+  // полоски цветов команд по торцам переезжают вместе со сторонами:
+  // левый торец всегда цвета команды, играющей слева
+  const strips = modal.querySelectorAll('.board-team-strip');
+  if (strips.length === 2) {
+    const leftColor = strips[0].style.backgroundColor;
+    strips[0].style.setProperty('background-color', strips[1].style.backgroundColor, 'important');
+    strips[1].style.setProperty('background-color', leftColor, 'important');
+  }
   // названия в canvas (iOS-телефон) живут поверх скрытых спанов — после
   // обмена текстами перерисовываем; на остальных устройствах canvas нет
   if (modal.querySelector('.board-name-canvas')) fitBoardTeamNames(modal);

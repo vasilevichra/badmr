@@ -3005,6 +3005,14 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
     padding: 0 2dvh;
   }
 
+  /* canvas названия (iOS): абсолютом ровно над строкой. В потоке flex
+     сжимал/растягивал полотно под себя (кегль плыл) и центрировал по
+     длине колонки, уводя название от торца к центру табло */
+  body.phone [id^="tournament-groups-board-"] .board-name-canvas {
+    position: absolute;
+    inset: 0;
+  }
+
   body.phone [id^="tournament-groups-board-"] .board-score {
     height: 73vw;
     /* dvh — как width модалки выше: 37vh на iPhone больше видимой колонки */
