@@ -180,11 +180,18 @@
             </div>
             </div><%# /.tournament-hero-main %>
             <% if (device === 'phone') { %>
-                <%# телефон, как в макете: прогресс регистрации + подпись под ним %>
-                <div class="progress tournament-hero-progress" role="progressbar" aria-label="Заполненность турнира" aria-valuenow="<%= regLeftPct %>" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-bar<%= tournamentFinished ? ' bg-secondary' : '' %>" style="width: <%= regLeftPct %>%"></div>
+                <%# телефон: прогресс-бар турнира + подпись под ним.
+                    Регистрация — заполненность заявками; после старта —
+                    сыгранные матчи от матрицы («осталось N матчей»);
+                    без матрицы — доля прошедших дней до конца; ничем не
+                    ограничен — полная полоска без счётчика.
+                    mode/рct считает роут (heroProgress) %>
+                <% const hp = typeof heroProgress !== 'undefined' ? heroProgress : {mode: 'reg', pct: regLeftPct, done: tournamentFinished}; %>
+                <% const plural110 = (n, one, few, many) => { const m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many); }; %>
+                <div class="progress tournament-hero-progress" role="progressbar" aria-label="Прогресс турнира" aria-valuenow="<%= hp.pct %>" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar<%= hp.done ? ' bg-secondary' : '' %>" style="width: <%= hp.pct %>%"></div>
                 </div>
-                <div class="tournament-hero-reg">рег. до <%= regEndCompactStr %><%- regEndUntilStr %></div>
+                <div class="tournament-hero-reg"><% if (hp.mode === 'reg') { %>рег. до <%= regEndCompactStr %><%- regEndUntilStr %><% } else if (hp.mode === 'matches') { %><% if (hp.matchesLeft === 0) { %>все матчи сыграны<% } else { %>осталось <%= hp.matchesLeft %> <%= plural110(hp.matchesLeft, 'матч', 'матча', 'матчей') %><% } %><% } else if (hp.mode === 'days') { %>до конца <%= hp.daysLeft %> <%= plural110(hp.daysLeft, 'дня', 'дня', 'дней') %><% } else if (hp.mode === 'done') { %>турнир завершён<% } else { %>турнир идёт<% } %></div>
             <% } %>
             <div class="d-flex flex-wrap gap-2">
                 <% if (device !== 'phone') { %>

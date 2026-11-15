@@ -37,6 +37,7 @@ class Match {
   create = (user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number, tournamentId?: number) => this.match.create(user_1_id, user_2_id, user_3_id, user_4_id, tournamentId);
   create110 = (team_1_id: number, team_2_id: number, tournamentId?: number) => this.match110.create(team_1_id, team_2_id, tournamentId);
   rests = (tournamentId?: number) => this.match110.rests(tournamentId);
+  playedCount110 = (tournamentId?: number) => this.match110.playedCount(tournamentId);
   deleteById = (id: number) => {
     // снапшот для каскадного пересчёта — до удаления матча
     ratingService.scheduleRecalcAfterMatchDelete(id);

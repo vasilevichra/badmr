@@ -57,6 +57,15 @@ class Match {
     ).map(row => [row.team_id, row.played]));
     return {restStarts, played};
   }
+
+  /** Число сыгранных (finished) матчей турнира — прогресс героя на телефоне
+   *  после старта (полоска заполняется сыгранными матчами от матрицы). */
+  playedCount(tournamentId?: number) {
+    const tournament = tournamentId ?? `(SELECT id FROM tournament WHERE current = 1)`;
+    return this.db.get<{n: number}>(
+        `SELECT COUNT(*) AS n FROM match_110 WHERE finished = 1 AND tournament_id = ${tournament}`
+    )?.n ?? 0;
+  }
 }
 
 export default Match;

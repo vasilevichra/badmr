@@ -185,6 +185,39 @@ const renderTournamentPage = (
         registered_count: promises[6],
         settings: promises[7],
         timezone: settingsService.getTimezone(),
+        // мобильный прогресс-бар героя: регистрация — заполненность заявками;
+        // после старта — сыгранные матчи от матрицы (Σ C(n,2) по группам),
+        // без матрицы («без ограничений») — доля прошедших дней до ended_at
+        heroProgress: (() => {
+          const groupsAll = promises[5] as Record<string, Record<string, Record<string, unknown[]>>>[];
+          // матрица: Σ C(n,2) по группам (каждый с каждым внутри группы)
+          const matchesTotal = Object.values(groupsAll)
+              .reduce((sum, groupWrap) => sum + Object.values(groupWrap)
+                  .reduce((s, teams) => {
+                    const n = Object.keys(teams ?? {}).length;
+                    return s + n * (n - 1) / 2;
+                  }, 0), 0);
+          const matchesPlayed = matchService.playedCount110(t.id);
+          const capacity = Number((promises[7] as { capacity?: number | string }).capacity ?? 0);
+          const finished = t.tournament_status_id === 3;
+          if (t.tournament_status_id === 1) {
+            return {mode: 'reg', pct: capacity > 0 ? Math.min(100, Math.round(Number(promises[6]) / capacity * 100)) : 100, done: false};
+          }
+          if (finished) {
+            return {mode: 'done', pct: 100, done: true};
+          }
+          if (matchesTotal > 0) {
+            return {mode: 'matches', pct: Math.min(100, Math.round(matchesPlayed / matchesTotal * 100)), done: finished, matchesLeft: Math.max(0, matchesTotal - matchesPlayed)};
+          }
+          if (t.ended_at) {
+            const start = new Date(t.started_at + 'Z').getTime();
+            const end = new Date(t.ended_at + 'Z').getTime();
+            const now = Date.now();
+            const pct = end > start ? Math.min(100, Math.max(0, Math.round((now - start) / (end - start) * 100))) : 100;
+            return {mode: 'days', pct: finished ? 100 : pct, done: finished, daysLeft: Math.max(0, Math.ceil((end - now) / 864e5))};
+          }
+          return {mode: 'open', pct: 100, done: finished};
+        })(),
         // отдых команд: с какого момента ждёт каждая (для матрицы игр)
         teamRests: matchService.rests(t.id),
         // аватары табло по разрядам: сеяние команды с фолбэком на сильнейших
