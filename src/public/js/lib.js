@@ -1,5 +1,12 @@
 const csrfToken = () => $('meta[name="csrf-token"]').attr('content');
 
+// ВРЕМЕННО (диагностика на реальном iPhone, ?boarddebug=1): сборщик ошибок
+// в самом начале lib.js — ловит и то, что падает до инициализации страницы
+const LIB_BUILD = '2026-11-15-1245';
+window.__boardErrs = [];
+window.addEventListener('error', (e) => window.__boardErrs.push(String(e.message)));
+window.addEventListener('unhandledrejection', (e) => window.__boardErrs.push('rejection: ' + e.reason));
+
 // id просматриваемого турнира (атрибут data-tournament на body);
 // пусто на страницах без турнира (например, 404) — параметр не добавляется
 const tournamentId = () => document.body.dataset.tournament || '';
@@ -1062,6 +1069,45 @@ if (typeof ResizeObserver === 'function') {
   // nowrap-спана при этом не меняется (overflow наружу) — без этого
   // наблюдателя перемер по сужению не приходит, названия уезжают
   document.querySelectorAll('[id^="tournament-groups-board-"] .modal-content').forEach((m) => boardNameRO.observe(m));
+}
+
+// ВРЕМЕННО (диагностика на реальном iPhone): оверлей с замерами подгона
+// названий — включается ?boarddebug=1 в адресе страницы
+if (new URLSearchParams(location.search).has('boarddebug')) {
+  const renderBoardDebug = () => {
+    let box = document.getElementById('board-debug');
+    if (!box) {
+      box = document.createElement('pre');
+      box.id = 'board-debug';
+      box.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;background:#000c;color:#0f0;font:11px/1.4 monospace;padding:6px;white-space:pre-wrap;max-width:70vw;pointer-events:none;';
+      document.body.appendChild(box);
+    }
+    const modal = [...document.querySelectorAll('.modal')]
+        .find((m) => m.classList.contains('show') && m.querySelector('.board-team-name'));
+    const lines = [
+      `lib: ${LIB_BUILD}`,
+      `inner: ${window.innerWidth}x${window.innerHeight}`,
+      `dvh: ${CSS.supports('width', '100dvh')}`,
+      `errs: ${JSON.stringify(window.__boardErrs.slice(-6))}`,
+    ];
+    if (modal) {
+      const mc = modal.querySelector('.modal-content');
+      const mcs = getComputedStyle(mc);
+      lines.push(`content: cw:${mc.clientWidth} rect:${Math.round(mc.getBoundingClientRect().width)}x${Math.round(mc.getBoundingClientRect().height)} cs.w:${mcs.width}`);
+      modal.querySelectorAll('.board-team-name').forEach((n, i) => {
+        const span = n.querySelector('span');
+        const cs = getComputedStyle(n);
+        lines.push(`name${i}: "${n.textContent.trim().slice(0, 25)}"`);
+        lines.push(`  inline:${n.style.fontSize || '-'} calc:${cs.fontSize} cw:${n.clientWidth} pad:${cs.paddingLeft}/${cs.paddingRight}`);
+        lines.push(`  spanW:${span ? span.offsetWidth : 'NO SPAN'} spanRect:${span ? Math.round(span.getBoundingClientRect().width) : '-'} nameRect:${Math.round(n.getBoundingClientRect().width)}x${Math.round(n.getBoundingClientRect().height)}`);
+      });
+    } else {
+      lines.push('no open board modal');
+    }
+    box.textContent = lines.join('\n');
+  };
+  setInterval(renderBoardDebug, 500);
+  document.addEventListener('shown.bs.modal', renderBoardDebug, true);
 }
 $(document).on('click', '.tournament-name-copy', function () {
   // текст шеры собран в data-share; {REG_LEFT} — скобка про регистрацию:
