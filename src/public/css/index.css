@@ -2892,7 +2892,13 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
     position: absolute;
     top: 50%;
     left: 50%;
+    /* dvh, а не vh: iOS Safari считает 100vh по «большому вьюпорту»
+       (экран без адресной строки), видимая высота с открытыми панелями
+       меньше — повёрнутая модалка вылезала за экран, колонки были шире
+       видимых и JS-подгон названий мерял завышенную ширину. dvh —
+       фактическая видимая высота; строка с vh выше — фолбэк для iOS < 15.4 */
     width: 100vh;
+    width: 100dvh;
     height: 100vw;
     transform: translate(-50%, -50%) rotate(90deg);
   }
@@ -2937,11 +2943,14 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
   body.phone [id^="tournament-groups-board-"] .board-team-name {
     height: 6vw;
     padding: 0 2vh;
+    padding: 0 2dvh;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-score {
     height: 73vw;
+    /* dvh — как width модалки выше: 37vh на iPhone больше видимой колонки */
     font-size: 37vh;
+    font-size: 37dvh;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-score.winner::after {
@@ -2982,6 +2991,7 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
 
   body.phone [id^="tournament-groups-board-"] .board-swap-players {
     gap: 6vh;
+    gap: 6dvh;
     margin-bottom: 4vw;
   }
 
@@ -3005,14 +3015,17 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
 
   body.phone [id^="tournament-groups-board-"] .board-game-type {
     font-size: 1.6vh;
+    font-size: 1.6dvh;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-game-type-current {
     font-size: 2.2vh;
+    font-size: 2.2dvh;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-avatars [data-type]:not([hidden]) {
     gap: 2vh;
+    gap: 2dvh;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-player-name {

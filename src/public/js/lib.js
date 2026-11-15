@@ -412,14 +412,14 @@ const fitBoardTeamNames = (modal) => {
   const names = modal.querySelectorAll('.board-team-name');
   if (names.length !== 2) return;
   names.forEach((n) => { n.style.fontSize = ''; });
-  // скрытая модалка меряется нулями: деление дало бы NaN/Infinity и
-  // «подгон» молча не применился — ждём реальной отрисовки
-  if (Array.from(names).some((n) => avail(n) <= 0 || n.querySelector('span').offsetWidth <= 0)) return;
   // доступная ширина: колонка минус боковые паддинги самой строки названия
   const avail = (n) => {
     const cs = getComputedStyle(n);
     return n.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   };
+  // скрытая модалка меряется нулями: деление дало бы NaN/Infinity и
+  // «подгон» молча не применился — ждём реальной отрисовки
+  if (Array.from(names).some((n) => avail(n) <= 0 || n.querySelector('span').offsetWidth <= 0)) return;
   // итеративно: ширина текста не строго линейна кеглю (веб-шрифт Raleway,
   // пробелы), поэтому после каждой смены кегля перемеряем и уточняем,
   // пока оба названия не умещаются в свою колонку
