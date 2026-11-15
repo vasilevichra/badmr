@@ -245,9 +245,9 @@ class Game110 {
   /** Минус очко (корректировка): только у идущего матча, счёт не ниже 0.
    *  Автозачёт и finished не трогаем — убавление не отменяет сыгранную
    *  партию, судья правит счёт вручную. Чётность и подача откатываются
-   *  по эвристике НЛ «очко выиграно подачей»; на границе партии (убавляемый
-   *  счёт кратен 11) не трогаются — откатываемое очко разыгрывали игроки
-   *  уже закрытого разряда. */
+   *  по эвристике НЛ «очко выиграно подачей»; очко, закрывавшее партию
+   *  (счёт лидера был кратен 11), откатывается вместе с разрядом —
+   *  строка возвращается к предыдущему разряду. */
   decreaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
     const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
     // матча нет или он уже завершён — декремента нет
@@ -271,11 +271,42 @@ class Game110 {
       return this.boardState(updated);
     }
     // уменьшаемый счёт стоял на границе партии (кратен 11 у лидера):
-    // чётность/подача уже относятся к стыку партий (type-pos), не к
-    // откатываемому очку. Догоняющая от кратного 11 (15:11 → 15:10) —
-    // откатывается как обычное очко
+    // убавляемое очко закрывало партию — разряд строки откатывается к
+    // предыдущему, чётность наследует половины (позиция even-игрока в
+    // старой группе → та же позиция в группе предыдущего разряда),
+    // подача — у убавившей стороны по чётности нового счёта (очко
+    // отыграно её подачей, партия с этим счётом открывается заново).
+    // Догоняющая от кратного 11 (15:11 → 15:10) — откатывается как
+    // обычное очко
     if (scorerScoreBefore % 11 === 0 && scorerScoreBefore > (scorer === 1 ? g.score_2 : g.score_1)) {
-      return this.boardState(updated);
+      const prevPos = Math.max(0, g.game_type_pos - 1);
+      const prevRoster = {
+        1: this.groupPlayers(teamId1, prevPos),
+        2: this.groupPlayers(teamId2, prevPos)
+      };
+      const oldRoster = this.rosters(g, teamId1, teamId2);
+      const evenPrev = (team: 1 | 2): number | null => {
+        const stored = team === 1 ? g.even_1_user_id : g.even_2_user_id;
+        const idx = stored !== null ? oldRoster[team].indexOf(stored) : 0;
+        const i = idx === -1 ? 0 : idx;
+        return prevRoster[team][i] ?? prevRoster[team][0] ?? null;
+      };
+      const even1 = evenPrev(1);
+      const even2 = evenPrev(2);
+      const evenScorer = scorer === 1 ? even1 : even2;
+      const newScore = updated[`score_${scorer}`];
+      const serverUser = prevRoster[scorer].length === 0
+          ? null
+          : newScore % 2 === 0
+              ? evenScorer
+              : prevRoster[scorer].find(p => p !== evenScorer) ?? evenScorer;
+      this.db.run(
+          `UPDATE game_110
+           SET game_type_pos = ?, serve_user_id = ?, even_1_user_id = ?, even_2_user_id = ?
+           WHERE id = ?`,
+          [prevPos, serverUser, even1, even2, g.id]
+      );
+      return this.boardState(this.getById(g.id) as never);
     }
     // эвристика НЛ: уменьшение счёта подающей пары = очко выиграно на
     // своей подаче (откат смены кортов + подающий по чётности нового
@@ -320,15 +351,14 @@ class Game110 {
   }
 
   /** Ручной свап чётности кортов пары (судья свайпом по игроку) —
-   *  только на границе партии.
-   *  В середине партии чётность и подача определяются очками, ручной
-   *  перенос сломал бы инвариант «подаёт по чётности счёта». Если подаёт
-   *  игрок свапаемой пары, подача переезжает на корт по чётности счёта. */
+   *  в любой момент счёта. Чётность — это только то, кто на каком корте;
+   *  инвариант «подаёт по чётности счёта» сохраняется: если подаёт игрок
+   *  свапаемой пары, подача переезжает на корт по чётности счёта, подача
+   *  другой пары от свапа не зависит. */
   swapCurrentEvenByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
     const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
     if (!g) return null;
     const team = (teamNumber === "1" ? 1 : 2) as 1 | 2;
-    if (!Game110.isPartyBoundary(g.score_1, g.score_2)) return null;
     const roster = this.rosters(g, teamId1, teamId2);
     const stored = team === 1 ? g.even_1_user_id : g.even_2_user_id;
     const even = stored !== null && roster[team].includes(stored) ? stored : roster[team][0];

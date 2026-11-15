@@ -435,7 +435,8 @@ const fitBoardTeamNames = (modal) => {
 const decreaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   // счёт 0 — ниже не убавляем
   if (parseInt(el.textContent) <= 0) return;
-  el.textContent = parseInt(el.textContent) - 1;
+  const before = parseInt(el.textContent);
+  el.textContent = before - 1;
   boardBeep(220, 0.1, 0.2);
   // возврат на 0:0 — кнопка смены сторон возвращается (прячется на первом очке)
   const modal = el.closest('.modal');
@@ -445,6 +446,10 @@ const decreaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
     const swap = modal.querySelector('.board-swap');
     if (swap) swap.hidden = false;
   }
+  // убавляемое очко закрывало партию (кратный 11 счёт лидера): сервер
+  // откатывает разряд строки — синхронно откатываем строку типа и составы
+  const opponent = modal.querySelector(el.id === 'board-score-l' ? '#board-score-r' : '#board-score-l');
+  if (before % 11 === 0 && before > parseInt(opponent.textContent)) revertBoardGameType(modal);
   $.post(`/api/games/current110/decrease?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`,
       {}, (state) => updateBoard110State(modal, state));
 };
@@ -529,8 +534,7 @@ const hideBoardSwapPlate = (btn) => {
 // типа игры на строку вниз по списку, разделитель «•» текущим не делаем.
 // По новому типу переставляются аватары игроков (updateBoardAvatars из
 // group.js — на момент события оба скрипта уже загружены).
-const advanceBoardGameType = (el) => {
-  const modal = el.closest('.modal');
+const advanceBoardGameType = (el) => {  const modal = el.closest('.modal');
   const current = modal && modal.querySelector('.board-game-type-current');
   if (!current) return;
   let next = current.nextElementSibling;
@@ -547,7 +551,7 @@ const advanceBoardGameType = (el) => {
 };
 
 // уже сыгранные игры табло (строки выше текущей, без разделителя «•»)
-// выделяем серым (secondary-info), текущая остаётся крупной и жирной
+// выделяем серым (secondary-info), текущая и строки ниже — обычные
 const markBoardPlayedTypes = (modal) => {
   const current = modal.querySelector('.board-game-type-current');
   if (!current) return;
@@ -558,6 +562,32 @@ const markBoardPlayedTypes = (modal) => {
     }
     row = row.previousElementSibling;
   }
+  // симметрично: после отката разряда строки ниже текущей перестают быть
+  // «сыгранными» (деcrease за границу партии открывает партию обратно)
+  row = current;
+  while (row) {
+    if (row.classList.contains('board-game-type')) row.classList.remove('secondary-info');
+    row = row.nextElementSibling;
+  }
+};
+
+// откат разряда (decrease убавил очко, закрывавшее партию) — обратный
+// advanceBoardGameType: строка типа возвращается на предыдущую, составы
+// колонок переставляются по предыдущему разряду; маркеры обновит ответ
+// decrease (updateBoard110State)
+const revertBoardGameType = (modal) => {
+  const current = modal.querySelector('.board-game-type-current');
+  if (!current) return;
+  let prev = current.previousElementSibling;
+  while (prev && (!prev.classList.contains('board-game-type') || prev.textContent.trim() === '•')) {
+    prev = prev.previousElementSibling;
+  }
+  if (!prev) return; // первая партия — разряд не менялся
+  current.classList.remove('board-game-type-current');
+  prev.classList.add('board-game-type-current');
+  markBoardPlayedTypes(modal);
+  if (typeof updateBoardAvatars === 'function') updateBoardAvatars(modal);
+  renderBoardMarkers(modal);
 };
 
 // короткий ненавязчивый бип: отклик на очко (880 Гц) и окончание партии
@@ -598,6 +628,22 @@ const flashPartyWin = (el) => {
 // одной на пару команд), getElementById нашёл бы только первую. Порог
 // 30px отсекает тап — его обрабатывает click. preventDefault гасит
 // синтетический click после свайпа, иначе очко задвоится
+
+// время последнего обработанного тач-жеста табло 110. iOS после
+// preventDefault в touchend может всё же доставить синтетический click —
+// на реальном iPhone тап по игроку на 0:0 давал и подачу, и очко:
+// клик попадал в соседнюю зону счёта. Захват click на document гасит
+// любые клики в модалке 110 в коротком окне после обработанного жеста
+let board110TouchHandledAt = 0;
+document.addEventListener('click', (e) => {
+  if (board110TouchHandledAt
+      && Date.now() - board110TouchHandledAt < 400
+      && e.target.closest?.('[id^="tournament-groups-board-"]')) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+}, true);
+
 const addScoreBoardHandlers = () => {
   let scoreEl = null;
   let start = null;
@@ -638,10 +684,14 @@ const addScoreBoardHandlers = () => {
     if (Math.abs(dist) < 30) {
       // жест поперёк рабочей оси — не свайп и не тап: гасим синтетический
       // click, чтобы случайное очко не добавилось
-      if (Math.abs(across) >= 30) e.preventDefault();
+      if (Math.abs(across) >= 30) {
+        e.preventDefault();
+        board110TouchHandledAt = Date.now();
+      }
       return; // короткое касание: тап обрабатывает click
     }
     e.preventDefault(); // гасим синтетический click, иначе очко задвоится
+    board110TouchHandledAt = Date.now();
     // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ
     // "team-1Id" — читаем атрибуты напрямую. data-team-number переезжает
     // вместе со стороной при смене сторон (swapBoardSidesEl)
@@ -667,8 +717,8 @@ const board110TeamIds = (modal) => modal.id.replace('tournament-groups-board-', 
 
 // тап/клик по игроку: на 0:0 чётному — подача, нечётному — свап чётности
 // (судья сначала выставляет, кто чётный, затем тапом по нему — подачу);
-// в игре — свап чётности, сервер разрешает его только на границе партий,
-// между границами чётность и подача вычисляются автоматически
+// в игре — свап чётности (кто на каком корте), сервер пересчитывает
+// подачу по чётности счёта, так что инвариант подачи не ломается
 const playerTap110 = (playerEl) => {
   const modal = playerEl.closest('.modal');
   const scores = [...modal.querySelectorAll('.board-score')].map((s) => Number(s.textContent));
@@ -706,7 +756,7 @@ const swapPlayerParity110 = (playerEl) => {
   const [team1, team2] = board110TeamIds(modal);
   $.post(`/api/games/current110/swap?team_1_id=${team1}&team_2_id=${team2}&team_number=${team}`,
       {}, (result) => {
-        if (!result) return; // отказ движка (вне границы) — без отклика
+        if (!result) return; // отказ движка (нет матча/пары) — без отклика
         updateBoard110State(modal, result);
         navigator.vibrate?.(30);
         boardBeep(440, 0.08, 0.15);
@@ -740,6 +790,7 @@ document.addEventListener('touchend', (e) => {
   const dy = t.clientY - playerTouch110.y;
   playerTouch110 = null;
   e.preventDefault();
+  board110TouchHandledAt = Date.now();
   const state = board110State.get(playerEl.closest('.modal').id);
   if (!state) return;
   // ось — как у счёта: на телефоне в портрете контент повёрнут CSS,
@@ -972,6 +1023,23 @@ const refitOpenBoardNames = () => {
 };
 document.fonts?.ready.then(refitOpenBoardNames);
 window.addEventListener('resize', refitOpenBoardNames);
+// iOS Safari: fonts.ready может отработать раньше, чем веб-шрифт реально
+// применится к узлам (и при первом открытии модалки resize не приходит) —
+// следим за шириной самих названий: применение/подмена шрифта меняет
+// ширину спана, наблюдатель перемеряет открытое табло. Подгон меняет
+// кегль → ширина спана → снова событие: сходится, когда всё умещается
+if (typeof ResizeObserver === 'function') {
+  let boardNameRefitQueued = false;
+  const boardNameRO = new ResizeObserver(() => {
+    if (boardNameRefitQueued) return;
+    boardNameRefitQueued = true;
+    requestAnimationFrame(() => {
+      boardNameRefitQueued = false;
+      refitOpenBoardNames();
+    });
+  });
+  document.querySelectorAll('.modal .board-team-name span').forEach((s) => boardNameRO.observe(s));
+}
 $(document).on('click', '.tournament-name-copy', function () {
   // текст шеры собран в data-share; {REG_LEFT} — скобка про регистрацию:
   // есть отсчёт (статус «Регистрация») → остаток в полных сутках или
