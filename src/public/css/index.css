@@ -2448,7 +2448,11 @@ a.lab-profile:hover {
   transform: rotate(180deg);
 }
 
-#tournament-groups-board .modal-body {
+/* id с суффиксом (турнир 110: tournament-groups-board-<команда1>-<команда2>):
+   без суффикса селектор не матчится, и дефолтный паддинг modal-body вместе
+   с row.vh-100 давали вертикальный скролл на всех устройствах */
+#tournament-groups-board .modal-body,
+[id^="tournament-groups-board-"] .modal-body {
   overflow-x: hidden;
   overflow-y: hidden;
   padding: 0 0 0 0 !important;
@@ -2731,6 +2735,13 @@ a.lab-profile:hover {
   gap: 2vw;
 }
 
+/* Табло 110: контейнер аватаров (раньше inline style="height: 10vh"
+   в board.ejs — вынесено в CSS, чтобы device-правила могли его
+   переопределять: inline сильнее любого селектора). */
+[id^="tournament-groups-board-"] .board-avatars {
+  height: 10vh;
+}
+
 .board-player {
   text-align: center;
 }
@@ -2845,6 +2856,12 @@ body.phone .game-board-modal .game-board-avatars {
   height: 12vh;
 }
 
+/* контейнер аватаров табло 110 на телефоне: под 44px-аватарки с ФИ
+   (inline 10vh из board.ejs остаётся для десктопа) */
+body.phone [id^="tournament-groups-board-"] .board-avatars {
+  height: 12vh;
+}
+
 /* Табло на телефоне — принудительный альбом: сама страница экран не
    поворачивает (Screen Orientation Lock в iOS Safari не поддерживается),
    поэтому в портретной ориентации модалку поворачиваем на 90° — телефон
@@ -2867,6 +2884,38 @@ body.phone .game-board-modal .game-board-avatars {
   /* .row.vh-100 внутри повёрнутой модалки — высота табло теперь 100vw */
   body.phone [id^="tournament-groups-board-"] .modal-content .row.vh-100 {
     height: 100% !important;
+  }
+
+  /* min-width: 0: nowrap-название команды создаёт большой min-content
+     колонки (flex-элемент не может сжаться ниже контента) — третья
+     колонка не помещалась в ряд, переносилась на вторую строку и
+     удваивала высоту табло: вертикальный скролл и съехавшая вёрстка */
+  body.phone [id^="tournament-groups-board-"] .modal-content .row.vh-100 > .col {
+    min-width: 0;
+  }
+
+  /* аватарки на телефоне 44px (как на табло НЛ) — базовые 60px не
+     влезают в уменьшенный контейнер аватаров */
+  body.phone [id^="tournament-groups-board-"] .board-player-avatar img {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* маркеры чётности/подачи пересажены по центру 44px-аватарки:
+     (44 − 12) / 2 = 16 — как на табло НЛ */
+  body.phone [id^="tournament-groups-board-"] .board-parity {
+    bottom: 16px;
+  }
+
+  body.phone [id^="tournament-groups-board-"] .board-serve {
+    bottom: 17px;
+  }
+
+  /* в повороте vh — длинная сторона экрана; inline style="height: 10vh"
+     из board.ejs перебивается !important-правилом: высота по короткой
+     стороне, как у всех размеров табло в этом блоке */
+  body.phone [id^="tournament-groups-board-"] .board-avatars {
+    height: 12vw !important;
   }
 
   body.phone [id^="tournament-groups-board-"] .board-team-name {
@@ -2947,7 +2996,7 @@ body.phone .game-board-modal .game-board-avatars {
   }
 
   body.phone [id^="tournament-groups-board-"] .board-player-name {
-    font-size: 1.6vw;
+    font-size: 2.4vw;
   }
 }
 

@@ -48,7 +48,7 @@
                                   переключает JS по .board-game-type-current.
                                   Рядом по центру, прижаты к низу блока, зазор
                                   между ними — визуальный пробел (px-1) */ %>
-                            <div class="row align-content-end justify-content-center board-avatars" style="height: 10vh;">
+                            <div class="row align-content-end justify-content-center board-avatars">
                                 <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>
                                     <div class="col-auto px-1" data-type="<%= avatarType %>" hidden>
                                         <% teamAvatars[0][avatarType].forEach(player => { %>
@@ -85,7 +85,7 @@
                         <div class="col">
                             <div class="row board-team-name"><span><%= teamNames[1] %></span></div>
                             <div id="board-score-r" class="row board-score" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" data-team-number="2" onclick="increaseBoardScore(this, <%= teamIds[0] %>, <%= teamIds[1] %>, 2)"><%= startScores[1] %></div>
-                            <div class="row align-content-end justify-content-center board-avatars" style="height: 10vh;">
+                            <div class="row align-content-end justify-content-center board-avatars">
                                 <% ['МО', 'ЖО', 'МП', 'ЖП', 'СП'].forEach(avatarType => { %>
                                     <div class="col-auto px-1" data-type="<%= avatarType %>" hidden>
                                         <% teamAvatars[1][avatarType].forEach(player => { %>
