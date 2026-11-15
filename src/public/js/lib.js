@@ -2,7 +2,7 @@ const csrfToken = () => $('meta[name="csrf-token"]').attr('content');
 
 // ВРЕМЕННО (диагностика на реальном iPhone, ?boarddebug=1): сборщик ошибок
 // в самом начале lib.js — ловит и то, что падает до инициализации страницы
-const LIB_BUILD = '2026-11-15-1250';
+const LIB_BUILD = '2026-11-15-1500';
 window.__boardErrs = [];
 window.addEventListener('error', (e) => window.__boardErrs.push(String(e.message)));
 window.addEventListener('unhandledrejection', (e) => window.__boardErrs.push('rejection: ' + e.reason));
@@ -450,11 +450,13 @@ const fitBoardTeamNames = (modal) => {
   // уровне, ни contain, ни will-change, ни форс-рефлоу это не гасят — проверено
   // серией экспериментов против прода (boost стабильно 1.351). Компенсируем:
   // итоговый кегль делится на измеренный коэффициент, тогда фактическая
-  // отрисовка совпадает с расчётной и название умещается на экране.
-  // Только iOS (в Android Chrome поворот нативный, без transform — надувания нет)
+  // отрисовка совпадает с расчётной. Сверху — 0.8: пользователь просил названия
+  // мельче, чем «впритык» (на реальном iPhone рассчитанная ширина всё равно
+  // не умещается). Только iOS (в Android Chrome поворот нативный, без
+  // transform — надувания нет)
   if (document.body.classList.contains('phone') && /iP(hone|ad|od)/.test(navigator.userAgent)) {
     names.forEach((n) => {
-      n.style.fontSize = `${parseFloat(n.style.fontSize || getComputedStyle(n).fontSize) / 1.351}px`;
+      n.style.fontSize = `${parseFloat(n.style.fontSize || getComputedStyle(n).fontSize) / (1.351 * 0.8)}px`;
     });
   }
 };
