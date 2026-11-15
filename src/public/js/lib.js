@@ -444,21 +444,53 @@ const fitBoardTeamNames = (modal) => {
     if (scale >= 1) break;
     names.forEach((n) => { n.style.fontSize = `${parseFloat(getComputedStyle(n).fontSize) * scale}px`; });
   }
-  // iOS: WebKit text autosizing надувает текст в повёрнутом transform-поддереве
-  // (modal-content повёрнут на 90°, CSS-ширина 844px при viewport 390px —
-  // движок считает, что контент «не влезает»). Ни text-size-adjust на любом
-  // уровне, ни contain, ни will-change, ни форс-рефлоу это не гасят — проверено
-  // серией экспериментов против прода (boost стабильно 1.351). Компенсируем:
-  // итоговый кегль делится на измеренный коэффициент, тогда фактическая
-  // отрисовка совпадает с расчётной. Сверху — 0.8: пользователь просил названия
-  // мельче, чем «впритык» (на реальном iPhone рассчитанная ширина всё равно
-  // не умещается). Только iOS (в Android Chrome поворот нативный, без
-  // transform — надувания нет)
+  // iOS: WebKit text autosizing надувает отрисовку текста в повёрнутом
+  // transform-поддереве (modal-content повёрнут на 90°, CSS-ширина 844px
+  // при viewport 390px — движок считает, что контент «не влезает»).
+  // Ни text-size-adjust на любом уровне, ни contain, ни will-change,
+  // ни компенсация кеглем (деление на измеренный буст) не работают:
+  // реальный буст на устройстве не равен эмулированному. Поэтому название
+  // рисуется в canvas — растр автосайзинг не масштабирует, кегль на экране
+  // совпадает с расчётным. Сам span остаётся в потоке скрытым: по нему
+  // мерится ширина текста, в нём живёт текст при смене сторон.
+  // Сверху 0.8: названия мельче, чем «впритык» к колонке. Только iOS
+  // (в Android Chrome поворот нативный, без transform — надувания нет)
   if (document.body.classList.contains('phone') && /iP(hone|ad|od)/.test(navigator.userAgent)) {
-    names.forEach((n) => {
-      n.style.fontSize = `${parseFloat(n.style.fontSize || getComputedStyle(n).fontSize) / (1.351 * 0.8)}px`;
-    });
+    drawBoardTeamNames(modal);
   }
+};
+
+// отрисовка названий команд табло в canvas (iOS-телефон, см. fitBoardTeamNames):
+// кегль — уже подогнанный (span остаётся скрытым в потоке, замер по нему);
+// перерисовка идемпотентна — вызывается и из подгона, и после смены сторон
+const drawBoardTeamNames = (modal) => {
+  modal.querySelectorAll('.board-team-name').forEach((n) => {
+    const span = n.querySelector('span');
+    if (!span) return;
+    span.style.visibility = 'hidden';
+    let canvas = n.querySelector('canvas.board-name-canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.className = 'board-name-canvas';
+      n.appendChild(canvas);
+    }
+    const w = n.clientWidth;
+    const h = n.clientHeight;
+    if (w <= 0 || h <= 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
+    const cs = getComputedStyle(span);
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${parseFloat(n.style.fontSize || cs.fontSize) * 0.8}px ${cs.fontFamily}`;
+    ctx.fillStyle = cs.color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(span.textContent, w / 2, h / 2 + 1);
+  });
 };
 
 // минус очко (корректировка судьёй): DOM сразу, БД — синхронно с сервером;
@@ -524,6 +556,9 @@ const swapBoardSidesEl = (modal) => {
   // без измеряемого узла и отвалился до переоткрытия модалки
   const nameSpans = modal.querySelectorAll('.board-team-name span');
   [nameSpans[0].textContent, nameSpans[1].textContent] = [nameSpans[1].textContent, nameSpans[0].textContent];
+  // названия в canvas (iOS-телефон) живут поверх скрытых спанов — после
+  // обмена текстами перерисовываем; на остальных устройствах canvas нет
+  if (modal.querySelector('.board-name-canvas')) fitBoardTeamNames(modal);
   [left.textContent, right.textContent] = [right.textContent, left.textContent];
   const avatars = modal.querySelectorAll('.board-avatars');
   [avatars[0].innerHTML, avatars[1].innerHTML] = [avatars[1].innerHTML, avatars[0].innerHTML];
