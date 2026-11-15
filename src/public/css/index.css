@@ -936,6 +936,14 @@ body.desktop #tournament-new-registration-hint > .row {
   margin: 12px 16px 16px;
   padding: 1rem 1.1rem;
   color: var(--badmr-hero-color);
+  /* строки героя: единый зазор между всеми (вместо разнобойных
+     margin-top 10/8/8px) и центрирование содержимого по высоте.
+     align-items по умолчанию (stretch) — строки на всю ширину,
+     ms-auto у форм входа/выхода продолжает работать */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
 }
 
 /* у гостей полоса над баннером не рендерится — баннер прижат к верху
@@ -962,15 +970,7 @@ body.desktop #tournament-new-registration-hint > .row {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  /* единый вертикальный ритм героя: ~10px «чернилами» между всеми
-     строками (чипы ниже несут mt-2 = 8px + линии строк) */
-  margin-top: 10px;
-}
-
-/* телефон: воздух между строкой логина (email + выход) и названием турнира —
-   строки соседние, без отступа сливаются в сплошной блок */
-body.phone .tournament-hero-name-row {
-  margin-top: 14px;
+  /* вертикальный ритм задаёт gap .tournament-hero — без своего отступа */
 }
 
 .tournament-hero-name-row .tournament-hero-name {
@@ -997,8 +997,7 @@ body.phone .tournament-hero-name-row {
 .tournament-hero-meta {
   font-size: 0.875rem;
   color: var(--badmr-hero-muted);
-  /* единый ритм: см. .tournament-hero-name-row (2px линий строки → 8px) */
-  margin-top: 8px;
+  /* вертикальный ритм задаёт gap .tournament-hero */
 }
 
 .tournament-hero-reg {

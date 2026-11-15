@@ -176,12 +176,12 @@
             </div>
             <% if (device === 'phone') { %>
                 <%# телефон, как в макете: прогресс регистрации + подпись под ним %>
-                <div class="progress tournament-hero-progress mt-2" role="progressbar" aria-label="Заполненность турнира" aria-valuenow="<%= regLeftPct %>" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress tournament-hero-progress" role="progressbar" aria-label="Заполненность турнира" aria-valuenow="<%= regLeftPct %>" aria-valuemin="0" aria-valuemax="100">
                     <div class="progress-bar<%= tournamentFinished ? ' bg-secondary' : '' %>" style="width: <%= regLeftPct %>%"></div>
                 </div>
-                <div class="tournament-hero-reg mt-1">рег. до <%= regEndCompactStr %><%- regEndUntilStr %></div>
+                <div class="tournament-hero-reg">рег. до <%= regEndCompactStr %><%- regEndUntilStr %></div>
             <% } %>
-            <div class="d-flex flex-wrap gap-2 mt-2">
+            <div class="d-flex flex-wrap gap-2">
                 <% if (device !== 'phone') { %>
                     <%# десктоп, как в макете: регистрация — первый чип ряда %>
                     <span class="tournament-hero-chip"><i class="bi bi-hourglass-split"></i> рег. до <%= regEndCompactStr %><%- regEndUntilStr %></span>
