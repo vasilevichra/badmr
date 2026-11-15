@@ -593,15 +593,14 @@ input:focus::placeholder {
   cursor: pointer;
 }
 
-/* кубок чуть меньше текста — на дефолтном размере выглядит крупнее бейджа;
-   глиф внутри em-квадрата сидит чуть выше центра строки — компенсирую */
-.tournament-switch-btn .bi-trophy {
-  font-size: 0.85em;
-  transform: translateY(0.5px);
-}
-
 .tournament-switch-btn:hover {
   border-color: var(--badmr-hero-accent);
+}
+
+/* <b>#N</b> наследует браузерный вес 900 — у бейджа типа турнира выше 600,
+   из-за этого кнопка выглядит крупнее бейджа при том же кегле */
+.tournament-switch-btn b {
+  font-weight: 600;
 }
 
 /* шеврон — CSS-бордер вместо bi-глифа: в em-квадрате шрифтовой стрелки
@@ -1109,15 +1108,11 @@ body.phone .tournament-hero-chip a {
   overflow-wrap: anywhere;
 }
 
-/* телефон: кнопка выбора турнира — минимальная «#6» (кубок скрываем) и
+/* телефон: кнопка выбора турнира — минимальная «#6» и
    имя пользователя с многоточием: без этого верхний ряд шапки
    [бейдж][шере][#6][имя][×] на 390px не влезает (~462px) */
 body.phone .tournament-switch-btn {
   padding: 2px 8px;
-}
-
-body.phone .tournament-switch-btn .bi-trophy {
-  display: none;
 }
 
 body.phone .tournament-hero form.logout {

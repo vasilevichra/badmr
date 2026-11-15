@@ -11,7 +11,7 @@
 <% const ddmmyy = (date) => { const d = typeof date === 'string' ? new Date(date.replace(' ', 'T') + 'Z') : date; return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getFullYear()).slice(-2); }; %>
 <div class="tournament-switch" id="tournament-switch">
     <button type="button" id="tournament-switch-btn" class="tournament-switch-btn" aria-haspopup="true" aria-expanded="false" title="Выбрать турнир">
-        <i class="bi bi-trophy"></i><b>#<%= selected_tournament_id %></b> <i class="tournament-switch-caret" aria-hidden="true"></i>
+        <b>#<%= selected_tournament_id %></b> <i class="tournament-switch-caret" aria-hidden="true"></i>
     </button>
     <div id="tournament-popup" class="tournament-popup" hidden>
         <div class="tournament-popup-head">

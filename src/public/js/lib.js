@@ -444,6 +444,19 @@ const fitBoardTeamNames = (modal) => {
     if (scale >= 1) break;
     names.forEach((n) => { n.style.fontSize = `${parseFloat(getComputedStyle(n).fontSize) * scale}px`; });
   }
+  // iOS: WebKit text autosizing надувает текст в повёрнутом transform-поддереве
+  // (modal-content повёрнут на 90°, CSS-ширина 844px при viewport 390px —
+  // движок считает, что контент «не влезает»). Ни text-size-adjust на любом
+  // уровне, ни contain, ни will-change, ни форс-рефлоу это не гасят — проверено
+  // серией экспериментов против прода (boost стабильно 1.351). Компенсируем:
+  // итоговый кегль делится на измеренный коэффициент, тогда фактическая
+  // отрисовка совпадает с расчётной и название умещается на экране.
+  // Только iOS (в Android Chrome поворот нативный, без transform — надувания нет)
+  if (document.body.classList.contains('phone') && /iP(hone|ad|od)/.test(navigator.userAgent)) {
+    names.forEach((n) => {
+      n.style.fontSize = `${parseFloat(n.style.fontSize || getComputedStyle(n).fontSize) / 1.351}px`;
+    });
+  }
 };
 
 // минус очко (корректировка судьёй): DOM сразу, БД — синхронно с сервером;
