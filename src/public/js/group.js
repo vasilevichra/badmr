@@ -377,6 +377,9 @@ const playMatch110 = (teamId1, teamId2) => {
 // Диагональная линия рисуется только если есть ячейки-маркеры diagonal-cross
 // (сейчас их нет — диагональ убрана), функция оставлена для вертикалей
 drawGroupsDiagonal = () => {
+  // на телефоне таблица скрыта (мобильный список матчей ниже) — геометрия
+  // нулевая, линии не рисуем
+  if (document.body.classList.contains('phone')) return;
   document.querySelectorAll('svg.groups-diagonal').forEach(svg => svg.remove());
 
   document.querySelectorAll('table.tournament-groups-table-games').forEach(table => {
@@ -587,6 +590,101 @@ $(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => {
   } catch { /* ничего: табло закрыто, ориентация системная */ }
 });
 
+// мобильная матрица игр (только body.phone): вместо нижнетреугольной
+// таблицы — карточка каждой команды с чипами её матчей («соперник + счёт»).
+// Строится из той же DOM-таблицы: имена команд — из модалок табло (в них
+// оба названия пары), статус/счёт — из содержимого ячейки (▶ — будущий
+// матч, ⏱️ — гость, .game-result-score — счёт; resume-кнопка в ячейке
+// значит «идёт»). Тап по чипу кликает кнопку ячейки — открывается та же
+// модалка табло. Модалки — соседи таблицы в .d-flex, при скрытии таблицы
+// остаются разворачиваемыми. Десктоп не трогается: список не строится.
+// Перестраивается после каждого обновления счёта
+
+const buildMobileMatrix = () => {
+  document.querySelectorAll('.tournament-mobile-matrix').forEach((el) => el.remove());
+  if (!document.body.classList.contains('phone')) return;
+  document.querySelectorAll('table.tournament-groups-table-games').forEach((table) => {
+    const host = table.parentElement; // .d-flex — таблица + скрытые модалки
+    host.parentElement.classList.add('tournament-mobile-matrix-col');
+    host.parentElement.parentElement.classList.add('tournament-mobile-matrix-row');
+
+    // название команды из ячейки/шапки без блока отдыха
+    const cellTeamName = (td) => {
+      const c = td.cloneNode(true);
+      c.querySelectorAll('.team-rest').forEach((r) => r.remove());
+      return c.textContent.trim();
+    };
+    const rows = table.tBodies[0].rows;
+    // имена команд по id — из модалок табло (в них оба названия пары;
+    // span[0] = team_1 строки, span[1] = team_2 — соперник). Модалки —
+    // соседи таблицы в .d-flex (include доски стоит до ячейки), не внутри
+    const nameById = new Map();
+    host.querySelectorAll('.modal[id^="tournament-groups-board-"]').forEach((m) => {
+      const [t1, t2] = m.id.replace('tournament-groups-board-', '').split('-').map(Number);
+      const spans = m.querySelectorAll('.board-team-name span');
+      if (spans.length >= 2) {
+        nameById.set(t1, spans[0].textContent.trim());
+        nameById.set(t2, spans[1].textContent.trim());
+      }
+    });
+    // порядок карточек: команды-колонки шапки, затем остальные (из строк)
+    const order = [...rows[0].cells].slice(1).map(cellTeamName);
+    const chips = new Map(order.map((n) => [n, []]));
+    for (let i = 1; i < rows.length; i++) {
+      const rowName = cellTeamName(rows[i].cells[0]);
+      if (!chips.has(rowName)) { order.push(rowName); chips.set(rowName, []); }
+      rows[i].querySelectorAll('td.tournament-groups-table-game[data-team-1-id]').forEach((td) => {
+        const opp = nameById.get(Number(td.getAttribute('data-team-2-id')));
+        if (!opp) return;
+        chips.get(rowName).push({ opp, td });
+        chips.get(opp)?.push({ opp: rowName, td });
+      });
+    }
+    // модалки — соседи таблицы в .d-flex (include доски стоит до ячейки):
+    // при скрытии таблицы display:none они остаются разворачиваемыми,
+    // переносить не нужно
+
+    // состояние ячейки → текст чипа; live — матч идёт (есть кнопка возобновления)
+    const chipState = (td) => {
+      const score = td.querySelector('.game-result-score');
+      if (score) return { text: score.textContent, live: !!td.querySelector('.game-result-resume') };
+      return { text: td.querySelector('button') ? '▶' : '⏱', live: false };
+    };
+
+    const box = document.createElement('div');
+    box.className = 'tournament-mobile-matrix';
+    order.forEach((name) => {
+      const card = document.createElement('div');
+      card.className = 'tournament-mobile-matrix-team';
+      const tn = document.createElement('div');
+      tn.className = 'tournament-mobile-matrix-name';
+      tn.textContent = name;
+      card.appendChild(tn);
+      const list = document.createElement('div');
+      list.className = 'tournament-mobile-matrix-games';
+      (chips.get(name) || []).forEach(({ opp, td }) => {
+        const st = chipState(td);
+        const clickable = !!td.querySelector('button');
+        const chip = document.createElement(clickable ? 'button' : 'span');
+        chip.className = 'tournament-mobile-matrix-chip' + (st.live ? ' live' : '');
+        chip.title = `${name} — ${opp}`;
+        const label = document.createElement('span');
+        label.textContent = opp;
+        chip.appendChild(label);
+        const state = document.createElement('b');
+        state.textContent = st.text;
+        chip.appendChild(state);
+        if (clickable) chip.addEventListener('click', () => td.querySelector('button')?.click());
+        list.appendChild(chip);
+      });
+      card.appendChild(list);
+      box.appendChild(card);
+    });
+    host.after(box);
+  });
+};
+buildMobileMatrix();
+
 // счёт матчей в ячейках матрицы: финишировавший матч — только итоговый
 // счёт (вместо кнопки ▶ / ⏱️ у гостя); идущий — текущий счёт + небольшая
 // кнопка возобновления под ним (открывает табло, матч не создаёт).
@@ -621,6 +719,8 @@ const renderFinishedMatchScores = () => {
         td.appendChild(resume);
       }
     });
+    // чипы мобильного списка показывают те же счёты — перестроить
+    buildMobileMatrix();
   });
 };
 renderFinishedMatchScores();

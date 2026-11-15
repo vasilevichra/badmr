@@ -3044,6 +3044,91 @@ body.phone [id^="tournament-groups-board-"] .board-avatars {
   }
 }
 
+/* Матрица игр группы на телефоне (только body.phone): вместо
+   нижнетреугольной таблицы — макет «строка-на-команду»: карточка команды
+   с чипами её матчей (соперник + ▶/⏱/счёт). Таблица скрывается, DOM
+   строит group.js (buildMobileMatrix) из той же таблицы; модалки табло
+   JS переносит в контейнер таблицы (внутри скрытого предка модалка не
+   разворачивается). Десктоп: список скрыт, таблица не тронута */
+.tournament-mobile-matrix {
+  display: none;
+}
+
+body.phone .tournament-groups-table-games {
+  display: none;
+}
+
+body.phone .tournament-mobile-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 3em;
+}
+
+/* колонка .col-auto с матрицей — на всю ширину экрана: у .row дефолтные
+   отрицательные margin уже выводят её за паддинг блока (390px), нулями
+   паддингов колонки карточки идут от края до края */
+body.phone .tournament-mobile-matrix-col {
+  flex: 0 0 100%;
+  max-width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.tournament-mobile-matrix-team {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.tournament-mobile-matrix-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+}
+
+.tournament-mobile-matrix-games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tournament-mobile-matrix-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 7px;
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  color: inherit;
+  max-width: 100%;
+}
+
+.tournament-mobile-matrix-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tournament-mobile-matrix-chip b {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* идущий матч — как в ячейках матрицы: зелёная рамка */
+.tournament-mobile-matrix-chip.live {
+  border-color: #198754;
+  background: #f2faf6;
+}
+
+.tournament-mobile-matrix-chip.live b {
+  color: #198754;
+}
+
+
 /* Табло Новой лиги (game-form.ejs, game.js): счёт и аватары с именами
    игроков под счётом (названий команд нет). Игроки пары — в линию,
    как в 110 (зазор — визуальный пробел). Базовые размеры. */
