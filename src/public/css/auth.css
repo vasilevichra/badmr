@@ -80,3 +80,34 @@ p.help {
 footer p {
   text-align: center;
 }
+
+/* Мобильная вёрстка (body.phone — класс рендерит сервер, auth-страницы
+   index.css не загружают). iOS Safari при фокусе на поле с кеглем < 16px
+   автоматически приближает страницу («жёст» зума на тапе в поле) — кегль
+   полей не меньше 16px, иначе гейт зума не снять; maximum-scale=1 в
+   viewport не используем — он запрещает зум пользователю */
+body.phone .prompt {
+  margin: 24px auto;
+  padding: 16px;
+  max-width: none;
+}
+
+body.phone h1 {
+  font-size: 26px;
+  margin-bottom: 16px;
+}
+
+body.phone input {
+  font-size: 16px;
+  padding: 12px;
+}
+
+body.phone form section {
+  margin-bottom: 16px;
+}
+
+body.phone form .btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+}
