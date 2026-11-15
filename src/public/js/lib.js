@@ -379,7 +379,15 @@ const cloneBoardPlayers = (modal, overlay, left, right) => {
         ? group.querySelectorAll('.board-player')
         : column.querySelectorAll('[data-type]:not([hidden]) .board-player');
     const side = modal.querySelector(i === 0 ? left : right);
-    side.replaceChildren(...Array.from(players, (p) => p.cloneNode(true)));
+    // маркеры чётности/подачи в клонах не нужны: группа следующего разряда
+    // могла получить их в прошлый раз, когда этот разряд был текущим
+    // (повторное закрытие партии после decrease→increase) — на плашке
+    // подача новой партии ещё не назначена
+    side.replaceChildren(...Array.from(players, (p) => {
+      const clone = p.cloneNode(true);
+      clone.querySelectorAll('.board-parity, .board-serve').forEach((m) => m.remove());
+      return clone;
+    }));
   });
 };
 
@@ -418,13 +426,14 @@ const fitBoardTeamNames = (modal) => {
     return n.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   };
   // скрытая модалка меряется нулями: деление дало бы NaN/Infinity и
-  // «подгон» молча не применился — ждём реальной отрисовки
-  if (Array.from(names).some((n) => avail(n) <= 0 || n.querySelector('span').offsetWidth <= 0)) return;
+  // «подгон» молча не применился — ждём реальной отрисовки; span мог быть
+  // утрачен (старая сессия после свапа сторон) — не подгоняем, не падая
+  if (Array.from(names).some((n) => avail(n) <= 0 || (n.querySelector('span')?.offsetWidth ?? 0) <= 0)) return;
   // итеративно: ширина текста не строго линейна кеглю (веб-шрифт Raleway,
   // пробелы), поэтому после каждой смены кегля перемеряем и уточняем,
   // пока оба названия не умещаются в свою колонку
   for (let i = 0; i < 6; i++) {
-    const scale = Math.min(...Array.from(names, (n) => Math.min(1, avail(n) * 0.98 / n.querySelector('span').offsetWidth)));
+    const scale = Math.min(...Array.from(names, (n) => Math.min(1, avail(n) * 0.98 / (n.querySelector('span')?.offsetWidth || Infinity))));
     if (scale >= 1) break;
     names.forEach((n) => { n.style.fontSize = `${parseFloat(getComputedStyle(n).fontSize) * scale}px`; });
   }
@@ -488,8 +497,11 @@ const grayBoardLastType = (el) => {
 const swapBoardSidesEl = (modal) => {
   const left = modal.querySelector('#board-score-l');
   const right = modal.querySelector('#board-score-r');
-  const names = modal.querySelectorAll('.board-team-name');
-  [names[0].textContent, names[1].textContent] = [names[1].textContent, names[0].textContent];
+  // текст — внутри span: запись textContent в сам .board-team-name
+  // уничтожила бы span, подгон названий (fitBoardTeamNames) остался бы
+  // без измеряемого узла и отвалился до переоткрытия модалки
+  const nameSpans = modal.querySelectorAll('.board-team-name span');
+  [nameSpans[0].textContent, nameSpans[1].textContent] = [nameSpans[1].textContent, nameSpans[0].textContent];
   [left.textContent, right.textContent] = [right.textContent, left.textContent];
   const avatars = modal.querySelectorAll('.board-avatars');
   [avatars[0].innerHTML, avatars[1].innerHTML] = [avatars[1].innerHTML, avatars[0].innerHTML];

@@ -530,6 +530,12 @@ const restoreBoardScores = (modal) => {
     if (!game) return;
     const left = modal.querySelector('#board-score-l');
     const right = modal.querySelector('#board-score-r');
+    // автосмена сторон — клиентская и живёт в DOM модалки: после прошлого
+    // открытия она могла остаться переставленной (автосмена на 6+11k или
+    // кнопка), а restore обязан вернуть базовую раскладку (команда 1
+    // слева), иначе счёт и клики уедут под чужие имена. Стороны — до
+    // установки текстов: свап меняет их местами
+    if (left.getAttribute('data-team-number') !== '1') swapBoardSidesEl(modal);
     left.textContent = game.score_1;
     right.textContent = game.score_2;
     const swap = modal.querySelector('.board-swap');
