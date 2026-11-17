@@ -167,6 +167,15 @@ const renderSettings = () => {
                     .join('');
                 return `<select data-name="tournament_system" class="settings-reference-select form-select form-select-sm text-center">${options}</select>`;
               }
+              // глубина доигровок олимпийской сетки (только 110): селект 0..5
+              // (6..10 допустимы API, но на практике не нужны — селект можно расширить)
+              if (row.name === 'consolation_depth') {
+                const depths = {0: '0 — без ограничения (полная рекурсия)', 1: '1 — 1 ступень', 2: '2 — 2 ступени', 3: '3 — 3 ступени', 4: '4 — 4 ступени', 5: '5 — 5 ступеней'};
+                const options = Object.entries(depths)
+                    .map(([v, t]) => `<option value="${v}"${String(value) === v ? ' selected' : ''}>${t}</option>`)
+                    .join('');
+                return `<select data-name="consolation_depth" class="settings-reference-select form-select form-select-sm text-center">${options}</select>`;
+              }
               return value;
             },
             cellStyle: () => ({css: {cursor: 'pointer'}})

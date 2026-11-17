@@ -49,11 +49,11 @@ class Settings {
   // прячем. Отсутствующий тип (или null) — показывать все настройки,
   // как у Новой лиги, кроме чисто «стодесятых» (ONLY_110)
   private static readonly RELEVANT: Record<number, ReadonlySet<string> | null> = {
-    2: new Set(['state', 'region', 'city', 'timezone', 'capacity', 'courts', 'fee', 'r_min', 'r_max', 'type', 'game_break', 'tournament_system']),
+    2: new Set(['state', 'region', 'city', 'timezone', 'capacity', 'courts', 'fee', 'r_min', 'r_max', 'type', 'game_break', 'tournament_system', 'consolation_depth']),
   };
 
   // настройки, существующие только у турниров 110
-  private static readonly ONLY_110: ReadonlySet<string> = new Set(['game_break', 'tournament_system']);
+  private static readonly ONLY_110: ReadonlySet<string> = new Set(['game_break', 'tournament_system', 'consolation_depth']);
 
   private assertValid = async (name: string, value: string) => {
     if (name === 'type') {
@@ -64,6 +64,13 @@ class Settings {
       // система проведения турнира 110: 1 - олимпийка, 2 - группы + олимпийка, 3 - круговая
       if (!['1', '2', '3'].includes(value)) {
         throw Settings.error('tournament_system должен быть 1, 2 или 3');
+      }
+      return;
+    }
+    if (name === 'consolation_depth') {
+      // глубина доигровок олимпийской сетки 110: 0 - без ограничения, N - максимум N ступеней
+      if (!/^\d+$/.test(value) || Number(value) > 10) {
+        throw Settings.error('consolation_depth должен быть целым числом от 0 до 10');
       }
       return;
     }

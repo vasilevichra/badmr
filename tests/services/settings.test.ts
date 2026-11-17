@@ -88,7 +88,8 @@ describe("Settings", () => {
       // + кеш обхода badminton4u (crawl_cache_m) и границы паузы (crawl_min_ms, crawl_max_ms)
       // + пауза между партиями (game_break)
       // + система проведения турнира 110 (tournament_system)
-      assert.strictEqual(all.length, 40);
+      // + глубина доигровок олимпийской сетки 110 (consolation_depth)
+      assert.strictEqual(all.length, 41);
       assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s && "overridden" in s));
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "delta"),
@@ -118,7 +119,7 @@ describe("Settings", () => {
 
       assert.deepStrictEqual(
           relevant.map((s) => s.name).sort(),
-          ["capacity", "city", "courts", "fee", "game_break", "r_max", "r_min", "region", "state", "timezone", "tournament_system", "type"]
+          ["capacity", "city", "consolation_depth", "courts", "fee", "game_break", "r_max", "r_min", "region", "state", "timezone", "tournament_system", "type"]
       );
     });
 
@@ -128,6 +129,39 @@ describe("Settings", () => {
       const all = await settingsService.getAll(undefined, true) as unknown as Setting[];
       assert.strictEqual(all.length, 38);
       assert.ok(!all.some((s) => s.name === "game_break"));
+      assert.ok(!all.some((s) => s.name === "consolation_depth"));
+    });
+  });
+
+  describe("consolation_depth", () => {
+    // глубина доигровок олимпийской сетки 110: целое 0..10, 0 = без ограничения
+    it("должен сохранять 0 (полная рекурсия)", async () => {
+      await settingsService.set("consolation_depth", "0", 2);
+    });
+
+    it("должен сохранять 10 (максимум диапазона)", async () => {
+      await settingsService.set("consolation_depth", "10", 2);
+    });
+
+    it("не должен сохранять 11", async () => {
+      await assert.rejects(
+        () => settingsService.set("consolation_depth", "11", 2),
+        /consolation_depth/,
+      );
+    });
+
+    it("не должен сохранять -1", async () => {
+      await assert.rejects(
+        () => settingsService.set("consolation_depth", "-1", 2),
+        /consolation_depth/,
+      );
+    });
+
+    it("не должен сохранять нецелое", async () => {
+      await assert.rejects(
+        () => settingsService.set("consolation_depth", "1.5", 2),
+        /consolation_depth/,
+      );
     });
   });
 
@@ -135,7 +169,7 @@ describe("Settings", () => {
     it("должен вернуть объект настроек текущего турнира", async () => {
       const settings = await settingsService.getSettings() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(settings).length, 40);
+      assert.strictEqual(Object.keys(settings).length, 41);
       assert.strictEqual(settings.delta, "100");
       assert.strictEqual(settings.state, "1");
       assert.strictEqual(settings.type, "1");
@@ -155,10 +189,11 @@ describe("Settings", () => {
     it("должен вернуть объект значений по умолчанию без переопределений", async () => {
       const defaults = await settingsService.getDefaults() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(defaults).length, 40);
+      assert.strictEqual(Object.keys(defaults).length, 41);
       assert.strictEqual(defaults.delta, "50");
       assert.strictEqual(defaults.state, "1");
       assert.strictEqual(defaults.game_break, "60");
+      assert.strictEqual(defaults.consolation_depth, "0");
     });
   });
 
