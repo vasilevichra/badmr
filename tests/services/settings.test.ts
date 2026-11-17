@@ -87,7 +87,8 @@ describe("Settings", () => {
       // + rematch_window
       // + кеш обхода badminton4u (crawl_cache_m) и границы паузы (crawl_min_ms, crawl_max_ms)
       // + пауза между партиями (game_break)
-      assert.strictEqual(all.length, 39);
+      // + система проведения турнира 110 (tournament_system)
+      assert.strictEqual(all.length, 40);
       assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s && "overridden" in s));
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "delta"),
@@ -117,13 +118,13 @@ describe("Settings", () => {
 
       assert.deepStrictEqual(
           relevant.map((s) => s.name).sort(),
-          ["capacity", "city", "courts", "fee", "game_break", "r_max", "r_min", "region", "state", "timezone", "type"]
+          ["capacity", "city", "courts", "fee", "game_break", "r_max", "r_min", "region", "state", "timezone", "tournament_system", "type"]
       );
     });
 
     it("relevantOnly для типа без своего списка возвращает все настройки, кроме 110-шных", async () => {
       // у типа 1 (Новая лига) отдельного списка нет — показываем все,
-      // кроме настроек, существующих только у 110 (game_break)
+      // кроме настроек, существующих только у 110 (game_break, tournament_system)
       const all = await settingsService.getAll(undefined, true) as unknown as Setting[];
       assert.strictEqual(all.length, 38);
       assert.ok(!all.some((s) => s.name === "game_break"));
@@ -134,7 +135,7 @@ describe("Settings", () => {
     it("должен вернуть объект настроек текущего турнира", async () => {
       const settings = await settingsService.getSettings() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(settings).length, 39);
+      assert.strictEqual(Object.keys(settings).length, 40);
       assert.strictEqual(settings.delta, "100");
       assert.strictEqual(settings.state, "1");
       assert.strictEqual(settings.type, "1");
@@ -154,7 +155,7 @@ describe("Settings", () => {
     it("должен вернуть объект значений по умолчанию без переопределений", async () => {
       const defaults = await settingsService.getDefaults() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(defaults).length, 39);
+      assert.strictEqual(Object.keys(defaults).length, 40);
       assert.strictEqual(defaults.delta, "50");
       assert.strictEqual(defaults.state, "1");
       assert.strictEqual(defaults.game_break, "60");

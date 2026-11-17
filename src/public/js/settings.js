@@ -157,6 +157,16 @@ const renderSettings = () => {
               if (row.name === 'fifty' || row.name === 'delta_auto') {
                 return `<input type="checkbox" class="settings-boolean-input form-check-input" data-name="${row.name}" ${String(value) === '1' ? 'checked' : ''}/>`;
               }
+              // система проведения турнира (только 110): фиксированный
+              // справочник 1..3, селект с тремя вариантами; сохранение — общий
+              // change-хендлер .settings-reference-select (без каскада)
+              if (row.name === 'tournament_system') {
+                const systems = {1: 'Олимпийская', 2: 'Группы + олимпийская', 3: 'Круговая (все со всеми)'};
+                const options = Object.entries(systems)
+                    .map(([v, t]) => `<option value="${v}"${String(value) === v ? ' selected' : ''}>${t}</option>`)
+                    .join('');
+                return `<select data-name="tournament_system" class="settings-reference-select form-select form-select-sm text-center">${options}</select>`;
+              }
               return value;
             },
             cellStyle: () => ({css: {cursor: 'pointer'}})

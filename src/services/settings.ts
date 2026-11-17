@@ -49,16 +49,23 @@ class Settings {
   // прячем. Отсутствующий тип (или null) — показывать все настройки,
   // как у Новой лиги, кроме чисто «стодесятых» (ONLY_110)
   private static readonly RELEVANT: Record<number, ReadonlySet<string> | null> = {
-    2: new Set(['state', 'region', 'city', 'timezone', 'capacity', 'courts', 'fee', 'r_min', 'r_max', 'type', 'game_break']),
+    2: new Set(['state', 'region', 'city', 'timezone', 'capacity', 'courts', 'fee', 'r_min', 'r_max', 'type', 'game_break', 'tournament_system']),
   };
 
   // настройки, существующие только у турниров 110
-  private static readonly ONLY_110: ReadonlySet<string> = new Set(['game_break']);
+  private static readonly ONLY_110: ReadonlySet<string> = new Set(['game_break', 'tournament_system']);
 
   private assertValid = async (name: string, value: string) => {
     if (name === 'type') {
       // тип соревнований задаётся при создании турнира и не редактируется
       throw Settings.error('type — нередактируемая настройка');
+    }
+    if (name === 'tournament_system') {
+      // система проведения турнира 110: 1 - олимпийка, 2 - группы + олимпийка, 3 - круговая
+      if (!['1', '2', '3'].includes(value)) {
+        throw Settings.error('tournament_system должен быть 1, 2 или 3');
+      }
+      return;
     }
     if (Settings.BOOLEAN.has(name)) {
       if (value !== '0' && value !== '1') {
