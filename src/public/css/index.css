@@ -848,6 +848,16 @@ body.desktop #tournament-new-registration-hint > .row {
   position: relative;
 }
 
+/* телефон: таблица игроков — на всю ширину карточки турнира (шапки).
+   Карточка сидит в одном .container с margin 12px (итого 24px от края),
+   а таблица — во вложенном .container (см. tournament/new/index.ejs)
+   внутри .col: без обнуления внутреннего паддинга она уже карточки
+   на 12px с каждой стороны */
+body.phone #player > .container {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* небольшой зазор после селекта подразделения в шапке — даёт gap формы */
 #header #unit {
   margin-right: 0;
@@ -1105,8 +1115,15 @@ body.phone .tournament-hero-name {
   font-size: 1.2rem;
 }
 
+/* телефон: вся второстепенная строка шапки (бейдж типа, дата, рег-строка,
+   чипы, «Вход») — единый кегль 0.875rem: ниже таблицы (1rem), выше ничего.
+   Иначе пять разных размеров (0.7/0.75/0.8/0.875) выглядят в разнобой */
+body.phone .tournament-hero-type {
+  font-size: 0.875rem;
+}
+
 body.phone .tournament-hero-chip {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   padding: 0.1rem 0.55rem;
   /* длинный адрес не влезает в экран: чип занимает всю доступную ширину
      ряда, адрес переносится внутри пилюли на вторую строку */
@@ -1157,7 +1174,7 @@ body.phone .tournament-hero .user {
 }
 
 body.phone .tournament-hero form.login .btn {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   padding: 2px 10px;
 }
 
