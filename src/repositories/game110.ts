@@ -20,12 +20,14 @@ export interface Board110State {
   party_score_2: number;
 }
 
-/** Строка игры 110 с колонками чётности/подачи (live-табло). */
-type Game110BoardRow = {
+/** Строка игры 110 (SELECT *) с колонками чётности/подачи (live-табло). */
+export type Game110BoardRow = {
   id: number;
+  match_110_id: number;
+  game_type_id: number;
+  current: number;
   score_1: number;
   score_2: number;
-  match_110_id: number;
   even_1_user_id: number | null;
   even_2_user_id: number | null;
   serve_user_id: number | null;
@@ -49,8 +51,8 @@ class Game110 {
     this.teamOrder = new TeamOrderRepository();
   }
 
-  getById(id: number) {
-    return this.db.get(
+  getById(id: number): Game110BoardRow | undefined {
+    return this.db.get<Game110BoardRow>(
         `SELECT *
          FROM game_110
          WHERE id = ?`,
@@ -61,9 +63,9 @@ class Game110 {
   /** Идущая игра матча пары. Без tournamentId — текущий турнир (мутации
    *  счёта всегда идут по нему); с id — указанный турнир (чтение со
    *  страниц архивных турниров). */
-  getCurrentByTeamIds(teamId1: number, teamId2: number, tournamentId?: number) {
+  getCurrentByTeamIds(teamId1: number, teamId2: number, tournamentId?: number): Game110BoardRow | undefined {
     const tournamentFilter = tournamentId ? 't.id = ?' : 't.current = 1';
-    return this.db.get<{ id: number }>(
+    return this.db.get<Game110BoardRow>(
         `SELECT g.*
          FROM game_110 g
                   JOIN match_110 m on g.match_110_id = m.id
@@ -140,7 +142,7 @@ class Game110 {
   }
 
   increaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
     // матча нет или он уже завершён — инкремента нет
     if (!g) return null;
     const winner = (teamNumber === "1" ? 1 : 2) as 1 | 2;
@@ -172,7 +174,7 @@ class Game110 {
     // 110-е очко не прошло (счёт не изменился) — очка не было:
     // чётность и подачу не трогаем
     if (updated[`score_${winner}`] === g![`score_${winner}`]) {
-      return this.boardState(this.getById(g!.id) as never);
+      return this.boardState(this.getById(g!.id)!);
     }
     const winnerScore = updated[`score_${winner}`];
     const loserScore = updated[`score_${winner === 1 ? 2 : 1}`];
@@ -190,7 +192,7 @@ class Game110 {
              WHERE id = ?`,
             [updated.match_110_id]
         );
-        return this.boardState(this.getById(g!.id) as never);
+        return this.boardState(this.getById(g!.id)!);
       }
       // автозачёт: проигравший партию получает минимум 5 очков за неё —
       // добор до 5×номер партии (11-5, 22-10, 33-15 …); набравший больше —
@@ -202,7 +204,7 @@ class Game110 {
            WHERE id = ?`,
           [5 * winnerScore / 11, g!.id]
       );
-      return this.boardState(this.getById(g!.id) as never);
+      return this.boardState(this.getById(g!.id)!);
     }
     // подача после очка: подающая пара меняется кортами (выиграла очко
     // на своей подаче); подающий — игрок пары-победителя в корте,
@@ -217,7 +219,7 @@ class Game110 {
     // пустой ростер победителя (состав изменился между розыгрышами):
     // пересчитывать некому — чётность и подачу не трогаем
     if (roster[winner].length === 0) {
-      return this.boardState(this.getById(g!.id) as never);
+      return this.boardState(this.getById(g!.id)!);
     }
     const serverUser = roster[winner].length === 2 && winnerScore % 2 !== 0
         ? roster[winner].find(p => p !== even[winner])!
@@ -228,14 +230,14 @@ class Game110 {
          WHERE id = ?`,
         [serverUser, even[1] ?? g.even_1_user_id, even[2] ?? g.even_2_user_id, g!.id]
     );
-    return this.boardState(this.getById(g!.id) as never);
+    return this.boardState(this.getById(g!.id)!);
   }
 
   /** Подача на 0:0 — тап/двойной клик судьи по чётному игроку пары.
    *  Игра строки создаётся вместе с матчем — отсутствует (архивный
    *  матч) — отказа. */
   setCurrentServeByTeamIds(teamId1: number, teamId2: number, userId: number, tournamentId?: number): Board110State | null {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
     if (!g) return null;
     if (g.score_1 !== 0 || g.score_2 !== 0) return null;
     const roster = this.rosters(g, teamId1, teamId2);
@@ -249,7 +251,7 @@ class Game110 {
         `UPDATE game_110 SET serve_user_id = ? WHERE id = ?`,
         [userId, g.id]
     );
-    return this.boardState(this.getById(g.id) as never);
+    return this.boardState(this.getById(g.id)!);
   }
 
   /** Минус очко (корректировка): только у идущего матча, счёт не ниже 0.
@@ -259,7 +261,7 @@ class Game110 {
    *  (счёт лидера был кратен 11), откатывается вместе с разрядом —
    *  строка возвращается к предыдущему разряду. */
   decreaseCurrentByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
     // матча нет или он уже завершён — декремента нет
     if (!g) return null;
     const scorer = (teamNumber === "1" ? 1 : 2) as 1 | 2;
@@ -277,7 +279,7 @@ class Game110 {
          WHERE id = ? AND score_${scorer} > 0`,
         [g.id]
     );
-    const updated = this.getById(g.id) as unknown as Game110BoardRow;
+    const updated = this.getById(g.id)!;
     // уменьшать было нечего (счёт уже 0): очка не было — подачу и
     // чётность не откатываем, иначе повторный свайп вниз на 0:0 свапнет пару
     if (updated[`score_${scorer}`] === scorerScoreBefore) {
@@ -322,7 +324,7 @@ class Game110 {
            WHERE id = ?`,
           [prevPos, serverUser, even1, even2, g.id]
       );
-      return this.boardState(this.getById(g.id) as never);
+      return this.boardState(this.getById(g.id)!);
     }
     // эвристика НЛ: уменьшение счёта подающей пары = очко выиграно на
     // своей подаче (откат смены кортов + подающий по чётности нового
@@ -354,7 +356,7 @@ class Game110 {
          WHERE id = ?`,
         [serverUser, even[1] ?? g.even_1_user_id, even[2] ?? g.even_2_user_id, g.id]
     );
-    return this.boardState(this.getById(g.id) as never);
+    return this.boardState(this.getById(g.id)!);
   }
 
   /** Граница партии: ненулевой счёт кратен 11 у лидера ровно с одной
@@ -374,7 +376,7 @@ class Game110 {
    *  свапаемой пары, подача переезжает на корт по чётности счёта, подача
    *  другой пары от свапа не зависит. */
   swapCurrentEvenByTeamIds(teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number): Board110State | null {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
     if (!g) return null;
     // партия начата (есть очко) — смена чётности запрещена до следующей
     // партии (type-pos / откат границы decrease)
@@ -401,7 +403,7 @@ class Game110 {
           [serverUser, g.id]
       );
     }
-    return this.boardState(this.getById(g.id) as never);
+    return this.boardState(this.getById(g.id)!);
   }
 
   /** Смена текущего разряда табло (клиент отправляет индекс строки из
@@ -412,7 +414,7 @@ class Game110 {
    *  11, игроком нового ростера на корте по чётности её счёта. При 0:0
    *  подача не трогается (не задана или выставлена судьёй). */
   setTypePosByTeamIds(teamId1: number, teamId2: number, typePos: number, tournamentId?: number): Board110State | null {
-    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId) as unknown as Game110BoardRow | undefined;
+    const g = this.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
     if (!g) return null;
     if (!Number.isInteger(typePos) || typePos < 0 || typePos >= BOARD_GROUPS.length * 2) return null;
     if (!Game110.isPartyBoundary(g.score_1, g.score_2)) return null;
@@ -452,7 +454,7 @@ class Game110 {
          WHERE id = ?`,
         [typePos, even1, even2, serve, g.id]
     );
-    return this.boardState(this.getById(g.id) as never);
+    return this.boardState(this.getById(g.id)!);
   }
 
   create(match_110_id: number) {
