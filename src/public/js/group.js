@@ -342,6 +342,14 @@ const editGroupUser = (element, team_id, user_id, user_group_id, user_group_name
 };
 
 const playMatch110 = (teamId1, teamId2) => {
+  // триггеры двухчасовых ограничений (04-triggers-up.sql) роняют вставку
+  // игры/матча с RAISE(ABORT) — сервер отвечает 500 {error: "..."}:
+  // показываем текст пользователю, иначе отказ выглядит как «ничего не
+  // произошло» (матч без игры)
+  const alertError = (xhr) => {
+    const message = xhr?.responseJSON?.error || 'Не удалось создать матч';
+    alert(message);
+  };
   const createMatch = () => $.ajax({
     url: '/api/matches/create110',
     type: 'POST',
@@ -358,8 +366,10 @@ const playMatch110 = (teamId1, teamId2) => {
         url: `/api/games/create110/${data.id}`,
         type: 'POST',
         cache: false,
+        error: alertError,
       });
-    }
+    },
+    error: alertError,
   });
 
   $.get('/api/courts/')
