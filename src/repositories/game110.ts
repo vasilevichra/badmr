@@ -466,6 +466,16 @@ class Game110 {
     );
   }
 
+  /** id текущей игры матча 110 — для кнопки возобновления на сетке. */
+  currentGameId(match_110_id: number): number | undefined {
+    return this.db.get<{ id: number }>(
+        `SELECT id FROM game_110
+         WHERE match_110_id = ? AND current = 1
+         ORDER BY id DESC LIMIT 1`,
+        [match_110_id]
+    )?.id;
+  }
+
   create(match_110_id: number) {
     return this.db.run(
         `INSERT INTO game_110 (match_110_id, game_type_id, current)

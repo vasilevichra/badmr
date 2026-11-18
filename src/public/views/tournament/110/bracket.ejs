@@ -1,0 +1,67 @@
+<% /* Олимпийская сетка 110 (system 1). Карточки рисует bracket.js по данным
+      GET /api/matches/bracket110; имена команд — из групп страницы.
+      Для идущих матчей — серверные модалки табло (как в матрице группы). */ %>
+<% var bracketTeams = {}; %>
+<% groups.forEach(g => { Object.values(Object.values(g)[0]).forEach(tg => { %>
+<%   bracketTeams[tg[0].team_id] = {name: String(tg[0].team_name), city: String(tg[0].team_city ?? ''), color: tg[0].team_color}; %>
+<% }); }); %>
+<div class="container">
+    <div class="row text-center pt-4">
+        <h1 class="text-center">Олимпийская сетка</h1>
+    </div>
+    <% if (!bracketGenerated) { %>
+        <div class="row">
+            <div class="col text-center text-muted">Сетка ещё не сгенерирована</div>
+        </div>
+        <% if (user) { %>
+        <div class="row pt-2">
+            <div class="col text-center">
+                <button type="button" id="bracket-generate" class="btn btn-outline-primary">Сгенерировать сетку</button>
+            </div>
+        </div>
+        <% } %>
+    <% } %>
+    <div id="tournament-bracket" class="tournament-bracket"></div>
+</div>
+<% /* модалки табло идущих матчей сетки — те же, что открывает матрица */ %>
+<% bracketLive.forEach(live => { %>
+    <%- include('board', {gameId: live.gameId, teamIds: [live.team_1_id, live.team_2_id], teamNames: [(bracketTeams[live.team_1_id] ?? {}).name ?? '', (bracketTeams[live.team_2_id] ?? {}).name ?? ''], startScores: [0, 0], teamAvatars: [boardAvatars[live.team_1_id], boardAvatars[live.team_2_id]], teamColors: [(bracketTeams[live.team_1_id] ?? {}).color, (bracketTeams[live.team_2_id] ?? {}).color]}); %>
+<% }); %>
+<script>
+  window.bracketTeams = <%- JSON.stringify(bracketTeams) %>;
+  window.bracketSignedIn = <%= user ? 'true' : 'false' %>;
+  // bracket.js подключён внизу index.ejs — рендерим после его загрузки
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/matches/bracket110?tournament=<%= tournament_id %>')
+        .then(r => r.json())
+        .then(data => {
+          if (!data.generated) return;
+          const host = document.getElementById('tournament-bracket');
+          if (document.body.classList.contains('phone')) {
+            renderBracketMobile(host, data);
+          } else {
+            renderBracket(host, data);
+          }
+        });
+  });
+</script>
+<% if (user && !bracketGenerated) { %>
+<script>
+  (function () {
+    const btn = document.getElementById('bracket-generate');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      btn.disabled = true;
+      fetch('/api/matches/generate110?tournament=<%= tournament_id %>', {method: 'POST'})
+          .then(r => {
+            if (!r.ok) return r.json().then(b => Promise.reject(new Error(b.error || 'Не удалось сгенерировать сетку')));
+            location.reload();
+          })
+          .catch(e => {
+            alert(e.message);
+            btn.disabled = false;
+          });
+    });
+  })();
+</script>
+<% } %>

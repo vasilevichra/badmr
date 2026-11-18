@@ -126,7 +126,7 @@ class Bracket {
     const id = tournamentId ?? tournament.getCurrent()!.id;
     const system = Number(settingsService.get('tournament_system', id));
     if (!match110.hasSlotted(id)) {
-      return {generated: false, system};
+      return {generated: false as const, system};
     }
     const structure = this.buildStructure(id);
     const depth = Number(settingsService.get('consolation_depth', id));
@@ -139,7 +139,9 @@ class Bracket {
         team_2_id: m.team_2_id,
         score_1: scores?.score_1 ?? 0,
         score_2: scores?.score_2 ?? 0,
-        finished: m.finished
+        finished: m.finished,
+        // текущая игра незавершённого матча — модалка табло на странице
+        game_id: m.finished === 0 ? game110.currentGameId(m.id) ?? null : null
       };
     });
     return {generated: true, system, depth, structure, matches};

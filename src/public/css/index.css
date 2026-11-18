@@ -3518,3 +3518,137 @@ body.desktop:has(> #footer.fixed-bottom) {
 [data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection--single {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
+
+/* ===== Олимпийская сетка 110 (bracket.js, system 1) ===== */
+
+/* верхняя сетка: колонки раундов, внутри каждой пары матчей разнесены
+   по высоте поровну — классический вид «расходящегося» дерева */
+.tournament-bracket-upper {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.tournament-bracket-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 12px;
+  min-width: 220px;
+}
+
+.tournament-bracket-round-title {
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tournament-bracket-match {
+  position: relative;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: var(--bs-body-bg);
+}
+
+.tournament-bracket-match-empty {
+  border-style: dashed;
+}
+
+.tournament-bracket-empty {
+  color: var(--bs-secondary-color);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.tournament-bracket-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.tournament-bracket-team + .tournament-bracket-team {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.tournament-bracket-team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tournament-bracket-team-winner .tournament-bracket-team-name,
+.tournament-bracket-team-winner .tournament-bracket-score {
+  font-weight: 700;
+}
+
+.tournament-bracket-score {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.tournament-bracket-resume {
+  position: absolute;
+  right: 6px;
+  bottom: -14px;
+  z-index: 2;
+}
+
+/* карман доигровок: заголовок + колонки раундов кармана */
+.tournament-bracket-pocket {
+  margin-top: 28px;
+}
+
+.tournament-bracket-pocket-title {
+  text-align: center;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.tournament-bracket-pocket-rounds {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* мобайл: вертикальный список; у матчей карманов — пунктирная стрелка
+   слева, отличающая доигровки от верхней сетки */
+.tournament-bracket-mobile {
+  display: none;
+}
+
+body.phone .tournament-bracket-upper,
+body.phone .tournament-bracket-pocket-rounds {
+  display: none;
+}
+
+/* на телефоне десктопные секции карманов целиком скрыты — их заголовки
+   дублируются в мобильном списке */
+body.phone .tournament-bracket-pocket {
+  display: none;
+}
+
+body.phone .tournament-bracket-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.phone .tournament-bracket-pocket-mobile {
+  margin-left: 14px;
+}
+
+body.phone .tournament-bracket-pocket-mobile::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  width: 10px;
+  border-top: 2px dashed var(--bs-border-color);
+}
+
