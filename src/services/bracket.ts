@@ -119,6 +119,31 @@ class Bracket {
     }
     return scores.score_1 > scores.score_2 ? match.team_1_id : match.team_2_id;
   }
+
+  /** Состояние сетки для клиента: структура + матчи слотов (счёт —
+   *  последняя игра матча). Без сгенерированной сетки — generated: false. */
+  bracket110(tournamentId?: number) {
+    const id = tournamentId ?? tournament.getCurrent()!.id;
+    const system = Number(settingsService.get('tournament_system', id));
+    if (!match110.hasSlotted(id)) {
+      return {generated: false, system};
+    }
+    const structure = this.buildStructure(id);
+    const depth = Number(settingsService.get('consolation_depth', id));
+    const matches = match110.getAllSlotted(id).map(m => {
+      const scores = game110.scoresByMatchId(m.id);
+      return {
+        slot: {stage: m.stage, round: m.round, pos: m.pos} as SlotRef,
+        id: m.id,
+        team_1_id: m.team_1_id,
+        team_2_id: m.team_2_id,
+        score_1: scores?.score_1 ?? 0,
+        score_2: scores?.score_2 ?? 0,
+        finished: m.finished
+      };
+    });
+    return {generated: true, system, depth, structure, matches};
+  }
 }
 
 export default Bracket;

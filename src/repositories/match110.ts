@@ -111,6 +111,16 @@ class Match {
     )?.n ?? 0) > 0;
   }
 
+  /** Все матчи сетки турнира (со слотами) в порядке создания. */
+  getAllSlotted(tournamentId: number): Match110Row[] {
+    return this.db.all<Match110Row>(
+        `SELECT * FROM match_110
+         WHERE tournament_id = ? AND stage IS NOT NULL
+         ORDER BY id`,
+        [tournamentId]
+    );
+  }
+
   /** Отдых команд турнира (без параметра — текущего): с какого момента
    *  команда ждёт — created_at последнего сыгранного матча, без сыгранных —
    *  старт турнира. played — число сыгранных матчей команды. */
@@ -146,6 +156,41 @@ class Match {
         `SELECT COUNT(*) AS n FROM match_110 WHERE finished = 1 AND tournament_id = ${tournament}`
     )?.n ?? 0;
   }
+
+  /** Строки сводной таблицы 110: на каждый матч — команды, счёт последней
+   *  игры (счёт матча), флаг финиша и группы обеих команд. Незавершённые
+   *  матчи входят с finished=0 — их отфильтрует сервис. */
+  standingsRows(tournamentId?: number): StandingsRow[] {
+    const tournament = tournamentId ?? `(SELECT id FROM tournament WHERE current = 1)`;
+    return this.db.all<StandingsRow>(
+        `SELECT m.id,
+                m.team_1_id,
+                m.team_2_id,
+                g.score_1,
+                g.score_2,
+                m.finished,
+                t1.group_id AS group_1_id,
+                t2.group_id AS group_2_id
+         FROM match_110 m
+                  JOIN game_110 g ON g.match_110_id = m.id
+                  JOIN team t1 ON t1.id = m.team_1_id
+                  JOIN team t2 ON t2.id = m.team_2_id
+         WHERE m.tournament_id = ${tournament}
+           AND g.id = (SELECT MAX(g2.id) FROM game_110 g2 WHERE g2.match_110_id = m.id)
+         ORDER BY m.id`
+    );
+  }
+}
+
+interface StandingsRow {
+  id: number;
+  team_1_id: number;
+  team_2_id: number;
+  score_1: number;
+  score_2: number;
+  finished: 0 | 1;
+  group_1_id: number;
+  group_2_id: number;
 }
 
 export default Match;

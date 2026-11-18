@@ -13,6 +13,12 @@ router.get('/unfinished', (req, res) => {
   res.promise(matchService.getAllUnfinished(requestedTournament(req)));
 });
 
+// состояние сетки 110 для отрисовки: структура + матчи слотов.
+// объявлен до '/:user_id', иначе 'bracket110' захватится как user_id
+router.get('/bracket110', (req, res) => {
+  res.promise(matchService.bracket110(requestedTournament(req)));
+});
+
 router.get('/:user_id', ensureLoggedIn(), (req, res) => {
   res.promise(matchService.getAllByUser(Number(req.params.user_id), requestedTournament(req)));
 });
