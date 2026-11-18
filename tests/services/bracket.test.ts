@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { describe, beforeEach, it } from "node:test";
 
 import BracketService from "../../src/services/bracket.ts";
+import MatchService from "../../src/services/match.ts";
+import Game110 from "../../src/repositories/game110.ts";
 import TeamService from "../../src/services/team.ts";
 import TeamUserService from "../../src/services/team-user.ts";
 import UserService from "../../src/services/user.ts";
@@ -9,6 +11,7 @@ import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
 
 const bracketService = new BracketService();
+const matchService = new MatchService();
 const teamService = new TeamService();
 const teamUserService = new TeamUserService();
 const userService = new UserService();
@@ -18,7 +21,7 @@ interface SlotRow {
   id: number;
   team_1_id: number;
   team_2_id: number;
-  stage: 'upper' | 'lower' | null;
+  stage: 'upper' | 'lower' | 'group' | null;
   round: number | null;
   pos: number | null;
   finished: 0 | 1;
@@ -178,6 +181,82 @@ describe("Bracket (сетка 110)", () => {
       const before = slotRows().length;
       finishMatch(id, 9001);
       assert.strictEqual(slotRows().length, before);
+    });
+  });
+
+  describe("system 2 (группы + олимпийка)", () => {
+    // два котла по 2 команды: котёл 1 — a (сильный), b (слабый);
+    // котёл 2 — c (сильный), d (слабый). Сеяние котлов по user_lab.
+    const seedPockets = async (): Promise<Record<"a" | "b" | "c" | "d", number>> => {
+      db.run(`UPDATE tournament SET tournament_status_id = 2 WHERE id = 4`);
+      const seed = async (lastname: string, rating: number, groupId: number, color: number): Promise<number> => {
+        const { id: userId } = await userService.create(lastname, "Игрок", "Отчество", 500, 1, 1, "1990-01-01");
+        db.run(`INSERT INTO user_lab (user_id, rating_1) VALUES (?, ?)`, [userId, rating]);
+        const { id: teamId } = teamService.create(4, groupId, `Команда ${lastname}`, 1, color);
+        teamUserService.create(teamId, userId, groupId);
+        return teamId;
+      };
+      return {
+        a: await seed("Котл1Сильный", 950, 1, 1),
+        b: await seed("Котл1Слабый", 700, 1, 2),
+        c: await seed("Котл2Сильный", 850, 2, 3),
+        d: await seed("Котл2Слабый", 800, 2, 4)
+      };
+    };
+    const setSystem = (value: number): void => {
+      db.run(`INSERT INTO tournament_settings (defaults_id, tournament_id, value) VALUES (40, 4, '${value}')`);
+    };
+
+    it("матрица при system 2 получает stage='group', при system 1/3 — NULL", async () => {
+      const { a, b } = await seedPockets();
+      setSystem(2);
+      const { id: groupMatch } = matchService.create110(a, b, 4);
+      assert.strictEqual(
+        db.get<{ stage: string }>(`SELECT stage FROM match_110 WHERE id = ?`, [groupMatch])?.stage,
+        'group'
+      );
+      db.run(`UPDATE tournament_settings SET value = '1' WHERE defaults_id = 40 AND tournament_id = 4`);
+      const { id: sys1Match } = matchService.create110(a, b, 4);
+      assert.strictEqual(db.get<{ stage: string | null }>(`SELECT stage FROM match_110 WHERE id = ?`, [sys1Match])?.stage, null);
+      db.run(`UPDATE tournament_settings SET value = '3' WHERE defaults_id = 40 AND tournament_id = 4`);
+      const { id: sys3Match } = matchService.create110(a, b, 4);
+      assert.strictEqual(db.get<{ stage: string | null }>(`SELECT stage FROM match_110 WHERE id = ?`, [sys3Match])?.stage, null);
+    });
+
+    it("generate до завершения групповых матчей отклоняется", async () => {
+      const { a, b, c, d } = await seedPockets();
+      setSystem(2);
+      matchService.create110(a, b, 4); // групповые матчи созданы, не сыграны
+      matchService.create110(c, d, 4);
+      await assert.rejects(() => bracketService.generate(), /групповой этап не завершён/);
+    });
+
+    it("generate после групповых: пары (A1 v B2), (B1 v A2) — первые места котлов не встречаются в R1", async () => {
+      const { a, b, c, d } = await seedPockets();
+      setSystem(2);
+      const m1 = matchService.create110(a, b, 4);
+      const m2 = matchService.create110(c, d, 4);
+      // игра создаётся открытием табло (как в матрице)
+      new Game110().create(m1.id);
+      new Game110().create(m2.id);
+      finishMatch(m1.id, a); // A1 = a, A2 = b
+      finishMatch(m2.id, c); // B1 = c, B2 = d
+      await bracketService.generate();
+
+      const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
+      assert.strictEqual(r1.length, 2);
+      const pairs = r1.map(r => [r.team_1_id, r.team_2_id].sort((x, y) => x - y).join("-")).sort();
+      const expected = [[a, d], [b, c]].map(p => p.sort((x, y) => x - y).join("-")).sort();
+      assert.deepStrictEqual(pairs, expected);
+    });
+
+    it("групповые матчи не участвуют в роутинге сетки", async () => {
+      const { a, b, c, d } = await seedPockets();
+      setSystem(2);
+      const m1 = matchService.create110(a, b, 4);
+      matchService.create110(c, d, 4);
+      finishMatch(m1.id, a); // onMatchFinished для stage='group' — без слотов
+      assert.strictEqual(slotRows().filter(r => r.stage !== 'group').length, 0);
     });
   });
 });

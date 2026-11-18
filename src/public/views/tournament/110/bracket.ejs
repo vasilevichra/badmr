@@ -1,13 +1,14 @@
-<% /* Олимпийская сетка 110 (system 1). Карточки рисует bracket.js по данным
-      GET /api/matches/bracket110; имена команд — из групп страницы.
-      Для идущих матчей — серверные модалки табло (как в матрице группы). */ %>
+<% /* Олимпийская сетка 110 (system 1 и плей-офф system 2). Карточки рисует
+      bracket.js по данным GET /api/matches/bracket110; имена команд — из
+      групп страницы. Для идущих матчей — серверные модалки табло. */ %>
+<% var bracketTitle = typeof title !== 'undefined' ? title : 'Олимпийская сетка'; %>
 <% var bracketTeams = {}; %>
 <% groups.forEach(g => { Object.values(Object.values(g)[0]).forEach(tg => { %>
 <%   bracketTeams[tg[0].team_id] = {name: String(tg[0].team_name), city: String(tg[0].team_city ?? ''), color: tg[0].team_color}; %>
 <% }); }); %>
 <div class="container">
     <div class="row text-center pt-4">
-        <h1 class="text-center">Олимпийская сетка</h1>
+        <h1 class="text-center"><%= bracketTitle %></h1>
     </div>
     <% if (!bracketGenerated) { %>
         <div class="row">

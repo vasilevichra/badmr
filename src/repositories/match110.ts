@@ -11,7 +11,7 @@ export interface Match110Row {
   team_1_id: number;
   team_2_id: number;
   court_id: number;
-  stage: 'upper' | 'lower' | null;
+  stage: 'upper' | 'lower' | 'group' | null;
   round: number | null;
   pos: number | null;
   finished: 0 | 1;
@@ -30,10 +30,12 @@ class Match {
     this.db = new Repository().db;
   }
 
-  // слот сетки пишется вместе с матчем; null-слот — свободная матрица
-  // (сетка не генерировалась или круговая система)
+  // слот сетки пишется вместе с матчем; null-слот — свободная матрица.
+  // При system 2 свободная матрица — групповой этап (stage 'group'),
+  // сетка туда не смотрит; при 1/3 матрица остаётся вне сетки (NULL)
   create(team_1_id: number, team_2_id: number, tournamentId?: number, slot?: SlotRef) {
     const tournament = tournamentId ?? '(SELECT id FROM tournament WHERE current = 1)';
+    const stage = slot?.stage ?? (Number(settingsService.get('tournament_system', tournamentId)) === 2 ? 'group' : null);
     return this.db.run(
         `INSERT INTO match_110 (tournament_id,
                                team_1_id,
@@ -49,7 +51,7 @@ class Match {
                  ?,
                  ?,
                  ?)`,
-        [team_1_id, team_2_id, slot?.stage ?? null, slot?.round ?? null, slot?.pos ?? null]
+        [team_1_id, team_2_id, stage, slot?.round ?? null, slot?.pos ?? null]
     );
   }
 
@@ -103,22 +105,31 @@ class Match {
     );
   }
 
-  /** Есть ли матчи сетки у турнира (гейт повторной генерации). */
+  /** Есть ли матчи плей-офф у турнира (гейт повторной генерации);
+   *  групповые (system 2) сеткой не считаются. */
   hasSlotted(tournamentId: number): boolean {
     return (this.db.get<{ n: number }>(
-        `SELECT COUNT(*) AS n FROM match_110 WHERE tournament_id = ? AND stage IS NOT NULL`,
+        `SELECT COUNT(*) AS n FROM match_110 WHERE tournament_id = ? AND stage IN ('upper', 'lower')`,
         [tournamentId]
     )?.n ?? 0) > 0;
   }
 
-  /** Все матчи сетки турнира (со слотами) в порядке создания. */
+  /** Все матчи плей-офф турнира в порядке создания. */
   getAllSlotted(tournamentId: number): Match110Row[] {
     return this.db.all<Match110Row>(
         `SELECT * FROM match_110
-         WHERE tournament_id = ? AND stage IS NOT NULL
+         WHERE tournament_id = ? AND stage IN ('upper', 'lower')
          ORDER BY id`,
         [tournamentId]
     );
+  }
+
+  /** Есть ли несыгранные матчи группового этапа (гейт генерации плей-офф). */
+  hasUnfinishedGroup(tournamentId: number): boolean {
+    return (this.db.get<{ n: number }>(
+        `SELECT COUNT(*) AS n FROM match_110 WHERE tournament_id = ? AND stage = 'group' AND finished = 0`,
+        [tournamentId]
+    )?.n ?? 0) > 0;
   }
 
   /** Отдых команд турнира (без параметра — текущего): с какого момента
@@ -170,11 +181,17 @@ class Match {
                 g.score_2,
                 m.finished,
                 t1.group_id AS group_1_id,
-                t2.group_id AS group_2_id
+                t2.group_id AS group_2_id,
+                t1.name AS name_1,
+                t2.name AS name_2,
+                c1.name AS city_1,
+                c2.name AS city_2
          FROM match_110 m
                   JOIN game_110 g ON g.match_110_id = m.id
                   JOIN team t1 ON t1.id = m.team_1_id
                   JOIN team t2 ON t2.id = m.team_2_id
+                  JOIN city c1 ON c1.id = t1.city_id
+                  JOIN city c2 ON c2.id = t2.city_id
          WHERE m.tournament_id = ${tournament}
            AND g.id = (SELECT MAX(g2.id) FROM game_110 g2 WHERE g2.match_110_id = m.id)
          ORDER BY m.id`
@@ -191,6 +208,10 @@ interface StandingsRow {
   finished: 0 | 1;
   group_1_id: number;
   group_2_id: number;
+  name_1: string;
+  name_2: string;
+  city_1: string;
+  city_2: string;
 }
 
 export default Match;

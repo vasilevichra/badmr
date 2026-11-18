@@ -27,6 +27,19 @@ class Group {
          FROM "group"`);
   }
 
+  /** Котлы (группы) турнира, в которые входят его команды, — порядок по id.
+   *  Плей-офф system 2 сеется по топ-2 каждого котла. */
+  pockets(tournamentId: number): { group_id: number; name: string }[] {
+    return this.db.all<{ group_id: number; name: string }>(
+        `SELECT DISTINCT g.id AS group_id, g.name AS name
+         FROM team t
+                  JOIN "group" g ON g.id = t.group_id
+         WHERE t.tournament_id = ?
+         ORDER BY g.id`,
+        [tournamentId]
+    );
+  }
+
   /** Группы с командами и игроками. Без параметра — текущий турнир,
    *  с id — указанный (страницы архивных турниров показывают свои группы
    *  и матрицы игр). */

@@ -144,3 +144,11 @@
         </div>
     </div>
 </div>
+
+<% /* Сводная таблица котла (И/В/П/О) — рендерит group.js из
+      GET /api/games/110/standings; group_id — ключ объекта группы */ %>
+<div class="row justify-content-sm-center" data-standings-group="<%= Object.keys(group)[0] %>">
+    <div class="col-auto">
+        <div class="tournament-standings"></div>
+    </div>
+</div>

@@ -739,3 +739,35 @@ const renderFinishedMatchScores = () => {
 };
 renderFinishedMatchScores();
 $(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => renderFinishedMatchScores());
+
+// сводная таблица котла (И/В/П/О, О = В): один запрос на каждый
+// контейнер [data-standings-group] (group.ejs); порядок — как отдал API
+// (очки ↓, личка, diff, сеяние). После закрытия табло не перестраиваем:
+// standings меняются только по завершении матча, а перерисовка счётов
+// (renderFinishedMatchScores) уже перестраивает мобильные чипы
+const renderStandings = () => {
+  document.querySelectorAll('[data-standings-group]').forEach(host => {
+    const groupId = host.getAttribute('data-standings-group');
+    $.get(`${withTournament('/api/games/110/standings')}&group=${groupId}`).then(rows => {
+      const el = host.querySelector('.tournament-standings');
+      if (!el) return;
+      el.innerHTML = '';
+      const table = document.createElement('table');
+      table.className = 'table tournament-standings-table';
+      table.innerHTML = '<thead><tr>' +
+          '<th class="text-start">Команда</th><th>И</th><th>В</th><th>П</th><th>О</th>' +
+          '</tr></thead>';
+      const tbody = document.createElement('tbody');
+      (rows || []).forEach(r => {
+        const tr = document.createElement('tr');
+        const label = r.city ? `${r.city} — ${r.name}` : r.name;
+        tr.innerHTML = `<td class="text-start">${label}</td>` +
+            `<td>${r.games}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.points}</td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      el.appendChild(table);
+    });
+  });
+};
+renderStandings();
