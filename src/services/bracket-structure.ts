@@ -282,11 +282,13 @@ export const targetOf = (s: BracketStructure, from: SlotRef, outcome: 'win' | 'l
   if (from.round === Math.log2(s.size)) {
     return null;
   }
-  // проигравший раунда r → первый матч кармана уровня 1: его round = r,
-  // диапазон совпадает с диапазоном мест раунда r
+  // проигравший раунда r → матч кармана уровня 1, в питателях которого
+  // он сидит (round = r, диапазон — диапазон мест раунда r); фильтр по
+  // feeders различает матчи одного кармана
   const pocketSlot = s.slots
     .filter(x => x.stage === 'lower' && x.round === from.round
-      && x.placeFrom === slot.placeFrom && x.placeTo === slot.placeTo)
+      && x.placeFrom === slot.placeFrom && x.placeTo === slot.placeTo
+      && x.feeders?.some(f => f.stage === 'upper' && f.round === from.round && f.pos === from.pos))
     .sort((a, b) => a.pos - b.pos)[0];
   return pocketSlot ? { stage: 'lower', round: pocketSlot.round, pos: pocketSlot.pos } : null;
 };

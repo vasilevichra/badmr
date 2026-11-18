@@ -85,7 +85,7 @@ class Tournament {
     }
   }
 
-  getCurrent(): { tournament_type_id: number } | undefined {
+  getCurrent(): { id: number; tournament_status_id: number; tournament_type_id: number } | undefined {
     return this.db.get(
         `SELECT t.*, g.city_id, c.name AS city, g.latitude, g.longitude, g.address, g.map_url
          FROM tournament t

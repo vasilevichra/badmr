@@ -457,6 +457,15 @@ class Game110 {
     return this.boardState(this.getById(g.id)!);
   }
 
+  /** Счёт последней игры матча 110 (победитель сетки — по очкам матча). */
+  scoresByMatchId(match_110_id: number): { score_1: number; score_2: number } | undefined {
+    return this.db.get<{ score_1: number; score_2: number }>(
+        `SELECT score_1, score_2 FROM game_110
+         WHERE match_110_id = ? ORDER BY id DESC LIMIT 1`,
+        [match_110_id]
+    );
+  }
+
   create(match_110_id: number) {
     return this.db.run(
         `INSERT INTO game_110 (match_110_id, game_type_id, current)
