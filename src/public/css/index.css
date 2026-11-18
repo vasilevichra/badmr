@@ -3652,3 +3652,22 @@ body.phone .tournament-bracket-pocket-mobile::before {
   border-top: 2px dashed var(--bs-border-color);
 }
 
+
+/* Сводная таблица котла (И/В/П/О) под матрицей — рендерит group.js
+   (renderStandings) в контейнер [data-standings-group] из group.ejs.
+   На телефоне таблица узкая (5 колонок чисел) — гасим гаттеры ячеек,
+   чтобы строки не переносились */
+.tournament-standings-table {
+  margin-bottom: 2em;
+}
+
+.tournament-standings-table th,
+.tournament-standings-table td {
+  padding: 0.35rem 0.5rem;
+}
+
+.tournament-standings-table th:not(.text-start),
+.tournament-standings-table td:not(.text-start) {
+  text-align: center;
+  width: 2.2em;
+}
