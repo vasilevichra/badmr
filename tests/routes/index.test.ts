@@ -164,12 +164,14 @@ describe("Историческая сетка архива 110", () => {
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
-    assert.match(html, /Котёл C/);
-    assert.match(html, /Котёл D/);
+    // сетки котлов рендерятся под составами групп (2 котла)
+    assert.match(html, /tournament-bracket-pocket/);
     assert.match(html, /Стрелы/);
     assert.match(html, /110<\/span>/); // счёт победителя
     // заглушка генерации сетки не показывается — реконструкция вместо неё
     assert.doesNotMatch(html, /bracket-generate/);
+    // секция доигровок рисуется без отдельного заголовка (дубль котла-группы)
+    assert.doesNotMatch(html, /Доигровки</);
   });
 
   it("архив 110 system 2 реконструкцию не показывает", async () => {

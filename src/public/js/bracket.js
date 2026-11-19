@@ -215,3 +215,62 @@ window.renderBracketMobile = (host, data) => {
   });
   host.append(list);
 };
+
+// линии переходов реконструкции котлов (pocket.ejs ставит data-lines):
+// сплошная — победитель идёт в следующий матч; пунктир — «вторая жизнь»
+// проигравшего, только в режиме lives. Цели ищем по data-team строк команд
+// в ближайшей более поздней колонке кругов.
+window.renderBracketLines = () => {
+  document.querySelectorAll('.tournament-bracket-pocket[data-lines]').forEach(host => {
+    host.querySelectorAll('.tournament-bracket-lines').forEach(el => el.remove());
+    if (document.body.classList.contains('phone')) return;
+    const withLives = host.dataset.lines === 'lives';
+    const cards = [...host.querySelectorAll('.tournament-bracket-match[data-mid]')];
+    if (!cards.length) return;
+    const hostRect = host.getBoundingClientRect();
+    const rounds = [...host.querySelectorAll('.tournament-bracket-round')];
+    const colOf = new Map(cards.map(c => [c, rounds.indexOf(c.closest('.tournament-bracket-round'))]));
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'tournament-bracket-lines');
+    svg.setAttribute('width', host.scrollWidth);
+    svg.setAttribute('height', host.scrollHeight);
+    // следующий матч команды — карточка в самой ближней колонке позже текущей
+    const nextCard = (card, teamId) => {
+      let best = null;
+      for (const c of cards) {
+        if (colOf.get(c) <= colOf.get(card)) continue;
+        const mine = [...c.querySelectorAll('.tournament-bracket-team')]
+            .some(t => Number(t.dataset.team) === teamId);
+        if (mine && (!best || colOf.get(c) < colOf.get(best))) best = c;
+      }
+      return best;
+    };
+    // ортогональный локоть от правого края исхода к левому краю цели
+    const line = (from, to, cls) => {
+      const f = from.getBoundingClientRect();
+      const t = to.getBoundingClientRect();
+      const x1 = f.right - hostRect.left;
+      const y1 = f.top + f.height / 2 - hostRect.top;
+      const x2 = t.left - hostRect.left;
+      const y2 = t.top + t.height / 2 - hostRect.top;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M ${x1} ${y1} L ${(x1 + x2) / 2} ${y1} L ${(x1 + x2) / 2} ${y2} L ${x2} ${y2}`);
+      path.setAttribute('class', cls);
+      svg.append(path);
+    };
+    cards.forEach(card => {
+      const rows = [...card.querySelectorAll('.tournament-bracket-team')];
+      const winner = rows.find(r => r.classList.contains('tournament-bracket-team-winner'));
+      if (!winner) return; // незавершённый матч или ничья — переходов нет
+      const wNext = nextCard(card, Number(winner.dataset.team));
+      if (wNext) line(card, wNext, 'tournament-bracket-line-win');
+      if (withLives) {
+        const loser = rows.find(r => r !== winner);
+        const lNext = loser && nextCard(card, Number(loser.dataset.team));
+        if (lNext) line(card, lNext, 'tournament-bracket-line-life');
+      }
+    });
+    host.prepend(svg);
+  });
+};
+window.addEventListener('resize', () => window.renderBracketLines());

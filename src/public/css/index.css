@@ -3651,6 +3651,46 @@ body.desktop:has(> #footer.fixed-bottom) {
   display: flex;
   align-items: stretch;
   gap: 24px;
+  /* дерево котла — по центру группы; safe: широкая «двухжизненная»
+     реконструкция не должна обрезаться слева */
+  justify-content: center;
+  justify-content: safe center;
+}
+
+/* доигровки идут следом за основным деревом без заголовка — воздух сверху */
+.tournament-bracket-pocket-rounds + .tournament-bracket-pocket-rounds {
+  margin-top: 28px;
+}
+
+/* линии переходов реконструкции котлов (bracket.js → renderBracketLines):
+   svg под колонками, колонки позиционированы, чтобы краситься поверх */
+.tournament-bracket-pocket[data-lines] {
+  position: relative;
+}
+
+.tournament-bracket-pocket[data-lines] .tournament-bracket-round {
+  position: relative;
+}
+
+.tournament-bracket-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.tournament-bracket-line-win {
+  fill: none;
+  stroke: var(--bs-border-color);
+  stroke-width: 2;
+}
+
+/* «вторая жизнь» проигравшего — пунктир */
+.tournament-bracket-line-life {
+  fill: none;
+  stroke: var(--bs-border-color);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
 }
 
 /* мобайл: вертикальный список; у матчей карманов — пунктирная стрелка

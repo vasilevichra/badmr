@@ -106,4 +106,62 @@ describe("BracketHistory (историческая сетка архива 110)"
     assert.strictEqual(data.pockets[0].rounds.length, 1);
     assert.strictEqual(data.pockets[1].rounds.length, 0);
   });
+
+  it("pocket_structure перекрывает реконструкцию; частичная разметка — фолбэк", async () => {
+    const d1 = await seedTeam("D1", GROUP_D);
+    const d2 = await seedTeam("D2", GROUP_D);
+    const d3 = await seedTeam("D3", GROUP_D);
+    const d4 = await seedTeam("D4", GROUP_D);
+    const semi1 = play(d1, d2, 110, 80);
+    const semi2 = play(d3, d4, 100, 110);
+    const third = play(d2, d3, 110, 90);  // по эвристике — доигровка (оба проиграли)
+    const final = play(d1, d4, 110, 70);
+
+    // разметка против эвристики: third — основное дерево, final — доигровка
+    db.run(`INSERT INTO pocket_structure (match_110_id, main, round) VALUES (?, 1, 1), (?, 1, 1), (?, 1, 2), (?, 0, 1)`,
+        [semi1, semi2, third, final]);
+    const data = history.historical110(4);
+    const pocket = data.pockets[0];
+    assert.strictEqual(pocket.twoLives, false);
+    assert.deepStrictEqual(pocket.rounds.map(r => r.map(m => m.id)), [[semi1, semi2], [third]]);
+    assert.deepStrictEqual(pocket.consRounds.map(r => r.map(m => m.id)), [[final]]);
+
+    // незавершённый матч без разметки — размечаем не все, работает эвристика
+    const extra = start(d3, d4);
+    const fallback = history.historical110(4).pockets[0];
+    assert.strictEqual(fallback.twoLives, false);
+    assert.deepStrictEqual(fallback.rounds.map(r => r.map(m => m.id)), [[semi1, semi2], [final]]);
+    assert.deepStrictEqual(fallback.consRounds.map(r => r.map(m => m.id)), [[third], [extra]]);
+  });
+
+  it("бай 1-го круга: команда, впервые играющая в дереве после 1-го круга", async () => {
+    const d1 = await seedTeam("D1", GROUP_D);
+    const d2 = await seedTeam("D2", GROUP_D);
+    const d3 = await seedTeam("D3", GROUP_D);
+    const semi = play(d1, d2, 110, 80);
+    const final = play(d1, d3, 110, 70); // d3 выходит в финал без игры 1-го круга
+    db.run(`INSERT INTO pocket_structure (match_110_id, main, round) VALUES (?, 1, 1), (?, 1, 2)`, [semi, final]);
+    const pocket = history.historical110(4).pockets[0];
+    assert.strictEqual(pocket.twoLives, false);
+    assert.deepStrictEqual(pocket.mainByes.map(t => t.name), ['D3']);
+    assert.deepStrictEqual(pocket.consByes, []);
+  });
+
+  it("матч двух уже проигравших — доигровка: дерево победителей и consRounds раздельно", async () => {
+    const d1 = await seedTeam("D1", GROUP_D);
+    const d2 = await seedTeam("D2", GROUP_D);
+    const d3 = await seedTeam("D3", GROUP_D);
+    const d4 = await seedTeam("D4", GROUP_D);
+    const semi1 = play(d1, d2, 110, 80); // d2 проигрывает
+    const semi2 = play(d3, d4, 100, 110); // d3 проигрывает
+    const third = play(d2, d3, 110, 90); // матч двух проигравших — доигровка
+    const final = play(d1, d4, 110, 70);
+    const data = history.historical110(4);
+    const pocket = data.pockets[0];
+    assert.strictEqual(pocket.twoLives, false);
+    // дерево победителей: два полуфинала и финал
+    assert.deepStrictEqual(pocket.rounds.map(r => r.map(m => m.id)), [[semi1, semi2], [final]]);
+    // доигровки: матч проигравших в первом круге consolation
+    assert.deepStrictEqual(pocket.consRounds.map(r => r.map(m => m.id)), [[third]]);
+  });
 });

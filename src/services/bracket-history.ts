@@ -23,9 +23,20 @@ export interface HistPocket {
   name: string;
   // котёл привязан к группе: сетка котла рендерится под составами её команд
   group_id: number;
+  // «две жизни»: проигравший продолжает играть в основных кругах. Иначе
+  // олимпийская система: rounds — дерево победителей, consRounds — доигровки
+  // (матч двух уже проигравших выдаёт систему с consolation — в котле
+  // с двумя жизнями дважды проигравшие не играют)
+  twoLives: boolean;
   // rounds[r-1] — матчи круга r в порядке создания; круг матча = max кругов
   // предыдущих матчей его команд + 1 («две жизни» ложатся в колонки сами)
   rounds: HistMatch[][];
+  consRounds: HistMatch[][];
+  // команды, впервые играющие в дереве после 1-го круга (бай в 1-м круге —
+  // плашка без соперника); только для олимпийского режима, у «двух жизней»
+  // поздний старт — норма (проигравший сидит круг), бай не рисуем
+  mainByes: HistTeam[];
+  consByes: HistTeam[];
 }
 
 interface HistRow {
@@ -40,6 +51,10 @@ interface HistRow {
   city_1: string;
   name_2: string;
   city_2: string;
+  // зафиксированная организатором структура (pocket_structure): main/round,
+  // либо NULL — круг назначит реконструкция
+  struct_main: number | null;
+  struct_round: number | null;
 }
 
 class BracketHistory {
@@ -57,10 +72,12 @@ class BracketHistory {
     this.db = new Repository().db;
   }
 
-  /** Реконструкция сыгранной сетки архивного турнира 110 без слотов:
-   *  матчи группируются по котлам (group_id команд), круг назначается
-   *  жадно — максимум из кругов прошлых матчей участников + 1. Только
-   *  чтение, ничего не пишет в БД. */
+  /** Реконструкция сыгранной сетки архивного турнира 110 без слотов.
+   *  Если структура котла зафиксирована в pocket_structure (все матчи
+   *  размечены), круги и доигровки берутся оттуда; иначе матчи группируются
+   *  по котлам (group_id команд), круг назначается жадно — максимум из
+   *  кругов прошлых матчей участников + 1. Только чтение, ничего не пишет
+   *  в БД. */
   historical110(tournamentId: number): { pockets: HistPocket[] } {
     const pockets = this.group.pockets(tournamentId);
     const rows = this.db.all<HistRow>(
@@ -74,13 +91,16 @@ class BracketHistory {
                 t1.name AS name_1,
                 c1.name AS city_1,
                 t2.name AS name_2,
-                c2.name AS city_2
+                c2.name AS city_2,
+                ps.main AS struct_main,
+                ps.round AS struct_round
          FROM match_110 m
                   JOIN game_110 g ON g.match_110_id = m.id
                   JOIN team t1 ON t1.id = m.team_1_id
                   JOIN team t2 ON t2.id = m.team_2_id
                   JOIN city c1 ON c1.id = t1.city_id
                   JOIN city c2 ON c2.id = t2.city_id
+                  LEFT JOIN pocket_structure ps ON ps.match_110_id = m.id
          WHERE m.tournament_id = ?
            AND m.stage IS NULL
            AND g.id = (SELECT MAX(g2.id) FROM game_110 g2 WHERE g2.match_110_id = m.id)
@@ -110,17 +130,112 @@ class BracketHistory {
       };
       return {row, round, match};
     });
-    // котлы в алфавитном порядке имён (C раньше D), матчи — по кругам
-    const byGroup = new Map<number, HistMatch[][]>();
-    for (const {row, round, match} of matches) {
-      const rounds = byGroup.get(row.group_1_id) ?? [];
-      (rounds[round - 1] ??= []).push(match);
-      byGroup.set(row.group_1_id, rounds);
+    // поражение команды учитывается только по завершённым матчам; флаги
+    // «уже проиграл до этого матча» различают системы котла (см. HistPocket)
+    const losses = new Map<number, number>();
+    const entries = matches.map(({row, round, match}) => {
+      const t1Lost = (losses.get(row.team_1_id) ?? 0) > 0;
+      const t2Lost = (losses.get(row.team_2_id) ?? 0) > 0;
+      if (row.finished === 1) {
+        if (row.score_1 < row.score_2) losses.set(row.team_1_id, (losses.get(row.team_1_id) ?? 0) + 1);
+        if (row.score_2 < row.score_1) losses.set(row.team_2_id, (losses.get(row.team_2_id) ?? 0) + 1);
+      }
+      return {row, round, match, t1Lost, t2Lost};
+    });
+    const byGroup = new Map<number, typeof entries>();
+    for (const e of entries) {
+      const list = byGroup.get(e.row.group_1_id) ?? [];
+      list.push(e);
+      byGroup.set(e.row.group_1_id, list);
     }
+    // круги подмножества матчей — та же жадная реконструкция, что и для
+    // общего списка: круг = max кругов прошлых матчей участников + 1
+    const buildRounds = (list: typeof entries) => {
+      const last = new Map<number, number>();
+      const rounds: HistMatch[][] = [];
+      for (const e of list) {
+        const r = Math.max(last.get(e.match.team_1_id) ?? 0, last.get(e.match.team_2_id) ?? 0) + 1;
+        last.set(e.match.team_1_id, r);
+        last.set(e.match.team_2_id, r);
+        (rounds[r - 1] ??= []).push(e.match);
+      }
+      return rounds;
+    };
+    // бай 1-го круга: команда, чей первый матч котла вообще — позже 1-го
+    // круга своего дерева (НН в main со 2-го круга, Иваново-1 в cons со
+    // 2-го). Проигравший основного круга r, входящий в cons с круга r, —
+    // не бай: у него есть матч в main
+    const byes = (mainRounds: HistMatch[][], consRounds: HistMatch[][]) => {
+      const first = new Map<number, {cons: boolean; round: number; team: HistTeam}>();
+      const scan = (rounds: HistMatch[][], cons: boolean) => rounds.forEach((round, ri) =>
+          round.forEach(m => {
+            for (const [id, team] of [[m.team_1_id, m.team_1], [m.team_2_id, m.team_2]] as const) {
+              if (!first.has(id)) first.set(id, {cons, round: ri + 1, team});
+            }
+          }));
+      scan(mainRounds, false);
+      scan(consRounds, true);
+      const pick = (cons: boolean) =>
+          [...first.values()].filter(e => e.cons === cons && e.round > 1).map(e => e.team);
+      return {mainByes: pick(false), consByes: pick(true)};
+    };
+    const emptyByes = {mainByes: [] as HistTeam[], consByes: [] as HistTeam[]};
+    // котлы в алфавитном порядке имён (C раньше D), матчи — по кругам
     return {
       pockets: pockets
           .sort((a, b) => a.name.localeCompare(b.name))
-          .map(p => ({name: p.name, group_id: p.group_id, rounds: byGroup.get(p.group_id) ?? []})),
+          .map(p => {
+            const list = byGroup.get(p.group_id) ?? [];
+            // зафиксированная организатором структура надёжнее реконструкции:
+            // применяется только когда размечены все матчи котла (частичная
+            // разметка — признак ошибки данных, падаем на эвристику)
+            if (list.length && list.every(e => e.row.struct_main !== null && e.row.struct_round !== null)) {
+              const mainRounds: HistMatch[][] = [];
+              const consRounds: HistMatch[][] = [];
+              for (const e of list) {
+                const target = e.row.struct_main === 1 ? mainRounds : consRounds;
+                (target[e.row.struct_round! - 1] ??= []).push(e.match);
+              }
+              const {mainByes, consByes} = byes(mainRounds, consRounds);
+              return {
+                name: p.name,
+                group_id: p.group_id,
+                // зафиксированная структура — олимпиада по определению
+                // организатора, даже если доигровок не было
+                twoLives: false,
+                rounds: mainRounds,
+                consRounds,
+                mainByes,
+                consByes,
+              };
+            }
+            // доказательство доигровки — только завершённый матч двух уже
+            // проигравших: у незавершённого победитель неизвестен, пара
+            // ничего не доказывает
+            const twoLives = !list.some(e => e.row.finished === 1 && e.t1Lost && e.t2Lost);
+            if (twoLives) {
+              return {
+                name: p.name,
+                group_id: p.group_id,
+                twoLives,
+                rounds: buildRounds(list),
+                consRounds: [],
+                ...emptyByes,
+              };
+            }
+            const mainRounds = buildRounds(list.filter(e => !e.t1Lost && !e.t2Lost));
+            const consRounds = buildRounds(list.filter(e => e.t1Lost || e.t2Lost));
+            const {mainByes, consByes} = byes(mainRounds, consRounds);
+            return {
+              name: p.name,
+              group_id: p.group_id,
+              twoLives,
+              rounds: mainRounds,
+              consRounds,
+              mainByes,
+              consByes,
+            };
+          }),
     };
   }
 }

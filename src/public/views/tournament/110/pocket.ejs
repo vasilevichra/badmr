@@ -1,30 +1,74 @@
-<% /* Сетка котла (реконструкция архивного турнира 110): круги сыгранных
-      матчей — рендерится под составами соответствующей группы.
-      Слотов у архива нет — дерево восстанавливается отображением
-      (круг матча = max кругов прошлых матчей участников + 1), БД не пишется.
-      Незавершённые матчи — без счёта и подсветки. */ %>
-<div class="tournament-bracket-pocket">
-    <div class="tournament-bracket-pocket-title">Котёл <%= pocket.name %></div>
-    <% if (!pocket.rounds.length) { %>
+<% /* Сетка котла архивного турнира 110 — рендерится под составами своей
+      группы. Режим «две жизни» (twoLives): колонки кругов, переходы рисует
+      bracket.js (renderBracketLines) — сплошная линия: победитель идёт в
+      следующий матч, пунктир: проигравший получает вторую жизнь.
+      Олимпийский режим: дерево победителей по кругам финала + секция
+      доигровок проигравших (без заголовка — заголовок группы уже есть);
+      бай 1-го круга — плашка без соперника с прочерком. Незавершённые
+      матчи — без счёта, подсветки и линий переходов. */ %>
+<%
+var esc = (s) => String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+var teamName = (team) => esc(team.city ? team.city + ' — ' + team.name : team.name);
+// карточка матча: data-team на строках команд — по ним bracket.js ищет,
+// куда ушли победитель и проигравший
+var card = (m, opts) => {
+    var rows = [[m.team_1, m.score_1, m.team_1_id], [m.team_2, m.score_2, m.team_2_id]].map(([team, score, id]) =>
+        '<div class="tournament-bracket-team' + (m.finished && m.winner_id === id ? ' tournament-bracket-team-winner' : '') + '" data-team="' + id + '">' +
+        '<span class="tournament-bracket-team-name">' + teamName(team) + '</span>' +
+        '<span class="tournament-bracket-score">' + (m.finished ? score : '—') + '</span></div>'
+    ).join('');
+    return '<div class="tournament-bracket-match' + (m.finished ? '' : ' tournament-bracket-match-empty') +
+        (opts.cons ? ' tournament-bracket-match-cons' : '') + '" data-mid="' + m.id + '">' + rows + '</div>';
+};
+// бай 1-го круга: та же плашка в две строки, соперник и счёты — прочерки;
+// без data-mid — переходов из неё не рисуем
+var byeCard = (team) =>
+    '<div class="tournament-bracket-match tournament-bracket-match-empty">' +
+    '<div class="tournament-bracket-team">' +
+    '<span class="tournament-bracket-team-name">' + teamName(team) + '</span>' +
+    '<span class="tournament-bracket-score">—</span></div>' +
+    '<div class="tournament-bracket-team">' +
+    '<span class="tournament-bracket-team-name">—</span>' +
+    '<span class="tournament-bracket-score">—</span></div></div>';
+// заголовки кругов олимпийского режима: колонок мало, считаем от финала
+var mainTitle = (ri, total) => ri + 1 === total ? 'Финал' : '1/' + 2 ** (total - ri - 1) + ' финала';
+var consTitle = (ri, total) => ri + 1 === total ? 'Финал доигровок' : '1/' + 2 ** (total - ri - 1) + ' доигровок';
+%>
+<div class="tournament-bracket-pocket" data-lines="<%= pocket.twoLives ? 'lives' : 'win' %>">
+    <% if (!pocket.rounds.length && !pocket.consRounds.length) { %>
     <div class="tournament-bracket-empty">Матчей не было</div>
     <% } %>
     <div class="tournament-bracket-pocket-rounds">
         <% pocket.rounds.forEach((round, ri) => { %>
         <div class="tournament-bracket-round">
-            <div class="tournament-bracket-round-title"><%= ri + 1 %>-й круг</div>
+            <div class="tournament-bracket-round-title"><%= pocket.twoLives ? (ri + 1) + '-й круг' : mainTitle(ri, pocket.rounds.length) %></div>
             <div class="tournament-bracket-round-matches">
-            <% round.forEach(m => { %>
-            <div class="tournament-bracket-match<%= m.finished ? '' : ' tournament-bracket-match-empty' %>">
-                <% [[m.team_1, m.score_1, m.team_1_id], [m.team_2, m.score_2, m.team_2_id]].forEach(([team, score, id]) => { %>
-                <div class="tournament-bracket-team<%= m.finished && m.winner_id === id ? ' tournament-bracket-team-winner' : '' %>">
-                    <span class="tournament-bracket-team-name"><%= team.city ? `${team.city} — ${team.name}` : team.name %></span>
-                    <span class="tournament-bracket-score"><%= m.finished ? score : '—' %></span>
-                </div>
-                <% }); %>
-            </div>
-            <% }); %>
+            <% round.forEach(m => { %><%- card(m, {cons: false, lives: pocket.twoLives}) %><% }); %>
+            <% if (!pocket.twoLives && ri === 0) { %><% pocket.mainByes.forEach(t => { %><%- byeCard(t) %><% }); %><% } %>
             </div>
         </div>
         <% }); %>
     </div>
+    <% if (!pocket.twoLives && pocket.consRounds.length) { %>
+    <div class="tournament-bracket-pocket-rounds">
+        <% pocket.consRounds.forEach((round, ri) => { %>
+        <div class="tournament-bracket-round">
+            <% if (pocket.consRounds.length > 1) { %>
+            <div class="tournament-bracket-round-title"><%= consTitle(ri, pocket.consRounds.length) %></div>
+            <% } %>
+            <div class="tournament-bracket-round-matches">
+            <% round.forEach(m => { %><%- card(m, {cons: true, lives: false}) %><% }); %>
+            <% if (ri === 0) { %><% pocket.consByes.forEach(t => { %><%- byeCard(t) %><% }); %><% } %>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+    <% } %>
 </div>
+<% if (pocket.rounds.length || pocket.consRounds.length) { %>
+<script>
+    // bracket.js подключён внизу страницы — линии переходов после его загрузки
+    document.addEventListener('DOMContentLoaded', () => { window.renderBracketLines?.(); });
+</script>
+<% } %>

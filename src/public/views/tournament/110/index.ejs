@@ -4,6 +4,12 @@
       2 — плей-офф котлов (сеется после завершения группового этапа);
       3 (круговая) — только группы и матрицы. Группы с командами и
       участниками видны при любой системе */ %>
+<% /* Сетка котла (реконструкция архива) рисуется под составами
+      соответствующей группы: мапа group_id → котёл */ %>
+<% var pocketByGroup = {}; %>
+<% if (tournamentSystem === 1 && bracketHistorical) { %>
+    <% bracketHistorical.pockets.forEach(p => { pocketByGroup[p.group_id] = p; }); %>
+<% } %>
 <div id="tournament-groups" class="tournament-groups">
     <div class="container">
         <% if (user) { %>
@@ -25,19 +31,16 @@
             <div class="col-lg-12 col-md-12 col-sm-12 desc">
                 <div id="tournament-groups-block">
                     <% groups.forEach((g, i) => { %>
-                        <%- include('group', {index: i, group: g, user: user, teamRests: teamRests}); %>
+                        <%- include('group', {index: i, group: g, user: user, teamRests: teamRests, pocket: pocketByGroup[Object.keys(g)[0]] ?? null}); %>
                     <% }) %>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<% if (tournamentSystem === 1) { %>
-    <% if (bracketHistorical) { %>
-        <%- include('historical', {historical: bracketHistorical}); %>
-    <% } else { %>
-        <%- include('bracket', {user: user}); %>
-    <% } %>
+<% if (tournamentSystem === 1 && !bracketHistorical) { %>
+    <% /* сгенерированная сетка (или заглушка генерации) — общим блоком под группами */ %>
+    <%- include('bracket', {user: user}); %>
 <% } else if (tournamentSystem === 2) { %>
     <%- include('bracket', {user: user, title: 'Плей-офф'}); %>
 <% } %>
