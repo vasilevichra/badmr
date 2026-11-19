@@ -16,6 +16,7 @@
             <% pocket.rounds.forEach((round, ri) => { %>
             <div class="tournament-bracket-round">
                 <div class="tournament-bracket-round-title"><%= ri + 1 %>-й круг</div>
+                <div class="tournament-bracket-round-matches">
                 <% round.forEach(m => { %>
                 <div class="tournament-bracket-match<%= m.finished ? '' : ' tournament-bracket-match-empty' %>">
                     <% [[m.team_1, m.score_1, m.team_1_id], [m.team_2, m.score_2, m.team_2_id]].forEach(([team, score, id]) => { %>
@@ -26,6 +27,7 @@
                     <% }); %>
                 </div>
                 <% }); %>
+                </div>
             </div>
             <% }); %>
         </div>

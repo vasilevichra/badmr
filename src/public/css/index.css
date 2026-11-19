@@ -3534,15 +3534,29 @@ body.desktop:has(> #footer.fixed-bottom) {
 .tournament-bracket-round {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  gap: 12px;
   min-width: 220px;
 }
 
+/* заголовок круга над колонкой: капс, мелкий, серый — как в макете */
 .tournament-bracket-round-title {
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--bs-secondary-color);
   text-align: center;
   white-space: nowrap;
+  margin-bottom: 8px;
+}
+
+/* матчи круга: равномерное распределение по высоте колонки — пары
+   следующего круга сходятся ровно между парами предыдущего (дерево) */
+.tournament-bracket-round-matches {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 12px;
 }
 
 .tournament-bracket-match {
@@ -3555,6 +3569,30 @@ body.desktop:has(> #footer.fixed-bottom) {
 
 .tournament-bracket-match-empty {
   border-style: dashed;
+}
+
+/* решающий матч (финал сетки, финал кармана): зелёная рамка как в макете */
+.tournament-bracket-match-final {
+  border: 2px solid var(--bs-success);
+}
+
+/* матч доигровки — пунктир */
+.tournament-bracket-match-cons {
+  border-style: dashed;
+}
+
+/* подпись итоговых мест в углу решающего матча («1–2 места») */
+.tournament-bracket-place {
+  width: fit-content;
+  margin-left: auto;
+  margin-top: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, .12);
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
 }
 
 .tournament-bracket-empty {
@@ -3605,14 +3643,13 @@ body.desktop:has(> #footer.fixed-bottom) {
 }
 
 .tournament-bracket-pocket-title {
-  text-align: center;
   font-size: 1.1rem;
-  margin-bottom: 12px;
+  margin: 0 0 12px;
 }
 
 .tournament-bracket-pocket-rounds {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 24px;
 }
 

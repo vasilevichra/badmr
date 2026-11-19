@@ -20,13 +20,13 @@ const bracketTeamLabel = (teamId) => {
   return t.city ? `${t.city} — ${t.name}` : t.name;
 };
 
-// строка команды в карточке: имя слева, счёт справа
-const bracketTeamRow = (teamId, score, winner) => {
+// строка команды в карточке: имя слева, счёт справа; у финала победитель — с кубком
+const bracketTeamRow = (teamId, score, winner, trophy) => {
   const row = document.createElement('div');
   row.className = 'tournament-bracket-team' + (winner ? ' tournament-bracket-team-winner' : '');
   const name = document.createElement('span');
   name.className = 'tournament-bracket-team-name';
-  name.textContent = bracketTeamLabel(teamId);
+  name.textContent = (winner && trophy ? '🏆 ' : '') + bracketTeamLabel(teamId);
   const scoreEl = document.createElement('span');
   scoreEl.className = 'tournament-bracket-score';
   scoreEl.textContent = score;
@@ -34,10 +34,22 @@ const bracketTeamRow = (teamId, score, winner) => {
   return row;
 };
 
-// карточка матча (или пустого слота) сетки
-const bracketMatchCard = (match) => {
+// карточка матча (или пустого слота) сетки; opts:
+//   final — решающий матч (зелёная рамка, кубок у победителя),
+//   cons — матч доигровки (пунктирная рамка),
+//   placeTag — подпись итоговых мест в углу карточки
+const bracketMatchCard = (match, opts = {}) => {
   const card = document.createElement('div');
   card.className = 'tournament-bracket-match';
+  if (opts.final) card.classList.add('tournament-bracket-match-final');
+  if (opts.cons) card.classList.add('tournament-bracket-match-cons');
+  // подпись итоговых мест — и на пустом слоте решающего матча (как в макете)
+  if (opts.placeTag) {
+    const place = document.createElement('div');
+    place.className = 'tournament-bracket-place';
+    place.textContent = opts.placeTag;
+    card.append(place);
+  }
   if (!match) {
     card.classList.add('tournament-bracket-match-empty');
     const placeholder = document.createElement('div');
@@ -49,8 +61,8 @@ const bracketMatchCard = (match) => {
   const winner1 = match.finished === 1 && match.score_1 > match.score_2;
   const winner2 = match.finished === 1 && match.score_2 > match.score_1;
   card.append(
-      bracketTeamRow(match.team_1_id, match.score_1, winner1),
-      bracketTeamRow(match.team_2_id, match.score_2, winner2)
+      bracketTeamRow(match.team_1_id, match.score_1, winner1, opts.final),
+      bracketTeamRow(match.team_2_id, match.score_2, winner2, opts.final)
   );
   // идущий матч — кнопка возобновления: открывает модалку табло,
   // отрендеренную серверно в bracket.ejs (как ▶ в матрице)
@@ -92,16 +104,24 @@ window.renderBracket = (host, data) => {
     const title = document.createElement('div');
     title.className = 'tournament-bracket-round-title';
     title.textContent = bracketRoundTitle(r, totalRounds);
-    col.append(title);
+    // матчи — в отдельном контейнере с равномерным распределением:
+    // пары следующего круга сходятся между парами предыдущего (дерево)
+    const matches = document.createElement('div');
+    matches.className = 'tournament-bracket-round-matches';
     round.forEach(slot => {
-      col.append(bracketMatchCard(map[`upper|${r}|${slot.pos}`]));
+      // финал верхней сетки — решающий матч за 1–2 места
+      const opts = r === totalRounds ? {final: true, placeTag: '1–2 места'} : {};
+      matches.append(bracketMatchCard(map[`upper|${r}|${slot.pos}`], opts));
     });
+    col.append(title, matches);
     wrap.append(col);
   }
   host.append(wrap);
 
   // карманы доигровок: группировка по диапазону мест (слоты одного
-  // кармана делят placeFrom/placeTo), от финальных мест к последним
+  // кармана делят placeFrom/placeTo), от финальных мест к последним.
+  // Терминальный карман — из его слотов не питается ни один слот сетки:
+  // его финал и определяет итоговые места, остальные — промежуточные
   const lower = slots.filter(s => s.stage === 'lower');
   const pockets = new Map();
   lower.forEach(slot => {
@@ -109,6 +129,8 @@ window.renderBracket = (host, data) => {
     if (!pockets.has(key)) pockets.set(key, []);
     pockets.get(key).push(slot);
   });
+  const fedRefs = new Set(lower.flatMap(s => s.feeders?.map(f => `${f.stage}|${f.round}|${f.pos}`) ?? []));
+  const isTerminalPocket = (pocketSlots) => !pocketSlots.some(s => fedRefs.has(`lower|${s.round}|${s.pos}`));
   [...pockets.entries()].sort((a, b) => Number(a[0].split('-')[0]) - Number(b[0].split('-')[0])).forEach(([key, pocketSlots]) => {
     const [from, to] = key.split('-').map(Number);
     const section = document.createElement('div');
@@ -118,13 +140,31 @@ window.renderBracket = (host, data) => {
     title.textContent = from === to ? `Матч за ${from} место` : `Матчи за места ${from}–${to}`;
     const cols = document.createElement('div');
     cols.className = 'tournament-bracket-pocket-rounds';
-    const maxRound = Math.max(...pocketSlots.map(s => s.round));
-    for (let r = 1; r <= maxRound; r++) {
+    const visibleRounds = [...new Set(pocketSlots.map(s => s.round))].sort((a, b) => a - b);
+    for (const r of visibleRounds) {
       const roundSlots = pocketSlots.filter(s => s.round === r);
-      if (roundSlots.length === 0) continue;
       const col = document.createElement('div');
       col.className = 'tournament-bracket-round';
-      roundSlots.forEach(slot => col.append(bracketMatchCard(map[`lower|${r}|${slot.pos}`])));
+      // заголовки кругов — только в кармане из нескольких кругов:
+      // «1/2 доигровок», «Финал доигровок»; одиночный круг описывает h4 секции
+      if (visibleRounds.length > 1) {
+        const roundTitle = document.createElement('div');
+        roundTitle.className = 'tournament-bracket-round-title';
+        roundTitle.textContent = r === visibleRounds[visibleRounds.length - 1] ? 'Финал доигровок' : `1/${2 ** (visibleRounds[visibleRounds.length - 1] - r)} доигровок`;
+        col.append(roundTitle);
+      }
+      const matches = document.createElement('div');
+      matches.className = 'tournament-bracket-round-matches';
+      roundSlots.forEach(slot => {
+        const card = bracketMatchCard(map[`lower|${r}|${slot.pos}`], {
+          cons: true,
+          // финал терминального кармана определяет итоговые места
+          placeTag: isTerminalPocket(pocketSlots) && r === visibleRounds[visibleRounds.length - 1]
+              ? (from === to ? `${from} место` : `${from}–${to} места`) : null,
+        });
+        matches.append(card);
+      });
+      col.append(matches);
       cols.append(col);
     }
     section.append(title, cols);
@@ -167,7 +207,7 @@ window.renderBracketMobile = (host, data) => {
     const maxRound = Math.max(...pocketSlots.map(s => s.round));
     for (let r = 1; r <= maxRound; r++) {
       pocketSlots.filter(s => s.round === r).forEach(slot => {
-        const card = bracketMatchCard(map[`lower|${r}|${slot.pos}`]);
+        const card = bracketMatchCard(map[`lower|${r}|${slot.pos}`], {cons: true});
         card.classList.add('tournament-bracket-pocket-mobile');
         list.append(card);
       });
