@@ -118,4 +118,68 @@ describe("bracket-structure", () => {
       assert.strictEqual(level3.length, 0);
     });
   });
+
+  describe("нечётные карманы и фантомные матчи", () => {
+    it("structure(7, 2): карман из 3 проигравших — матч уровня 1 и матч уровня 2 с bye-родителем", () => {
+      const s = structure(7, 2);
+      // R1: 3 реальных матча (pos 2,3,4; pos 1 — bye) → карман [5..7]:
+      // 1 матч уровня 1 (feeders U1p3+U1p4), U1p2 — bye-родитель
+      const l1 = s.slots.filter(x => x.stage === 'lower' && x.round === 1);
+      assert.strictEqual(l1.length, 1);
+      assert.deepStrictEqual(l1[0].feeders, [
+        { stage: 'upper', round: 1, pos: 3 },
+        { stage: 'upper', round: 1, pos: 4 }
+      ]);
+      // уровень 2 кармана [5..6]: feeders — bye-родитель U1p2 (сильнейший
+      // проигравший) и матч уровня 1
+      const l2pocket = s.slots.find(x => x.stage === 'lower' && x.round === 2
+          && x.placeFrom === 5 && x.placeTo === 6)!;
+      assert.deepStrictEqual(l2pocket.feeders, [
+        { stage: 'upper', round: 1, pos: 2 },
+        { stage: 'lower', round: 1, pos: 1 }
+      ]);
+      // карман R2-проигравших [3..4]: оба матча R2 реальны
+      const m34 = s.slots.find(x => x.stage === 'lower' && x.round === 2
+          && x.placeFrom === 3 && x.placeTo === 4)!;
+      assert.deepStrictEqual(m34.feeders, [
+        { stage: 'upper', round: 2, pos: 1 },
+        { stage: 'upper', round: 2, pos: 2 }
+      ]);
+    });
+
+    it("structure(5, 0): один lower-матч — карман R2 [3..4]; карман R1 нет (1 проигравший)", () => {
+      const s = structure(5, 0);
+      const lower = s.slots.filter(x => x.stage === 'lower');
+      assert.strictEqual(lower.length, 1);
+      assert.strictEqual(lower[0].round, 2);
+      assert.strictEqual(lower[0].placeFrom, 3);
+      assert.strictEqual(lower[0].placeTo, 4);
+      assert.deepStrictEqual(lower[0].feeders, [
+        { stage: 'upper', round: 2, pos: 1 },
+        { stage: 'upper', round: 2, pos: 2 }
+      ]);
+    });
+
+    it("регресс structure(8, 2): прежние 5 lower-слотов с теми же диапазонами", () => {
+      const s = structure(8, 2);
+      const lower = s.slots.filter(x => x.stage === 'lower');
+      assert.strictEqual(lower.length, 5);
+      assert.deepStrictEqual(
+        lower.map(x => [x.round, x.pos, x.placeFrom, x.placeTo]).sort((a, b) => a[0] - b[0] || a[1] - b[1]),
+        [[1, 1, 5, 8], [1, 2, 5, 8], [2, 1, 3, 4], [2, 2, 5, 6], [2, 3, 7, 8]]
+      );
+    });
+
+    it("не падает и lower-фидеры разрешаются для n 2..32, depth 0..3", () => {
+      for (let n = 2; n <= 32; n++) {
+        for (let depth = 0; depth <= 3; depth++) {
+          const s = structure(n, depth);
+          for (const slot of s.slots.filter(x => x.stage === 'lower')) {
+            assert.ok(slot.feeders?.every(f => f.round >= 1),
+                `n=${n} depth=${depth} slot ${slot.stage}/${slot.round}/${slot.pos}`);
+          }
+        }
+      }
+    });
+  });
 });

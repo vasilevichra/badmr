@@ -168,7 +168,7 @@ describe("Bracket (сетка 110)", () => {
           [m.team_1_id, m.team_2_id].map(t => [...seedToTeam.entries()].find(([, id]) => id === t)![0])
               .sort((a, b) => a - b);
       const lower = slotRows().filter(r => r.stage === 'lower' && r.round === 1)
-          .sort((a, b) => a.pos - b.pos);
+          .sort((a, b) => (a.pos ?? 0) - (b.pos ?? 0));
       // пары кармана сеются по layout(4)=[1,4,2,3]: (U1p1,U1p4) и (U1p2,U1p3);
       // раскладка R1: (1,8),(4,5),(2,7),(3,6), team_1 (минимальный сид) побеждает
       // → проигравшие U1p1→8, U1p2→5, U1p3→7, U1p4→6
@@ -191,7 +191,7 @@ describe("Bracket (сетка 110)", () => {
           [m.team_1_id, m.team_2_id].map(t => [...seedToTeam.entries()].find(([, id]) => id === t)![0])
               .sort((a, b) => a - b);
       const l2 = slotRows().filter(r => r.stage === 'lower' && r.round === 2)
-          .sort((a, b) => a.pos - b.pos);
+          .sort((a, b) => (a.pos ?? 0) - (b.pos ?? 0));
       assert.strictEqual(l2.length, 2);
       // подкарман победителей (места 5–6): победители L1p1 (сид 8) и L1p2 (сид 5)
       assert.deepStrictEqual(seedsOf(l2[0]), [5, 8]);

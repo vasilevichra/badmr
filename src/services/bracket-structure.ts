@@ -64,7 +64,7 @@ export const slotIndexOfSeed = (k: number, size: number): number => {
 
 // seedsInSlots[slot] = сид, занимающий слот (единый источник раскладки).
 // Классическая раскладка строится рекурсией: L(1)=[1]; L(2n) получается
-// из L(n) заменой каждого x парой [x, 2n+1−x] — для 8 даёт [1,8,5,4,3,6,7,2]
+// из L(n) заменой каждого x парой [x, 2n+1−x] — для 8 даёт [1,8,4,5,2,7,3,6]
 export const seedLayout = (size: number): number[] => {
   let pairs = [1];
   for (let span = 1; span < size; span *= 2) {
@@ -222,42 +222,51 @@ const renumberPockets = (drafts: LowerDraft[]): BracketSlot[] => {
 
 const keyOf = (d: LowerDraft): string => `${d.originRound}:${d.level}:${d.seq}`;
 
-// карман на m команд, разыгрывающий места [lo..lo+m-1], уровень level.
-// parents — m слотов-источников (верхние матчи для уровня 1, матчи родного
-// кармана для глубже), каждый отдаёт карману одну команду (проигравшего или
-// победителя); сеяние внутри кармана — бит-реверс по порядку родителей.
-// Победители матчей уровня → подкарман [lo..lo+m/2-1], проигравшие →
-// [lo+m/2..lo+m-1]; рекурсия до m < 2 или исчерпания depth.
+// карман на произвольное число команд parents (в порядке сидов), играющий
+// за места [lo..lo+m-1], уровень level. Раскладка — классическая на
+// M = следующая степень двойки: пары по seedLayout(M); пара с одним
+// несуществующим родителем — bye (родитель проходит в подкарман победителей
+// без матча), с двумя реальными — матч уровня level за весь диапазон
+// кармана. Победители матчей и bye-родители → подкарман [lo..lo+M/2-1],
+// проигравшие матчей → [lo+M/2..lo+m-1]; рекурсия до m < 2 или исчерпания
+// depth (0 — без ограничения).
 const pocketDrafts = (
   drafts: LowerDraft[],
   originRound: number,
-  m: number,
+  parents: DraftRef[],
   lo: number,
   level: number,
   depthLimit: number,
-  parents: DraftRef[],
 ): void => {
+  const m = parents.length;
   if (m < 2 || (depthLimit !== 0 && level > depthLimit)) {
     return;
   }
+  const M = bracketSize(m);
+  const layout = seedLayout(M);
   const seqBase = drafts.filter(d => d.originRound === originRound && d.level === level).length;
-  const layout = seedLayout(m);
   const own: LowerDraft[] = [];
-  for (let p = 1; p <= m / 2; p++) {
-    // пара родителей: сеяные кармана 2p−1 и 2p по классической раскладке
-    const a = parents[layout[2 * p - 1] - 1];
-    const b = parents[layout[2 * p] - 1];
-    const draft: LowerDraft = {
-      stage: 'lower',
-      originRound, level, seq: seqBase + p - 1,
-      placeFrom: lo, placeTo: lo + m - 1,
-      feeders: [a, b],
-    };
-    own.push(draft);
-    drafts.push(draft);
+  const winners: DraftRef[] = [];
+  for (let p = 1; p <= M / 2; p++) {
+    const seedA = layout[2 * p - 1];
+    const seedB = layout[2 * p];
+    if (seedA <= m && seedB <= m) {
+      const draft: LowerDraft = {
+        stage: 'lower',
+        originRound, level, seq: seqBase + own.length,
+        placeFrom: lo, placeTo: lo + m - 1,
+        feeders: [parents[seedA - 1], parents[seedB - 1]],
+      };
+      own.push(draft);
+      drafts.push(draft);
+      winners.push(draft);
+    } else {
+      // bye: единственный реальный родитель пары проходит без матча
+      winners.push(parents[(seedA <= m ? seedA : seedB) - 1]);
+    }
   }
-  pocketDrafts(drafts, originRound, m / 2, lo, level + 1, depthLimit, own);
-  pocketDrafts(drafts, originRound, m / 2, lo + m / 2, level + 1, depthLimit, own);
+  pocketDrafts(drafts, originRound, winners, lo, level + 1, depthLimit);
+  pocketDrafts(drafts, originRound, own, lo + M / 2, level + 1, depthLimit);
 };
 
 // --- (шаг 4: роутинг и сборка) ---
@@ -321,15 +330,15 @@ export const structure = (n: number, depth: number): BracketStructure => {
   const c1 = createdR1Count(size, n);
   const drafts: LowerDraft[] = [];
   for (let round = 1; round < upperRounds; round++) {
-    // карман = диапазон мест проигравших раунда round: m матчей раунда →
-    // m проигравших за места [placeFrom .. placeTo] этого раунда
-    const m = round === 1 ? c1 : size / 2 ** round;
-    const [lo, placeTo] = upperPlaceRange(size, n, c1, round);
-    const parents: DraftRef[] = [];
-    for (let pos = 1; pos <= m; pos++) {
-      parents.push({ stage: 'upper', round, pos });
-    }
-    pocketDrafts(drafts, round, m, lo, 1, depth, parents);
+    // карман = диапазон мест проигравших раунда round: родители — реальные
+    // матчи раунда (при byes это не первые pos: n=7 → pos 2,3,4), каждый
+    // отдаёт карману проигравшего
+    const [lo] = upperPlaceRange(size, n, c1, round);
+    const parents: DraftRef[] = slots
+      .filter(x => x.stage === 'upper' && x.round === round)
+      .sort((a, b) => a.pos - b.pos)
+      .map(x => ({ stage: 'upper', round, pos: x.pos }));
+    pocketDrafts(drafts, round, parents, lo, 1, depth);
   }
   slots.push(...renumberPockets(drafts));
 
