@@ -25,12 +25,21 @@ class Settings {
   }
 
   getAll(tournamentId?: number) {
+    // настройка type зеркалит tournament.tournament_type_id (задаётся при
+    // создании и не хранится в tournament_settings) — подставляем реальный
+    // тип турнира вместо дефолта справочника
     return this.db.all(
-        `SELECT d.name AS name, coalesce(s.value, d.value) AS value, d.value AS default_value,
+        `SELECT d.name AS name,
+                CASE WHEN d.name = 'type'
+                     THEN CAST((SELECT tournament_type_id FROM tournament
+                                WHERE id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))) AS TEXT)
+                     ELSE coalesce(s.value, d.value)
+                END AS value,
+                d.value AS default_value,
                 d.description AS description, (s.tournament_id IS NOT NULL) AS overridden
          FROM defaults d
                   LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))`,
-        [tournamentId ?? null]
+        [tournamentId ?? null, tournamentId ?? null]
     );
   }
 

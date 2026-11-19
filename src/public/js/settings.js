@@ -89,8 +89,13 @@ const renderSettings = () => {
   };
 
   // ?relevant=1 — сервер оставляет только настройки, релевантные типу
-  // текущего турнира (у Новой лиги — все, у 110 — свой список)
-  const settingsUrl = '/api/settings/?relevant=1';
+  // текущего турнира (у Новой лиги — все, у 110 — свой список);
+  // &tournament=<id> — настройки и сохранение идут по турниру, открытому
+  // на странице (data-tournament-id из view), а не по глобальному current
+  const tournamentId = document.getElementById('settings')?.dataset.tournamentId;
+  const tournamentQuery = tournamentId ? `tournament=${tournamentId}` : '';
+  const withTournament = (url) => tournamentQuery ? `${url}?${tournamentQuery}` : url;
+  const settingsUrl = `/api/settings/?relevant=1${tournamentQuery ? `&${tournamentQuery}` : ''}`;
 
   $.getJSON(settingsUrl, (rows) => {
     rows.forEach((r) => values[r.name] = String(r.value));
@@ -217,7 +222,7 @@ const renderSettings = () => {
             // подбор, а если формы были открыты, сразу показываем заново
             // уже с новыми значениями
             const hadForms = $('.select-form:visible').length > 0;
-            $.post(`/api/settings/${row.name}`, {value: newValue}, () => {
+            $.post(withTournament(`/api/settings/${row.name}`), {value: newValue}, () => {
               refresh.table.settings();
               showSelectButton(true);
               if (hadForms) {
@@ -250,7 +255,7 @@ const renderSettings = () => {
         if (!value) {
           return; // пустой вариант «—» не сохраняется
         }
-        $.post(`/api/settings/${name}`, {value: value}, () => {
+        $.post(withTournament(`/api/settings/${name}`), {value: value}, () => {
           if (name === 'state') {
             reloadReference('region', value, () => {
               // город привязан к региону: если выбранный регион не входит в новую страну,
@@ -267,7 +272,7 @@ const renderSettings = () => {
             const region = refs.region.find((r) => String(r.id) === String(value));
             if (region && region.timezone_id && String(region.timezone_id) !== values.timezone) {
               values.timezone = String(region.timezone_id);
-              $.post('/api/settings/timezone', {value: region.timezone_id}, () => refresh.table.settings());
+              $.post(withTournament('/api/settings/timezone'), {value: region.timezone_id}, () => refresh.table.settings());
             }
             reloadReference('city', value);
           } else {
@@ -281,7 +286,7 @@ const renderSettings = () => {
       // были открыты, сразу показываем заново с новыми значениями
       .on('change', '.settings-boolean-input', function () {
         const hadForms = $('.select-form:visible').length > 0;
-        $.post(`/api/settings/${this.dataset.name}`, {value: this.checked ? '1' : '0'}, () => {
+        $.post(withTournament(`/api/settings/${this.dataset.name}`), {value: this.checked ? '1' : '0'}, () => {
           refresh.table.settings();
           showSelectButton(true);
           if (hadForms) {
