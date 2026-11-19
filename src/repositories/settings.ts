@@ -15,12 +15,18 @@ class Settings {
   }
 
   get(name: number | string, tournamentId?: number) {
+    // настройка type зеркалит tournament.tournament_type_id (задаётся при
+    // создании и не хранится в tournament_settings) — как в getAll
     return this.db.get<{ value: string }>(
-        `SELECT distinct coalesce(s.value, d.value) AS value
+        `SELECT distinct CASE WHEN d.name = 'type'
+                              THEN CAST((SELECT tournament_type_id FROM tournament
+                                         WHERE id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))) AS TEXT)
+                              ELSE coalesce(s.value, d.value)
+                         END AS value
          FROM defaults d
                   LEFT OUTER JOIN tournament_settings s ON s.defaults_id = d.id AND s.tournament_id = coalesce(?, (SELECT id FROM tournament WHERE current = 1))
          WHERE d.name = ?`,
-        [tournamentId ?? null, name]
+        [tournamentId ?? null, tournamentId ?? null, name]
     );
   }
 

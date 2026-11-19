@@ -6,7 +6,12 @@ import IndexRouter from "../../src/routes/index.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
 import TournamentService from "../../src/services/tournament.ts";
+import SettingsService from "../../src/services/settings.ts";
 import UserService from "../../src/services/user.ts";
+import TeamService from "../../src/services/team.ts";
+import TeamUserService from "../../src/services/team-user.ts";
+import Match110Repository from "../../src/repositories/match110.ts";
+import Game110Repository from "../../src/repositories/game110.ts";
 import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
 import type { AddressInfo } from "node:net";
@@ -126,6 +131,64 @@ describe("Tournament page", () => {
 
     assert.strictEqual(res.status, 404);
     assert.match(html, /Неизвестный турнир/);
+  });
+});
+
+describe("Историческая сетка архива 110", () => {
+  const db = new Repository().db;
+  const userService = new UserService();
+  const teamService = new TeamService();
+  const teamUserService = new TeamUserService();
+  const match110 = new Match110Repository();
+  const game110 = new Game110Repository();
+
+  const seedTeam = async (groupId: number, color: number, name: string): Promise<number> => {
+    const { id: userId } = await userService.create(name, "Игрок", "Отчество", 500, 1, 1, "1990-01-01");
+    const { id: teamId } = teamService.create(2, groupId, name, 1, color);
+    teamUserService.create(teamId, userId, groupId);
+    return teamId;
+  };
+
+  it("архив 110 system 1 без слотов показывает реконструкцию по котлам вместо заглушки сетки", async () => {
+    // котлы фикстуры: группа 5 = 'C', группа 7 = 'D'; турнир 2 — архив (status 3) типа 110
+    // цвета не пересекаются с командами фикстуры турнира 2 (UNIQUE tournament+group+color)
+    const a = await seedTeam(5, 1, "Стрелы");
+    const b = await seedTeam(5, 4, "Волки");
+    await seedTeam(7, 2, "Дротики");
+    const { id: mid } = match110.create(a, b, 2);
+    game110.create(mid);
+    db.run(`UPDATE game_110 SET score_1 = 110, score_2 = 95 WHERE match_110_id = ?`, [mid]);
+    db.run(`UPDATE match_110 SET finished = 1 WHERE id = ?`, [mid]);
+
+    const res = await fetch(`${base}t/2`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    assert.match(html, /Котёл C/);
+    assert.match(html, /Котёл D/);
+    assert.match(html, /Стрелы/);
+    assert.match(html, /110<\/span>/); // счёт победителя
+    // заглушка генерации сетки не показывается — реконструкция вместо неё
+    assert.doesNotMatch(html, /bracket-generate/);
+  });
+
+  it("архив 110 system 2 реконструкцию не показывает", async () => {
+    const settingsService = new SettingsService();
+    await settingsService.set('tournament_system', '2', 2);
+    const a = await seedTeam(5, 7, "Соколы");
+    const b = await seedTeam(5, 10, "Тигры");
+    const { id: mid } = match110.create(a, b, 2);
+    game110.create(mid);
+    db.run(`UPDATE game_110 SET score_1 = 110, score_2 = 90 WHERE match_110_id = ?`, [mid]);
+    db.run(`UPDATE match_110 SET finished = 1 WHERE id = ?`, [mid]);
+
+    const res = await fetch(`${base}t/2`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    // реконструкцию по котлам не рисуем; заглушка bracket-generate для
+    // авторизованного — штатное поведение bracket.ejs, её не проверяем
+    assert.doesNotMatch(html, /Котёл /);
   });
 });
 

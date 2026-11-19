@@ -174,6 +174,7 @@ const renderTournamentPage = (
       // сетка 110 (для system 1): один расчёт на рендер — структура,
       // матчи слотов и текущие игры (кнопки возобновления)
       const bracket = matchService.bracket110(t.id);
+      const tournamentSystem = Number(settingsService.get('tournament_system', t.id));
       res.render('index', {
         device: commonService.device(req),
         user: req.user,
@@ -191,11 +192,11 @@ const renderTournamentPage = (
         settings: promises[7],
         // system 1 (олимпийка) рисует сетку вместо групповой матрицы;
         // generated — сетка уже сгенерирована (есть матчи со слотами)
-        tournamentSystem: Number(settingsService.get('tournament_system', t.id)),
+        tournamentSystem,
         bracketGenerated: bracket.generated,
-        // архив без сгенерированной сетки, но со сыгранными матричными
-        // матчами: реконструкция сетки по котлам (только для system 1)
-        bracketHistorical: !bracket.generated && t.tournament_status_id === 3
+        // архив 110 system 1 без сгенерированной сетки, но со сыгранными
+        // матричными матчами: реконструкция сетки по котлам
+        bracketHistorical: tournamentSystem === 1 && !bracket.generated && t.tournament_status_id === 3
             ? bracketHistoryService.historical110(t.id)
             : null,
         // идущие матчи сетки (кнопка возобновления открывает модалку табло,

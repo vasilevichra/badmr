@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { bracketSize, structure, type BracketStructure } from "../../src/services/bracket-structure.ts";
+import { bracketSize, structure } from "../../src/services/bracket-structure.ts";
 
 describe("bracket-structure", () => {
   describe("bracketSize", () => {
