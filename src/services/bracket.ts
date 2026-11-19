@@ -4,7 +4,7 @@ import Tournament from '../repositories/tournament.ts';
 import Group from '../repositories/group.ts';
 import SettingsService from './settings.ts';
 import StandingsService from './standings.ts';
-import { structure, targetOf, readySlot, type SlotRef, type BracketStructure } from './bracket-structure.ts';
+import { structure, readySlot, type SlotRef, type BracketStructure } from './bracket-structure.ts';
 
 const settingsService = new SettingsService();
 const match110 = new Match110();
@@ -98,8 +98,9 @@ class Bracket {
     }
   }
 
-  /** Роутинг после завершения матча сетки: создаёт целевые матчи,
-   *  когда оба питателя готовы. Идемпотентно. */
+  /** Роутинг после завершения матча сетки: создаёт все слоты, у которых
+   *  данный — один из питателей (матчи R2+ и все уровни карманов —
+   *  и upper-, и lower-матчи кормят следующие слоты). Идемпотентно. */
   onMatchFinished(match110Id: number): void {
     const match = match110.getById(match110Id);
     if (!match || match.stage === null || match.stage === 'group') {
@@ -107,13 +108,10 @@ class Bracket {
     }
     const s = this.buildStructure(match.tournament_id);
     const from: SlotRef = { stage: match.stage, round: match.round!, pos: match.pos! };
-    const winner = this.winnerOf(match);
-    for (const outcome of ['win', 'lose'] as const) {
-      const target = targetOf(s, from, outcome);
-      if (!target) {
-        continue;
+    for (const slot of s.slots) {
+      if (slot.feeders?.some(f => f.stage === from.stage && f.round === from.round && f.pos === from.pos)) {
+        this.createIfReady(s, match.tournament_id, { stage: slot.stage, round: slot.round, pos: slot.pos });
       }
-      this.createIfReady(s, match.tournament_id, target);
     }
   }
 

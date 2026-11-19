@@ -176,6 +176,29 @@ describe("Bracket (сетка 110)", () => {
       assert.deepStrictEqual(seedsOf(lower[1]), [5, 7]);
     });
 
+    it("после завершения матчей кармана уровня 1 созданы матчи уровня 2", async () => {
+      const seedToTeam = await seedTeams(8);
+      await bracketService.generate();
+      // R1: побеждает team_1 (минимальный сид)
+      for (const m of slotRows().filter(r => r.stage === 'upper' && r.round === 1)) {
+        finishMatch(m.id, m.team_1_id);
+      }
+      // L1: побеждает team_1
+      for (const m of slotRows().filter(r => r.stage === 'lower' && r.round === 1)) {
+        finishMatch(m.id, m.team_1_id);
+      }
+      const seedsOf = (m: SlotRow) =>
+          [m.team_1_id, m.team_2_id].map(t => [...seedToTeam.entries()].find(([, id]) => id === t)![0])
+              .sort((a, b) => a - b);
+      const l2 = slotRows().filter(r => r.stage === 'lower' && r.round === 2)
+          .sort((a, b) => a.pos - b.pos);
+      assert.strictEqual(l2.length, 2);
+      // подкарман победителей (места 5–6): победители L1p1 (сид 8) и L1p2 (сид 5)
+      assert.deepStrictEqual(seedsOf(l2[0]), [5, 8]);
+      // подкарман проигравших (места 7–8): проигравшие L1p1 (сид 6) и L1p2 (сид 7)
+      assert.deepStrictEqual(seedsOf(l2[1]), [6, 7]);
+    });
+
     it("повторный вызов роутинга не создаёт дублей", async () => {
       await seedTeams(8);
       await bracketService.generate();

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { bracketSize, structure, targetOf, type BracketStructure } from "../../src/services/bracket-structure.ts";
+import { bracketSize, structure, type BracketStructure } from "../../src/services/bracket-structure.ts";
 
 describe("bracket-structure", () => {
   describe("bracketSize", () => {
@@ -51,31 +51,16 @@ describe("bracket-structure", () => {
     it("проигравшие 1/4 попадают в lower-карман [5..8], 1/2 — в матч за 3-4", () => {
       const r1 = s.slots.filter(x => x.stage === 'upper' && x.round === 1);
       for (const q of r1) {
-        const t = targetOf(s, q, 'lose');
-        assert.ok(t);
-        assert.strictEqual(t.stage, 'lower');
-        const pocket = s.slots.find(x => x.stage === 'lower' && x.round === t!.round && x.pos === t!.pos)!;
+        const pocket = s.slots.find(x => x.stage === 'lower' && x.round === 1
+            && x.feeders?.some(f => f.stage === 'upper' && f.round === q.round && f.pos === q.pos))!;
         assert.strictEqual(pocket.placeFrom, 5);
         assert.strictEqual(pocket.placeTo, 8);
       }
       const semi = s.slots.find(x => x.stage === 'upper' && x.round === 2 && x.pos === 1)!;
-      const t = targetOf(s, semi, 'lose')!;
-      assert.deepStrictEqual(t, { stage: 'lower', round: 2, pos: 1 });
-      const m34 = s.slots.find(x => x.stage === 'lower' && x.round === 2 && x.pos === 1)!;
+      const m34 = s.slots.find(x => x.stage === 'lower' && x.round === 2
+          && x.feeders?.some(f => f.stage === 'upper' && f.round === semi.round && f.pos === semi.pos))!;
       assert.strictEqual(m34.placeFrom, 3);
       assert.strictEqual(m34.placeTo, 4);
-    });
-
-    it("targetOf финала: win → null (чемпион), lose → null (матча за 2-е нет)", () => {
-      const final = s.slots.find(x => x.stage === 'upper' && x.round === 3)!;
-      assert.strictEqual(targetOf(s, final, 'win'), null);
-      assert.strictEqual(targetOf(s, final, 'lose'), null);
-    });
-
-    it("targetOf lower-матча: lose → null (выбыл окончательно)", () => {
-      const m34 = s.slots.find(x => x.stage === 'lower' && x.round === 2 && x.pos === 1)!;
-      assert.strictEqual(targetOf(s, m34, 'lose'), null);
-      assert.strictEqual(targetOf(s, m34, 'win'), null);
     });
   });
 
