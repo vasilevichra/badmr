@@ -87,7 +87,13 @@ class Bracket {
     }
     const s = this.buildStructure(id);
     const teamBySeed = this.seedToTeam(id);
-    for (const slot of s.slots.filter(x => x.stage === 'upper' && x.round === 1)) {
+    // сразу создаются матчи, у которых обе команды известны без игр:
+    // сеяные пары раунда 1 и слоты с двумя bye-питателями (сиды 2..n,
+    // прошедшие раунд 1 без матча — их иначе никто не триггернет)
+    const readyBySeeds = s.slots.filter(x =>
+      x.stage === 'upper'
+      && (x.feeders === null || x.feeders.every(f => f.round === 0)));
+    for (const slot of readyBySeeds) {
       if (slot.seeds[0] <= 0 || slot.seeds[1] <= 0) {
         continue; // bye-пара: матч не создаётся
       }

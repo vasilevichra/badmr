@@ -199,6 +199,20 @@ describe("Bracket (сетка 110)", () => {
       assert.deepStrictEqual(seedsOf(l2[1]), [6, 7]);
     });
 
+    it("после generate матчи с двумя bye-питателями созданы сразу (n=5: U2p2 = сиды 2,3)", async () => {
+      const seedToTeam = await seedTeams(5);
+      await bracketService.generate();
+      const seedsOf = (m: SlotRow) =>
+          [m.team_1_id, m.team_2_id].map(t => [...seedToTeam.entries()].find(([, id]) => id === t)![0])
+              .sort((a, b) => a - b);
+      const r2 = slotRows().filter(r => r.stage === 'upper' && r.round === 2);
+      // U2p1 (сид 1 v победитель (4,5)) ещё не создан; U2p2 (сид 2 v сид 3) — создан
+      assert.strictEqual(r2.length, 1);
+      assert.strictEqual(r2[0].pos, 2);
+      assert.deepStrictEqual(seedsOf(r2[0]), [2, 3]);
+      assert.strictEqual(r2[0].finished, 0);
+    });
+
     it("повторный вызов роутинга не создаёт дублей", async () => {
       await seedTeams(8);
       await bracketService.generate();
