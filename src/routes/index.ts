@@ -15,7 +15,9 @@ const statsService = new StatsService();
 import AchievementService from '../services/achievement.ts';
 const achievementService = new AchievementService();
 import GroupService from '../services/group.ts';
+import BracketHistory from '../services/bracket-history.ts';
 const groupService = new GroupService();
+const bracketHistoryService = new BracketHistory();
 import TeamOrderService from '../services/team-order.ts';
 const teamOrderService = new TeamOrderService();
 import share from '../share.cjs';
@@ -191,6 +193,11 @@ const renderTournamentPage = (
         // generated — сетка уже сгенерирована (есть матчи со слотами)
         tournamentSystem: Number(settingsService.get('tournament_system', t.id)),
         bracketGenerated: bracket.generated,
+        // архив без сгенерированной сетки, но со сыгранными матричными
+        // матчами: реконструкция сетки по котлам (только для system 1)
+        bracketHistorical: !bracket.generated && t.tournament_status_id === 3
+            ? bracketHistoryService.historical110(t.id)
+            : null,
         // идущие матчи сетки (кнопка возобновления открывает модалку табло,
         // отрендеренную серверно — как в матрице группы)
         bracketLive: bracket.generated

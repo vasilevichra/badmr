@@ -4,7 +4,12 @@
       3 (круговая) — группы и матрицы. Систему старых архивов выставляют
       в настройках турнира */ %>
 <% if (tournamentSystem === 1) { %>
-    <%- include('bracket', {user: user}); %>
+    <% if (bracketHistorical) { %>
+        <% /* архив без сгенерированной сетки: реконструкция сыгранных матчей по котлам */ %>
+        <%- include('historical', {historical: bracketHistorical}); %>
+    <% } else { %>
+        <%- include('bracket', {user: user}); %>
+    <% } %>
 <% } else { %>
 <div id="tournament-groups" class="tournament-groups">
     <div class="container">

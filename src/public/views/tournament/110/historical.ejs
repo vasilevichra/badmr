@@ -1,0 +1,34 @@
+<% /* Историческая сетка архивного турнира 110: реконструкция сыгранных
+      матчей по котлам. Слотов у архива нет — дерево восстанавливается
+      отображением (круг матча = max кругов прошлых матчей участников + 1),
+      БД не пишется. Незавершённые матчи — без счёта и подсветки. */ %>
+<div class="container">
+    <div class="row text-center pt-4">
+        <h1 class="text-center">Сетка турнира</h1>
+    </div>
+    <% historical.pockets.forEach(pocket => { %>
+    <div class="tournament-bracket-pocket">
+        <div class="tournament-bracket-pocket-title">Котёл <%= pocket.name %></div>
+        <% if (!pocket.rounds.length) { %>
+        <div class="tournament-bracket-empty">Матчей не было</div>
+        <% } %>
+        <div class="tournament-bracket-pocket-rounds">
+            <% pocket.rounds.forEach((round, ri) => { %>
+            <div class="tournament-bracket-round">
+                <div class="tournament-bracket-round-title"><%= ri + 1 %>-й круг</div>
+                <% round.forEach(m => { %>
+                <div class="tournament-bracket-match<%= m.finished ? '' : ' tournament-bracket-match-empty' %>">
+                    <% [[m.team_1, m.score_1, m.team_1_id], [m.team_2, m.score_2, m.team_2_id]].forEach(([team, score, id]) => { %>
+                    <div class="tournament-bracket-team<%= m.finished && m.winner_id === id ? ' tournament-bracket-team-winner' : '' %>">
+                        <span class="tournament-bracket-team-name"><%= team.city ? `${team.city} — ${team.name}` : team.name %></span>
+                        <span class="tournament-bracket-score"><%= m.finished ? score : '—' %></span>
+                    </div>
+                    <% }); %>
+                </div>
+                <% }); %>
+            </div>
+            <% }); %>
+        </div>
+    </div>
+    <% }); %>
+</div>
