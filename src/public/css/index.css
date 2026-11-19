@@ -3660,6 +3660,9 @@ body.desktop:has(> #footer.fixed-bottom) {
 /* карман доигровок: заголовок + колонки раундов кармана */
 .tournament-bracket-pocket {
   margin-top: 28px;
+  /* воздух снизу: сетка — последний элемент группы, до следующей группы
+     нужен зазор больше штатного */
+  margin-bottom: 36px;
 }
 
 .tournament-bracket-pocket-title {

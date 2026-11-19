@@ -36,11 +36,21 @@ export interface HistPocket {
   // предыдущих матчей его команд + 1 («две жизни» ложатся в колонки сами)
   rounds: HistMatch[][];
   consRounds: HistMatch[][];
-  // команды, впервые играющие в дереве после 1-го круга (бай в 1-м круге —
-  // плашка без соперника); только для олимпийского режима, у «двух жизней»
-  // поздний старт — норма (проигравший сидит круг), бай не рисуем
-  mainByes: HistTeam[];
-  consByes: HistTeam[];
+  // бай 1-го круга: команда, впервые играющая в дереве после 1-го круга
+  // (бай — плашка без соперника); только для олимпийского режима, у «двух
+  // жизней» поздний старт — норма (проигравший сидит круг), бай не рисуем
+  mainByes: HistBye[];
+  consByes: HistBye[];
+}
+
+// бай-плашка: after — id матча 1-го круга, сразу после которого её ставить
+// (соперник бая по первому матчу вышел из этого матча — стрелка из бая в
+// следующий матч получается короткой, без перекрещиваний); null — якоря
+// нет, плашка ставится в конец круга
+export interface HistBye {
+  team_id: number;
+  team: HistTeam;
+  after: number | null;
 }
 
 interface HistRow {
@@ -167,10 +177,6 @@ class BracketHistory {
       }
       return rounds;
     };
-    // бай 1-го круга: команда, чей первый матч котла вообще — позже 1-го
-    // круга своего дерева (НН в main со 2-го круга, Иваново-1 в cons со
-    // 2-го). Проигравший основного круга r, входящий в cons с круга r, —
-    // не бай: у него есть матч в main
     // порядок плашек в колонке — меньше перекрещиваний линий: идём от финала
     // к 1-му кругу и сортируем матчи по позиции следующего матча победителя
     // (питающиеся в один матч встают рядом в порядке его слот-позиции)
@@ -196,19 +202,30 @@ class BracketHistory {
       }
       return rounds;
     };
+    // бай 1-го круга: команда, чей первый матч котла вообще — позже 1-го
+    // круга своего дерева (НН в main со 2-го круга, Иваново-1 в cons со
+    // 2-го). Проигравший основного круга r, входящий в cons с круга r, —
+    // не бай: у него есть матч в main
     const byes = (mainRounds: HistMatch[][], consRounds: HistMatch[][]) => {
-      const first = new Map<number, {cons: boolean; round: number; team: HistTeam}>();
+      const first = new Map<number, {cons: boolean; round: number; team: HistTeam; match: HistMatch}>();
       const scan = (rounds: HistMatch[][], cons: boolean) => rounds.forEach((round, ri) =>
           round.forEach(m => {
             for (const [id, team] of [[m.team_1_id, m.team_1], [m.team_2_id, m.team_2]] as const) {
-              if (!first.has(id)) first.set(id, {cons, round: ri + 1, team});
+              if (!first.has(id)) first.set(id, {cons, round: ri + 1, team, match: m});
             }
           }));
       scan(mainRounds, false);
       scan(consRounds, true);
-      const pick = (cons: boolean) =>
-          [...first.values()].filter(e => e.cons === cons && e.round > 1).map(e => e.team);
-      return {mainByes: pick(false), consByes: pick(true)};
+      const pick = (cons: boolean, rounds: HistMatch[][]): HistBye[] =>
+          [...first.entries()].filter(([, e]) => e.cons === cons && e.round > 1)
+              .map(([id, e]) => {
+                const other = e.match.team_1_id === id ? e.match.team_2_id : e.match.team_1_id;
+                // якорь: матч 1-го круга, из которого вышел соперник бая —
+                // плашка после него, стрелка в тот же следующий матч
+                const anchor = rounds[0]?.find(m => m.team_1_id === other || m.team_2_id === other);
+                return {team_id: id, team: e.team, after: anchor ? anchor.id : null};
+              });
+      return {mainByes: pick(false, mainRounds), consByes: pick(true, consRounds)};
     };
     // итоговые места (только олимпийский режим): команда ранжируется по
     // своему последнему матчу в котле — сначала круг (main над cons при
@@ -249,7 +266,7 @@ class BracketHistory {
         else e.match.place_2 = i + 1;
       });
     };
-    const emptyByes = {mainByes: [] as HistTeam[], consByes: [] as HistTeam[]};
+    const emptyByes = {mainByes: [] as HistBye[], consByes: [] as HistBye[]};
     // котлы в алфавитном порядке имён (C раньше D), матчи — по кругам
     return {
       pockets: pockets

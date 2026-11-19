@@ -229,7 +229,10 @@ window.renderBracketLines = () => {
     if (!cards.length) return;
     const hostRect = host.getBoundingClientRect();
     const rounds = [...host.querySelectorAll('.tournament-bracket-round')];
-    const colOf = new Map(cards.map(c => [c, rounds.indexOf(c.closest('.tournament-bracket-round'))]));
+    // цели и источники: матчи; бай-плашки (data-bye) — только источники
+    const colOf = new Map(
+        [...host.querySelectorAll('.tournament-bracket-match')]
+            .map(c => [c, rounds.indexOf(c.closest('.tournament-bracket-round'))]));
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'tournament-bracket-lines');
     svg.setAttribute('width', host.scrollWidth);
@@ -258,13 +261,16 @@ window.renderBracketLines = () => {
       path.setAttribute('class', cls);
       svg.append(path);
     };
-    cards.forEach(card => {
+    [...host.querySelectorAll('.tournament-bracket-match')].forEach(card => {
       const rows = [...card.querySelectorAll('.tournament-bracket-team')];
-      const winner = rows.find(r => r.classList.contains('tournament-bracket-team-winner'));
+      // у бай-плашки «переход» — её единственная команда; lives из бая не бывает
+      const winner = card.dataset.bye
+          ? rows.find(r => Number(r.dataset.team) === Number(card.dataset.bye))
+          : rows.find(r => r.classList.contains('tournament-bracket-team-winner'));
       if (!winner) return; // незавершённый матч или ничья — переходов нет
       const wNext = nextCard(card, Number(winner.dataset.team));
       if (wNext) line(card, wNext, 'tournament-bracket-line-win');
-      if (withLives) {
+      if (withLives && !card.dataset.bye) {
         const loser = rows.find(r => r !== winner);
         const lNext = loser && nextCard(card, Number(loser.dataset.team));
         if (lNext) line(card, lNext, 'tournament-bracket-line-life');

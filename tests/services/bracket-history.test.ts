@@ -143,7 +143,8 @@ describe("BracketHistory (историческая сетка архива 110)"
     db.run(`INSERT INTO pocket_structure (match_110_id, main, round) VALUES (?, 1, 1), (?, 1, 2)`, [semi, final]);
     const pocket = history.historical110(4).pockets[0];
     assert.strictEqual(pocket.twoLives, false);
-    assert.deepStrictEqual(pocket.mainByes.map(t => t.name), ['D3']);
+    // бай d3 привязан к полуфиналу: его соперник по финалу (d1) вышел из него
+    assert.deepStrictEqual(pocket.mainByes.map(b => [b.team.name, b.after]), [['D3', semi]]);
     assert.deepStrictEqual(pocket.consByes, []);
     // места: победитель финала — 1, бай — 2, вылетевший в 1-м круге — 3;
     // место ставится только в последний матч команды

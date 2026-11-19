@@ -26,11 +26,12 @@ var card = (m, opts) => {
         (opts.cons ? ' tournament-bracket-match-cons' : '') + '" data-mid="' + m.id + '">' + rows + '</div>';
 };
 // бай 1-го круга: та же плашка в две строки, соперник и счёты — прочерки;
-// без data-mid — переходов из неё не рисуем
-var byeCard = (team) =>
-    '<div class="tournament-bracket-match tournament-bracket-match-empty">' +
-    '<div class="tournament-bracket-team">' +
-    '<span class="tournament-bracket-team-name">' + teamName(team) + '</span>' +
+// команда бая — «победитель без игры» (жирная строка, как у выигравших);
+// data-bye/data-team — от неё bracket.js рисует стрелку в следующий матч
+var byeCard = (b) =>
+    '<div class="tournament-bracket-match tournament-bracket-match-empty" data-bye="' + b.team_id + '">' +
+    '<div class="tournament-bracket-team tournament-bracket-team-winner" data-team="' + b.team_id + '">' +
+    '<span class="tournament-bracket-team-name">' + teamName(b.team) + '</span>' +
     '<span class="tournament-bracket-score">—</span></div>' +
     '<div class="tournament-bracket-team">' +
     '<span class="tournament-bracket-team-name">—</span>' +
@@ -48,8 +49,14 @@ var consTitle = (ri, total) => ri + 1 === total ? 'Финал доигровок
         <div class="tournament-bracket-round">
             <div class="tournament-bracket-round-title"><%= pocket.twoLives ? (ri + 1) + '-й круг' : mainTitle(ri, pocket.rounds.length) %></div>
             <div class="tournament-bracket-round-matches">
-            <% round.forEach(m => { %><%- card(m, {cons: false, lives: pocket.twoLives}) %><% }); %>
-            <% if (!pocket.twoLives && ri === 0) { %><% pocket.mainByes.forEach(t => { %><%- byeCard(t) %><% }); %><% } %>
+            <% /* бай-плашки 1-го круга встают после якорного матча (after) —
+                  рядом с соперником своего следующего матча */ %>
+            <% var roundByes = !pocket.twoLives && ri === 0 ? [...pocket.mainByes] : []; %>
+            <% round.forEach(m => { %><%- card(m, {cons: false, lives: pocket.twoLives}) %><%
+                for (var bi = roundByes.length - 1; bi >= 0; bi--) {
+                    if (roundByes[bi].after === m.id) { %><%- byeCard(roundByes[bi]) %><% roundByes.splice(bi, 1); }
+                } %><% }); %>
+            <% roundByes.forEach(b => { %><%- byeCard(b) %><% }); %>
             </div>
         </div>
         <% }); %>
@@ -62,8 +69,12 @@ var consTitle = (ri, total) => ri + 1 === total ? 'Финал доигровок
             <div class="tournament-bracket-round-title"><%= consTitle(ri, pocket.consRounds.length) %></div>
             <% } %>
             <div class="tournament-bracket-round-matches">
-            <% round.forEach(m => { %><%- card(m, {cons: true, lives: false}) %><% }); %>
-            <% if (ri === 0) { %><% pocket.consByes.forEach(t => { %><%- byeCard(t) %><% }); %><% } %>
+            <% var consByes = ri === 0 ? [...pocket.consByes] : []; %>
+            <% round.forEach(m => { %><%- card(m, {cons: true, lives: false}) %><%
+                for (var bi = consByes.length - 1; bi >= 0; bi--) {
+                    if (consByes[bi].after === m.id) { %><%- byeCard(consByes[bi]) %><% consByes.splice(bi, 1); }
+                } %><% }); %>
+            <% consByes.forEach(b => { %><%- byeCard(b) %><% }); %>
             </div>
         </div>
         <% }); %>
