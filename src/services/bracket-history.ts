@@ -21,6 +21,8 @@ export interface HistMatch {
 
 export interface HistPocket {
   name: string;
+  // котёл привязан к группе: сетка котла рендерится под составами её команд
+  group_id: number;
   // rounds[r-1] — матчи круга r в порядке создания; круг матча = max кругов
   // предыдущих матчей его команд + 1 («две жизни» ложатся в колонки сами)
   rounds: HistMatch[][];
@@ -118,7 +120,7 @@ class BracketHistory {
     return {
       pockets: pockets
           .sort((a, b) => a.name.localeCompare(b.name))
-          .map(p => ({name: p.name, rounds: byGroup.get(p.group_id) ?? []})),
+          .map(p => ({name: p.name, group_id: p.group_id, rounds: byGroup.get(p.group_id) ?? []})),
     };
   }
 }
