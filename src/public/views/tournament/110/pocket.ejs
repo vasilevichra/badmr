@@ -11,11 +11,15 @@ var esc = (s) => String(s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 var teamName = (team) => esc(team.city ? team.city + ' — ' + team.name : team.name);
 // карточка матча: data-team на строках команд — по ним bracket.js ищет,
-// куда ушли победитель и проигравший
+// куда ушли победитель и проигравший; place_N — итоговое место команды,
+// если этот матч последний для неё в котле (кружок у имени)
 var card = (m, opts) => {
-    var rows = [[m.team_1, m.score_1, m.team_1_id], [m.team_2, m.score_2, m.team_2_id]].map(([team, score, id]) =>
+    var place = (p) => p
+        ? '<span class="tournament-bracket-team-place' + (p <= 3 ? ' tournament-bracket-team-place-prize' : '') + '">' + p + '</span>'
+        : '';
+    var rows = [[m.team_1, m.score_1, m.team_1_id, m.place_1], [m.team_2, m.score_2, m.team_2_id, m.place_2]].map(([team, score, id, pl]) =>
         '<div class="tournament-bracket-team' + (m.finished && m.winner_id === id ? ' tournament-bracket-team-winner' : '') + '" data-team="' + id + '">' +
-        '<span class="tournament-bracket-team-name">' + teamName(team) + '</span>' +
+        '<span class="tournament-bracket-team-name">' + teamName(team) + '</span>' + place(pl) +
         '<span class="tournament-bracket-score">' + (m.finished ? score : '—') + '</span></div>'
     ).join('');
     return '<div class="tournament-bracket-match' + (m.finished ? '' : ' tournament-bracket-match-empty') +

@@ -17,6 +17,10 @@ export interface HistMatch {
   finished: 0 | 1;
   // по счёту последней игры (110 очков — победа); незавершённый или ничья — null
   winner_id: number | null;
+  // итоговое место команды в котле, если этот матч — последний для неё
+  // в котле и завершён; иначе null (только олимпийский режим)
+  place_1: number | null;
+  place_2: number | null;
 }
 
 export interface HistPocket {
@@ -127,6 +131,8 @@ class BracketHistory {
         score_2: row.score_2,
         finished: row.finished,
         winner_id: winner,
+        place_1: null,
+        place_2: null,
       };
       return {row, round, match};
     });
@@ -165,6 +171,31 @@ class BracketHistory {
     // круга своего дерева (НН в main со 2-го круга, Иваново-1 в cons со
     // 2-го). Проигравший основного круга r, входящий в cons с круга r, —
     // не бай: у него есть матч в main
+    // порядок плашек в колонке — меньше перекрещиваний линий: идём от финала
+    // к 1-му кругу и сортируем матчи по позиции следующего матча победителя
+    // (питающиеся в один матч встают рядом в порядке его слот-позиции)
+    const sortRounds = (rounds: HistMatch[][]) => {
+      const nextPos = new Map<number, number>(); // id матча → (круг * 1000 + позиция)
+      rounds.forEach((round, r) => round.forEach((m, i) => nextPos.set(m.id, r * 1000 + i)));
+      for (let r = rounds.length - 2; r >= 0; r--) {
+        const byWinner = new Map<number, number>(); // id победителя → ключ порядка
+        for (const m of rounds[r]) {
+          const w = m.winner_id;
+          if (w === null) continue;
+          let key = Infinity;
+          for (let rr = r + 1; rr < rounds.length && key === Infinity; rr++) {
+            for (const nm of rounds[rr]) {
+              if (nm.team_1_id === w || nm.team_2_id === w) { key = nextPos.get(nm.id)!; break; }
+            }
+          }
+          byWinner.set(w, key);
+        }
+        rounds[r].sort((a, b) =>
+            (byWinner.get(a.winner_id ?? -1) ?? Infinity) - (byWinner.get(b.winner_id ?? -1) ?? Infinity));
+        rounds[r].forEach((m, i) => nextPos.set(m.id, r * 1000 + i));
+      }
+      return rounds;
+    };
     const byes = (mainRounds: HistMatch[][], consRounds: HistMatch[][]) => {
       const first = new Map<number, {cons: boolean; round: number; team: HistTeam}>();
       const scan = (rounds: HistMatch[][], cons: boolean) => rounds.forEach((round, ri) =>
@@ -178,6 +209,45 @@ class BracketHistory {
       const pick = (cons: boolean) =>
           [...first.values()].filter(e => e.cons === cons && e.round > 1).map(e => e.team);
       return {mainByes: pick(false), consByes: pick(true)};
+    };
+    // итоговые места (только олимпийский режим): команда ранжируется по
+    // своему последнему матчу в котле — сначала круг (main над cons при
+    // равном круге: финалист выше любого игрока доигровок), затем круг
+    // вылета из main (кто дольше держался в основном дереве, тот выше —
+    // различает независимые матчи одного круга доигровок), затем победа
+    // в последнем матче. Место проставляется в последний завершённый
+    // матч команды (place_1/place_2)
+    const rankPlaces = (mainRounds: HistMatch[][], consRounds: HistMatch[][]) => {
+      type Last = {round: number; cons: boolean; won: boolean; match: HistMatch; side: 1 | 2; mainExit: number};
+      const last = new Map<number, Last>();
+      const scan = (rounds: HistMatch[][], cons: boolean) => rounds.forEach((round, ri) =>
+          round.forEach(m => {
+            if (m.finished !== 1) return;
+            for (const side of [1, 2] as const) {
+              const id = side === 1 ? m.team_1_id : m.team_2_id;
+              const prev = last.get(id);
+              // последний матч: доигровки позже main, внутри дерева — старше круг
+              if (!prev || (cons && !prev.cons) || (cons === prev.cons && ri + 1 > prev.round)) {
+                last.set(id, {
+                  round: ri + 1,
+                  cons,
+                  won: m.winner_id === id,
+                  match: m,
+                  side,
+                  mainExit: cons ? prev?.mainExit ?? 0 : ri + 1,
+                });
+              }
+            }
+          }));
+      scan(mainRounds, false);
+      scan(consRounds, true);
+      const key = (e: Last) => e.round * 8 + (e.cons ? 0 : 4);
+      const sorted = [...last.values()].sort((a, b) =>
+          key(b) - key(a) || b.mainExit - a.mainExit || (b.won ? 1 : 0) - (a.won ? 1 : 0));
+      sorted.forEach((e, i) => {
+        if (e.side === 1) e.match.place_1 = i + 1;
+        else e.match.place_2 = i + 1;
+      });
     };
     const emptyByes = {mainByes: [] as HistTeam[], consByes: [] as HistTeam[]};
     // котлы в алфавитном порядке имён (C раньше D), матчи — по кругам
@@ -196,6 +266,9 @@ class BracketHistory {
                 const target = e.row.struct_main === 1 ? mainRounds : consRounds;
                 (target[e.row.struct_round! - 1] ??= []).push(e.match);
               }
+              sortRounds(mainRounds);
+              sortRounds(consRounds);
+              rankPlaces(mainRounds, consRounds);
               const {mainByes, consByes} = byes(mainRounds, consRounds);
               return {
                 name: p.name,
@@ -223,8 +296,9 @@ class BracketHistory {
                 ...emptyByes,
               };
             }
-            const mainRounds = buildRounds(list.filter(e => !e.t1Lost && !e.t2Lost));
-            const consRounds = buildRounds(list.filter(e => e.t1Lost || e.t2Lost));
+            const mainRounds = sortRounds(buildRounds(list.filter(e => !e.t1Lost && !e.t2Lost)));
+            const consRounds = sortRounds(buildRounds(list.filter(e => e.t1Lost || e.t2Lost)));
+            rankPlaces(mainRounds, consRounds);
             const {mainByes, consByes} = byes(mainRounds, consRounds);
             return {
               name: p.name,

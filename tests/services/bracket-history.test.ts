@@ -145,6 +145,51 @@ describe("BracketHistory (историческая сетка архива 110)"
     assert.strictEqual(pocket.twoLives, false);
     assert.deepStrictEqual(pocket.mainByes.map(t => t.name), ['D3']);
     assert.deepStrictEqual(pocket.consByes, []);
+    // места: победитель финала — 1, бай — 2, вылетевший в 1-м круге — 3;
+    // место ставится только в последний матч команды
+    const finalMatch = pocket.rounds[1][0];
+    assert.strictEqual(finalMatch.place_1, 1);
+    assert.strictEqual(finalMatch.place_2, 2);
+    // d1 в полуфинале — не последний матч: места нет; d2 вылетел там — 3-е
+    assert.strictEqual(pocket.rounds[0][0].place_1, null);
+    assert.strictEqual(pocket.rounds[0][0].place_2, 3);
+  });
+
+  it("места: независимые матчи одного круга доигровок ранжируются по кругу вылета из main", async () => {
+    // зеркало котла C: main R1 m1/m8/m12 (бай t6), R2 m7/m10, финал m14;
+    // cons R1 m3, R2 m4 и m5 (m5 — за 3–4: его участники вылетели из main
+    // позже, чем участники m4)
+    const t1 = await seedTeam("T1", GROUP_D);
+    const t2 = await seedTeam("T2", GROUP_D);
+    const t3 = await seedTeam("T3", GROUP_D);
+    const t4 = await seedTeam("T4", GROUP_D);
+    const t5 = await seedTeam("T5", GROUP_D);
+    const t6 = await seedTeam("T6", GROUP_D);
+    const t7 = await seedTeam("T7", GROUP_D);
+    const m1 = play(t1, t2, 110, 80);
+    const m8 = play(t3, t4, 110, 90);
+    const m12 = play(t5, t7, 110, 50);
+    const m7 = play(t6, t3, 110, 90);
+    const m10 = play(t5, t1, 110, 60);
+    const m14 = play(t5, t6, 110, 100);
+    const m3 = play(t2, t7, 110, 99);
+    const m4 = play(t4, t2, 110, 80);
+    const m5 = play(t1, t3, 110, 95);
+    db.run(`INSERT INTO pocket_structure (match_110_id, main, round) VALUES
+        (${m1}, 1, 1), (${m8}, 1, 1), (${m12}, 1, 1),
+        (${m7}, 1, 2), (${m10}, 1, 2), (${m14}, 1, 3),
+        (${m3}, 0, 1), (${m4}, 0, 2), (${m5}, 0, 2)`);
+    const byId = new Map<number, {place_1: number | null; place_2: number | null}>();
+    for (const p of history.historical110(4).pockets) {
+      for (const round of [...p.rounds, ...p.consRounds]) {
+        for (const m of round) byId.set(m.id, m);
+      }
+    }
+    // 1–2: финал main; 3–4: m5 (вылет из R2); 5–6: m4 (вылет из R1); 7: m3
+    assert.deepStrictEqual([byId.get(m14)!.place_1, byId.get(m14)!.place_2], [1, 2]);
+    assert.deepStrictEqual([byId.get(m5)!.place_1, byId.get(m5)!.place_2], [3, 4]);
+    assert.deepStrictEqual([byId.get(m4)!.place_1, byId.get(m4)!.place_2], [5, 6]);
+    assert.deepStrictEqual([byId.get(m3)!.place_1, byId.get(m3)!.place_2], [null, 7]);
   });
 
   it("матч двух уже проигравших — доигровка: дерево победителей и consRounds раздельно", async () => {
