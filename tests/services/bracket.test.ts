@@ -158,6 +158,24 @@ describe("Bracket (сетка 110)", () => {
       assert.strictEqual(rows.filter(r => r.stage === 'lower' && r.round === 1).length, 2);
     });
 
+    it("полный раунд: в матчи кармана попадают проигравшие R1", async () => {
+      const seedToTeam = await seedTeams(8);
+      await bracketService.generate();
+      for (const m of slotRows().filter(r => r.stage === 'upper' && r.round === 1)) {
+        finishMatch(m.id, m.team_1_id); // побеждает верхний сид пары
+      }
+      const seedsOf = (m: SlotRow) =>
+          [m.team_1_id, m.team_2_id].map(t => [...seedToTeam.entries()].find(([, id]) => id === t)![0])
+              .sort((a, b) => a - b);
+      const lower = slotRows().filter(r => r.stage === 'lower' && r.round === 1)
+          .sort((a, b) => a.pos - b.pos);
+      // пары кармана сеются по layout(4)=[1,4,2,3]: (U1p1,U1p4) и (U1p2,U1p3);
+      // раскладка R1: (1,8),(4,5),(2,7),(3,6), team_1 (минимальный сид) побеждает
+      // → проигравшие U1p1→8, U1p2→5, U1p3→7, U1p4→6
+      assert.deepStrictEqual(seedsOf(lower[0]), [6, 8]);
+      assert.deepStrictEqual(seedsOf(lower[1]), [5, 7]);
+    });
+
     it("повторный вызов роутинга не создаёт дублей", async () => {
       await seedTeams(8);
       await bracketService.generate();

@@ -308,13 +308,26 @@ export const readySlot = (
   if (!slot) {
     return null;
   }
-  // bye-слот в feeders: round=0, команда — сид (хранится в seeds слота)
+  // bye-слот в feeders: round=0, команда — сид (хранится в seeds слота).
+  // Правило зависит от стадии цели: upper-цель берёт победителя upper-питателя;
+  // карман (lower-цель) — проигравшего upper-питателя, а из lower-питателя —
+  // победителя, если цель в верхней половине его диапазона (подкарман
+  // победителей начинается с placeFrom питателя), иначе проигравшего
   const teamOf = (feeder: SlotRef, index: 0 | 1): number | null => {
     if (feeder.round === 0) {
       return slot.seeds[index] || null;
     }
-    const [win] = finishedFeeders(feeder);
-    return win ?? null;
+    const [win, lose] = finishedFeeders(feeder);
+    let take: number | null;
+    if (slot.stage === 'lower' && feeder.stage === 'upper') {
+      take = lose;
+    } else if (slot.stage === 'lower' && feeder.stage === 'lower') {
+      const feederSlot = findSlot(s, feeder);
+      take = feederSlot && slot.placeFrom === feederSlot.placeFrom ? win : lose;
+    } else {
+      take = win;
+    }
+    return take ?? null;
   };
   if (slot.feeders === null) {
     return null; // сеяный слот R1 создаётся при генерации, не роутингом
