@@ -3522,13 +3522,24 @@ body.desktop:has(> #footer.fixed-bottom) {
 /* ===== Олимпийская сетка 110 (bracket.js, system 1) ===== */
 
 /* верхняя сетка: колонки раундов, внутри каждой пары матчей разнесены
-   по высоте поровну — классический вид «расходящегося» дерева */
+   по высоте поровну — классический вид «расходящегося» дерева.
+   Центрирование — auto-полями краёв, а не justify-content: center:
+   при переполнении (overflow-x: auto) центр обрезал бы левую колонку
+   без возможности доскроллить, auto-поля при нехватке места схлопываются */
 .tournament-bracket-upper {
   display: flex;
   align-items: stretch;
   gap: 24px;
   overflow-x: auto;
   padding-bottom: 8px;
+}
+
+.tournament-bracket-upper > :first-child {
+  margin-left: auto;
+}
+
+.tournament-bracket-upper > :last-child {
+  margin-right: auto;
 }
 
 .tournament-bracket-round {
