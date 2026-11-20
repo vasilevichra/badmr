@@ -3669,22 +3669,22 @@ body.desktop:has(> #footer.fixed-bottom) {
   font-variant-numeric: tabular-nums;
 }
 
-/* кнопка старта/возобновления — рельс слева на всю высоту карточки,
+/* кнопка старта/возобновления — рельс справа на всю высоту карточки,
  * в два раза шире обычной ▶-кнопки: удобный тап на телефоне;
  * карточка резервирует место паддингом, кнопка не торчит наружу */
 .tournament-bracket-match-rail {
-  padding-left: 46px;
+  padding-right: 46px;
 }
 
 .tournament-bracket-rail {
   position: absolute;
-  left: 0;
+  right: 0;
   top: 0;
   bottom: 0;
   width: 40px;
   border: 0;
-  border-right: 1px solid var(--bs-border-color);
-  border-radius: 9px 0 0 9px;
+  border-left: 1px solid var(--bs-border-color);
+  border-radius: 0 9px 9px 0;
   background: var(--bs-success-bg-subtle);
   color: var(--bs-success);
   display: flex;
