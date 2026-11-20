@@ -176,7 +176,9 @@ describe("Историческая сетка архива 110", () => {
 
   it("архив 110 system 2 реконструкцию не показывает", async () => {
     const settingsService = new SettingsService();
-    await settingsService.set('tournament_system', '2', 2);
+    // оба котла t/2 (C и D) переводим в круговую — реконструкция не рисуется
+    await settingsService.set('org_system.c', '2', 2);
+    await settingsService.set('org_system.d', '2', 2);
     const a = await seedTeam(5, 7, "Соколы");
     const b = await seedTeam(5, 10, "Тигры");
     const { id: mid } = match110.create(a, b, 2);
@@ -189,8 +191,29 @@ describe("Историческая сетка архива 110", () => {
 
     assert.strictEqual(res.status, 200);
     // реконструкцию по котлам не рисуем; заглушка bracket-generate для
-    // авторизованного — штатное поведение bracket.ejs, её не проверяем
+    // авторизованного — штатное поведение pocket.ejs, её не проверяем
     assert.doesNotMatch(html, /Котёл /);
+  });
+
+  it("идущий турнир 110 без сетки показывает per-pocket кнопку генерации, архив — нет", async () => {
+    const settingsService = new SettingsService();
+    // котёл C: олимпийка с корзинами; residents 1 (сид t/2) — группового
+    // этапа нет, сетка сеется сразу по силе, до генерации — заглушка
+    await settingsService.set('org_system.c', '1', 2);
+    await seedTeam(5, 12, "Фениксы");
+    db.run("UPDATE tournament SET tournament_status_id = 2 WHERE id = 2");
+
+    const running = await fetch(`${base}t/2`);
+    const runningHtml = await running.text();
+    assert.strictEqual(running.status, 200);
+    assert.match(runningHtml, /Сетка ещё не сгенерирована/);
+    assert.match(runningHtml, /data-generate-group="5"/);
+
+    db.run("UPDATE tournament SET tournament_status_id = 3 WHERE id = 2");
+    const archive = await fetch(`${base}t/2`);
+    const archiveHtml = await archive.text();
+    assert.strictEqual(archive.status, 200);
+    assert.doesNotMatch(archiveHtml, /data-generate-group/);
   });
 });
 
