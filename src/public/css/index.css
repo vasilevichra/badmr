@@ -3731,7 +3731,10 @@ body.desktop:has(> #footer.fixed-bottom) {
 
 /* линии переходов реконструкции котлов (bracket.js → renderBracketLines):
    svg под колонками, колонки позиционированы, чтобы краситься поверх */
-.tournament-bracket-pocket[data-lines] {
+/* хост линий переходов: и реконструкция (.tournament-bracket-pocket), и
+   клиентский рендер живой сетки (.tournament-bracket) */
+.tournament-bracket-pocket[data-lines],
+.tournament-bracket[data-lines] {
   position: relative;
 }
 

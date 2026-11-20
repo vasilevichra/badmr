@@ -32,6 +32,8 @@ const bracketTeamColor = (teamId) => {
 const bracketTeamRow = (teamId, score, winner, trophy) => {
   const row = document.createElement('div');
   row.className = 'tournament-bracket-team' + (winner ? ' tournament-bracket-team-winner' : '');
+  // data-team — по нему renderBracketLines ищет, куда ушла команда
+  row.dataset.team = String(teamId);
   const stripe = document.createElement('span');
   stripe.className = 'tournament-bracket-team-stripe';
   const color = bracketTeamColor(teamId);
@@ -55,6 +57,9 @@ const bracketMatchCard = (match, opts = {}) => {
   card.className = 'tournament-bracket-match';
   if (opts.final) card.classList.add('tournament-bracket-match-final');
   if (opts.cons) card.classList.add('tournament-bracket-match-cons');
+  // data-mid — маркер для renderBracketLines (как в реконструкции pocket.ejs):
+  // источники и цели линий переходов — только реальные матчи
+  card.dataset.mid = String(match.id);
   // подпись итоговых мест — и на пустом слоте решающего матча (как в макете)
   if (opts.placeTag) {
     const place = document.createElement('div');
@@ -104,6 +109,10 @@ const bracketRoundTitle = (round, totalRounds) => {
 // (глобальные — вызываются инлайн-скриптом pocket.ejs)
 window.renderBracket = (host, data) => {
   host.innerHTML = '';
+  // маркер линий переходов (renderBracketLines): в живом турнире каждая
+  // команда до первого поражения идёт по верхней сетке, после — в доигровки
+  // (вторая жизнь), как «две жизни» реконструкции
+  host.dataset.lines = 'lives';
   const map = bracketMatchBySlot(data);
   const slots = data.structure.slots;
 
@@ -192,6 +201,9 @@ window.renderBracket = (host, data) => {
     section.append(cols);
     host.append(section);
   });
+  // линии переходов: и внутри верхней сетки, и в карманы доигровок;
+  // вызов идемпотентен (повтор из renderBracketPockets не вредит)
+  window.renderBracketLines?.();
 };
 
 // мобайл: вертикальный список — раунды верхней сетки, ниже карманы
@@ -243,7 +255,7 @@ window.renderBracketMobile = (host, data) => {
 // проигравшего, только в режиме lives. Цели ищем по data-team строк команд
 // в ближайшей более поздней колонке кругов.
 window.renderBracketLines = () => {
-  document.querySelectorAll('.tournament-bracket-pocket[data-lines]').forEach(host => {
+  document.querySelectorAll('.tournament-bracket-pocket[data-lines], .tournament-bracket[data-lines]').forEach(host => {
     host.querySelectorAll('.tournament-bracket-lines').forEach(el => el.remove());
     if (document.body.classList.contains('phone')) return;
     const withLives = host.dataset.lines === 'lives';
