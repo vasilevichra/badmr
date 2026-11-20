@@ -743,7 +743,29 @@ const renderFinishedMatchScores = () => {
   });
 };
 renderFinishedMatchScores();
-$(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => renderFinishedMatchScores());
+// перерисовка олимпийских деревьев котлов: после завершения матча роутинг
+// на сервере создаёт следующие слоты — дерево строится заново из API.
+// Матрице хватает renderFinishedMatchScores (счёты и кнопки в ячейках)
+const renderBracketPockets = () => {
+  document.querySelectorAll('[id^="tournament-bracket-pocket-"]').forEach(host => {
+    const groupId = host.id.replace('tournament-bracket-pocket-', '');
+    fetch(`${withTournament('/api/matches/bracket110')}&group=${groupId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!data.generated) return;
+          if (document.body.classList.contains('phone')) {
+            renderBracketMobile(host, data);
+          } else {
+            renderBracket(host, data);
+          }
+          window.renderBracketLines?.();
+        });
+  });
+};
+$(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => {
+  renderFinishedMatchScores();
+  renderBracketPockets();
+});
 
 // сводная таблица котла (М/И/В/П/О, О = В): один запрос на каждый
 // контейнер [data-standings-group] (group.ejs); порядок — как отдал API
