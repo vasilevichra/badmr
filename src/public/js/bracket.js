@@ -109,10 +109,11 @@ const bracketRoundTitle = (round, totalRounds) => {
 // (глобальные — вызываются инлайн-скриптом pocket.ejs)
 window.renderBracket = (host, data) => {
   host.innerHTML = '';
-  // маркер линий переходов (renderBracketLines): в живом турнире каждая
-  // команда до первого поражения идёт по верхней сетке, после — в доигровки
-  // (вторая жизнь), как «две жизни» реконструкции
-  host.dataset.lines = 'lives';
+  // маркер линий переходов (renderBracketLines): рисуются только переходы
+  // победителей — как в олимпийской реконструкции; линии проигравших
+  // («вторая жизнь») в живой сетке не выводятся: карманы доигровок стоят
+  // ниже дерева, и такие линии шли бы назад сквозь карточки
+  host.dataset.lines = 'win';
   const map = bracketMatchBySlot(data);
   const slots = data.structure.slots;
 
@@ -154,23 +155,40 @@ window.renderBracket = (host, data) => {
   });
   const fedRefs = new Set(lower.flatMap(s => s.feeders?.map(f => `${f.stage}|${f.round}|${f.pos}`) ?? []));
   const isTerminalPocket = (pocketSlots) => !pocketSlots.some(s => fedRefs.has(`lower|${s.round}|${s.pos}`));
-  [...pockets.entries()].sort((a, b) => Number(a[0].split('-')[0]) - Number(b[0].split('-')[0])).forEach(([key, pocketSlots]) => {
-    const [from, to] = key.split('-').map(Number);
+  // цепочки карманов: карман B продолжает карман A, если слоты B питаются
+  // от слотов A. Цепочка рисуется одной секцией колонками по кругам —
+  // тогда переход победителя из кармана в карман идёт вперёд по колонкам;
+  // раздельные секции стопкой давали бы линию назад сквозь карточки
+  const pocketOfSlot = new Map(
+      lower.map(s => [`${s.stage}|${s.round}|${s.pos}`, `${s.placeFrom}-${s.placeTo}`]));
+  const chainOfPocket = new Map();
+  const chains = [];
+  [...pockets.keys()]
+      .sort((a, b) => Number(a.split('-')[0]) - Number(b.split('-')[0])
+          || Math.min(...pockets.get(a).map(s => s.round)) - Math.min(...pockets.get(b).map(s => s.round)))
+      .forEach(key => {
+        const host = (pockets.get(key).flatMap(s => s.feeders ?? [])
+            .map(f => pocketOfSlot.get(`${f.stage}|${f.round}|${f.pos}`))
+            .find(pk => pk && pk !== key && chainOfPocket.has(pk)));
+        const chain = host ? chainOfPocket.get(host) : (() => { const c = []; chains.push(c); return c; })();
+        chain.push(key);
+        chainOfPocket.set(key, chain);
+      });
+  chains.forEach(chainKeys => {
+    const chainSlots = chainKeys.flatMap(k => pockets.get(k));
+    const froms = chainKeys.map(k => Number(k.split('-')[0]));
+    const tos = chainKeys.map(k => Number(k.split('-')[1]));
+    const from = Math.min(...froms), to = Math.max(...tos);
     const section = document.createElement('div');
     section.className = 'tournament-bracket-pocket';
     const cols = document.createElement('div');
     cols.className = 'tournament-bracket-pocket-rounds';
-    const visibleRounds = [...new Set(pocketSlots.map(s => s.round))].sort((a, b) => a - b);
-    // финал терминального кармана определяет итоговые места — его плашка
-    // («N–M места») дублирует заголовок секции, тогда заголовок не выводится
-    const terminal = isTerminalPocket(pocketSlots);
-    const plateLabel = terminal
-        ? (from === to ? `${from} место` : `${from}–${to} места`) : null;
+    const visibleRounds = [...new Set(chainSlots.map(s => s.round))].sort((a, b) => a - b);
     for (const r of visibleRounds) {
-      const roundSlots = pocketSlots.filter(s => s.round === r);
+      const roundSlots = chainSlots.filter(s => s.round === r);
       const col = document.createElement('div');
       col.className = 'tournament-bracket-round';
-      // заголовки кругов — только в кармане из нескольких кругов:
+      // заголовки кругов — только в секции из нескольких кругов:
       // «1/2 доигровок», «Финал доигровок»; одиночный круг описывает h4 секции
       if (visibleRounds.length > 1) {
         const roundTitle = document.createElement('div');
@@ -181,18 +199,26 @@ window.renderBracket = (host, data) => {
       const matches = document.createElement('div');
       matches.className = 'tournament-bracket-round-matches';
       roundSlots.forEach(slot => {
+        // плашка итоговых мест — на финале терминального кармана цепочки
+        const pocketKey = pocketOfSlot.get(`${slot.stage}|${slot.round}|${slot.pos}`);
+        const pocketSlots = pockets.get(pocketKey);
+        const [pFrom, pTo] = pocketKey.split('-').map(Number);
+        const terminal = isTerminalPocket(pocketSlots);
         const card = bracketMatchCard(map[`lower|${r}|${slot.pos}`], {
           cons: true,
-          // подпись итоговых мест — только на финале терминального кармана
-          placeTag: terminal && r === visibleRounds[visibleRounds.length - 1] ? plateLabel : null,
+          placeTag: terminal && slot.round === Math.max(...pocketSlots.map(s => s.round))
+              ? (pFrom === pTo ? `${pFrom} место` : `${pFrom}–${pTo} места`) : null,
         });
         matches.append(card);
       });
       col.append(matches);
       cols.append(col);
     }
-    // h4 не выводится, когда его текст повторяет плашку финала кармана
-    if (!plateLabel) {
+    // h4: одиночная секция с плашкой финала не нуждается в заголовке
+    // (дублирует плашку), цепочка карманов — заглавляется общим диапазоном
+    if (chainKeys.length === 1 && isTerminalPocket(chainSlots)) {
+      // без h4 — плашка финала описывает секцию
+    } else {
       const title = document.createElement('h4');
       title.className = 'tournament-bracket-pocket-title';
       title.textContent = from === to ? `Матч за ${from} место` : `Матчи за места ${from}–${to}`;
