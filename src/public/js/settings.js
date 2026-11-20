@@ -162,24 +162,20 @@ const renderSettings = () => {
               if (row.name === 'fifty' || row.name === 'delta_auto') {
                 return `<input type="checkbox" class="settings-boolean-input form-check-input" data-name="${row.name}" ${String(value) === '1' ? 'checked' : ''}/>`;
               }
-              // система проведения турнира (только 110): фиксированный
-              // справочник 1..3, селект с тремя вариантами; сохранение — общий
+              // схема проведения котла (только 110): фиксированный
+              // справочник 1/2, селект; сохранение — общий
               // change-хендлер .settings-reference-select (без каскада)
-              if (row.name === 'tournament_system') {
-                const systems = {1: 'Олимпийская', 2: 'Группы + олимпийская', 3: 'Круговая (все со всеми)'};
+              if (/^org_system\.[a-h]$/.test(row.name)) {
+                const systems = {1: 'Олимпийская (с корзинами)', 2: 'Круговая (все со всеми)'};
                 const options = Object.entries(systems)
                     .map(([v, t]) => `<option value="${v}"${String(value) === v ? ' selected' : ''}>${t}</option>`)
                     .join('');
-                return `<select data-name="tournament_system" class="settings-reference-select form-select form-select-sm text-center">${options}</select>`;
+                return `<select data-name="${row.name}" class="settings-reference-select form-select form-select-sm text-center">${options}</select>`;
               }
-              // глубина доигровок олимпийской сетки (только 110): селект 0..5
-              // (6..10 допустимы API, но на практике не нужны — селект можно расширить)
-              if (row.name === 'consolation_depth') {
-                const depths = {0: '0 — без ограничения (полная рекурсия)', 1: '1 — 1 ступень', 2: '2 — 2 ступени', 3: '3 — 3 ступени', 4: '4 — 4 ступени', 5: '5 — 5 ступеней'};
-                const options = Object.entries(depths)
-                    .map(([v, t]) => `<option value="${v}"${String(value) === v ? ' selected' : ''}>${t}</option>`)
-                    .join('');
-                return `<select data-name="consolation_depth" class="settings-reference-select form-select form-select-sm text-center">${options}</select>`;
+              // размер корзины группового этапа котла (только 110):
+              // числовой ввод, сохранение — change-хендлер .settings-number-input
+              if (/^group_residents\.[a-h]$/.test(row.name)) {
+                return `<input type="number" min="1" class="settings-number-input form-control form-control-sm text-center" data-name="${row.name}" value="${value}"/>`;
               }
               return value;
             },
@@ -287,6 +283,18 @@ const renderSettings = () => {
       .on('change', '.settings-boolean-input', function () {
         const hadForms = $('.select-form:visible').length > 0;
         $.post(withTournament(`/api/settings/${this.dataset.name}`), {value: this.checked ? '1' : '0'}, () => {
+          refresh.table.settings();
+          showSelectButton(true);
+          if (hadForms) {
+            $('#select-button').trigger('click');
+          }
+        });
+      })
+      // размер корзины группового этапа (group_residents.*): сохранение
+      // при change; сервер валидирует целое >= 1 и перерисует таблицу
+      .on('change', '.settings-number-input', function () {
+        const hadForms = $('.select-form:visible').length > 0;
+        $.post(withTournament(`/api/settings/${this.dataset.name}`), {value: this.value}, () => {
           refresh.table.settings();
           showSelectButton(true);
           if (hadForms) {
