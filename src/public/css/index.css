@@ -3610,6 +3610,14 @@ body.desktop:has(> #footer.fixed-bottom) {
   padding: 3px 0;
 }
 
+/* цвет команды тонкой полоской в начале строки */
+.tournament-bracket-team-stripe {
+  flex: none;
+  width: 4px;
+  align-self: stretch;
+  border-radius: 2px;
+}
+
 .tournament-bracket-team + .tournament-bracket-team {
   border-top: 1px solid var(--bs-border-color);
 }

@@ -4,6 +4,8 @@ import Repository from '../repositories/common.ts';
 export interface HistTeam {
   name: string;
   city: string;
+  // hex цвета команды (team_color.hex, без #) — полоска в строке сетки
+  color: string;
 }
 
 export interface HistMatch {
@@ -63,8 +65,10 @@ interface HistRow {
   group_1_id: number;
   name_1: string;
   city_1: string;
+  color_1: string;
   name_2: string;
   city_2: string;
+  color_2: string;
   // зафиксированная организатором структура (pocket_structure): main/round,
   // либо NULL — круг назначит реконструкция
   struct_main: number | null;
@@ -104,8 +108,10 @@ class BracketHistory {
                 t1.group_id AS group_1_id,
                 t1.name AS name_1,
                 c1.name AS city_1,
+                k1.hex AS color_1,
                 t2.name AS name_2,
                 c2.name AS city_2,
+                k2.hex AS color_2,
                 ps.main AS struct_main,
                 ps.round AS struct_round
          FROM match_110 m
@@ -114,6 +120,8 @@ class BracketHistory {
                   JOIN team t2 ON t2.id = m.team_2_id
                   JOIN city c1 ON c1.id = t1.city_id
                   JOIN city c2 ON c2.id = t2.city_id
+                  JOIN team_color k1 ON k1.id = t1.team_color_id
+                  JOIN team_color k2 ON k2.id = t2.team_color_id
                   LEFT JOIN pocket_structure ps ON ps.match_110_id = m.id
          WHERE m.tournament_id = ?
            AND m.stage IS NULL
@@ -135,8 +143,8 @@ class BracketHistory {
         id: row.id,
         team_1_id: row.team_1_id,
         team_2_id: row.team_2_id,
-        team_1: {name: row.name_1, city: row.city_1},
-        team_2: {name: row.name_2, city: row.city_2},
+        team_1: {name: row.name_1, city: row.city_1, color: row.color_1},
+        team_2: {name: row.name_2, city: row.city_2, color: row.color_2},
         score_1: row.score_1,
         score_2: row.score_2,
         finished: row.finished,

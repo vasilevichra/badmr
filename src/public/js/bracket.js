@@ -20,17 +20,29 @@ const bracketTeamLabel = (teamId) => {
   return t.city ? `${t.city} — ${t.name}` : t.name;
 };
 
-// строка команды в карточке: имя слева, счёт справа; у финала победитель — с кубком
+// hex цвета команды с решёткой (team_color.hex хранится без неё)
+const bracketTeamColor = (teamId) => {
+  const color = window.bracketTeams[teamId]?.color;
+  if (!color) return null;
+  return color.startsWith('#') ? color : `#${color}`;
+};
+
+// строка команды в карточке: цветная полоска, имя, счёт справа;
+// у финала победитель — с кубком
 const bracketTeamRow = (teamId, score, winner, trophy) => {
   const row = document.createElement('div');
   row.className = 'tournament-bracket-team' + (winner ? ' tournament-bracket-team-winner' : '');
+  const stripe = document.createElement('span');
+  stripe.className = 'tournament-bracket-team-stripe';
+  const color = bracketTeamColor(teamId);
+  if (color) stripe.style.background = color;
   const name = document.createElement('span');
   name.className = 'tournament-bracket-team-name';
   name.textContent = (winner && trophy ? '🏆 ' : '') + bracketTeamLabel(teamId);
   const scoreEl = document.createElement('span');
   scoreEl.className = 'tournament-bracket-score';
   scoreEl.textContent = score;
-  row.append(name, scoreEl);
+  row.append(stripe, name, scoreEl);
   return row;
 };
 
@@ -250,8 +262,9 @@ window.renderBracketLines = () => {
       }
       return best;
     };
-    // ортогональный локоть от правого края исхода к левому краю цели
-    const line = (from, to, cls) => {
+    // ортогональный локоть от правого края исхода к левому краю цели;
+    // цвет — от цвета команды-источника строки (переход победителя)
+    const line = (from, to, cls, color) => {
       const f = from.getBoundingClientRect();
       const t = to.getBoundingClientRect();
       const x1 = f.right - hostRect.left;
@@ -261,6 +274,7 @@ window.renderBracketLines = () => {
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', `M ${x1} ${y1} L ${(x1 + x2) / 2} ${y1} L ${(x1 + x2) / 2} ${y2} L ${x2} ${y2}`);
       path.setAttribute('class', cls);
+      if (color) path.setAttribute('stroke', color);
       svg.append(path);
     };
     [...host.querySelectorAll('.tournament-bracket-match')].forEach(card => {
@@ -271,7 +285,7 @@ window.renderBracketLines = () => {
           : rows.find(r => r.classList.contains('tournament-bracket-team-winner'));
       if (!winner) return; // незавершённый матч или ничья — переходов нет
       const wNext = nextCard(card, Number(winner.dataset.team));
-      if (wNext) line(card, wNext, 'tournament-bracket-line-win');
+      if (wNext) line(card, wNext, 'tournament-bracket-line-win', bracketTeamColor(Number(winner.dataset.team)));
       if (withLives && !card.dataset.bye) {
         const loser = rows.find(r => r !== winner);
         const lNext = loser && nextCard(card, Number(loser.dataset.team));

@@ -82,6 +82,9 @@ describe("BracketHistory (историческая сетка архива 110)"
     assert.strictEqual(finishedR2.winner_id, c1);
     assert.strictEqual(finishedR2.team_1.name, 'C1');
     assert.strictEqual(typeof finishedR2.team_1.city, 'string');
+    // цвет команды — hex из team_color (полоска в строке сетки)
+    assert.strictEqual(typeof finishedR2.team_1.color, 'string');
+    assert.match(finishedR2.team_1.color, /^[0-9a-f]{6}$/);
     const unfinished = pocketC.rounds[1].find(m => m.id === unfinishedId)!;
     assert.strictEqual(unfinished.finished, 0);
     assert.strictEqual(unfinished.winner_id, null);
