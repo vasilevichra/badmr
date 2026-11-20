@@ -537,8 +537,13 @@ const updateBoardAvatars = (modal) => {
 // живёт только в открытом табло. При ненулевом счёте кнопка смены сторон
 // прячется — как при первом очке
 const restoreBoardScores = (modal) => {
-  const [teamId1, teamId2] = modal.id.match(/^tournament-groups-board-(\d+)-(\d+)$/)?.slice(1).map(Number) ?? [];
-  if (!teamId1) return;
+  // team id — с data-атрибутов счёта: суффикс id модалки бывает и парой
+  // команд (матрица: board-<t1>-<t2>), и game_id (карманы сетки 110:
+  // board-<game_id>) — парсингом id пару команд не получить
+  const leftScore = modal.querySelector('#board-score-l');
+  const [teamId1, teamId2] = ['data-team-1-id', 'data-team-2-id']
+      .map((attr) => Number(leftScore?.getAttribute(attr)));
+  if (!teamId1 || !teamId2) return;
   $.get(withTournament(`/api/games/current110?team_1_id=${teamId1}&team_2_id=${teamId2}`)).then(game => {
     if (!game) return;
     const left = modal.querySelector('#board-score-l');
