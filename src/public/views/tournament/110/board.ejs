@@ -5,8 +5,8 @@
                   не подтверждены кнопкой; показывает swapBoardSidesPlate */ %>
             <div class="board-swap-overlay" hidden>
                 <div class="board-swap-plate">
-                    <div class="board-swap-plate-title">Смена сторон</div>
-                    <div class="board-swap-plate-subtitle secondary-info">приготовиться:</div>
+                    <div class="board-swap-plate-title no-selection">Смена сторон</div>
+                    <div class="board-swap-plate-subtitle secondary-info no-selection">приготовиться:</div>
                     <% /* игроки с ФИ и аватаркой — как на табло: JS клонирует
                           сюда видимых игроков текущего разряда (lib.js,
                           showBoardSwapPlate) */ %>
@@ -23,9 +23,9 @@
                   showBoardBreakPlate */ %>
             <div class="board-swap-overlay board-break-overlay" hidden>
                 <div class="board-swap-plate">
-                    <div class="board-swap-plate-title">таймаут</div>
-                    <div class="board-break-seconds"></div>
-                    <div class="board-swap-plate-subtitle secondary-info">приготовиться:</div>
+                    <div class="board-swap-plate-title no-selection">таймаут</div>
+                    <div class="board-break-seconds no-selection"></div>
+                    <div class="board-swap-plate-subtitle secondary-info no-selection">приготовиться:</div>
                     <% /* игроки с ФИ и аватаркой — как на табло: JS клонирует
                           сюда видимых игроков текущего разряда (lib.js,
                           showBoardBreakPlate) */ %>
@@ -58,7 +58,7 @@
                                         <% teamAvatars[0][avatarType].forEach(player => { %>
                                             <div class="board-player" data-user-id="<%= player.id %>">
                                                 <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
-                                                <div class="board-player-name"><%= player.name %></div>
+                                                <div class="board-player-name no-selection"><%= player.name %></div>
                                             </div>
                                         <% }); %>
                                     </div>
@@ -95,7 +95,7 @@
                                         <% teamAvatars[1][avatarType].forEach(player => { %>
                                             <div class="board-player" data-user-id="<%= player.id %>">
                                                 <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
-                                                <div class="board-player-name"><%= player.name %></div>
+                                                <div class="board-player-name no-selection"><%= player.name %></div>
                                             </div>
                                         <% }); %>
                                     </div>
