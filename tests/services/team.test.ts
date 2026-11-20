@@ -50,6 +50,7 @@ describe("Team", () => {
         name: "Молния",
         city_id: 1,
         team_color_id: 3,
+        basket: null,
       });
     });
   });

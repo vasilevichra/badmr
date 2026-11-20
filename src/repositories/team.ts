@@ -38,6 +38,26 @@ class Team {
         [name, team_id]
     );
   }
+
+  /** Команды котла в порядке добавления — вход раскладки корзин. */
+  byGroup(group_id: number): { id: number; basket: number | null }[] {
+    return this.db.all<{ id: number; basket: number | null }>(
+        `SELECT id, basket
+         FROM team
+         WHERE group_id = ?
+         ORDER BY id`,
+        [group_id]
+    );
+  }
+
+  setBasket(team_id: number, basket: number | null) {
+    return this.db.run(
+        `UPDATE team
+         SET basket = ?
+         WHERE id = ?`,
+        [basket, team_id]
+    );
+  }
 }
 
 export default Team;

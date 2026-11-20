@@ -27,6 +27,26 @@ class Group {
          FROM "group"`);
   }
 
+  /** Группа по имени (имена глобальные: одиночные буквы — котлы a-h). */
+  byName(name: string): { id: number; name: string } | undefined {
+    return this.db.get<{ id: number; name: string }>(
+        `SELECT id, name
+         FROM "group"
+         WHERE name = ?`,
+        [name]
+    );
+  }
+
+  /** Группа по id. */
+  getById(id: number): { id: number; name: string } | undefined {
+    return this.db.get<{ id: number; name: string }>(
+        `SELECT id, name
+         FROM "group"
+         WHERE id = ?`,
+        [id]
+    );
+  }
+
   /** Котлы (группы) турнира, в которые входят его команды, — порядок по id.
    *  Плей-офф system 2 сеется по топ-2 каждого котла. */
   pockets(tournamentId: number): { group_id: number; name: string }[] {
