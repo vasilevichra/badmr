@@ -781,6 +781,19 @@ const addScoreBoardHandlers = () => {
     if (rotated ? dist < 0 : dist > 0) decreaseBoardScore(el, ...args);
     else increaseBoardScore(el, ...args);
   }, {passive: false});
+  // десктоп: правый клик по счёту — минус очко (корректировка судьёй),
+  // левый остаётся +1. Гейт hover: на тач-устройствах долгий тап тоже
+  // стреляет contextmenu — там уменьшение уже есть свайпом
+  document.addEventListener('contextmenu', (e) => {
+    const el = e.target.closest?.('.board-score');
+    if (!el || !el.hasAttribute('data-team-1-id') || !window.matchMedia('(hover: hover)').matches) return;
+    e.preventDefault();
+    // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ "team-1Id"
+    decreaseBoardScore(el,
+        Number(el.getAttribute('data-team-1-id')),
+        Number(el.getAttribute('data-team-2-id')),
+        Number(el.getAttribute('data-team-number')));
+  });
 };
 
 // ===== табло 110: жесты судьи по игрокам =====
