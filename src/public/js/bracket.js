@@ -65,16 +65,18 @@ const bracketMatchCard = (match, opts = {}) => {
       bracketTeamRow(match.team_2_id, match.score_2, winner2, opts.final)
   );
   // идущий матч — кнопка возобновления: открывает модалку табло,
-  // отрендеренную серверно в pocket.ejs (как ▶ в матрице)
+  // отрендеренную серверно в pocket.ejs (как ▶ в матрице). Рельс слева на
+  // всю высоту карточки: кнопка «прирастает» к плашке, не торчит наружу
   if (window.bracketSignedIn && match.finished === 0 && match.game_id) {
+    card.classList.add('tournament-bracket-match-rail');
     const resume = document.createElement('button');
     resume.type = 'button';
-    resume.className = 'btn btn-outline-success btn-sm game-result-resume tournament-bracket-resume';
+    resume.className = 'tournament-bracket-rail';
     resume.title = 'Возобновить матч';
     resume.setAttribute('data-bs-toggle', 'modal');
     resume.setAttribute('data-bs-target', `#tournament-groups-board-${match.game_id}`);
-    resume.innerHTML = '<i class="bi bi-play"></i>';
-    card.append(resume);
+    resume.innerHTML = '<i class="bi bi-play-fill"></i>';
+    card.prepend(resume);
   }
   return card;
 };
