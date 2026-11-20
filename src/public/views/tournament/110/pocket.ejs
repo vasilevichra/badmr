@@ -138,7 +138,7 @@ var consTitle = (ri, total) => ri + 1 === total ? 'Финал доигровок
         if (!btn) return;
         btn.addEventListener('click', () => {
             btn.disabled = true;
-            fetch('/api/matches/generate110?tournament=<%= tournament_id %>&group_id=<%= group_id %>', {method: 'POST'})
+            fetch('/api/matches/generate110?tournament=<%= tournament_id %>&group_id=<%= group_id %>', {method: 'POST', headers: {'CSRF-Token': csrfToken()}})
                 .then(r => {
                     if (!r.ok) return r.json().then(b => Promise.reject(new Error(b.error || 'Не удалось сгенерировать сетку')));
                     location.reload();
