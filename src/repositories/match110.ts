@@ -2,7 +2,9 @@ import Repository from './common.ts';
 import DB, { type RunResult } from "../db.ts";
 import BasketService from '../services/basket.ts';
 import type { SlotRef } from '../services/bracket-structure.ts';
-const basketService = new BasketService();
+// ленивая инициализация: basket импортирует этот модуль ради гейта
+// заморозки раскладки — верхнеуровневый new() здесь упал бы в цикле импортов
+let basketService: BasketService | undefined;
 
 export interface Match110Row {
   id: number;
@@ -40,7 +42,7 @@ class Match {
     const tid = tournamentId ?? this.db.get<{ id: number }>(`SELECT id FROM tournament WHERE current = 1`)!.id;
     const groupId = this.db.get<{ group_id: number }>(`SELECT group_id FROM team WHERE id = ?`, [team_1_id])?.group_id ?? null;
     const stage = slot?.stage
-        ?? (groupId !== null && basketService.groupStage(tid, groupId) ? 'group' : null);
+        ?? (groupId !== null && (basketService ??= new BasketService()).groupStage(tid, groupId) ? 'group' : null);
     return this.db.run(
         `INSERT INTO match_110 (tournament_id,
                                team_1_id,
@@ -124,9 +126,16 @@ class Match {
     )?.n ?? 0) > 0;
   }
 
+  /** Есть ли сыгранные матчи у котла (гейт заморозки раскладки корзин). */
+  hasFinishedInGroup(tournamentId: number, groupId: number): boolean {
+    return (this.db.get<{ n: number }>(
+        `SELECT COUNT(*) AS n FROM match_110 WHERE tournament_id = ? AND group_id = ? AND finished = 1`,
+        [tournamentId, groupId]
+    )?.n ?? 0) > 0;
+  }
+
   /** Все матчи плей-офф котла в порядке создания. */
-  getAllSlotted(tournamentId: number, groupId: number): Match110Row[] {
-    return this.db.all<Match110Row>(
+  getAllSlotted(tournamentId: number, groupId: number): Match110Row[] {    return this.db.all<Match110Row>(
         `SELECT * FROM match_110
          WHERE tournament_id = ? AND group_id = ? AND stage IN ('upper', 'lower')
          ORDER BY id`,

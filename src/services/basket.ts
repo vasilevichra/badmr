@@ -1,12 +1,14 @@
 import SettingsService from './settings.ts';
 import TeamRepository from '../repositories/team.ts';
 import GroupRepository from '../repositories/group.ts';
+import Match110Repository from '../repositories/match110.ts';
 
 class Basket {
   declare static _instance: Basket | undefined;
   settings!: SettingsService;
   team!: TeamRepository;
   group!: GroupRepository;
+  match110!: Match110Repository;
 
   constructor() {
     if (Basket._instance) {
@@ -17,6 +19,7 @@ class Basket {
     this.settings = new SettingsService();
     this.team = new TeamRepository();
     this.group = new GroupRepository();
+    this.match110 = new Match110Repository();
   }
 
   /** Буква котла из имени группы: одиночная буква a-h, иначе null —
@@ -53,16 +56,49 @@ class Basket {
     return this.orgSystem(tournamentId, groupId) === 1 && this.residents(tournamentId, groupId) > 1;
   }
 
-  /** Идемпотентная раскладка команд котла по корзинам: в порядке id,
-   *  корзины по `residents` (1,1,…,2,2,…); дырки после удалений схлопываются. */
+  /** Идемпотентная раскладка команд котла по корзинам. Пока в котле нет
+   *  сыгранных матчей — серпантин по среднему рейтингу пары: команды с
+   *  рейтингом по убыванию, без рейтинга — в хвост по порядку заявок;
+   *  змейка по B корзинам даёт каждой корзине по представителю каждого
+   *  эшелона (корзины равносильны). После первой сыгранной игры раскладка
+   *  заморожена: существующие корзины не трогаем, новые заявки дописываются
+   *  в последнюю неполную корзину или в новую за ней. Дырки после удалений
+   *  при заморозке не уплотняются — составы корзин уже видны участникам. */
   layout(tournamentId: number | undefined, groupId: number): void {
     const residents = this.residents(tournamentId, groupId);
     if (residents < 1) return;
-    // в порядке id: корзины по residents (1,1,…,2,2,…); дырки после удалений схлопываются
-    this.team.byGroup(groupId).forEach((t, i) => {
-      const basket = Math.floor(i / residents) + 1;
+    const teams = this.team.byGroup(groupId);
+    if (!teams.length) return;
+
+    if (this.frozen(tournamentId, groupId)) {
+      // хвост: последняя занятая корзина; если она полна — новая за ней
+      const last = Math.max(...teams.map(t => t.basket ?? 0));
+      let used = teams.filter(t => t.basket === last).length;
+      let basket = last;
+      for (const t of teams) {
+        if (t.basket !== null) continue;
+        if (used >= residents) { basket = last + 1; used = 0; }
+        this.team.setBasket(t.id, basket);
+        used++;
+      }
+      return;
+    }
+
+    const rated = this.team.ratingsByGroup(groupId);
+    const ordered = [...teams].sort((a, b) =>
+        (rated.get(b.id) ?? -Infinity) - (rated.get(a.id) ?? -Infinity) || a.id - b.id);
+    const total = Math.ceil(ordered.length / residents);
+    let forward = true;
+    ordered.forEach((t, i) => {
+      if (i > 0 && i % total === 0) forward = !forward;
+      const basket = forward ? i % total + 1 : total - i % total;
       if (t.basket !== basket) this.team.setBasket(t.id, basket);
     });
+  }
+
+  /** Гейт заморозки: в котле есть хотя бы один завершённый матч. */
+  private frozen(tournamentId: number | undefined, groupId: number): boolean {
+    return tournamentId !== undefined && this.match110.hasFinishedInGroup(tournamentId, groupId);
   }
 
   /** Без группового этапа корзин нет: basket = NULL всем командам котла. */

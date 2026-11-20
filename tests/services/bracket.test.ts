@@ -288,21 +288,22 @@ describe("Bracket (сетка 110)", () => {
 
     it("после групповых generate сеет плей-офф на 4: первые корзин — сиды 1 и 2, вторые — 3 и 4", async () => {
       const { a, b, c, d } = await seedBaskets();
-      // матрица группового этапа: (a,b) корзина 1, (c,d) корзина 2
-      const m1 = matchService.create110(a, b, 4);
-      const m2 = matchService.create110(c, d, 4);
+      // серпантин: корзина 1 = {a, d}, корзина 2 = {b, c}; матрица — матчи корзин
+      const m1 = matchService.create110(a, d, 4);
+      const m2 = matchService.create110(b, c, 4);
       // игра создаётся открытием табло (как в матрице)
       new Game110().create(m1.id);
       new Game110().create(m2.id);
-      finishMatch(m1.id, a); // корзина 1: a первый (сид 1), b второй (сид 3)
-      finishMatch(m2.id, c); // корзина 2: c первый (сид 2), d второй (сид 4)
+      finishMatch(m1.id, a); // корзина 1: a первый (сид 1), d второй (сид 4)
+      finishMatch(m2.id, c); // корзина 2: c первый (сид 2), b второй (сид 3)
       await bracketService.generate(4, 1);
 
       const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
       assert.strictEqual(r1.length, 2);
       const pairs = r1.map(r => [r.team_1_id, r.team_2_id].sort((x, y) => x - y).join("-")).sort();
-      // layout(4)=[1,4,2,3]: (1v4), (2v3) — первые корзин расходятся по парам
-      const expected = [[a, d], [b, c]].map(p => p.sort((x, y) => x - y).join("-")).sort();
+      // серпантин: корзины {a,d},{b,c}, сеяние 1..4 = a,c,d,b → (1v4), (2v3)
+      // — первые корзин расходятся по половинам сетки
+      const expected = [[a, b], [c, d]].map(p => p.sort((x, y) => x - y).join("-")).sort();
       assert.deepStrictEqual(pairs, expected);
     });
 
@@ -320,8 +321,9 @@ describe("Bracket (сетка 110)", () => {
       // переключения обратно в org 1 она не считается незавершённым
       // групповым — генерации мешают только stage='group'
       await settingsService.set('org_system.a', '2', 4);
-      const m1 = matchService.create110(a, b, 4);
-      const m2 = matchService.create110(c, d, 4);
+      // после переключения в org 1 серпантин: корзина 1 = {a, d}, 2 = {b, c}
+      const m1 = matchService.create110(a, d, 4);
+      const m2 = matchService.create110(b, c, 4);
       const m3 = matchService.create110(a, c, 4); // останется незавершённым
       await settingsService.set('org_system.a', '1', 4);
       new Game110().create(m1.id);
