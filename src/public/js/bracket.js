@@ -149,12 +149,14 @@ window.renderBracket = (host, data) => {
     const [from, to] = key.split('-').map(Number);
     const section = document.createElement('div');
     section.className = 'tournament-bracket-pocket';
-    const title = document.createElement('h4');
-    title.className = 'tournament-bracket-pocket-title';
-    title.textContent = from === to ? `Матч за ${from} место` : `Матчи за места ${from}–${to}`;
     const cols = document.createElement('div');
     cols.className = 'tournament-bracket-pocket-rounds';
     const visibleRounds = [...new Set(pocketSlots.map(s => s.round))].sort((a, b) => a - b);
+    // финал терминального кармана определяет итоговые места — его плашка
+    // («N–M места») дублирует заголовок секции, тогда заголовок не выводится
+    const terminal = isTerminalPocket(pocketSlots);
+    const plateLabel = terminal
+        ? (from === to ? `${from} место` : `${from}–${to} места`) : null;
     for (const r of visibleRounds) {
       const roundSlots = pocketSlots.filter(s => s.round === r);
       const col = document.createElement('div');
@@ -172,16 +174,22 @@ window.renderBracket = (host, data) => {
       roundSlots.forEach(slot => {
         const card = bracketMatchCard(map[`lower|${r}|${slot.pos}`], {
           cons: true,
-          // финал терминального кармана определяет итоговые места
-          placeTag: isTerminalPocket(pocketSlots) && r === visibleRounds[visibleRounds.length - 1]
-              ? (from === to ? `${from} место` : `${from}–${to} места`) : null,
+          // подпись итоговых мест — только на финале терминального кармана
+          placeTag: terminal && r === visibleRounds[visibleRounds.length - 1] ? plateLabel : null,
         });
         matches.append(card);
       });
       col.append(matches);
       cols.append(col);
     }
-    section.append(title, cols);
+    // h4 не выводится, когда его текст повторяет плашку финала кармана
+    if (!plateLabel) {
+      const title = document.createElement('h4');
+      title.className = 'tournament-bracket-pocket-title';
+      title.textContent = from === to ? `Матч за ${from} место` : `Матчи за места ${from}–${to}`;
+      section.append(title);
+    }
+    section.append(cols);
     host.append(section);
   });
 };
