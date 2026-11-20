@@ -276,11 +276,13 @@ const findSlot = (s: BracketStructure, ref: SlotRef): BracketSlot | undefined =>
 
 // команды целевого слота, когда оба питателя отдали по команде; null — пока
 // не готово. finishedFeeders возвращает [победитель, проигравший] питателя
-// или null (ещё не завершён / не сеяный). Bye-слот (round=0) отдаёт свой сид.
+// или null (ещё не завершён / не сеяный). Bye-слот (round=0) отдаёт сид,
+// преобразованный в команду byeTeamOf (сидов в матче быть не должно).
 export const readySlot = (
   s: BracketStructure,
   ref: SlotRef,
   finishedFeeders: (slot: SlotRef) => [number | null, number | null],
+  byeTeamOf: (seed: number) => number | null,
 ): [number, number] | null => {
   const slot = findSlot(s, ref);
   if (!slot) {
@@ -293,7 +295,7 @@ export const readySlot = (
   // победителей начинается с placeFrom питателя), иначе проигравшего
   const teamOf = (feeder: SlotRef, index: 0 | 1): number | null => {
     if (feeder.round === 0) {
-      return slot.seeds[index] || null;
+      return slot.seeds[index] ? byeTeamOf(slot.seeds[index]) : null;
     }
     const [win, lose] = finishedFeeders(feeder);
     let take: number | null;

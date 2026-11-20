@@ -217,6 +217,22 @@ describe("Bracket (сетка 110)", () => {
       assert.strictEqual(r2[0].finished, 0);
     });
 
+    it("bye-команда ждёт победителя реального матча: U2p1 создан после завершения R1 (n=5)", async () => {
+      const seedToTeam = await seedTeams(5);
+      await bracketService.generate(4, 1);
+      const seedsOf = (m: SlotRow) =>
+          [m.team_1_id, m.team_2_id].map(t => [...seedToTeam.entries()].find(([, id]) => id === t)![0])
+              .sort((a, b) => a - b);
+
+      const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
+      assert.deepStrictEqual(r1.map(r => r.pos), [2]); // единственный реальный матч: (4,5)
+      finishMatch(r1[0].id, r1[0].team_2_id); // побеждает сид 5
+
+      const u2p1 = slotOf(slotRows(), 'upper', 2, 1);
+      // сид 1 (bye) против победителя (4,5) — сид 5
+      assert.deepStrictEqual(seedsOf(u2p1), [1, 5]);
+    });
+
     it("повторный вызов роутинга не создаёт дублей", async () => {
       await seedTeams(8);
       await bracketService.generate(4, 1);

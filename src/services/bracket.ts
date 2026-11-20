@@ -125,6 +125,7 @@ class Bracket {
     if (match110.getBySlot(tournamentId, groupId, target)) {
       return; // слот уже сматчен — идемпотентность
     }
+    const bySeed = this.seedToTeam(tournamentId, groupId);
     const teams = readySlot(s, target, feeder => {
       const m = match110.getBySlot(tournamentId, groupId, feeder);
       if (!m || m.finished !== 1) {
@@ -135,7 +136,7 @@ class Bracket {
         return [null, null];
       }
       return [w, w === m.team_1_id ? m.team_2_id : m.team_1_id];
-    });
+    }, seed => bySeed.get(seed) ?? null);
     if (!teams) {
       return; // питатели ещё не готовы
     }
