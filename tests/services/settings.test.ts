@@ -87,9 +87,9 @@ describe("Settings", () => {
       // + rematch_window
       // + кеш обхода badminton4u (crawl_cache_m) и границы паузы (crawl_min_ms, crawl_max_ms)
       // + пауза между партиями (game_break)
-      // + система проведения турнира 110 (tournament_system)
-      // + глубина доигровок олимпийской сетки 110 (consolation_depth)
-      assert.strictEqual(all.length, 41);
+      // + схема проведения каждого котла a–h (org_system.*) и размер корзины
+      //   группового этапа каждого котла a–h (group_residents.*)
+      assert.strictEqual(all.length, 55);
       assert.ok(all.every((s) => "name" in s && "value" in s && "description" in s && "overridden" in s));
       assert.deepStrictEqual<Setting[]>(
         all.filter((s) => s.name === "delta"),
@@ -117,50 +117,76 @@ describe("Settings", () => {
       // турнир 2 тестовой БД — тип 2 (110)
       const relevant = await settingsService.getAll(2, true) as unknown as Setting[];
 
+      const orgSystemNames = ["a", "b", "c", "d", "e", "f", "g", "h"].map((l) => `org_system.${l}`);
+      const residentsNames = ["a", "b", "c", "d", "e", "f", "g", "h"].map((l) => `group_residents.${l}`);
       assert.deepStrictEqual(
           relevant.map((s) => s.name).sort(),
-          ["capacity", "city", "consolation_depth", "courts", "fee", "game_break", "r_max", "r_min", "region", "state", "timezone", "tournament_system", "type"]
+          ["capacity", "city", "courts", "fee", "game_break", ...residentsNames, ...orgSystemNames, "r_max", "r_min", "region", "state", "timezone", "type"].sort()
       );
     });
 
     it("relevantOnly для типа без своего списка возвращает все настройки, кроме 110-шных", async () => {
       // у типа 1 (Новая лига) отдельного списка нет — показываем все,
-      // кроме настроек, существующих только у 110 (game_break, tournament_system)
+      // кроме настроек, существующих только у 110 (game_break, org_system.*, group_residents.*)
       const all = await settingsService.getAll(undefined, true) as unknown as Setting[];
       assert.strictEqual(all.length, 38);
       assert.ok(!all.some((s) => s.name === "game_break"));
-      assert.ok(!all.some((s) => s.name === "consolation_depth"));
+      assert.ok(!all.some((s) => s.name === "org_system.a"));
+      assert.ok(!all.some((s) => s.name === "group_residents.h"));
     });
   });
 
-  describe("consolation_depth", () => {
-    // глубина доигровок олимпийской сетки 110: целое 0..10, 0 = без ограничения
-    it("должен сохранять 0 (полная рекурсия)", async () => {
-      await settingsService.set("consolation_depth", "0", 2);
+  describe("org_system", () => {
+    // схема проведения котла: 1 - олимпийка с корзинами, 2 - круговая
+    it("должен сохранять 1 и 2", async () => {
+      await settingsService.set("org_system.c", "1", 2);
+      await settingsService.set("org_system.c", "2", 2);
     });
 
-    it("должен сохранять 10 (максимум диапазона)", async () => {
-      await settingsService.set("consolation_depth", "10", 2);
-    });
-
-    it("не должен сохранять 11", async () => {
+    it("не должен сохранять 3", async () => {
       await assert.rejects(
-        () => settingsService.set("consolation_depth", "11", 2),
-        /consolation_depth/,
+        () => settingsService.set("org_system.c", "3", 2),
+        /org_system/,
       );
     });
 
-    it("не должен сохранять -1", async () => {
+    it("не должен сохранять 0 и нечисловое", async () => {
       await assert.rejects(
-        () => settingsService.set("consolation_depth", "-1", 2),
-        /consolation_depth/,
+        () => settingsService.set("org_system.c", "0", 2),
+        /org_system/,
+      );
+      await assert.rejects(
+        () => settingsService.set("org_system.c", "x", 2),
+        /org_system/,
+      );
+    });
+  });
+
+  describe("group_residents", () => {
+    // размер корзины группового этапа: целое >= 1
+    it("должен сохранять 1", async () => {
+      await settingsService.set("group_residents.c", "1", 2);
+    });
+
+    it("не должен сохранять 0", async () => {
+      await assert.rejects(
+        () => settingsService.set("group_residents.c", "0", 2),
+        /group_residents/,
       );
     });
 
-    it("не должен сохранять нецелое", async () => {
+    it("не должен сохранять отрицательное и нецелое", async () => {
       await assert.rejects(
-        () => settingsService.set("consolation_depth", "1.5", 2),
-        /consolation_depth/,
+        () => settingsService.set("group_residents.c", "-1", 2),
+        /group_residents/,
+      );
+      await assert.rejects(
+        () => settingsService.set("group_residents.c", "1.5", 2),
+        /group_residents/,
+      );
+      await assert.rejects(
+        () => settingsService.set("group_residents.c", "abc", 2),
+        /group_residents/,
       );
     });
   });
@@ -169,7 +195,7 @@ describe("Settings", () => {
     it("должен вернуть объект настроек текущего турнира", async () => {
       const settings = await settingsService.getSettings() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(settings).length, 41);
+      assert.strictEqual(Object.keys(settings).length, 55);
       assert.strictEqual(settings.delta, "100");
       assert.strictEqual(settings.state, "1");
       assert.strictEqual(settings.type, "1");
@@ -189,11 +215,12 @@ describe("Settings", () => {
     it("должен вернуть объект значений по умолчанию без переопределений", async () => {
       const defaults = await settingsService.getDefaults() as Record<string, string>;
 
-      assert.strictEqual(Object.keys(defaults).length, 41);
+      assert.strictEqual(Object.keys(defaults).length, 55);
       assert.strictEqual(defaults.delta, "50");
       assert.strictEqual(defaults.state, "1");
       assert.strictEqual(defaults.game_break, "60");
-      assert.strictEqual(defaults.consolation_depth, "0");
+      assert.strictEqual(defaults["org_system.c"], "2");
+      assert.strictEqual(defaults["group_residents.c"], "4");
     });
   });
 
@@ -266,6 +293,12 @@ describe("Settings", () => {
       assertRejected("UPDATE defaults SET value = '-1' WHERE name = 'delta_auto_window'", /CHECK constraint failed/);
       assertRejected("UPDATE defaults SET value = '-1' WHERE name = 'delta_auto_lower'", /CHECK constraint failed/);
       assertRejected("UPDATE defaults SET value = '101' WHERE name = 'delta_auto_upper'", /CHECK constraint failed/);
+      assertRejected("UPDATE defaults SET value = '0' WHERE name = 'group_residents.c'", /CHECK constraint failed/);
+    });
+
+    it("должен отклонить недопустимую схему проведения котла", () => {
+      assertRejected("UPDATE defaults SET value = '3' WHERE name = 'org_system.c'", /CHECK constraint failed/);
+      assertRejected("UPDATE defaults SET value = '0' WHERE name = 'org_system.c'", /CHECK constraint failed/);
     });
 
     it("должен отклонить max_point не больше game_point", () => {
