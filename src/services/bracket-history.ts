@@ -265,6 +265,13 @@ class BracketHistory {
         if (e.side === 1) e.match.place_1 = i + 1;
         else e.match.place_2 = i + 1;
       });
+      // терминальные матчи последнего круга — по разыгранному месту:
+      // независимые матчи одного круга (за 3–4 и за 5–6) рисуются в
+      // порядке значимости места, а не порядка игры; делается ДО
+      // sortRounds, чтобы питающие круги легли к своим финалам
+      for (const rounds of [mainRounds, consRounds]) {
+        rounds.at(-1)?.sort((a, b) => (a.place_1 ?? Infinity) - (b.place_1 ?? Infinity));
+      }
     };
     const emptyByes = {mainByes: [] as HistBye[], consByes: [] as HistBye[]};
     // котлы в алфавитном порядке имён (C раньше D), матчи — по кругам
@@ -283,9 +290,9 @@ class BracketHistory {
                 const target = e.row.struct_main === 1 ? mainRounds : consRounds;
                 (target[e.row.struct_round! - 1] ??= []).push(e.match);
               }
+              rankPlaces(mainRounds, consRounds);
               sortRounds(mainRounds);
               sortRounds(consRounds);
-              rankPlaces(mainRounds, consRounds);
               const {mainByes, consByes} = byes(mainRounds, consRounds);
               return {
                 name: p.name,
@@ -313,9 +320,11 @@ class BracketHistory {
                 ...emptyByes,
               };
             }
-            const mainRounds = sortRounds(buildRounds(list.filter(e => !e.t1Lost && !e.t2Lost)));
-            const consRounds = sortRounds(buildRounds(list.filter(e => e.t1Lost || e.t2Lost)));
+            const mainRounds = buildRounds(list.filter(e => !e.t1Lost && !e.t2Lost));
+            const consRounds = buildRounds(list.filter(e => e.t1Lost || e.t2Lost));
             rankPlaces(mainRounds, consRounds);
+            sortRounds(mainRounds);
+            sortRounds(consRounds);
             const {mainByes, consByes} = byes(mainRounds, consRounds);
             return {
               name: p.name,

@@ -191,6 +191,10 @@ describe("BracketHistory (историческая сетка архива 110)"
     assert.deepStrictEqual([byId.get(m5)!.place_1, byId.get(m5)!.place_2], [3, 4]);
     assert.deepStrictEqual([byId.get(m4)!.place_1, byId.get(m4)!.place_2], [5, 6]);
     assert.deepStrictEqual([byId.get(m3)!.place_1, byId.get(m3)!.place_2], [null, 7]);
+    // порядок плашек в колонке финального круга доигровок — по разыгранному
+    // месту: матч за 3–4 выше матча за 5–6, хотя сыгран позже
+    const d = history.historical110(4).pockets.find(p => p.group_id === GROUP_D);
+    assert.deepStrictEqual(d!.consRounds.at(-1)!.map(m => m.id), [m5, m4]);
   });
 
   it("матч двух уже проигравших — доигровка: дерево победителей и consRounds раздельно", async () => {
