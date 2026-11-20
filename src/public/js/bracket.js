@@ -1,8 +1,8 @@
-/* Олимпийская сетка 110: рендер из GET /api/matches/bracket110.
- * Десктоп — колонки раундов слева направо; мобайл (body.phone) —
- * вертикальный список по раундам. Карманы доигровок — отдельной
- * секцией с заголовками «Матч за N место» / «Матчи за места N–M».
- * Имена команд — window.bracketTeams (собран в bracket.ejs из групп). */
+/* Олимпийская сетка котла 110: рендер из GET /api/matches/bracket110
+ * (?group=<id>). Десктоп — колонки раундов слева направо; мобайл
+ * (body.phone) — вертикальный список по раундам. Карманы доигровок —
+ * отдельной секцией с заголовками «Матч за N место» / «Матчи за места N–M».
+ * Имена команд — window.bracketTeams (собран в index.ejs из групп). */
 
 // ключ слота → матч; в слоте без матча — «ожидается соперник»
 const bracketMatchBySlot = (data) => {
@@ -65,7 +65,7 @@ const bracketMatchCard = (match, opts = {}) => {
       bracketTeamRow(match.team_2_id, match.score_2, winner2, opts.final)
   );
   // идущий матч — кнопка возобновления: открывает модалку табло,
-  // отрендеренную серверно в bracket.ejs (как ▶ в матрице)
+  // отрендеренную серверно в pocket.ejs (как ▶ в матрице)
   if (window.bracketSignedIn && match.finished === 0 && match.game_id) {
     const resume = document.createElement('button');
     resume.type = 'button';
@@ -87,7 +87,7 @@ const bracketRoundTitle = (round, totalRounds) => {
 };
 
 // десктоп: колонки верхней сетки, ниже — секции карманов доигровок
-// (глобальные — вызываются инлайн-скриптом bracket.ejs)
+// (глобальные — вызываются инлайн-скриптом pocket.ejs)
 window.renderBracket = (host, data) => {
   host.innerHTML = '';
   const map = bracketMatchBySlot(data);

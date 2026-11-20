@@ -748,7 +748,9 @@ $(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => rend
 const renderStandings = () => {
   document.querySelectorAll('[data-standings-group]').forEach(host => {
     const groupId = host.getAttribute('data-standings-group');
-    $.get(`${withTournament('/api/games/110/standings')}&group=${groupId}`).then(rows => {
+    // basket — фильтр корзины котла (секция C1/C2/… в group.ejs)
+    const basket = host.getAttribute('data-standings-basket');
+    $.get(`${withTournament('/api/games/110/standings')}&group=${groupId}${basket ? `&basket=${basket}` : ''}`).then(rows => {
       const el = host.querySelector('.tournament-standings');
       if (!el) return;
       el.innerHTML = '';

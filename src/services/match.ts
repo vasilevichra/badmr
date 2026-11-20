@@ -43,7 +43,7 @@ class Match {
   rests = (tournamentId?: number) => this.match110.rests(tournamentId);
   playedCount110 = (tournamentId?: number) => this.match110.playedCount(tournamentId);
   bracket110 = (tournamentId: number | undefined, groupId: number) => bracketService.bracket110(tournamentId, groupId);
-  standings110 = (tournamentId?: number, groupId?: number) => standingsService.standings(tournamentId, groupId);
+  standings110 = (tournamentId?: number, groupId?: number, basket?: number) => standingsService.standings(tournamentId, groupId, basket);
   deleteById = (id: number) => {
     // снапшот для каскадного пересчёта — до удаления матча
     ratingService.scheduleRecalcAfterMatchDelete(id);

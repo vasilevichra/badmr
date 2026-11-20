@@ -19,7 +19,9 @@ import BracketHistory from '../services/bracket-history.ts';
 const groupService = new GroupService();
 const bracketHistoryService = new BracketHistory();
 import TeamOrderService from '../services/team-order.ts';
+import BasketService from '../services/basket.ts';
 const teamOrderService = new TeamOrderService();
+const basketService = new BasketService();
 import share from '../share.cjs';
 
 /** «95.3» → «1м 35с», «51.2» → «51с», без данных → «—». */
@@ -171,10 +173,25 @@ const renderTournamentPage = (
         tournamentService.registeredCount(t.id),   // 6
         settingsService.getSettings(t.id)          // 7
       ];
-      // сетка 110 (для system 1): один расчёт на рендер — структура,
-      // матчи слотов и текущие игры (кнопки возобновления)
-      const bracket = matchService.bracket110(t.id);
-      const tournamentSystem = Number(settingsService.get('tournament_system', t.id));
+      // схема проведения и состояние сетки по каждой группе: котёл
+      // (одиночная буква) живёт своим org_system, у круговых групп сетки нет
+      type Bracket110 = ReturnType<MatchService['bracket110']>;
+      const groupIds = (promises[5] as Record<string, unknown>[]).map(g => Number(Object.keys(g)[0]));
+      const orgByGroup: Record<number, number> = {};
+      const stageByGroup: Record<number, boolean> = {};
+      const basketByGroup: Record<number, Record<number, number | null>> = {};
+      const bracketByGroup: Record<number, Bracket110> = {};
+      for (const gid of groupIds) {
+        const org = basketService.orgSystem(t.id, gid);
+        orgByGroup[gid] = org;
+        stageByGroup[gid] = basketService.groupStage(t.id, gid);
+        if (org === 1) {
+          bracketByGroup[gid] = matchService.bracket110(t.id, gid);
+          if (stageByGroup[gid]) {
+            basketByGroup[gid] = Object.fromEntries(basketService.baskets(gid));
+          }
+        }
+      }
       res.render('index', {
         device: commonService.device(req),
         user: req.user,
@@ -190,22 +207,19 @@ const renderTournamentPage = (
         groups: promises[5],
         registered_count: promises[6],
         settings: promises[7],
-        // system 1 (олимпийка) рисует сетку вместо групповой матрицы;
-        // generated — сетка уже сгенерирована (есть матчи со слотами)
-        tournamentSystem,
-        bracketGenerated: bracket.generated,
-        // архив 110 system 1 без сгенерированной сетки, но со сыгранными
-        // матричными матчами: реконструкция сетки по котлам
-        bracketHistorical: tournamentSystem === 1 && !bracket.generated && t.tournament_status_id === 3
-            ? bracketHistoryService.historical110(t.id)
+        // схема проведения и корзины по группам (котёл/круговая — рендер в group.ejs)
+        orgByGroup,
+        stageByGroup,
+        basketByGroup,
+        bracketByGroup,
+        // архив 110: реконструкция сыгранных матчей по котлам — только
+        // котлы, игравшие олимпийку (org 1)
+        bracketHistorical: t.tournament_status_id === 3
+            ? {
+              pockets: bracketHistoryService.historical110(t.id).pockets
+                  .filter(p => orgByGroup[p.group_id] === 1)
+            }
             : null,
-        // идущие матчи сетки (кнопка возобновления открывает модалку табло,
-        // отрендеренную серверно — как в матрице группы)
-        bracketLive: bracket.generated
-            ? bracket.matches
-                .filter(m => m.finished === 0 && m.game_id !== null)
-                .map(m => ({gameId: m.game_id, team_1_id: m.team_1_id, team_2_id: m.team_2_id}))
-            : [],
         timezone: settingsService.getTimezone(),
         // мобильный прогресс-бар героя: регистрация — заполненность заявками;
         // после старта — сыгранные матчи от матрицы (Σ C(n,2) по группам),

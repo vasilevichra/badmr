@@ -1,7 +1,6 @@
 <% var group_index = index + 1; %>
 <% var group_name = Object.values(Object.values(group)[0])[0][0]['group_name']; %>
 <% var teams_in_group = Object.values(Object.values(group)[0]); %>
-
 <div class="row text-center pt-4">
     <h3><%= group_name %></h3>
 </div>
@@ -68,96 +67,25 @@
     <% }) %>
 </div>
 
-<% if (pocket) { %>
-    <%- include('pocket', {pocket: pocket}); %>
-<% } %>
-
 <% /* Матрица матчей и сводная таблица (И/В/П/О) — атрибут круговой системы
       (round robin); для олимпийской (1) вместо них под составами рисуется
       сетка котла */ %>
-<% if (tournamentSystem !== 1) { %>
-<div class="row justify-content-sm-center">
-    <div class="col-auto">
-        <div class="d-flex">
-            <% /* Порядок матрицы инвертирован относительно силы команд (слабейшая
-                  первой): пары на антидиагонали — сеяный k против сеяного n+1-k,
-                  к главной диагонали пары выравниваются по силе */ %>
-            <% var matrix_teams = [...teams_in_group].reverse(); %>
-            <table class="table tournament-groups-table-games" data-signed-in="<%= user ? 1 : 0 %>">
-                <tbody>
-                <% /* Шапка: пустой угол + названия колонок — rowspan-ячейки, смёрженные
-                      с шапкой и строками до диагонали (rowspan = j+1), диагональные
-                      ячейки не рисуются. Первая команда (i=0) отдельной строкой
-                      не выводится — в её строке нет ни одного матча.
-                      Последнюю колонку не рисуем. */ %>
-                <% var tournamentRunning = tournament.tournament_status_id === 2
-                    && Date.now() >= new Date(tournament.started_at + 'Z').getTime()
-                    && (!tournament.ended_at || Date.now() <= new Date(tournament.ended_at + 'Z').getTime()); %>
-                <tr>
-                    <td style="background-color: rgba(0, 0, 0, 0.0) !important;"></td>
-                    <% var first_team = matrix_teams[0][0]; %>
-                    <td class="vertical-text"><%-
-                        /* отдых перед названием: в vertical-lr + rotate(180deg)
-                           строки зеркалятся — блок после названия оказался бы
-                           левее, а нужен правее («под» названием).
-                           В шапке колонок отдых — только в первом столбце
-                           (сильнейшая команда группы); в остальных столбцах
-                           заголовок — только название. */ %><%-
-                        include('team-rest', {team_id: first_team.team_id, total_games: teams_in_group.length * (teams_in_group.length - 1) / 2, tournamentRunning: tournamentRunning}); %><%= `${first_team.team_city} - ${first_team.team_name}` %></td>
-                    <% for (let j = 1; j < matrix_teams.length - 1; j++) { %>
-                        <td class="tournament-groups-table-game vertical-text game-column-name" rowspan="<%= j + 1 %>"><%= `${matrix_teams[j][0].team_city} - ${matrix_teams[j][0].team_name}` %></td>
-                    <% } %>
-                </tr>
-                <% matrix_teams.forEach((gig, i) => { %>
-                    <% if (i === 0) { %>
-                        <% return; %>
-                    <% } %>
-                    <% var team_name = `${gig[0].team_city} - ${gig[0].team_name}`; %>
-                    <tr>
-                        <td style="text-align: right;">
-                            <%= team_name %>
-                            <% /* отдых — только у идущего турнира (условие в партиале) */ %>
-                            <%- include('team-rest', {team_id: gig[0].team_id, total_games: teams_in_group.length * (teams_in_group.length - 1) / 2, tournamentRunning: tournamentRunning}); %>
-                        </td>
-                        <% for (let j = 0; j < matrix_teams.length - 1; j++) { %>
-                            <% if (i > j) { %>
-                                    <% var team_name_1 = `${matrix_teams[i][0].team_city} - ${matrix_teams[i][0].team_name}`; %>
-                                    <% var team_name_2 = `${matrix_teams[j][0].team_city} - ${matrix_teams[j][0].team_name}`; %>
-                                    <% var team_1_id = matrix_teams[i][0].team_id; %>
-                                    <% var team_2_id = matrix_teams[j][0].team_id; %>
-                                    <% var game_id = `${team_1_id}-${team_2_id}`; %>
-                                    <%# var game = getJson(`/api/games/current110?team_1_id=${team_1_id}&team_2_id=${team_2_id}`); %>
-                                    <%- include('board', {gameId: game_id, teamIds: [team_1_id, team_2_id], teamNames: [team_name_1, team_name_2], startScores: [0, 0], teamAvatars: [boardAvatars[team_1_id], boardAvatars[team_2_id]], teamColors: [matrix_teams[i][0].team_color, matrix_teams[j][0].team_color]}); %>
 
-                                    <td class="tournament-groups-table-game" style="text-align: center;"
-                                        data-team-1-id="<%= team_1_id %>" data-team-2-id="<%= team_2_id %>">
-                                        <% if (user) { %>
-                                            <button class="btn btn-outline-success"
-                                                    type="button"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#tournament-groups-board-<%= game_id %>"
-                                                    onclick="playMatch110(<%= team_1_id %>, <%= team_2_id %>)">
-                                                <i class="bi bi-play fs-3"></i>
-                                            </button>
-                                        <% } else { %>
-                                            <span>⏱️</span>
-                                        <% } %>
-                                    </td>
-                            <% } %>
-                        <% } %>
-                    </tr>
-                <% }) %>
-                </tbody>
-            </table>
-        </div>
+<% /* Схема группы определяет, что рисуется под составами: круговая —
+      общая матрица и сводная; олимпийский котёл с групповым этапом —
+      секции корзин (своя матрица и сводная на корзину); ниже у котла —
+      pocket.ejs (реконструкция архива или сгенерированная сетка) */ %>
+<% if (org === 1 && groupStage) { %>
+    <% var basketNums = [...new Set(Object.values(baskets ?? {}).filter(b => b !== null))].sort((a, b) => a - b); %>
+    <% basketNums.forEach((b, bi) => { %>
+    <div class="row text-center pt-4">
+        <h4>C<%= bi + 1 %></h4>
     </div>
-</div>
-
-<% /* Сводная таблица котла (И/В/П/О) — рендерит group.js из
-      GET /api/games/110/standings; group_id — ключ объекта группы */ %>
-<div class="row justify-content-sm-center" data-standings-group="<%= Object.keys(group)[0] %>">
-    <div class="col-auto">
-        <div class="tournament-standings"></div>
-    </div>
-</div>
+    <%- include('matrix', {matrix_teams: [...teams_in_group].reverse().filter(rows => baskets[String(rows[0].team_id)] === b), group_id: group_id, basket: b}); %>
+    <% }) %>
+<% } else if (org !== 1) { %>
+    <%- include('matrix', {matrix_teams: [...teams_in_group].reverse(), group_id: group_id, basket: undefined}); %>
+<% } %>
+<% if (org === 1) { %>
+    <%- include('pocket', {group_id: group_id, org: org, pocket: pocket, bracket: bracket, teams: Object.fromEntries(teams_in_group.map(tg => [tg[0].team_id, {name: String(tg[0].team_name), city: String(tg[0].team_city ?? ''), color: tg[0].team_color}]))}); %>
 <% } %>

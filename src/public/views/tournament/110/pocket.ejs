@@ -1,8 +1,16 @@
-<% /* Сетка котла архивного турнира 110 — рендерится под составами своей
-      группы. Режим «две жизни» (twoLives): колонки кругов, переходы рисует
-      bracket.js (renderBracketLines) — сплошная линия: победитель идёт в
-      следующий матч, пунктир: проигравший получает вторую жизнь.
-      Олимпийский режим: дерево победителей по кругам финала + секция
+<% /* Сетка котла 110 под составами своей группы, два источника:
+      1) pocket — серверная реконструкция архивного турнира (матчи групповой
+         матрицы, разложенные по котлам);
+      2) org 1 без реконструкции — клиентский рендер из
+         GET /api/matches/bracket110?tournament=<id>&group=<groupId>
+         (renderBracket/renderBracketMobile из bracket.js); без сгенерированной
+         сетки — заглушка и кнопка генерации, идущие матчи — серверные
+         модалки табло (как ▶ в матрице). */ %>
+<% if (pocket) { %>
+<% /* Реконструкция архива. Режим «две жизни» (twoLives): колонки кругов,
+      переходы рисует bracket.js (renderBracketLines) — сплошная линия:
+      победитель идёт в следующий матч, пунктир: проигравший получает вторую
+      жизнь. Олимпийский режим: дерево победителей по кругам финала + секция
       доигровок проигравших (без заголовка — заголовок группы уже есть);
       бай 1-го круга — плашка без соперника с прочерком. Незавершённые
       матчи — без счёта, подсветки и линий переходов. */ %>
@@ -86,4 +94,61 @@ var consTitle = (ri, total) => ri + 1 === total ? 'Финал доигровок
     // bracket.js подключён внизу страницы — линии переходов после его загрузки
     document.addEventListener('DOMContentLoaded', () => { window.renderBracketLines?.(); });
 </script>
+<% } %>
+<% } else if (org === 1) { %>
+<% /* Сгенерированная сетка котла — хост клиентского рендера */ %>
+<% if (bracket && bracket.generated) { %>
+    <div id="tournament-bracket-pocket-<%= group_id %>" class="tournament-bracket"></div>
+<% } else { %>
+    <div class="row text-center pt-4">
+        <div class="col text-muted">Сетка ещё не сгенерирована</div>
+    </div>
+    <% if (user && tournament.tournament_status_id === 2) { %>
+    <div class="row pt-2">
+        <div class="col text-center">
+            <button type="button" class="btn btn-outline-primary" data-generate-group="<%= group_id %>">Сгенерировать сетку</button>
+        </div>
+    </div>
+    <% } %>
+<% } %>
+<% /* модалки табло идущих матчей сетки — те же, что открывает матрица */ %>
+<% ((bracket && bracket.matches) || []).filter(m => m.finished === 0 && m.game_id !== null).forEach(live => { %>
+    <%- include('board', {gameId: live.game_id, teamIds: [live.team_1_id, live.team_2_id], teamNames: [(teams[live.team_1_id] ?? {}).name ?? '', (teams[live.team_2_id] ?? {}).name ?? ''], startScores: [0, 0], teamAvatars: [boardAvatars[live.team_1_id], boardAvatars[live.team_2_id]], teamColors: [(teams[live.team_1_id] ?? {}).color, (teams[live.team_2_id] ?? {}).color]}); %>
+<% }); %>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/matches/bracket110?tournament=<%= tournament_id %>&group=<%= group_id %>')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.generated) return;
+                const host = document.getElementById('tournament-bracket-pocket-<%= group_id %>');
+                if (!host) return;
+                if (document.body.classList.contains('phone')) {
+                    renderBracketMobile(host, data);
+                } else {
+                    renderBracket(host, data);
+                }
+            });
+    });
+</script>
+<% if (user && (!bracket || !bracket.generated) && tournament.tournament_status_id === 2) { %>
+<script>
+    (function () {
+        const btn = document.querySelector('[data-generate-group="<%= group_id %>"]');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            fetch('/api/matches/generate110?tournament=<%= tournament_id %>&group_id=<%= group_id %>', {method: 'POST'})
+                .then(r => {
+                    if (!r.ok) return r.json().then(b => Promise.reject(new Error(b.error || 'Не удалось сгенерировать сетку')));
+                    location.reload();
+                })
+                .catch(e => {
+                    alert(e.message);
+                    btn.disabled = false;
+                });
+        });
+    })();
+</script>
+<% } %>
 <% } %>
