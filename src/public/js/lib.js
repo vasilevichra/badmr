@@ -803,7 +803,13 @@ const addScoreBoardHandlers = () => {
 // Сервер повторно валидирует условия и на отказ возвращает пустой ответ
 
 // id команд из id модалки (tournament-groups-board-<t1>-<t2>)
-const board110TeamIds = (modal) => modal.id.replace('tournament-groups-board-', '').split('-').map(Number);
+// id команд табло — из data-атрибутов модалки, не из id: id строится по
+// game_id (у сетки матч может быть не создан), а парные конвенции <t1>-<t2>
+// в разметке не существует
+const board110TeamIds = (modal) => [
+  Number(modal.getAttribute('data-team-1-id')),
+  Number(modal.getAttribute('data-team-2-id')),
+];
 
 // тап/клик по игроку: на 0:0 чётному — подача, нечётному — свап чётности
 // (судья сначала выставляет, кто чётный, затем тапом по нему — подачу);

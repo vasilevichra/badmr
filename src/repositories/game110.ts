@@ -95,8 +95,8 @@ class Game110 {
    *  насоздавать несколько матчей одной пары). */
   getResults(tournamentId?: number) {
     const tournamentFilter = tournamentId ? 't.id = ?' : 't.current = 1';
-    return this.db.all<{ team_1_id: number, team_2_id: number, score_1: number, score_2: number, finished: number }>(
-        `SELECT m.team_1_id, m.team_2_id, m.finished, g.score_1, g.score_2
+    return this.db.all<{ game_id: number, team_1_id: number, team_2_id: number, score_1: number, score_2: number, finished: number }>(
+        `SELECT g.id AS game_id, m.team_1_id, m.team_2_id, m.finished, g.score_1, g.score_2
          FROM match_110 m
                   JOIN game_110 g ON g.match_110_id = m.id
                   JOIN tournament t ON t.id = m.tournament_id

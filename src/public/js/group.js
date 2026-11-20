@@ -639,7 +639,9 @@ const buildMobileMatrix = () => {
     // соседи таблицы в .d-flex (include доски стоит до ячейки), не внутри
     const nameById = new Map();
     host.querySelectorAll('.modal[id^="tournament-groups-board-"]').forEach((m) => {
-      const [t1, t2] = m.id.replace('tournament-groups-board-', '').split('-').map(Number);
+      // id команд — data-атрибуты модалки (id модалки строится по game_id)
+      const t1 = Number(m.getAttribute('data-team-1-id'));
+      const t2 = Number(m.getAttribute('data-team-2-id'));
       const spans = m.querySelectorAll('.board-team-name span');
       if (spans.length >= 2) {
         nameById.set(t1, spans[0].textContent.trim());
@@ -733,7 +735,7 @@ const renderFinishedMatchScores = () => {
         resume.className = 'btn btn-outline-success btn-sm game-result-resume';
         resume.title = 'Возобновить матч';
         resume.setAttribute('data-bs-toggle', 'modal');
-        resume.setAttribute('data-bs-target', `#tournament-groups-board-${pair}`);
+        resume.setAttribute('data-bs-target', `#tournament-groups-board-${r.game_id}`);
         resume.innerHTML = '<i class="bi bi-play"></i>';
         td.appendChild(resume);
       }
