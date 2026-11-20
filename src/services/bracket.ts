@@ -1,16 +1,14 @@
 import Match110 from '../repositories/match110.ts';
 import Game110 from '../repositories/game110.ts';
 import Tournament from '../repositories/tournament.ts';
-import Group from '../repositories/group.ts';
-import SettingsService from './settings.ts';
+import BasketService from './basket.ts';
 import StandingsService from './standings.ts';
 import { structure, readySlot, type SlotRef, type BracketStructure } from './bracket-structure.ts';
 
-const settingsService = new SettingsService();
+const basketService = new BasketService();
 const match110 = new Match110();
 const game110 = new Game110();
 const tournament = new Tournament();
-const group = new Group();
 const standingsService = new StandingsService();
 
 const badRequest = (message: string): Error =>
@@ -36,57 +34,59 @@ class Bracket {
     Bracket._instance = this;
   }
 
-  /** Посев: seed k = k-я команда по strengthOrder (1 — сильнейшая). */
-  private seedToTeam(tournamentId: number): Map<number, number> {
-    return new Map(this.participants(tournamentId).map((team_id, i) => [i + 1, team_id]));
+  /** Посев: seed k = k-я команда по participants (1 — сильнейшая). */
+  private seedToTeam(tournamentId: number, groupId: number): Map<number, number> {
+    return new Map(this.participants(tournamentId, groupId).map((team_id, i) => [i + 1, team_id]));
   }
 
-  /** Участники сетки в порядке сеяния. System 1 — все команды по силе;
-   *  system 2 — топ-2 каждого котла по standings: первые места котлов
-   *  подряд (сеяния 1..m), затем вторые — классическое сеяние, при котором
-   *  первые места одного котла расходятся по половинам сетки. */
-  private participants(tournamentId: number): number[] {
-    const system = Number(settingsService.get('tournament_system', tournamentId));
-    if (system !== 2) {
-      return match110.strengthOrder(tournamentId).map(row => row.team_id);
+  /** Участники сетки котла в порядке сеяния. С групповым этапом —
+   *  топ-2 каждой корзины: первые места корзин подряд (сеяния 1..m),
+   *  затем вторые — классическое сеяние, при котором первые одной
+   *  корзины расходятся по половинам сетки. Без группового этапа —
+   *  все команды котла по силе. */
+  private participants(tournamentId: number, groupId: number): number[] {
+    if (basketService.groupStage(tournamentId, groupId)) {
+      const firsts: number[] = [];
+      const seconds: number[] = [];
+      const basketMap = basketService.baskets(groupId);
+      const maxBasket = Math.max(0, ...[...basketMap.values()].filter((b): b is number => b !== null));
+      for (let n = 1; n <= maxBasket; n++) {
+        const top = standingsService.standings(tournamentId, groupId, n).slice(0, 2);
+        if (top[0]) firsts.push(top[0].team_id);
+        if (top[1]) seconds.push(top[1].team_id);
+      }
+      return [...firsts, ...seconds];
     }
-    const firsts: number[] = [];
-    const seconds: number[] = [];
-    for (const pocket of group.pockets(tournamentId)) {
-      const top = standingsService.standings(tournamentId, pocket.group_id).slice(0, 2);
-      if (top[0]) firsts.push(top[0].team_id);
-      if (top[1]) seconds.push(top[1].team_id);
-    }
-    return [...firsts, ...seconds];
+    return match110.strengthOrder(tournamentId, groupId).map(row => row.team_id);
   }
 
-  private buildStructure(tournamentId: number): BracketStructure {
-    const teamCount = this.participants(tournamentId).length;
-    const depth = Number(settingsService.get('consolation_depth', tournamentId));
-    return structure(teamCount, depth);
+  private buildStructure(tournamentId: number, groupId: number): BracketStructure {
+    // доигровки — всегда полная рекурсия: все места уточняются
+    return structure(this.participants(tournamentId, groupId).length, 0);
   }
 
-  async generate(tournamentId?: number): Promise<void> {
+  async generate(tournamentId: number | undefined, groupId: number): Promise<void> {
     const id = tournamentId ?? tournament.getCurrent()!.id;
     const t = tournament.getById(id)!;
     if (t.tournament_status_id !== 2) {
       throw badRequest('сетка генерируется только для идущего турнира');
     }
-    const system = Number(settingsService.get('tournament_system', id));
-    if (system !== 1 && system !== 2) {
-      throw badRequest('олимпийская сетка доступна для систем 1 и 2');
+    if (basketService.orgSystem(id, groupId) !== 1) {
+      throw badRequest('круговая система сетки не имеет');
     }
-    if (match110.hasSlotted(id)) {
+    if (match110.hasSlotted(id, groupId)) {
       throw badRequest('сетка уже сгенерирована');
     }
-    if (system === 2 && match110.hasUnfinishedGroup(id)) {
-      throw badRequest('групповой этап не завершён');
+    if (basketService.groupStage(id, groupId)) {
+      if (match110.hasUnfinishedGroup(id, groupId)) {
+        throw badRequest('групповой этап не завершён');
+      }
+      if (this.participants(id, groupId).length < 2) {
+        throw badRequest('для плей-офф нужно минимум две команды в корзинах');
+      }
     }
-    if (system === 2 && this.participants(id).length < 2) {
-      throw badRequest('для плей-офф нужно минимум две команды в котлах');
-    }
-    const s = this.buildStructure(id);
-    const teamBySeed = this.seedToTeam(id);
+    const s = this.buildStructure(id, groupId);
+    const teamBySeed = this.seedToTeam(id, groupId);
     // сразу создаются матчи, у которых обе команды известны без игр:
     // сеяные пары раунда 1 и слоты с двумя bye-питателями (сиды 2..n,
     // прошедшие раунд 1 без матча — их иначе никто не триггернет)
@@ -109,24 +109,24 @@ class Bracket {
    *  и upper-, и lower-матчи кормят следующие слоты). Идемпотентно. */
   onMatchFinished(match110Id: number): void {
     const match = match110.getById(match110Id);
-    if (!match || match.stage === null || match.stage === 'group') {
+    if (!match || match.stage === null || match.stage === 'group' || match.group_id === null) {
       return; // матричный (или групповой) матч в роутинге сетки не участвует
     }
-    const s = this.buildStructure(match.tournament_id);
+    const s = this.buildStructure(match.tournament_id, match.group_id);
     const from: SlotRef = { stage: match.stage, round: match.round!, pos: match.pos! };
     for (const slot of s.slots) {
       if (slot.feeders?.some(f => f.stage === from.stage && f.round === from.round && f.pos === from.pos)) {
-        this.createIfReady(s, match.tournament_id, { stage: slot.stage, round: slot.round, pos: slot.pos });
+        this.createIfReady(s, match.tournament_id, match.group_id, { stage: slot.stage, round: slot.round, pos: slot.pos });
       }
     }
   }
 
-  private createIfReady(s: BracketStructure, tournamentId: number, target: SlotRef): void {
-    if (match110.getBySlot(tournamentId, target)) {
+  private createIfReady(s: BracketStructure, tournamentId: number, groupId: number, target: SlotRef): void {
+    if (match110.getBySlot(tournamentId, groupId, target)) {
       return; // слот уже сматчен — идемпотентность
     }
     const teams = readySlot(s, target, feeder => {
-      const m = match110.getBySlot(tournamentId, feeder);
+      const m = match110.getBySlot(tournamentId, groupId, feeder);
       if (!m || m.finished !== 1) {
         return [null, null];
       }
@@ -152,17 +152,15 @@ class Bracket {
     return scores.score_1 > scores.score_2 ? match.team_1_id : match.team_2_id;
   }
 
-  /** Состояние сетки для клиента: структура + матчи слотов (счёт —
+  /** Состояние сетки котла для клиента: структура + матчи слотов (счёт —
    *  последняя игра матча). Без сгенерированной сетки — generated: false. */
-  bracket110(tournamentId?: number) {
+  bracket110(tournamentId: number | undefined, groupId: number) {
     const id = tournamentId ?? tournament.getCurrent()!.id;
-    const system = Number(settingsService.get('tournament_system', id));
-    if (!match110.hasSlotted(id)) {
-      return {generated: false as const, system};
+    if (!match110.hasSlotted(id, groupId)) {
+      return {generated: false as const};
     }
-    const structure = this.buildStructure(id);
-    const depth = Number(settingsService.get('consolation_depth', id));
-    const matches = match110.getAllSlotted(id).map(m => {
+    const structure = this.buildStructure(id, groupId);
+    const matches = match110.getAllSlotted(id, groupId).map(m => {
       const scores = game110.scoresByMatchId(m.id);
       return {
         slot: {stage: m.stage, round: m.round, pos: m.pos} as SlotRef,
@@ -176,7 +174,7 @@ class Bracket {
         game_id: m.finished === 0 ? game110.currentGameId(m.id) ?? null : null
       };
     });
-    return {generated: true, system, depth, structure, matches};
+    return {generated: true, structure, matches};
   }
 }
 

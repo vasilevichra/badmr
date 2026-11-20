@@ -19,11 +19,13 @@ class Standings {
    *  diff = сумма (свои очки − чужие). Сортировка: очки ↓ → личная
    *  встреча (ровно две команды с равными очками, игравшие между
    *  собой) → diff ↓ → сеяние ↑ (сила команды). Матчи, где хотя бы
-   *  одна команда из другой группы, не учитываются. */
-  standings(tournamentId?: number, groupId?: number): StandingRow[] {
+   *  одна команда из другой группы, не учитываются. basket — матч
+   *  учитывается, только если обе команды лежат в этой корзине котла. */
+  standings(tournamentId?: number, groupId?: number, basket?: number): StandingRow[] {
     const rows = match110Repository.standingsRows(tournamentId)
         .filter(r => r.finished === 1)
-        .filter(r => groupId === undefined || (r.group_1_id === groupId && r.group_2_id === groupId));
+        .filter(r => groupId === undefined || (r.group_1_id === groupId && r.group_2_id === groupId))
+        .filter(r => basket === undefined || (r.basket_1 === basket && r.basket_2 === basket));
     // имена/город команды — для рендера таблицы клиентом без доп. запросов
     const names = new Map<number, { name: string; city: string }>();
     for (const r of rows) {

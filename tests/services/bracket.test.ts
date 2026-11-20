@@ -4,6 +4,7 @@ import { describe, beforeEach, it } from "node:test";
 import BracketService from "../../src/services/bracket.ts";
 import MatchService from "../../src/services/match.ts";
 import Game110 from "../../src/repositories/game110.ts";
+import SettingsService from "../../src/services/settings.ts";
 import TeamService from "../../src/services/team.ts";
 import TeamUserService from "../../src/services/team-user.ts";
 import UserService from "../../src/services/user.ts";
@@ -12,6 +13,7 @@ import { clean } from "../helpers/migration.ts";
 
 const bracketService = new BracketService();
 const matchService = new MatchService();
+const settingsService = new SettingsService();
 const teamService = new TeamService();
 const teamUserService = new TeamUserService();
 const userService = new UserService();
@@ -35,9 +37,11 @@ const slotRows = (tournamentId = 4): SlotRow[] =>
     [tournamentId]
   );
 
-// сеет n команд по 1 игроку в текущий турнир фикстура (4), сила команды
-// убывает с номером: сила = рейтинг игрока из user_lab → сид k = k-я
-// по силе команда. Турнир переводится в статус «Идёт» (2).
+// сеет n команд по 1 игроку в котёл A (группа 1) текущего турнира фикстура
+// (4), сила команды убывает с номером: сила = рейтинг игрока из user_lab →
+// сид k = k-я по силе команда. Турнир переводится в статус «Идёт» (2).
+// Котлу A выставляется чистая олимпийка (org 1, residents 1) — группового
+// этапа нет, generate сеет все команды по силе.
 const seedTeams = async (n: number): Promise<Map<number, number>> => {
   db.run(`UPDATE tournament SET tournament_status_id = 2 WHERE id = 4`);
   const seedToTeam = new Map<number, number>();
@@ -48,6 +52,8 @@ const seedTeams = async (n: number): Promise<Map<number, number>> => {
     teamUserService.create(teamId, userId, 1);
     seedToTeam.set(k, teamId);
   }
+  await settingsService.set('org_system.a', '1', 4);
+  await settingsService.set('group_residents.a', '1', 4);
   return seedToTeam;
 };
 
@@ -76,7 +82,7 @@ describe("Bracket (сетка 110)", () => {
   describe("generate", () => {
     it("8 команд: 4 матча раунда 1 по сеянию, у каждого игра", async () => {
       const seedToTeam = await seedTeams(8);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
 
       const rows = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
       assert.strictEqual(rows.length, 4);
@@ -95,7 +101,7 @@ describe("Bracket (сетка 110)", () => {
 
     it("12 команд: bye-сиды 1-4 без матчей раунда 1, остальные — 4 матча", async () => {
       await seedTeams(12);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
 
       const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
       assert.strictEqual(r1.length, 4);
@@ -105,27 +111,25 @@ describe("Bracket (сетка 110)", () => {
 
     it("повторная генерация отклоняется", async () => {
       await seedTeams(8);
-      await bracketService.generate();
-      await assert.rejects(() => bracketService.generate(), /уже сгенерирована/);
+      await bracketService.generate(4, 1);
+      await assert.rejects(() => bracketService.generate(4, 1), /уже сгенерирована/);
     });
 
     it("не идущий турнир отклоняется", async () => {
-      await assert.rejects(() => bracketService.generate(4), /идущего турнира/);
+      await assert.rejects(() => bracketService.generate(4, 1), /идущего турнира/);
     });
 
-    it("круговая система (3) отклоняется", async () => {
+    it("круговая система (org 2) отклоняется", async () => {
       await seedTeams(8);
-      db.run(
-        `INSERT INTO tournament_settings (defaults_id, tournament_id, value) VALUES (40, 4, '3')`
-      );
-      await assert.rejects(() => bracketService.generate(), /систем 1 и 2/);
+      await settingsService.set('org_system.a', '2', 4);
+      await assert.rejects(() => bracketService.generate(4, 1), /круговая/);
     });
   });
 
   describe("роутинг по завершении матча", () => {
     it("после двух матчей R1 создан матч R2 из победителей; карман проигравших ждёт своих", async () => {
       const seedToTeam = await seedTeams(8);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
 
       const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
       const pos1 = slotOf(r1, 'upper', 1, 1); // сиды 1v8
@@ -147,7 +151,7 @@ describe("Bracket (сетка 110)", () => {
 
     it("полный раунд: после 4 матчей R1 созданы 2 матча R2 и 2 матча кармана", async () => {
       await seedTeams(8);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
 
       for (const m of slotRows().filter(r => r.stage === 'upper' && r.round === 1)) {
         finishMatch(m.id, m.team_1_id);
@@ -160,7 +164,7 @@ describe("Bracket (сетка 110)", () => {
 
     it("полный раунд: в матчи кармана попадают проигравшие R1", async () => {
       const seedToTeam = await seedTeams(8);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
       for (const m of slotRows().filter(r => r.stage === 'upper' && r.round === 1)) {
         finishMatch(m.id, m.team_1_id); // побеждает верхний сид пары
       }
@@ -178,7 +182,7 @@ describe("Bracket (сетка 110)", () => {
 
     it("после завершения матчей кармана уровня 1 созданы матчи уровня 2", async () => {
       const seedToTeam = await seedTeams(8);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
       // R1: побеждает team_1 (минимальный сид)
       for (const m of slotRows().filter(r => r.stage === 'upper' && r.round === 1)) {
         finishMatch(m.id, m.team_1_id);
@@ -201,7 +205,7 @@ describe("Bracket (сетка 110)", () => {
 
     it("после generate матчи с двумя bye-питателями созданы сразу (n=5: U2p2 = сиды 2,3)", async () => {
       const seedToTeam = await seedTeams(5);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
       const seedsOf = (m: SlotRow) =>
           [m.team_1_id, m.team_2_id].map(t => [...seedToTeam.entries()].find(([, id]) => id === t)![0])
               .sort((a, b) => a - b);
@@ -215,7 +219,7 @@ describe("Bracket (сетка 110)", () => {
 
     it("повторный вызов роутинга не создаёт дублей", async () => {
       await seedTeams(8);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
       const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
       for (const m of r1) {
         finishMatch(m.id, m.team_1_id);
@@ -228,7 +232,7 @@ describe("Bracket (сетка 110)", () => {
 
     it("матричный матч (без слота) роутинг не трогает", async () => {
       await seedTeams(8);
-      await bracketService.generate();
+      await bracketService.generate(4, 1);
       const { id } = db.run(
         `INSERT INTO match_110 (tournament_id, team_1_id, team_2_id, court_id)
          VALUES (4, 9001, 9002, (SELECT id FROM court WHERE tournament_id = 4 LIMIT 1))`
@@ -239,79 +243,96 @@ describe("Bracket (сетка 110)", () => {
     });
   });
 
-  describe("system 2 (группы + олимпийка)", () => {
-    // два котла по 2 команды: котёл 1 — a (сильный), b (слабый);
-    // котёл 2 — c (сильный), d (слабый). Сеяние котлов по user_lab.
-    const seedPockets = async (): Promise<Record<"a" | "b" | "c" | "d", number>> => {
+  describe("корзины (org 1, residents > 1)", () => {
+    // 4 команды котла A, residents 2: К1,К2 → корзина 1, К3,К4 → корзина 2;
+    // сила убывает с номером. Настройки включаются до сеяния команд —
+    // хук добавления команды сразу укладывает их в корзины
+    const seedOne = async (lastname: string, rating: number, k: number): Promise<number> => {
+      const { id: userId } = await userService.create(lastname, "Игрок", "Отчество", 500, 1, 1, "1990-01-01");
+      db.run(`INSERT INTO user_lab (user_id, rating_1) VALUES (?, ?)`, [userId, rating]);
+      const { id: teamId } = teamService.create(4, 1, `Корзинная ${k}`, 1, ((k - 1) % 12) + 1);
+      teamUserService.create(teamId, userId, 1);
+      return teamId;
+    };
+    const seedBaskets = async (): Promise<{ a: number; b: number; c: number; d: number }> => {
       db.run(`UPDATE tournament SET tournament_status_id = 2 WHERE id = 4`);
-      const seed = async (lastname: string, rating: number, groupId: number, color: number): Promise<number> => {
-        const { id: userId } = await userService.create(lastname, "Игрок", "Отчество", 500, 1, 1, "1990-01-01");
-        db.run(`INSERT INTO user_lab (user_id, rating_1) VALUES (?, ?)`, [userId, rating]);
-        const { id: teamId } = teamService.create(4, groupId, `Команда ${lastname}`, 1, color);
-        teamUserService.create(teamId, userId, groupId);
-        return teamId;
-      };
-      return {
-        a: await seed("Котл1Сильный", 950, 1, 1),
-        b: await seed("Котл1Слабый", 700, 1, 2),
-        c: await seed("Котл2Сильный", 850, 2, 3),
-        d: await seed("Котл2Слабый", 800, 2, 4)
-      };
+      await settingsService.set('org_system.a', '1', 4);
+      await settingsService.set('group_residents.a', '2', 4);
+      const a = await seedOne("Корзинный1", 990, 1);
+      const b = await seedOne("Корзинный2", 980, 2);
+      const c = await seedOne("Корзинный3", 970, 3);
+      const d = await seedOne("Корзинный4", 960, 4);
+      return { a, b, c, d };
     };
-    const setSystem = (value: number): void => {
-      db.run(`INSERT INTO tournament_settings (defaults_id, tournament_id, value) VALUES (40, 4, '${value}')`);
-    };
+    const stageOf = (matchId: number): string | null =>
+      db.get<{ stage: string | null }>(`SELECT stage FROM match_110 WHERE id = ?`, [matchId])!.stage;
 
-    it("матрица при system 2 получает stage='group', при system 1/3 — NULL", async () => {
-      const { a, b } = await seedPockets();
-      setSystem(2);
+    it("матричные матчи котла с групповым этапом имеют stage='group' и group_id котла; при org 2 — stage NULL", async () => {
+      const { a, b } = await seedBaskets();
       const { id: groupMatch } = matchService.create110(a, b, 4);
-      assert.strictEqual(
-        db.get<{ stage: string }>(`SELECT stage FROM match_110 WHERE id = ?`, [groupMatch])?.stage,
-        'group'
-      );
-      db.run(`UPDATE tournament_settings SET value = '1' WHERE defaults_id = 40 AND tournament_id = 4`);
-      const { id: sys1Match } = matchService.create110(a, b, 4);
-      assert.strictEqual(db.get<{ stage: string | null }>(`SELECT stage FROM match_110 WHERE id = ?`, [sys1Match])?.stage, null);
-      db.run(`UPDATE tournament_settings SET value = '3' WHERE defaults_id = 40 AND tournament_id = 4`);
-      const { id: sys3Match } = matchService.create110(a, b, 4);
-      assert.strictEqual(db.get<{ stage: string | null }>(`SELECT stage FROM match_110 WHERE id = ?`, [sys3Match])?.stage, null);
+      assert.strictEqual(stageOf(groupMatch), 'group');
+      const row = db.get<{ group_id: number | null }>(`SELECT group_id FROM match_110 WHERE id = ?`, [groupMatch])!;
+      assert.strictEqual(row.group_id, 1);
+
+      await settingsService.set('org_system.a', '2', 4);
+      const { id: roundRobinMatch } = matchService.create110(a, b, 4);
+      assert.strictEqual(stageOf(roundRobinMatch), null);
     });
 
     it("generate до завершения групповых матчей отклоняется", async () => {
-      const { a, b, c, d } = await seedPockets();
-      setSystem(2);
-      matchService.create110(a, b, 4); // групповые матчи созданы, не сыграны
-      matchService.create110(c, d, 4);
-      await assert.rejects(() => bracketService.generate(), /групповой этап не завершён/);
+      const { a, b, c, d } = await seedBaskets();
+      matchService.create110(a, b, 4); // корзина 1, не сыгран
+      matchService.create110(c, d, 4); // корзина 2, не сыгран
+      await assert.rejects(() => bracketService.generate(4, 1), /групповой этап не завершён/);
     });
 
-    it("generate после групповых: пары (A1 v B2), (B1 v A2) — первые места котлов не встречаются в R1", async () => {
-      const { a, b, c, d } = await seedPockets();
-      setSystem(2);
+    it("после групповых generate сеет плей-офф на 4: первые корзин — сиды 1 и 2, вторые — 3 и 4", async () => {
+      const { a, b, c, d } = await seedBaskets();
+      // матрица группового этапа: (a,b) корзина 1, (c,d) корзина 2
       const m1 = matchService.create110(a, b, 4);
       const m2 = matchService.create110(c, d, 4);
       // игра создаётся открытием табло (как в матрице)
       new Game110().create(m1.id);
       new Game110().create(m2.id);
-      finishMatch(m1.id, a); // A1 = a, A2 = b
-      finishMatch(m2.id, c); // B1 = c, B2 = d
-      await bracketService.generate();
+      finishMatch(m1.id, a); // корзина 1: a первый (сид 1), b второй (сид 3)
+      finishMatch(m2.id, c); // корзина 2: c первый (сид 2), d второй (сид 4)
+      await bracketService.generate(4, 1);
 
       const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
       assert.strictEqual(r1.length, 2);
       const pairs = r1.map(r => [r.team_1_id, r.team_2_id].sort((x, y) => x - y).join("-")).sort();
+      // layout(4)=[1,4,2,3]: (1v4), (2v3) — первые корзин расходятся по парам
       const expected = [[a, d], [b, c]].map(p => p.sort((x, y) => x - y).join("-")).sort();
       assert.deepStrictEqual(pairs, expected);
     });
 
     it("групповые матчи не участвуют в роутинге сетки", async () => {
-      const { a, b, c, d } = await seedPockets();
-      setSystem(2);
+      const { a, b, c, d } = await seedBaskets();
       const m1 = matchService.create110(a, b, 4);
       matchService.create110(c, d, 4);
       finishMatch(m1.id, a); // onMatchFinished для stage='group' — без слотов
       assert.strictEqual(slotRows().filter(r => r.stage !== 'group').length, 0);
+    });
+
+    it("матрица, созданная до переключения в org 1 (stage NULL), не блокирует генерацию", async () => {
+      const { a, b, c, d } = await seedBaskets();
+      // матрица при org 2 (groupStage false) получает stage NULL; после
+      // переключения обратно в org 1 она не считается незавершённым
+      // групповым — генерации мешают только stage='group'
+      await settingsService.set('org_system.a', '2', 4);
+      const m1 = matchService.create110(a, b, 4);
+      const m2 = matchService.create110(c, d, 4);
+      const m3 = matchService.create110(a, c, 4); // останется незавершённым
+      await settingsService.set('org_system.a', '1', 4);
+      new Game110().create(m1.id);
+      new Game110().create(m2.id);
+      finishMatch(m1.id, a);
+      finishMatch(m2.id, c);
+
+      await bracketService.generate(4, 1);
+
+      const r1 = slotRows().filter(r => r.stage === 'upper' && r.round === 1);
+      assert.strictEqual(r1.length, 2); // сеется: первые корзин a и c
     });
   });
 });

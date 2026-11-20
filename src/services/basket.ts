@@ -37,25 +37,25 @@ class Basket {
 
   /** Схема проведения котла: 1 - олимпийка с корзинами, 2 - круговая.
    *  Котёл без буквы (AB, …) — всегда круговая. */
-  orgSystem(tournamentId: number, groupId: number): 1 | 2 {
+  orgSystem(tournamentId: number | undefined, groupId: number): 1 | 2 {
     const letter = this.letterByGroup(groupId);
     return letter && this.settings.get(`org_system.${letter}`, tournamentId) === '1' ? 1 : 2;
   }
 
   /** Размер корзины группового этапа котла. */
-  residents(tournamentId: number, groupId: number): number {
+  residents(tournamentId: number | undefined, groupId: number): number {
     const letter = this.letterByGroup(groupId);
     return Number(letter ? this.settings.get(`group_residents.${letter}`, tournamentId) : '4');
   }
 
   /** Есть ли у котла групповой этап: олимпийка с корзинами больше одной команды. */
-  groupStage(tournamentId: number, groupId: number): boolean {
+  groupStage(tournamentId: number | undefined, groupId: number): boolean {
     return this.orgSystem(tournamentId, groupId) === 1 && this.residents(tournamentId, groupId) > 1;
   }
 
   /** Идемпотентная раскладка команд котла по корзинам: в порядке id,
    *  корзины по `residents` (1,1,…,2,2,…); дырки после удалений схлопываются. */
-  layout(tournamentId: number, groupId: number): void {
+  layout(tournamentId: number | undefined, groupId: number): void {
     const residents = this.residents(tournamentId, groupId);
     if (residents < 1) return;
     // в порядке id: корзины по residents (1,1,…,2,2,…); дырки после удалений схлопываются
@@ -66,7 +66,7 @@ class Basket {
   }
 
   /** Без группового этапа корзин нет: basket = NULL всем командам котла. */
-  clear(tournamentId: number, groupId: number): void {
+  clear(tournamentId: number | undefined, groupId: number): void {
     for (const t of this.team.byGroup(groupId)) {
       if (t.basket !== null) this.team.setBasket(t.id, null);
     }
@@ -74,7 +74,7 @@ class Basket {
 
   /** Хук добавления команды: у котла с групповым этапом пересобираем
    *  раскладку (команда попадает в первую неполную корзину или в новую). */
-  onTeamAdded(tournamentId: number, groupId: number): void {
+  onTeamAdded(tournamentId: number | undefined, groupId: number): void {
     if (this.groupStage(tournamentId, groupId)) {
       this.layout(tournamentId, groupId);
     }
@@ -83,7 +83,7 @@ class Basket {
   /** Хук сохранения org_system.<буква>: при групповом этапе ('1' и
    *  residents > 1) раскладываем котёл, иначе корзин нет — сбрасываем.
    *  Прочие настройки — no-op. */
-  onOrgSystemSet(tournamentId: number, name: string, value: string): void {
+  onOrgSystemSet(tournamentId: number | undefined, name: string, value: string): void {
     const m = /^org_system\.([a-h])$/.exec(name);
     if (!m) return;
     const groupId = this.groupIdByLetter(m[1]);

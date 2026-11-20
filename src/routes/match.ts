@@ -13,10 +13,10 @@ router.get('/unfinished', (req, res) => {
   res.promise(matchService.getAllUnfinished(requestedTournament(req)));
 });
 
-// состояние сетки 110 для отрисовки: структура + матчи слотов.
+// состояние сетки котла 110 для отрисовки: структура + матчи слотов.
 // объявлен до '/:user_id', иначе 'bracket110' захватится как user_id
 router.get('/bracket110', (req, res) => {
-  res.promise(matchService.bracket110(requestedTournament(req)));
+  res.promise(matchService.bracket110(requestedTournament(req), Number(req.query.group)));
 });
 
 router.get('/:user_id', ensureLoggedIn(), (req, res) => {
@@ -33,10 +33,11 @@ router.post('/create110', ensureLoggedIn(), (req, res) => {
   res.promise(matchService.create110(team_1_id, team_2_id, requestedTournament(req)));
 });
 
-// генерация олимпийской сетки 110: seed-матчи раунда 1, дальше — ленивый
-// роутинг по завершении матчей
+// генерация олимпийской сетки котла 110: seed-матчи раунда 1, дальше —
+// ленивый роутинг по завершении матчей
 router.post('/generate110', ensureLoggedIn(), (req, res) => {
-  res.promise(bracketService.generate(requestedTournament(req)));
+  const groupId = Number(req.body?.group_id ?? req.query.group_id);
+  res.promise(bracketService.generate(requestedTournament(req), groupId));
 });
 
 router.post('/delete/:id', ensureLoggedIn(), (req, res) => {

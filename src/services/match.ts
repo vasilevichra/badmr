@@ -42,7 +42,7 @@ class Match {
   create110 = (team_1_id: number, team_2_id: number, tournamentId?: number) => this.match110.create(team_1_id, team_2_id, tournamentId);
   rests = (tournamentId?: number) => this.match110.rests(tournamentId);
   playedCount110 = (tournamentId?: number) => this.match110.playedCount(tournamentId);
-  bracket110 = (tournamentId?: number) => bracketService.bracket110(tournamentId);
+  bracket110 = (tournamentId: number | undefined, groupId: number) => bracketService.bracket110(tournamentId, groupId);
   standings110 = (tournamentId?: number, groupId?: number) => standingsService.standings(tournamentId, groupId);
   deleteById = (id: number) => {
     // снапшот для каскадного пересчёта — до удаления матча

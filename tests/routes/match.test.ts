@@ -5,6 +5,7 @@ import MatchRouter from "../../src/routes/match.ts";
 import UserRouter from "../../src/routes/user.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
 import TeamService from "../../src/services/team.ts";
+import SettingsService from "../../src/services/settings.ts";
 import TeamUserService from "../../src/services/team-user.ts";
 import UserService from "../../src/services/user.ts";
 import Repository from "../../src/repositories/common.ts";
@@ -131,6 +132,9 @@ describe("Match routes", () => {
         teamUserService.create(teamId, userId, 1);
         seedToTeam.set(k, teamId);
       }
+      const settingsService = new SettingsService();
+      await settingsService.set('org_system.a', '1', 4);
+      await settingsService.set('group_residents.a', '1', 4);
       return seedToTeam;
     };
 
@@ -138,22 +142,21 @@ describe("Match routes", () => {
       await seedTeams(8);
       const res = await fetch(`${base}/bracket110`);
       assert.strictEqual(res.status, 200);
-      assert.deepStrictEqual(await res.json(), {generated: false, system: 1});
+      assert.deepStrictEqual(await res.json(), {generated: false});
     });
 
     it("после generate — структура и матчи раунда 1", async () => {
       const seedToTeam = await seedTeams(8);
-      const gen = await post(`${base}/generate110`);
+      const gen = await post(`${base}/generate110`, {group_id: 1});
       assert.strictEqual(gen.status, 200);
 
-      const res = await fetch(`${base}/bracket110`);
+      const res = await fetch(`${base}/bracket110?group=1`);
       const body = await res.json() as {
-        generated: boolean; system: number; depth: number;
+        generated: boolean;
         structure: { size: number; slots: unknown[] };
         matches: { slot: { stage: string; round: number; pos: number }; team_1_id: number; team_2_id: number; score_1: number; score_2: number; finished: number }[];
       };
       assert.strictEqual(body.generated, true);
-      assert.strictEqual(body.system, 1);
       assert.strictEqual(body.structure.size, 8);
       const r1 = body.matches.filter(m => m.slot.stage === 'upper' && m.slot.round === 1);
       assert.strictEqual(r1.length, 4);
