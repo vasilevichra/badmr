@@ -27,9 +27,9 @@ const bracketTeamColor = (teamId) => {
   return color.startsWith('#') ? color : `#${color}`;
 };
 
-// строка команды в карточке: цветная полоска, имя, кружок места, счёт;
+// строка команды в карточке: цветная полоска, имя, счёт справа;
 // у финала победитель — с кубком
-const bracketTeamRow = (teamId, score, winner, trophy, place) => {
+const bracketTeamRow = (teamId, score, winner, trophy) => {
   const row = document.createElement('div');
   row.className = 'tournament-bracket-team' + (winner ? ' tournament-bracket-team-winner' : '');
   // data-team — по нему renderBracketLines ищет, куда ушла команда
@@ -44,24 +44,14 @@ const bracketTeamRow = (teamId, score, winner, trophy, place) => {
   const scoreEl = document.createElement('span');
   scoreEl.className = 'tournament-bracket-score';
   scoreEl.textContent = score;
-  row.append(stripe, name);
-  // кружок текущего места команды (как в реконструкции) — на её последнем
-  // завершённом матче; топ-3 — призовой
-  if (place) {
-    const placeEl = document.createElement('span');
-    placeEl.className = 'tournament-bracket-team-place' + (place <= 3 ? ' tournament-bracket-team-place-prize' : '');
-    placeEl.textContent = String(place);
-    row.append(placeEl);
-  }
-  row.append(scoreEl);
+  row.append(stripe, name, scoreEl);
   return row;
 };
 
 // карточка матча (или пустого слота) сетки; opts:
 //   final — решающий матч (зелёная рамка, кубок у победителя),
 //   cons — матч доигровки (пунктирная рамка),
-//   placeTag — подпись итоговых мест в углу карточки,
-//   place1/place2 — текущие места команд (кружки у имён, как в реконструкции)
+//   placeTag — подпись итоговых мест в углу карточки
 const bracketMatchCard = (match, opts = {}) => {
   const card = document.createElement('div');
   card.className = 'tournament-bracket-match';
@@ -88,8 +78,8 @@ const bracketMatchCard = (match, opts = {}) => {
   const winner1 = match.finished === 1 && match.score_1 > match.score_2;
   const winner2 = match.finished === 1 && match.score_2 > match.score_1;
   card.append(
-      bracketTeamRow(match.team_1_id, match.score_1, winner1, opts.final, opts.place1),
-      bracketTeamRow(match.team_2_id, match.score_2, winner2, opts.final, opts.place2)
+      bracketTeamRow(match.team_1_id, match.score_1, winner1, opts.final),
+      bracketTeamRow(match.team_2_id, match.score_2, winner2, opts.final)
   );
   // идущий матч — кнопка возобновления: открывает модалку табло,
   // отрендеренную серверно в pocket.ejs (как ▶ в матрице). Рельс слева на
@@ -115,61 +105,10 @@ const bracketRoundTitle = (round, totalRounds) => {
   return `1/${2 ** (totalRounds - round)} финала`;
 };
 
-// текущие места команд по последнему завершённому матчу — клиентский порт
-// rankPlaces реконструкции (bracket-history.ts): команда ранжируется по
-// своему последнему завершённому матчу (сначала круг, main выше cons при
-// равном круге, затем кто дольше держался в main, затем победа в матче);
-// место показывается кружком у имени на этом матче. Пока турнир идёт это
-// текущее положение (незавершённые матчи не учитываются — кружок стоит на
-// предыдущем матче команды), по завершении совпадает с итоговым
-const bracketTeamPlaces = (matches) => {
-  const last = new Map();
-  // скан в порядке реконструкции (main полностью, затем доигровки, по
-  // кругам) — при равных рангах места раздаются детерминированно
-  const ordered = [...matches].sort((a, b) =>
-      (a.slot.stage === 'lower') - (b.slot.stage === 'lower')
-      || a.slot.round - b.slot.round || a.slot.pos - b.slot.pos);
-  ordered.forEach((m) => {
-    if (m.finished !== 1) return;
-    const cons = m.slot.stage === 'lower';
-    const won1 = m.score_1 > m.score_2;
-    [[1, m.team_1_id, won1], [2, m.team_2_id, !won1]].forEach(([side, id, won]) => {
-      const prev = last.get(id);
-      // последний матч: доигровки позже main, внутри дерева — старше круг
-      if (!prev || (cons && !prev.cons) || (cons === prev.cons && m.slot.round > prev.round)) {
-        last.set(id, {
-          round: m.slot.round,
-          cons,
-          won,
-          mid: m.id,
-          side,
-          mainExit: cons ? prev?.mainExit ?? 0 : m.slot.round,
-        });
-      }
-    });
-  });
-  const key = (e) => e.round * 8 + (e.cons ? 0 : 4);
-  const sorted = [...last.values()].sort((a, b) =>
-      key(b) - key(a) || b.mainExit - a.mainExit || (b.won ? 1 : 0) - (a.won ? 1 : 0));
-  const byMid = new Map();
-  sorted.forEach((e, i) => {
-    if (!byMid.has(e.mid)) byMid.set(e.mid, {});
-    byMid.get(e.mid)[e.side] = i + 1;
-  });
-  return byMid;
-};
-
-// кружки мест для карточки матча: {place1, place2} из карты byMid
-const bracketPlaceOpts = (places, match) => {
-  const p = places.get(match.id);
-  return p ? {place1: p[1], place2: p[2]} : {};
-};
-
 // десктоп: колонки верхней сетки, ниже — секции карманов доигровок
 // (глобальные — вызываются инлайн-скриптом pocket.ejs)
 window.renderBracket = (host, data) => {
   host.innerHTML = '';
-  const places = bracketTeamPlaces(data.matches);
   // маркер линий переходов (renderBracketLines): рисуются только переходы
   // победителей — как в олимпийской реконструкции; линии проигравших
   // («вторая жизнь») в живой сетке не выводятся: карманы доигровок стоят
@@ -194,10 +133,9 @@ window.renderBracket = (host, data) => {
     const matches = document.createElement('div');
     matches.className = 'tournament-bracket-round-matches';
     round.forEach(slot => {
-      const match = map[`upper|${r}|${slot.pos}`];
       // финал верхней сетки — решающий матч за 1–2 места
       const opts = r === totalRounds ? {final: true, placeTag: '1–2 места'} : {};
-      matches.append(bracketMatchCard(match, {...opts, ...bracketPlaceOpts(places, match)}));
+      matches.append(bracketMatchCard(map[`upper|${r}|${slot.pos}`], opts));
     });
     col.append(title, matches);
     wrap.append(col);
@@ -268,7 +206,6 @@ window.renderBracket = (host, data) => {
         const terminal = isTerminalPocket(pocketSlots);
         const card = bracketMatchCard(map[`lower|${r}|${slot.pos}`], {
           cons: true,
-          ...bracketPlaceOpts(places, map[`lower|${r}|${slot.pos}`] ?? {}),
           placeTag: terminal && slot.round === Math.max(...pocketSlots.map(s => s.round))
               ? (pFrom === pTo ? `${pFrom} место` : `${pFrom}–${pTo} места`) : null,
         });
@@ -301,7 +238,6 @@ window.renderBracketMobile = (host, data) => {
   host.innerHTML = '';
   const map = bracketMatchBySlot(data);
   const slots = data.structure.slots;
-  const places = bracketTeamPlaces(data.matches);
 
   const list = document.createElement('div');
   list.className = 'tournament-bracket-mobile';
@@ -313,10 +249,7 @@ window.renderBracketMobile = (host, data) => {
     title.className = 'tournament-bracket-pocket-title';
     title.textContent = bracketRoundTitle(r, totalRounds);
     list.append(title);
-    round.forEach(slot => {
-      const match = map[`upper|${r}|${slot.pos}`];
-      list.append(bracketMatchCard(match, bracketPlaceOpts(places, match ?? {})));
-    });
+    round.forEach(slot => list.append(bracketMatchCard(map[`upper|${r}|${slot.pos}`])));
   }
   const lower = slots.filter(s => s.stage === 'lower');
   const pockets = new Map();
@@ -334,8 +267,7 @@ window.renderBracketMobile = (host, data) => {
     const maxRound = Math.max(...pocketSlots.map(s => s.round));
     for (let r = 1; r <= maxRound; r++) {
       pocketSlots.filter(s => s.round === r).forEach(slot => {
-        const match = map[`lower|${r}|${slot.pos}`];
-        const card = bracketMatchCard(match, {cons: true, ...bracketPlaceOpts(places, match ?? {})});
+        const card = bracketMatchCard(map[`lower|${r}|${slot.pos}`], {cons: true});
         card.classList.add('tournament-bracket-pocket-mobile');
         list.append(card);
       });
