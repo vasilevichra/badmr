@@ -2259,6 +2259,12 @@ body.phone .select-board-score {
   color: rgba(25, 135, 84, 0.45);
 }
 
+/* Таблица игроков — системным шрифтом: Raleway у́же системного на ~10%
+   (замер «Щетинин Р.»: 78.6px против 87.9px), в таблице выглядит сжатым */
+#player-table {
+  font-family: var(--bs-body-font-family);
+}
+
 #player-table .player-name-cell {
   display: flex;
   align-items: center;
