@@ -28,10 +28,10 @@ const getUser = (id: number): { vk_id: string | null } =>
 
 const makeKey = () => {
   const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
-  return { privateKey, jwk: publicKey.export({ format: "jwk" }) as crypto.JsonWebKey };
+  return { privateKey, jwk: publicKey.export({ format: "jwk" }) as crypto.webcrypto.JsonWebKey };
 };
 const b64u = (buf: Buffer | string) => Buffer.from(buf).toString("base64url");
-const signIdToken = (key: crypto.PrivateKey, payload: object) => {
+const signIdToken = (key: crypto.KeyObject, payload: object) => {
   const header = b64u(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const body = b64u(JSON.stringify(payload));
   return `${header}.${body}.${b64u(crypto.createSign("RSA-SHA256").update(`${header}.${body}`).sign(key))}`;
@@ -41,7 +41,7 @@ const signIdToken = (key: crypto.PrivateKey, payload: object) => {
 let reqUser: { id: number } | null = null;
 let sessionState: Record<string, unknown> = {};
 
-const vkStubs = (opts: { idToken: string }) => {
+const vkStubs = (opts: { idToken: string; jwk: crypto.webcrypto.JsonWebKey }) => {
   const saved = globalThis.fetch;
   globalThis.fetch = (async (url: string | URL, init?: RequestInit) => {
     const u = String(url);
@@ -58,8 +58,8 @@ const vkStubs = (opts: { idToken: string }) => {
 };
 
 // jwk подставляется в момент вызова vkStubs
-let jwk: crypto.JsonWebKey;
-const vkStubsFactory = (opts: Omit<Parameters<typeof vkStubs>[0], "jwk"> & { jwk?: crypto.JsonWebKey }) =>
+let jwk: crypto.webcrypto.JsonWebKey;
+const vkStubsFactory = (opts: Omit<Parameters<typeof vkStubs>[0], "jwk"> & { jwk?: crypto.webcrypto.JsonWebKey }) =>
     vkStubs({ ...opts, jwk: opts.jwk ?? jwk }) as () => void;
 
 const app: App = Express();

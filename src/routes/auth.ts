@@ -54,7 +54,7 @@ passport.deserializeUser((user: unknown, cb) => {
 const router = Express.Router();
 
 router.get('/login', (req, res) => {
-  res.render('login', {device: commonService.device(req)});
+  res.render('login', {device: commonService.device(req), vkEnabled: oauthService.configured()});
 });
 
 router.post('/login/password', passport.authenticate('local', {
@@ -64,7 +64,7 @@ router.post('/login/password', passport.authenticate('local', {
 }));
 
 router.get('/signup', (req, res) => {
-  res.render('signup', { kind: 'page', device: commonService.device(req) });
+  res.render('signup', { kind: 'page', device: commonService.device(req), vkEnabled: oauthService.configured() });
 });
 
 router.post('/signup', (req, res, next) => {

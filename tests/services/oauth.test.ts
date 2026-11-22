@@ -23,17 +23,17 @@ const insertUser = (contacts: { email?: string; phone?: string; vkId?: string })
 /** RSA-пара и JWK для заглушки JWKS VK. */
 function makeKey() {
   const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
-  const jwk = publicKey.export({ format: "jwk" }) as crypto.JsonWebKey;
+  const jwk = publicKey.export({ format: "jwk" }) as crypto.webcrypto.JsonWebKey;
   return { privateKey, jwk };
 }
 
 const b64u = (buf: Buffer | string) => Buffer.from(buf).toString("base64url");
 
 /** id_token RS256, подписанный переданным ключом. */
-function signIdToken(key: crypto.KeyObjectLike | crypto.PrivateKeyInput, payload: object) {
+function signIdToken(key: crypto.KeyObject | crypto.PrivateKeyInput, payload: object) {
   const header = b64u(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const body = b64u(JSON.stringify(payload));
-  const sig = crypto.createSign("RSA-SHA256").update(`${header}.${body}`).sign(key as crypto.PrivateKey);
+  const sig = crypto.createSign("RSA-SHA256").update(`${header}.${body}`).sign(key);
   return `${header}.${body}.${b64u(sig)}`;
 }
 

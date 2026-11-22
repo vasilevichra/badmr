@@ -18,7 +18,7 @@ const ISSUER = "https://id.vk.com/";
 const JWKS_TTL_MS = 60 * 60 * 1000;
 
 interface JwksEntry {
-  keys: crypto.JsonWebKey[];
+  keys: crypto.webcrypto.JsonWebKey[];
   fetchedAt: number;
 }
 
@@ -171,10 +171,10 @@ class OAuthService {
   }
 
   /** JWKS с кэшем в памяти процесса; без сети при повторных входах. */
-  private async jwkForSignature(): Promise<crypto.JsonWebKey> {
+  private async jwkForSignature(): Promise<crypto.webcrypto.JsonWebKey> {
     if (!jwksCache || Date.now() - jwksCache.fetchedAt > JWKS_TTL_MS) {
       const response = await fetch(JWKS_URL);
-      const data = await response.json() as { keys?: crypto.JsonWebKey[] };
+      const data = await response.json() as { keys?: crypto.webcrypto.JsonWebKey[] };
       if (!data.keys?.length) throw new Error("VK не отдал публичные ключи для проверки токена");
       jwksCache = { keys: data.keys, fetchedAt: Date.now() };
     }
