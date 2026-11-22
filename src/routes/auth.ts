@@ -153,6 +153,8 @@ router.get('/vk/callback', async (req, res, next) => {
   try {
     profile = await oauthService.handleCallback(req as unknown as Parameters<typeof oauthService.handleCallback>[0]);
   } catch (err) {
+    // причина провала должна оставаться в логах сервера, а не только во flash
+    console.error(`VK callback failed: ${(err as Error).message}`);
     return flash(res, (err as Error).message);
   }
 
