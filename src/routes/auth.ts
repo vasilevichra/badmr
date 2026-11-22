@@ -9,6 +9,7 @@ import UserService from '../services/user.ts';
 import { ensureLoggedIn } from 'connect-ensure-login';
 const commonService = new CommonService();
 const userService = new UserService();
+const oauthService = new OAuthService();
 const db = new DB().db;
 
 interface UserRow {
@@ -106,8 +107,6 @@ router.post('/logout', (req, res, next) => {
 });
 
 // ——— Вход/привязка через VK ID ———
-
-const oauthService = new OAuthService();
 
 interface SessionLike {
   messages?: string[];

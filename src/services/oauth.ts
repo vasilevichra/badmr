@@ -17,8 +17,11 @@ const ISSUER = "https://id.vk.com/";
 /** TTL кэша JWKS: ключи VK меняются редко, час — компромисс свежести и нагрузки. */
 const JWKS_TTL_MS = 60 * 60 * 1000;
 
+// kid в стандарте JWK есть, но в типах @types/node его нет — расширяем
+type VkJwk = crypto.webcrypto.JsonWebKey & { kid?: string };
+
 interface JwksEntry {
-  keys: crypto.webcrypto.JsonWebKey[];
+  keys: VkJwk[];
   fetchedAt: number;
 }
 
@@ -91,7 +94,7 @@ class OAuthService {
    * Любой провал — Error с человеческим сообщением (роут покажет через flash).
    */
   async handleCallback(req: {
-    query: { code?: string; state?: string };
+    query: { code?: string; state?: string; error?: string };
     session: Record<string, unknown>;
   }): Promise<VkProfile> {
     const oauthSession = req.session.oauth as
@@ -104,8 +107,14 @@ class OAuthService {
     if (req.query.state !== oauthSession.state) {
       throw new Error("Подозрительный вход через VK: state не совпал, повторите попытку");
     }
+    // отказ в согласии приходит с error=access_denied и пустым code —
+    // отделяем его от сетевых проблем, чтобы не пугать пользователя
+    if (req.query.error) {
+      throw new Error("Вход через VK отменён");
+    }
 
     const tokenResponse = await fetch(TOKEN_URL, {
+      signal: AbortSignal.timeout(10_000),
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
@@ -128,6 +137,7 @@ class OAuthService {
     }
 
     const userInfoResponse = await fetch(USER_INFO_URL, {
+      signal: AbortSignal.timeout(10_000),
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ access_token: tokenData.access_token }),
@@ -149,36 +159,55 @@ class OAuthService {
     if (!headerB64 || !payloadB64 || !sigB64) {
       throw new Error("Некорректный токен VK");
     }
+    // alg фиксируем на своей стороне: подпись проверяется только RSA-SHA256,
+    // алгоритм из заголовка токена никогда не выбирает схему проверки
+    const header = JSON.parse(Buffer.from(headerB64, "base64url").toString()) as
+      { alg?: string; kid?: string };
+    if (header.alg !== "RS256") throw new Error("Неподдерживаемый алгоритм токена VK");
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString()) as {
       iss?: string; aud?: string | string[]; exp?: number; nonce?: string; sub?: string;
     };
 
     const now = Math.floor(Date.now() / 1000);
     if (payload.iss !== ISSUER) throw new Error("Токен VK выпущен неизвестным сервисом");
-    const aud = Array.isArray(payload.aud) ? payload.aud[0] : payload.aud;
-    if (aud !== process.env.VK_CLIENT_ID) throw new Error("Токен VK выдан другому приложению");
+    const clientId = process.env.VK_CLIENT_ID!;
+    const audOk = Array.isArray(payload.aud) ? payload.aud.includes(clientId) : payload.aud === clientId;
+    if (!audOk) throw new Error("Токен VK выдан другому приложению");
     if (!payload.exp || payload.exp < now) throw new Error("Токен VK истёк, войдите заново");
     if (payload.nonce !== nonce) throw new Error("Подозрительный вход через VK: nonce не совпал");
 
-    const key = await this.jwkForSignature();
     const signature = Buffer.from(sigB64, "base64url");
-    const ok = crypto.createVerify("RSA-SHA256")
+    const verify = (jwk: crypto.webcrypto.JsonWebKey) => crypto.createVerify("RSA-SHA256")
       .update(`${headerB64}.${payloadB64}`)
-      .verify(crypto.createPublicKey({ key, format: "jwk" }), signature);
-    if (!ok) throw new Error("Подпись токена VK не прошла проверку");
+      .verify(crypto.createPublicKey({ key: jwk, format: "jwk" }), signature);
+
+    // ключ выбирается по kid из заголовка; провал верификации — повод один раз
+    // принудительно обновить JWKS: после ротации ключей VK вход не должен
+    // ломаться до истечения часового кэша
+    let key = await this.jwkForSignature(header.kid);
+    if (!verify(key)) {
+      await this.fetchJwks();
+      key = await this.jwkForSignature(header.kid);
+      if (!verify(key)) throw new Error("Подпись токена VK не прошла проверку");
+    }
 
     return payload;
   }
 
-  /** JWKS с кэшем в памяти процесса; без сети при повторных входах. */
-  private async jwkForSignature(): Promise<crypto.webcrypto.JsonWebKey> {
+  /** Ключ для проверки подписи: по kid, фолбэк — первый ключ набора. */
+  private async jwkForSignature(kid?: string): Promise<VkJwk> {
     if (!jwksCache || Date.now() - jwksCache.fetchedAt > JWKS_TTL_MS) {
-      const response = await fetch(JWKS_URL);
-      const data = await response.json() as { keys?: crypto.webcrypto.JsonWebKey[] };
-      if (!data.keys?.length) throw new Error("VK не отдал публичные ключи для проверки токена");
-      jwksCache = { keys: data.keys, fetchedAt: Date.now() };
+      await this.fetchJwks();
     }
-    return jwksCache.keys[0];
+    const keys = jwksCache!.keys;
+    return (kid && keys.find(k => k.kid === kid)) || keys[0];
+  }
+
+  private async fetchJwks(): Promise<void> {
+    const response = await fetch(JWKS_URL, { signal: AbortSignal.timeout(10_000) });
+    const data = await response.json() as { keys?: VkJwk[] };
+    if (!data.keys?.length) throw new Error("VK не отдал публичные ключи для проверки токена");
+    jwksCache = { keys: data.keys, fetchedAt: Date.now() };
   }
 
   /** Только тестами: чистый JWKS-кэш между кейсами. */
