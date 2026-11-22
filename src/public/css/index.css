@@ -2754,6 +2754,15 @@ body.phone [id^="tournament-groups-board-"] .modal-content * {
   text-transform: uppercase;
 }
 
+/* Плашка отказа (разряд без выставленных игроков): после правил выше —
+   текст-причина длинный, без капса и nowrap, шрифт скромнее */
+.board-swap-overlay.board-refuse-overlay .board-swap-plate-title {
+  font-size: 5vh;
+  white-space: normal;
+  text-transform: none;
+  max-width: 90%;
+}
+
 /* Общее правило (не device-специфичное). Подзаголовок «приготовиться:»
    и ряд игроков на плашке смены сторон: игроки клонируются с табло
    (классы .board-player*), имена и зазор укрупняем под плашку. */

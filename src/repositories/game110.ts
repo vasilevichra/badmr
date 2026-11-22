@@ -147,6 +147,11 @@ class Game110 {
     if (!g) return null;
     const winner = (teamNumber === "1" ? 1 : 2) as 1 | 2;
     const roster = this.rosters(g, teamId1, teamId2);
+    // партия разряда, где у команды нет выставленных игроков, не
+    // начинается: очко не засчитывается (клиент показывает плашку
+    // отказа). Уже идущая партия (состав изменился по ходу) — доигрывается
+    if (g.party_score_1 === 0 && g.party_score_2 === 0
+        && (roster[1].length === 0 || roster[2].length === 0)) return null;
     // чётность до очка: NULL или вне текущего ростера (смена разряда
     // без type-pos) — база (первый игрок группы)
     const even: Record<1 | 2, number | undefined> = {

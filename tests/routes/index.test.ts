@@ -142,10 +142,17 @@ describe("Историческая сетка архива 110", () => {
   const match110 = new Match110Repository();
   const game110 = new Game110Repository();
 
+  // состав команды — полный (2М+2Ж): гейт старта турнира требует
+  // играемый состав в каждом разряде табло; первый игрок — мужского пола
   const seedTeam = async (groupId: number, color: number, name: string): Promise<number> => {
     const { id: userId } = await userService.create(name, "Игрок", "Отчество", 500, 1, 1, "1990-01-01");
     const { id: teamId } = teamService.create(2, groupId, name, 1, color);
     teamUserService.create(teamId, userId, groupId);
+    const extras: Array<[string, number]> = [["ЗапаснойМ", 1], ["Запасная1", 0], ["Запасная2", 0]];
+    for (const [extraName, sex] of extras) {
+      const { id: extraId } = await userService.create(`${name} ${extraName}`, "Игрок", "Отчество", 400, sex, 1, "1990-01-01");
+      teamUserService.create(teamId, extraId, groupId);
+    }
     return teamId;
   };
 

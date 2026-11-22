@@ -273,15 +273,32 @@ const renderBoardMarkers = (modal) => {
 const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   // матч до 110 очков: дальше счёт не увеличивается
   if (parseInt(el.textContent) >= 110) return;
+  const modal = el.closest('.modal');
+  // разряд без выставленных игроков не начинается: бип и плашка с
+  // причиной, запрос не отправляется (сервер гейтит то же условие)
+  const type = modal.querySelector('.board-game-type-current')?.textContent.trim();
+  const emptyCol = [...modal.querySelectorAll('.board-avatars [data-type]')]
+      .find((c) => c.getAttribute('data-type') === type && c.querySelectorAll('.board-player').length === 0);
+  if (emptyCol) {
+    const teamName = emptyCol.closest('.col')?.querySelector('.board-team-name span')?.textContent.trim() ?? '';
+    showBoardRefusePlate(modal, `В команде «${teamName}» не выставлены игроки в разряде ${type}`);
+    return;
+  }
   let increasedValue = parseInt(el.textContent) + 1;
   el.textContent = increasedValue;
-  const modal = el.closest('.modal');
   // стык партий (type-pos) отправляется из колбэка ответа increase —
   // порядок запросов гарантирован; при реверсе сервер увидел бы счёт
   // до границы, отказал бы — game_type_pos остался бы старым
   let afterIncrease = null;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`,
       {}, (state) => {
+        if (!state) {
+          // отказ сервера (нет матча/пары или пустой ростер на старте
+          // партии — прямой запрос мимо пре-чека): счёт откатываем
+          el.textContent = String(increasedValue - 1);
+          boardBeep(220, 0.1, 0.2);
+          return;
+        }
         updateBoard110State(modal, state);
         if (afterIncrease) afterIncrease();
       });
@@ -600,6 +617,20 @@ const showBoardSwapPlate = (modal) => {
   cloneBoardPlayers(modal, modal.querySelector('.board-swap-overlay'), '.board-swap-players-left', '.board-swap-players-right');
   modal.querySelector('.board-swap-overlay').hidden = false;
 };
+
+// плашка отказа (разряд без выставленных игроков — гейт старта партии):
+// компактная поверх табло с причиной, гаснет по клику (onclick в EJS)
+const showBoardRefusePlate = (modal, text) => {
+  modal.querySelector('.board-refuse-overlay .board-swap-plate-title').textContent = text;
+  modal.querySelector('.board-refuse-overlay').hidden = false;
+  boardBeep(220, 0.1, 0.2);
+  navigator.vibrate?.(30);
+};
+
+const hideBoardRefusePlate = (el) => {
+  el.hidden = true;
+};
+
 
 // «Продолжить» на плашке смены сторон: стороны уже поменяны, просто
 // возвращаем табло в игру

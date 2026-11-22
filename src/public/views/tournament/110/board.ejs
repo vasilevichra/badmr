@@ -18,6 +18,15 @@
                     </div>
                 </div>
             </div>
+            <% /* отказ в очке: разряд без выставленных игроков не
+                  начат (гейт increaseBoardScore и сервера); причина —
+                  крупным текстом, гаснет по клику (hideBoardRefusePlate) */ %>
+            <div class="board-swap-overlay board-refuse-overlay" hidden onclick="hideBoardRefusePlate(this)">
+                <div class="board-swap-plate">
+                    <div class="board-swap-plate-title no-selection"></div>
+                    <div class="board-swap-plate-subtitle secondary-info no-selection">нажмите, чтобы продолжить</div>
+                </div>
+            </div>
             <% /* пауза между партиями: обратный отсчёт с game_break секунд
                   после счёта, кратного 11; прерывается кнопкой; показывает
                   showBoardBreakPlate */ %>
