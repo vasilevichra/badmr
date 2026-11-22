@@ -113,20 +113,18 @@ class OAuthService {
       throw new Error("Вход через VK отменён");
     }
 
-    const tokenResponse = await fetch(TOKEN_URL, {
-      signal: AbortSignal.timeout(10_000),
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        code: req.query.code ?? "",
-        client_id: process.env.VK_CLIENT_ID!,
-        client_secret: process.env.VK_CLIENT_SECRET!,
-        redirect_uri: process.env.VK_REDIRECT_URI || "https://badmr.ru/api/auth/vk/callback",
-        code_verifier: oauthSession.verifier ?? "",
-        state: oauthSession.state,
-      }),
-    });
-    const tokenData = await tokenResponse.json() as { access_token?: string; id_token?: string };
+    const tokenData = await this.postJson<{ access_token?: string; id_token?: string }>(
+        TOKEN_URL,
+        {
+          code: req.query.code ?? "",
+          client_id: process.env.VK_CLIENT_ID!,
+          client_secret: process.env.VK_CLIENT_SECRET!,
+          redirect_uri: process.env.VK_REDIRECT_URI || "https://badmr.ru/api/auth/vk/callback",
+          code_verifier: oauthSession.verifier ?? "",
+          state: oauthSession.state,
+        },
+        "запроса токена",
+    );
     if (!tokenData.access_token || !tokenData.id_token) {
       throw new Error("VK не вернул токен, попробуйте войти ещё раз");
     }
@@ -136,21 +134,39 @@ class OAuthService {
       throw new Error("В токене VK нет идентификатора пользователя");
     }
 
-    const userInfoResponse = await fetch(USER_INFO_URL, {
-      signal: AbortSignal.timeout(10_000),
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ access_token: tokenData.access_token }),
-    });
-    const userInfo = await userInfoResponse.json() as {
-      user?: { email?: string; phone?: string };
-    };
+    const userInfo = await this.postJson<{ user?: { email?: string; phone?: string } }>(
+        USER_INFO_URL,
+        { access_token: tokenData.access_token },
+        "запроса профиля",
+    );
 
     return {
       vkId: payload.sub,
       email: this.normalizeEmail(userInfo.user?.email),
       phone: this.normalizePhone(userInfo.user?.phone),
     };
+  }
+
+  /**
+   * POST к VK с обязательным JSON-ответом. VK на часть ошибок отвечает
+   * HTML-страницей — разбор такого тела кидает SyntaxError с машинным
+   * сообщением; вместо него наружу идёт человеческое с HTTP-статусом.
+   */
+  private async postJson<T>(url: string, body: Record<string, string>, what: string): Promise<T> {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(10_000),
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(body),
+    });
+    const text = await response.text();
+    let data: T;
+    try {
+      data = JSON.parse(text) as T;
+    } catch {
+      throw new Error(`VK ответил не-JSON (${response.status}) на ${what}, попробуйте позже`);
+    }
+    return data;
   }
 
   /** Проверки id_token: подпись по JWKS, iss, aud, exp, nonce. */

@@ -173,6 +173,37 @@ describe("OAuth", () => {
         delete process.env.VK_CLIENT_SECRET;
       }
     });
+
+    // VK на ошибки отвечает HTML-страницей (например 404 «kittenx»): без
+    // защиты json() кидает SyntaxError «Unexpected token '<'…», и его сырое
+    // сообщение уходит во flash пользователю
+    it("handleCallback при HTML-ответе VK даёт человеческое сообщение, а не SyntaxError", async () => {
+      process.env.VK_CLIENT_ID = "cid";
+      process.env.VK_CLIENT_SECRET = "csecret";
+      const session: Record<string, unknown> = {};
+      oauth.startAuth(session, "login");
+      const saved = globalThis.fetch;
+      globalThis.fetch = (async () =>
+        new Response("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><html><head><title>404 Not Found</title></head></html>",
+            { status: 404, headers: { "Content-Type": "text/html; charset=windows-1251" } })) as typeof fetch;
+      try {
+        await assert.rejects(
+          () => oauth.handleCallback({
+            query: { code: "c1", state: (session.oauth as { state: string }).state },
+            session,
+          }),
+          (err: Error) => {
+            assert.ok(/VK/.test(err.message), `неожиданное сообщение: ${err.message}`);
+            assert.ok(!/SyntaxError|Unexpected token/.test(err.message), "сырой SyntaxError утёк в сообщение");
+            return true;
+          },
+        );
+      } finally {
+        globalThis.fetch = saved;
+        delete process.env.VK_CLIENT_ID;
+        delete process.env.VK_CLIENT_SECRET;
+      }
+    });
   });
 
   describe("поиск по vk_id и контактам", () => {
