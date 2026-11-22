@@ -385,25 +385,26 @@ $(document).ready(() => {
           .fail(() => field.text(original));
     });
 
-    // короткое имя в карточке редактируется по клику так же, как дата
-    // рождения: Enter или смена фокуса — сохранить, Esc — отмена;
-    // пустой ввод — сброс (строка возвращается к «не задано»)
-    $('#player-window').on('click', '.player-window-shortname', function () {
+    // короткое имя и контакты в карточке редактируются по клику так же, как
+    // дата рождения: Enter или смена фокуса — сохранить, Esc — отмена;
+    // пустой ввод — сброс (строка возвращается к «не задано»);
+    // куда сохранять — data-endpoint (shortname/email/vk/tg/phone)
+    $('#player-window').on('click', '.player-window-editable', function () {
       const field = $(this);
       if (field.find('input').length) return;
       const original = String(field.data('original-text'));
       field.data('original', original)
           .data('original-html', field.html())
           .removeData('cancelled')
-          .html($('<input>', {type: 'text', class: 'form-control form-control-sm', value: original, placeholder: 'Юра, Лиза…'}));
+          .html($('<input>', {type: 'text', class: 'form-control form-control-sm', value: original, placeholder: String(field.data('placeholder') ?? '')}));
       const input = field.find('input').get(0);
       input.focus();
       input.setSelectionRange(input.value.length, input.value.length);
     });
 
-    $('#player-window').on('keydown', '.player-window-shortname input', function (event) {
+    $('#player-window').on('keydown', '.player-window-editable input', function (event) {
       if (event.key === 'Escape') {
-        $(this).closest('.player-window-shortname').data('cancelled', true);
+        $(this).closest('.player-window-editable').data('cancelled', true);
         $(this).trigger('blur');
       } else if (event.key === 'Enter') {
         event.preventDefault();
@@ -411,21 +412,22 @@ $(document).ready(() => {
       }
     });
 
-    $('#player-window').on('blur', '.player-window-shortname input', function () {
+    $('#player-window').on('blur', '.player-window-editable input', function () {
       const input = $(this);
-      const field = input.closest('.player-window-shortname');
+      const field = input.closest('.player-window-editable');
       if (!field.length) return;
       const cancelled = field.data('cancelled');
       const original = String(field.data('original-text'));
       const originalHtml = String(field.data('original-html'));
-      const shortname = String(input.val()).trim();
+      const value = String(input.val()).trim();
       // ввод закрывается сразу: разметка возвращается к исходной (иконка +
       // имя); после сохранения карточка перезагружается — иконка и
       // data-original-text в разметке обновятся вместе с ней
       field.html(originalHtml).removeData('cancelled').removeData('original').removeData('original-html');
-      if (cancelled || shortname === original) return;
+      if (cancelled || value === original) return;
       const userId = field.data('user-id');
-      $.post(`/api/users/shortname/${userId}`, {shortname: shortname})
+      const endpoint = String(field.data('endpoint'));
+      $.post(`/api/users/${endpoint}/${userId}`, {[endpoint]: value})
           .done(() => openPlayerWindow(userId))
           .fail(() => {});
     });

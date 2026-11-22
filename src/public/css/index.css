@@ -922,19 +922,40 @@ body.phone #player > .container {
   font-size: 0.85rem;
 }
 
-/* Общее правило (не device-специфичное): ссылка VK в соцблоке —
-   текстовый логотип синим, как в макете шапки */
-.vk-link {
-  color: #0077ff;
+/* Общее правило (не device-специфичное): соцблок — flex-строка, метки
+   GH/VK/TG выровнены по центру (горизонталь) и по средней линии (вертикаль) */
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6em;
+}
+
+/* Текстовые метки в соцблоке вместо иконок; перелив шапки (синий →
+   фиолетовый, тема через переменные) — единый градиент на все три метки:
+   каждая растянута на ширину блока (300%) и сдвинута на свою треть,
+   сегменты стыкуются без швов; прозрачный цвет + background-clip: text */
+.social-text {
   font-weight: 700;
   font-size: 0.85rem;
   letter-spacing: 0.02em;
   text-decoration: none;
+  line-height: 1;
   vertical-align: middle;
+  background: var(--badmr-hero-progress-fill);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.vk-link:hover {
-  color: #3395ff;
+.social-text:nth-child(1) { background-position: 0 0; }
+.social-text:nth-child(2) { background-position: 50% 0; }
+.social-text:nth-child(3) { background-position: 100% 0; }
+
+.social-text:hover {
+  filter: brightness(1.25);
 }
 
 .tournament-hero {
@@ -1733,12 +1754,12 @@ body.phone .select-board-score {
   cursor: text;
 }
 
-/* короткое имя: инпут правки — на всю строку, текст по центру, как у h5 */
-.player-window-shortname {
+/* короткое имя и контакты: инпут правки — на всю строку, текст по центру */
+.player-window-editable {
   cursor: text;
 }
 
-.player-window-shortname input {
+.player-window-editable input {
   width: 100%;
   text-align: center;
 }

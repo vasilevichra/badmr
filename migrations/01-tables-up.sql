@@ -154,6 +154,9 @@ CREATE TABLE user
     shortname       TEXT,
     phone           TEXT UNIQUE,
     email           TEXT UNIQUE,
+    -- VK id и Telegram id — будущие идентификаторы входа; NULL — не задан
+    vk_id           TEXT UNIQUE,
+    tg_id           TEXT UNIQUE,
     hashed_password BLOB,
     salt            BLOB,
     sex             INTEGER NOT NULL,

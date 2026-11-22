@@ -33,9 +33,26 @@
                                                // (и админ) редактирует по клику — как дату рождения;
                                                // у залогиненного строка видна всегда, чтобы можно было задать %>
                                             <% if (user.shortname || login) { %>
-                                            <h5 class="text-center mb-1<% if (login) { %> player-window-shortname<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" data-original-text="<%= user.shortname ?? '' %>" title="нажмите, чтобы редактировать"<% } %>>
+                                            <h5 class="text-center mb-1<% if (login) { %> player-window-editable<% } %>"<% if (login) { %> data-endpoint="shortname" data-user-id="<%= user.id %>" data-original-text="<%= user.shortname ?? '' %>" data-placeholder="Юра, Лиза…" title="нажмите, чтобы редактировать"<% } %>>
                                                 <% if (user.shortname) { %><span class="fw-bold">«<%= user.shortname %>»</span><% } else { %><span class="opacity-50">не задано</span><% } %>
                                             </h5>
+                                            <% } %>
+                                            <% // контакты (почта, VK, Telegram, телефон) — будущие идентификаторы
+                                               // входа; видны и редактируются по клику только залогиненным,
+                                               // тем же механизмом, что короткое имя (data-endpoint) %>
+                                            <% if (login) { %>
+                                            <div class="text-center text-secondary mb-1 player-window-editable" data-endpoint="phone" data-user-id="<%= user.id %>" data-original-text="<%= user.phone ?? '' %>" data-placeholder="+79501234567" title="нажмите, чтобы редактировать">
+                                                <i class="bi bi-phone"> </i><% if (user.phone) { %><%= user.phone %><% } else { %><span class="opacity-50">телефон не задан</span><% } %>
+                                            </div>
+                                            <div class="text-center text-secondary mb-1 player-window-editable" data-endpoint="email" data-user-id="<%= user.id %>" data-original-text="<%= user.email ?? '' %>" data-placeholder="mail@example.com" title="нажмите, чтобы редактировать">
+                                                <i class="bi bi-envelope"> </i><% if (user.email) { %><%= user.email %><% } else { %><span class="opacity-50">почта не задана</span><% } %>
+                                            </div>
+                                            <div class="text-center text-secondary mb-1 player-window-editable" data-endpoint="vk" data-user-id="<%= user.id %>" data-original-text="<%= user.vk_id ?? '' %>" data-placeholder="12345678" title="нажмите, чтобы редактировать">
+                                                VK: <% if (user.vk_id) { %><%= user.vk_id %><% } else { %><span class="opacity-50">не задан</span><% } %>
+                                            </div>
+                                            <div class="text-center text-secondary mb-1 player-window-editable" data-endpoint="tg" data-user-id="<%= user.id %>" data-original-text="<%= user.tg_id ?? '' %>" data-placeholder="@username или 123456789" title="нажмите, чтобы редактировать">
+                                                <i class="bi bi-telegram"> </i><% if (user.tg_id) { %><%= user.tg_id %><% } else { %><span class="opacity-50">не задан</span><% } %>
+                                            </div>
                                             <% } %>
                                             <% const monthArray = ['января', 'февралья', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
                                                 'октября', 'ноября', 'декабря'];

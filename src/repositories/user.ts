@@ -74,6 +74,10 @@ class User {
                 c.name                                                                    AS city,
                 u.city_id,
                 u.shortname,
+                u.email,
+                u.phone,
+                u.vk_id,
+                u.tg_id,
                 ul.rating_1,
                 ul.rating_2,
                 ul.site_login,
@@ -538,6 +542,25 @@ class User {
          WHERE id = ?`,
         [shortname, id]
     );
+  }
+
+  /** Контакты карточки игрока (email, vk_id, tg_id, phone) — будущие
+   *  идентификаторы входа; пустая строка — сброс. Email и телефон
+   *  уникальны (UNIQUE в схеме), конфликт ловится как 500 {error}. */
+  setEmail(id: number, email: string | null) {
+    return this.db.run(`UPDATE user SET email = ? WHERE id = ?`, [email, id]);
+  }
+
+  setVk(id: number, vk: string | null) {
+    return this.db.run(`UPDATE user SET vk_id = ? WHERE id = ?`, [vk, id]);
+  }
+
+  setTg(id: number, tg: string | null) {
+    return this.db.run(`UPDATE user SET tg_id = ? WHERE id = ?`, [tg, id]);
+  }
+
+  setPhone(id: number, phone: string | null) {
+    return this.db.run(`UPDATE user SET phone = ? WHERE id = ?`, [phone, id]);
   }
 
   /** Дата рождения редактируется в карточке игрока под админом (YYYY-MM-DD). */

@@ -1,49 +1,41 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
     <%- include('theme'); %>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Бадминтон и ром</title>
+    <!-- interactive-widget=resizes-content: клавиатура на телефоне
+         уменьшает viewport, а не закрывает sheet с формой -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+    <title>Вход — Бадминтон и ром</title>
     <meta name="csrf-token" content="<%= csrfToken %>">
+    <link rel="preload" as="image" href="/assets/images/login-h.webp">
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/index.css">
     <link rel="stylesheet" type="text/css" href="/css/auth.css">
 </head>
 <body class="<%= device %>">
-<div id="login" class="d-flex align-items-center min-vh-100">
-    <div class="container text-center">
-        <section class="prompt">
-            <h1>Вход</h1>
-            <% if (hasMessages) { %>
-                <section class="messages">
-                    <% messages.forEach(function(message) { %>
-                        <p><%= message %></p>
-                    <% }); %>
-                </section>
-            <% } %>
-            <form action="/api/auth/login/password" method="post">
-                <section>
-                    <input id="username" name="username" type="text" autocomplete="username"
-                           placeholder="Почта или телефон" required
-                           autofocus>
-                </section>
-                <section>
-                    <input id="current-password" name="password" type="password"
-                           autocomplete="current-password" placeholder="Пароль" required>
-                </section>
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button type="submit" class="btn btn-outline-primary">Войти</button>
-            </form>
-            <hr>
-            <p><a href="/">На главную</a></p>
-            <p class="help">Нет аккаунта? <a href="/api/auth/signup">Регистрация</a></p>
-            <section style="margin-top: 2.5em">
-                <%- include('social'); %>
+<div class="auth-stage">
+    <section class="auth-sheet">
+        <% // макет «Фото-фон»: фото зала с оверлеем; на телефоне карточка
+           // прижата к низу (удобно под большой палец), на десктопе — справа %>
+        <h1 class="auth-tabs"><span class="tab on" aria-current="page">Вход</span><a class="tab" href="/api/auth/signup">Регистрация</a></h1>
+        <% if (hasMessages) { %>
+            <section class="messages">
+                <% messages.forEach(function(message) { %>
+                    <p><%= message %></p>
+                <% }); %>
             </section>
-        </section>
-    </div>
+        <% } %>
+        <form action="/api/auth/login/password" method="post">
+            <input id="username" name="username" type="text" autocomplete="username"
+                   placeholder="Почта или телефон" required<% if (device !== 'phone') { %> autofocus<% } %>>
+            <input id="current-password" name="password" type="password"
+                   autocomplete="current-password" placeholder="Пароль" required>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn-auth">Войти</button>
+        </form>
+        <p class="auth-links"><a href="/">Главная</a> <span class="dot">·</span> <span class="social"><%- include('social'); %></span></p>
+    </section>
+    <% if (device !== 'phone') { %><%- include('footer', { device: device }); %><% } %>
 </div>
-<%- include('footer', { device: device }); %>
 </body>
 </html>
