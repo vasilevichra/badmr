@@ -156,14 +156,6 @@ router.post('/email/:id', ensureLoggedIn(), (req, res) => {
   res.promise(userService.setEmail(Number(req.params.id), email || null));
 });
 
-router.post('/vk/:id', ensureLoggedIn(), (req, res) => {
-  const vk = String(req.body.vk || '').trim();
-  if (/\s/.test(vk) || vk.length > 50) {
-    return res.status(400).json({error: 'VK id — без пробелов, до 50 символов'});
-  }
-  res.promise(userService.setVk(Number(req.params.id), vk || null));
-});
-
 router.post('/tg/:id', ensureLoggedIn(), (req, res) => {
   const tg = String(req.body.tg || '').trim();
   if (/\s/.test(tg) || tg.length > 50) {

@@ -310,7 +310,7 @@ describe("User routes", () => {
     });
   });
 
-  describe("POST /email/:id, /vk/:id, /tg/:id, /phone/:id", () => {
+  describe("POST /email/:id, /tg/:id, /phone/:id", () => {
     const post = async (field: string, id: number, value: string) => {
       const res = await fetch(`${base}/${field}/${id}`, {
         method: "POST",
@@ -319,15 +319,14 @@ describe("User routes", () => {
       });
       return {status: res.status, body: await res.json() as {error?: string}};
     };
-    const column = (field: string) => ({vk: "vk_id", tg: "tg_id"}[field] ?? field);
+    const column = (field: string) => ({tg: "tg_id"}[field] ?? field);
     const contact = (field: string, id: number): string | null =>
       db.get<{ v: string | null }>(`SELECT ${column(field)} AS v FROM user WHERE id = ?`, [id])!.v;
 
-    it("должен задать и сбросить почту, VK, Telegram и телефон", async () => {
+    it("должен задать и сбросить почту, Telegram и телефон", async () => {
       const id = await createUser();
       for (const [field, value] of [
         ["email", "roman@example.com"],
-        ["vk", "12345678"],
         ["tg", "@roman_v"],
         ["phone", "+79001234567"],
       ] as const) {
@@ -351,11 +350,9 @@ describe("User routes", () => {
       assert.strictEqual(contact("phone", id), null);
     });
 
-    it("должен отклонить vk/tg с пробелами и длиннее 50", async () => {
+    it("должен отклонить tg с пробелами и длиннее 50", async () => {
       const id = await createUser();
-      assert.strictEqual((await post("vk", id, "12 345")).status, 400);
       assert.strictEqual((await post("tg", id, "a".repeat(51))).status, 400);
-      assert.strictEqual(contact("vk", id), null);
       assert.strictEqual(contact("tg", id), null);
     });
   });

@@ -93,6 +93,10 @@ class User {
   select = (city_id: number, tournamentId?: number) => this.user.select(city_id, tournamentId);
   getArchived = (tournamentId?: number) => this.user.getArchived(tournamentId);
   getById = (id: number) => this.user.getById(id);
+  /** Пользователь по привязанному VK ID — вход через VK. */
+  getByVkId = (vkId: string) => this.user.getByVkId(vkId);
+  /** Кандидаты автопривязки VK по email/телефону (любой может быть null). */
+  getContactsMatches = (email: string | null, phone: string | null) => this.user.getByContacts(email, phone);
   /** Локальный игрок по логину badminton4u, если привязка есть в user_lab. */
   getBySiteLogin = (login: string) => this.user.getBySiteLogin(login);
   /** Поиск при регистрации.
