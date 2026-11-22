@@ -14,6 +14,9 @@
     <section class="auth-sheet">
         <h1 class="auth-tabs"><a class="tab" href="/api/auth/login">Вход</a><span class="tab on" aria-current="page">Регистрация</span></h1>
         <p class="auth-links">Скоро: регистрация откроется позже.</p>
+        <% if (vkEnabled) { %>
+            <a class="btn-vk" href="/api/auth/vk">Войти через VK</a>
+        <% } %>
         <p class="auth-links"><a href="/">Главная</a> <span class="dot">·</span> <span class="social"><%- include('social'); %></span></p>
     </section>
     <% if (device !== 'phone') { %><%- include('footer', { device: device }); %><% } %>

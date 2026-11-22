@@ -388,7 +388,7 @@ $(document).ready(() => {
     // короткое имя и контакты в карточке редактируются по клику так же, как
     // дата рождения: Enter или смена фокуса — сохранить, Esc — отмена;
     // пустой ввод — сброс (строка возвращается к «не задано»);
-    // куда сохранять — data-endpoint (shortname/email/vk/tg/phone)
+    // куда сохранять — data-endpoint (shortname/email/tg/phone)
     $('#player-window').on('click', '.player-window-editable', function () {
       const field = $(this);
       if (field.find('input').length) return;
@@ -428,6 +428,15 @@ $(document).ready(() => {
       const userId = field.data('user-id');
       const endpoint = String(field.data('endpoint'));
       $.post(`/api/users/${endpoint}/${userId}`, {[endpoint]: value})
+          .done(() => openPlayerWindow(userId))
+          .fail(() => {});
+    });
+
+    // отвязка VK в карточке: CSRF-токен подставляет глобальный ajaxSetup;
+    // после сброса карточка перезагружается и строка VK меняется
+    $('#player-window').on('click', '.btn-vk-unbind', function () {
+      const userId = $(this).data('user-id');
+      $.post('/api/auth/vk/unbind')
           .done(() => openPlayerWindow(userId))
           .fail(() => {});
     });

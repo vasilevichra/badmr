@@ -155,6 +155,26 @@ input:focus {
   filter: brightness(0.95);
 }
 
+/* Вход через VK: нейтральная кнопка под основной — OAuth-альтернатива,
+   а не главное действие страницы */
+.btn-vk {
+  display: block;
+  margin-top: 8px;
+  padding: 13px;
+  font-size: 16px;
+  font-weight: 600;
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+  background: var(--badmr-input-bg);
+  border: 1px solid var(--badmr-input-border);
+  border-radius: 12px;
+}
+
+.btn-vk:hover {
+  filter: brightness(1.05);
+}
+
 .auth-links {
   margin: 18px 0 12px;
   text-align: center;
