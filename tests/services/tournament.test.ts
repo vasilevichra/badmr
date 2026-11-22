@@ -7,6 +7,8 @@ import { testDbPath } from "../../src/test-db.ts";
 
 import TournamentService from "../../src/services/tournament.ts";
 import UserService from "../../src/services/user.ts";
+import TeamService from "../../src/services/team.ts";
+import TeamUserService from "../../src/services/team-user.ts";
 import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
 
@@ -24,6 +26,8 @@ interface TournamentRow {
 
 const tournamentService = new TournamentService();
 const userService = new UserService();
+const teamService = new TeamService();
+const teamUserService = new TeamUserService();
 const db = new Repository().db;
 
 // состояние турниров читается из БД, а не фиксируется: дамп 05-specific
@@ -134,6 +138,61 @@ describe("Tournament", () => {
       await tournamentService.setStatus(4);
 
       assert.strictEqual((await tournamentService.getById(4) as unknown as TournamentRow).tournament_status_id, 4);
+    });
+  });
+
+  describe("старт турнира: минимальный состав команд (2М+2Ж)", () => {
+    // сеет команду с заданным составом (пол каждого игрока: 1 — М, 0 — Ж);
+    // цвет и имя уникальны в пределах турнира (UNIQUE по группе/цвету)
+    let teamSeq = 0;
+    const seedTeam = async (tournamentId: number, sexes: number[]) => {
+      teamSeq += 1;
+      const { id: teamId } = teamService.create(
+        tournamentId, 1, `Команда состава ${teamSeq}`, 1, ((teamSeq - 1) % 12) + 1,
+      );
+      for (const sex of sexes) {
+        const { id: userId } = await userService.create(
+          `Состав${teamSeq}`, `Игрок${sex}`, "Отчество", 500, sex, 1, "1990-01-01",
+        );
+        teamUserService.create(teamId, userId, 1);
+      }
+      return teamId;
+    };
+
+    const createTournament = async (name: string) => tournamentService.create(
+      1, 1, 1, 1, name,
+      "2026-01-01 10:00:00", "2026-01-02 10:00:00", "2027-01-03 10:00:00",
+      20, 1, "100", "750", "", 0,
+    )!;
+
+    it("не должен перевести турнир в статус «Идёт», если в команде меньше 2 мужчин или 2 женщин", async () => {
+      const id = await createTournament("Старт с неполным составом");
+      await seedTeam(id, [1, 1, 0]); // 2М + 1Ж
+
+      // setStatus синхронный: бросает SQL-ошибку триггера до записи статуса
+      assert.throws(
+        () => tournamentService.setStatus(2, id),
+        /минимум 2 мужчины и 2 женщины/,
+      );
+      // статус не изменился — гейт сработал до записи
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 1);
+    });
+
+    it("должен перевести турнир в статус «Идёт», когда составы укомплектованы", async () => {
+      const id = await createTournament("Старт с полным составом");
+      await seedTeam(id, [1, 1, 0, 0]); // 2М + 2Ж
+
+      await tournamentService.setStatus(2, id);
+
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 2);
+    });
+
+    it("не должен проверять команды без игроков — состав можно добирать и после генерации сетки", async () => {
+      const id = await createTournament("Старт без составов");
+
+      await tournamentService.setStatus(2, id);
+
+      assert.strictEqual((await tournamentService.getById(id) as unknown as TournamentRow).tournament_status_id, 2);
     });
   });
 

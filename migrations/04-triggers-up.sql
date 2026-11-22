@@ -395,6 +395,16 @@ BEGIN
     SELECT RAISE(ABORT, 'матч 110 не может длиться дольше двух часов');
 END;
 
+-- Каскадное удаление игр 110 вместе с матчем: FK в проекте выключены
+-- (enableForeignKeyConstraints: false в db.ts), REFERENCES в схеме —
+-- только документация. Без триггера удаление матча оставляет игры-сироты
+CREATE TRIGGER delete_game_110_when_match_deleted
+    AFTER DELETE
+    ON match_110
+BEGIN
+    DELETE FROM game_110 WHERE match_110_id = old.id;
+END;
+
 -- Норма матчей (matches) против длины калибровочной серии
 -- (calibration_matches): при ненулевой норме серия калибровки обязана
 -- быть короче — иначе игрок никогда не выйдет из калибровки и ни разу
@@ -500,5 +510,31 @@ BEGIN
                    WHERE ts.tournament_id = t.id AND dm.name = 'matches'),
                   CASE WHEN new.name = 'matches' THEN new.value ELSE old.value END
               ) AS INTEGER)
+    );
+END;
+
+-- Минимальный состав команды: 2 мужчины + 2 женщины. Проверяется в момент
+-- перевода турнира в статус «Идёт» (2): до старта состав строится по одному
+-- игроку (POST /api/team/users/create), промежуточные состояния валидны,
+-- поэтому гейт — не на team_user, а на старт турнира. К старту состав
+-- должен быть играемым во всех разрядах табло: ЖО/ЖП требуют женщин,
+-- СП — пару, МО/МП — мужчин. Команды без игроков не проверяются: сетку
+-- генерируют и по командам с ещё не заполненными составами.
+CREATE TRIGGER restrict_tournament_start_by_team_composition
+    BEFORE UPDATE OF tournament_status_id
+    ON tournament
+    WHEN new.tournament_status_id = 2
+     AND old.tournament_status_id != 2
+BEGIN
+    SELECT RAISE(ABORT, 'в каждой команде должно быть минимум 2 мужчины и 2 женщины — проверьте составы перед стартом турнира')
+    WHERE EXISTS (
+        SELECT 1
+        FROM team t
+                 JOIN team_user tu ON tu.team_id = t.id
+                 JOIN user u ON u.id = tu.user_id
+        WHERE t.tournament_id = new.id
+        GROUP BY t.id
+        HAVING SUM(u.sex = 1) < 2
+            OR SUM(u.sex = 0) < 2
     );
 END;
