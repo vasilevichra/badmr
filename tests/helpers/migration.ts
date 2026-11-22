@@ -49,6 +49,9 @@ const volatileSql = `
   DELETE FROM game_110;
   DELETE FROM match_110;
   DELETE FROM team_order_110;
+  -- структура архивных котлов: сид ссылается на матчи t/2, которых после
+  -- сброса нет; без очистки новые матчи (id снова с 1) ложно размечаются
+  DELETE FROM pocket_structure;
 `;
 
 /** Откатывает и заново накатывает данные и сиды тестовой БД,

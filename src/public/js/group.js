@@ -55,6 +55,41 @@ renderGroups = () => {
 
   selectUsersByCity();
 
+  // кнопка «＋» у поля игроков: лёгкая форма создания нового игрока
+  // (ФИО, пол, дата рождения); город — из поля «Город», рейтинг — 300
+  const userCard = $('#tournament-groups-team-add-user-card');
+  $('#tournament-groups-team-add-user-new').off('click').click(() => {
+    userCard.prop('hidden', !userCard.prop('hidden'));
+    if (!userCard.prop('hidden')) $('#tournament-groups-team-add-user-ln').trigger('focus');
+  });
+
+  $('#tournament-groups-team-add-user-create').off('click').click(() => {
+    const fields = ['ln', 'fn', 'bd'].map(f => $(`#tournament-groups-team-add-user-${f}`));
+    if (fields.some(f => !String(f.val()).trim())) {
+      // пустые обязательные — отмечаем стандартной валидацией браузера
+      fields.filter(f => !String(f.val()).trim())[0][0].reportValidity();
+      return;
+    }
+    const user = {
+      ln: String($('#tournament-groups-team-add-user-ln').val()).trim(),
+      fn: String($('#tournament-groups-team-add-user-fn').val()).trim(),
+      pn: String($('#tournament-groups-team-add-user-pn').val()).trim(),
+      rate: 300,
+      // роут users/create понимает пол как radio: 'on' — мужчина
+      sex: $('#tournament-groups-team-add-user-sex-m').prop('checked') ? 'on' : '',
+      city: getSelectedCityId() || 1,
+      bd: String($('#tournament-groups-team-add-user-bd').val())
+    };
+    $.post('/api/users/create', user, (created) => {
+      // новый игрок сразу выбран: option добавляется к select напрямую —
+      // ajax-список select2 догрузится позже, выбранное уже отображено
+      userSelector.append(new Option(`${user.ln} ${user.fn}`, created.id, false, true));
+      userSelector.trigger('change');
+      userCard.prop('hidden', true);
+      fields.forEach(f => f.val(''));
+    });
+  });
+
   $('#tournament-groups-team-add-submit').off('click').click((event) => {
     event.preventDefault();
 
@@ -342,6 +377,14 @@ const editGroupUser = (element, team_id, user_id, user_group_id, user_group_name
 };
 
 const playMatch110 = (teamId1, teamId2) => {
+  // триггеры двухчасовых ограничений (04-triggers-up.sql) роняют вставку
+  // игры/матча с RAISE(ABORT) — сервер отвечает 500 {error: "..."}:
+  // показываем текст пользователю, иначе отказ выглядит как «ничего не
+  // произошло» (матч без игры)
+  const alertError = (xhr) => {
+    const message = xhr?.responseJSON?.error || 'Не удалось создать матч';
+    alert(message);
+  };
   const createMatch = () => $.ajax({
     url: '/api/matches/create110',
     type: 'POST',
@@ -358,8 +401,10 @@ const playMatch110 = (teamId1, teamId2) => {
         url: `/api/games/create110/${data.id}`,
         type: 'POST',
         cache: false,
+        error: alertError,
       });
-    }
+    },
+    error: alertError,
   });
 
   $.get('/api/courts/')
@@ -527,8 +572,13 @@ const updateBoardAvatars = (modal) => {
 // живёт только в открытом табло. При ненулевом счёте кнопка смены сторон
 // прячется — как при первом очке
 const restoreBoardScores = (modal) => {
-  const [teamId1, teamId2] = modal.id.match(/^tournament-groups-board-(\d+)-(\d+)$/)?.slice(1).map(Number) ?? [];
-  if (!teamId1) return;
+  // team id — с data-атрибутов счёта: суффикс id модалки бывает и парой
+  // команд (матрица: board-<t1>-<t2>), и game_id (карманы сетки 110:
+  // board-<game_id>) — парсингом id пару команд не получить
+  const leftScore = modal.querySelector('#board-score-l');
+  const [teamId1, teamId2] = ['data-team-1-id', 'data-team-2-id']
+      .map((attr) => Number(leftScore?.getAttribute(attr)));
+  if (!teamId1 || !teamId2) return;
   $.get(withTournament(`/api/games/current110?team_1_id=${teamId1}&team_2_id=${teamId2}`)).then(game => {
     if (!game) return;
     const left = modal.querySelector('#board-score-l');
@@ -624,7 +674,9 @@ const buildMobileMatrix = () => {
     // соседи таблицы в .d-flex (include доски стоит до ячейки), не внутри
     const nameById = new Map();
     host.querySelectorAll('.modal[id^="tournament-groups-board-"]').forEach((m) => {
-      const [t1, t2] = m.id.replace('tournament-groups-board-', '').split('-').map(Number);
+      // id команд — data-атрибуты модалки (id модалки строится по game_id)
+      const t1 = Number(m.getAttribute('data-team-1-id'));
+      const t2 = Number(m.getAttribute('data-team-2-id'));
       const spans = m.querySelectorAll('.board-team-name span');
       if (spans.length >= 2) {
         nameById.set(t1, spans[0].textContent.trim());
@@ -718,7 +770,7 @@ const renderFinishedMatchScores = () => {
         resume.className = 'btn btn-outline-success btn-sm game-result-resume';
         resume.title = 'Возобновить матч';
         resume.setAttribute('data-bs-toggle', 'modal');
-        resume.setAttribute('data-bs-target', `#tournament-groups-board-${pair}`);
+        resume.setAttribute('data-bs-target', `#tournament-groups-board-${r.game_id}`);
         resume.innerHTML = '<i class="bi bi-play"></i>';
         td.appendChild(resume);
       }
@@ -728,4 +780,62 @@ const renderFinishedMatchScores = () => {
   });
 };
 renderFinishedMatchScores();
-$(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => renderFinishedMatchScores());
+// перерисовка олимпийских деревьев котлов: после завершения матча роутинг
+// на сервере создаёт следующие слоты — дерево строится заново из API.
+// Матрице хватает renderFinishedMatchScores (счёты и кнопки в ячейках)
+const renderBracketPockets = () => {
+  document.querySelectorAll('[id^="tournament-bracket-pocket-"]').forEach(host => {
+    const groupId = host.id.replace('tournament-bracket-pocket-', '');
+    fetch(`${withTournament('/api/matches/bracket110')}&group=${groupId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!data.generated) return;
+          if (document.body.classList.contains('phone')) {
+            renderBracketMobile(host, data);
+          } else {
+            renderBracket(host, data);
+          }
+          window.renderBracketLines?.();
+        });
+  });
+};
+$(document).on('hidden.bs.modal', '[id^="tournament-groups-board-"]', () => {
+  renderFinishedMatchScores();
+  renderBracketPockets();
+});
+
+// сводная таблица котла (М/И/В/П/О, О = В): один запрос на каждый
+// контейнер [data-standings-group] (group.ejs); порядок — как отдал API
+// (очки ↓, личка, diff, сеяние), номер строки и есть место (М).
+// После закрытия табло не перестраиваем: standings меняются только по
+// завершении матча, а перерисовка счётов (renderFinishedMatchScores)
+// уже перестраивает мобильные чипы
+const renderStandings = () => {
+  document.querySelectorAll('[data-standings-group]').forEach(host => {
+    const groupId = host.getAttribute('data-standings-group');
+    // basket — фильтр корзины котла (секция C1/C2/… в group.ejs)
+    const basket = host.getAttribute('data-standings-basket');
+    $.get(`${withTournament('/api/games/110/standings')}&group=${groupId}${basket ? `&basket=${basket}` : ''}`).then(rows => {
+      const el = host.querySelector('.tournament-standings');
+      if (!el) return;
+      el.innerHTML = '';
+      const table = document.createElement('table');
+      table.className = 'table tournament-standings-table';
+      table.innerHTML = '<thead><tr>' +
+          '<th>М</th><th class="text-start">Команда</th><th>И</th><th>В</th><th>П</th><th>О</th>' +
+          '</tr></thead>';
+      const tbody = document.createElement('tbody');
+      (rows || []).forEach((r, i) => {
+        const tr = document.createElement('tr');
+        const label = r.city ? `${r.city} — ${r.name}` : r.name;
+        tr.innerHTML = `<td>${i + 1}</td>` +
+            `<td class="text-start">${label}</td>` +
+            `<td>${r.games}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.points}</td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      el.appendChild(table);
+    });
+  });
+};
+renderStandings();

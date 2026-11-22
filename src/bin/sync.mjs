@@ -362,7 +362,9 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const HEADER = `-- Перенос обновлений из живой базы. Дополняется скриптом
 -- src/bin/sync.mjs (перенос prod → dev + слияние с существующим дампом),
 -- руками не править.
--- Секретные данные (пароли) не выгружаются — их сеет Specific.ts при регистрации.
+-- Пароли (hashed_password, salt) выгружаются как есть — вход воссоздаётся
+-- из миграций без Specific.ts; сменил пароль на проде — прогони sync:prod
+-- до следующего release, иначе хэш в дампе откатится к старому.
 `;
 
   const merged = mergeDump(dev, fs.existsSync(DUMP) ? fs.readFileSync(DUMP, "utf8") : HEADER);

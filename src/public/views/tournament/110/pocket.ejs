@@ -1,0 +1,159 @@
+<% /* Сетка котла 110 под составами своей группы, два источника:
+      1) pocket — серверная реконструкция архивного турнира (матчи групповой
+         матрицы, разложенные по котлам);
+      2) org 1 без реконструкции — клиентский рендер из
+         GET /api/matches/bracket110?tournament=<id>&group=<groupId>
+         (renderBracket/renderBracketMobile из bracket.js); без сгенерированной
+         сетки — заглушка и кнопка генерации, идущие матчи — серверные
+         модалки табло (как ▶ в матрице). */ %>
+<% if (pocket) { %>
+<% /* Реконструкция архива. Режим «две жизни» (twoLives): колонки кругов,
+      переходы рисует bracket.js (renderBracketLines) — сплошная линия:
+      победитель идёт в следующий матч, пунктир: проигравший получает вторую
+      жизнь. Олимпийский режим: дерево победителей по кругам финала + секция
+      доигровок проигравших (без заголовка — заголовок группы уже есть);
+      бай 1-го круга — плашка без соперника с прочерком. Незавершённые
+      матчи — без счёта, подсветки и линий переходов. */ %>
+<%
+var esc = (s) => String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+var teamName = (team) => esc(team.city ? team.city + ' — ' + team.name : team.name);
+// hex цвета команды с решёткой (team_color.hex хранится без неё)
+var teamColor = (team) => team.color ? '#' + team.color : 'transparent';
+var teamStripe = (team) => '<span class="tournament-bracket-team-stripe" style="background:' + teamColor(team) + '"></span>';
+// карточка матча: data-team на строках команд — по ним bracket.js ищет,
+// куда ушли победитель и проигравший; place_N — итоговое место команды,
+// если этот матч последний для неё в котле (кружок у имени)
+var card = (m, opts) => {
+    var place = (p) => p
+        ? '<span class="tournament-bracket-team-place' + (p <= 3 ? ' tournament-bracket-team-place-prize' : '') + '">' + p + '</span>'
+        : '';
+    var rows = [[m.team_1, m.score_1, m.team_1_id, m.place_1], [m.team_2, m.score_2, m.team_2_id, m.place_2]].map(([team, score, id, pl]) =>
+        '<div class="tournament-bracket-team' + (m.finished && m.winner_id === id ? ' tournament-bracket-team-winner' : '') + '" data-team="' + id + '">' +
+        teamStripe(team) +
+        '<span class="tournament-bracket-team-name">' + teamName(team) + '</span>' + place(pl) +
+        '<span class="tournament-bracket-score">' + (m.finished ? score : '—') + '</span></div>'
+    ).join('');
+    return '<div class="tournament-bracket-match' + (m.finished ? '' : ' tournament-bracket-match-empty') +
+        (opts.cons ? ' tournament-bracket-match-cons' : '') + '" data-mid="' + m.id + '">' + rows + '</div>';
+};
+// бай 1-го круга: та же плашка в две строки, соперник и счёты — прочерки;
+// команда бая — «победитель без игры» (жирная строка, как у выигравших);
+// data-bye/data-team — от неё bracket.js рисует стрелку в следующий матч
+var byeCard = (b) =>
+    '<div class="tournament-bracket-match tournament-bracket-match-empty" data-bye="' + b.team_id + '">' +
+    '<div class="tournament-bracket-team tournament-bracket-team-winner" data-team="' + b.team_id + '">' +
+    teamStripe(b.team) +
+    '<span class="tournament-bracket-team-name">' + teamName(b.team) + '</span>' +
+    '<span class="tournament-bracket-score">—</span></div>' +
+    '<div class="tournament-bracket-team">' +
+    '<span class="tournament-bracket-team-name">—</span>' +
+    '<span class="tournament-bracket-score">—</span></div></div>';
+// заголовки кругов олимпийского режима: колонок мало, считаем от финала
+var mainTitle = (ri, total) => ri + 1 === total ? 'Финал' : '1/' + 2 ** (total - ri - 1) + ' финала';
+var consTitle = (ri, total) => ri + 1 === total ? 'Финал доигровок' : '1/' + 2 ** (total - ri - 1) + ' доигровок';
+%>
+<div class="tournament-bracket-pocket" data-lines="<%= pocket.twoLives ? 'lives' : 'win' %>">
+    <% if (!pocket.rounds.length && !pocket.consRounds.length) { %>
+    <div class="tournament-bracket-empty">Матчей не было</div>
+    <% } %>
+    <div class="tournament-bracket-pocket-rounds">
+        <% pocket.rounds.forEach((round, ri) => { %>
+        <div class="tournament-bracket-round">
+            <div class="tournament-bracket-round-title"><%= pocket.twoLives ? (ri + 1) + '-й круг' : mainTitle(ri, pocket.rounds.length) %></div>
+            <div class="tournament-bracket-round-matches">
+            <% /* бай-плашки 1-го круга встают после якорного матча (after) —
+                  рядом с соперником своего следующего матча */ %>
+            <% var roundByes = !pocket.twoLives && ri === 0 ? [...pocket.mainByes] : []; %>
+            <% round.forEach(m => { %><%- card(m, {cons: false, lives: pocket.twoLives}) %><%
+                for (var bi = roundByes.length - 1; bi >= 0; bi--) {
+                    if (roundByes[bi].after === m.id) { %><%- byeCard(roundByes[bi]) %><% roundByes.splice(bi, 1); }
+                } %><% }); %>
+            <% roundByes.forEach(b => { %><%- byeCard(b) %><% }); %>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+    <% if (!pocket.twoLives && pocket.consRounds.length) { %>
+    <div class="tournament-bracket-pocket-rounds">
+        <% pocket.consRounds.forEach((round, ri) => { %>
+        <div class="tournament-bracket-round">
+            <% if (pocket.consRounds.length > 1) { %>
+            <div class="tournament-bracket-round-title"><%= consTitle(ri, pocket.consRounds.length) %></div>
+            <% } %>
+            <div class="tournament-bracket-round-matches">
+            <% var consByes = ri === 0 ? [...pocket.consByes] : []; %>
+            <% round.forEach(m => { %><%- card(m, {cons: true, lives: false}) %><%
+                for (var bi = consByes.length - 1; bi >= 0; bi--) {
+                    if (consByes[bi].after === m.id) { %><%- byeCard(consByes[bi]) %><% consByes.splice(bi, 1); }
+                } %><% }); %>
+            <% consByes.forEach(b => { %><%- byeCard(b) %><% }); %>
+            </div>
+        </div>
+        <% }); %>
+    </div>
+    <% } %>
+</div>
+<% if (pocket.rounds.length || pocket.consRounds.length) { %>
+<script>
+    // bracket.js подключён внизу страницы — линии переходов после его загрузки
+    document.addEventListener('DOMContentLoaded', () => { window.renderBracketLines?.(); });
+</script>
+<% } %>
+<% } else if (org === 1) { %>
+<% /* Сгенерированная сетка котла — хост клиентского рендера */ %>
+<% if (bracket && bracket.generated) { %>
+    <div id="tournament-bracket-pocket-<%= group_id %>" class="tournament-bracket"></div>
+<% } else { %>
+    <div class="row text-center pt-4">
+        <div class="col text-muted">Сетка ещё не сгенерирована</div>
+    </div>
+    <% if (user && tournament.tournament_status_id === 2) { %>
+    <div class="row pt-2">
+        <div class="col text-center">
+            <button type="button" class="btn btn-outline-primary" data-generate-group="<%= group_id %>">Сгенерировать сетку</button>
+        </div>
+    </div>
+    <% } %>
+<% } %>
+<% /* модалки табло идущих матчей сетки — те же, что открывает матрица */ %>
+<% ((bracket && bracket.matches) || []).filter(m => m.finished === 0 && m.game_id !== null).forEach(live => { %>
+    <%- include('board', {gameId: live.game_id, teamIds: [live.team_1_id, live.team_2_id], teamNames: [(teams[live.team_1_id] ?? {}).name ?? '', (teams[live.team_2_id] ?? {}).name ?? ''], startScores: [0, 0], teamAvatars: [boardAvatars[live.team_1_id], boardAvatars[live.team_2_id]], teamColors: [(teams[live.team_1_id] ?? {}).color, (teams[live.team_2_id] ?? {}).color]}); %>
+<% }); %>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/matches/bracket110?tournament=<%= tournament_id %>&group=<%= group_id %>')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.generated) return;
+                const host = document.getElementById('tournament-bracket-pocket-<%= group_id %>');
+                if (!host) return;
+                if (document.body.classList.contains('phone')) {
+                    renderBracketMobile(host, data);
+                } else {
+                    renderBracket(host, data);
+                }
+            });
+    });
+</script>
+<% if (user && (!bracket || !bracket.generated) && tournament.tournament_status_id === 2) { %>
+<script>
+    (function () {
+        const btn = document.querySelector('[data-generate-group="<%= group_id %>"]');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            fetch('/api/matches/generate110?tournament=<%= tournament_id %>&group_id=<%= group_id %>', {method: 'POST', headers: {'CSRF-Token': csrfToken()}})
+                .then(r => {
+                    if (!r.ok) return r.json().then(b => Promise.reject(new Error(b.error || 'Не удалось сгенерировать сетку')));
+                    location.reload();
+                })
+                .catch(e => {
+                    alert(e.message);
+                    btn.disabled = false;
+                });
+        });
+    })();
+</script>
+<% } %>
+<% } %>

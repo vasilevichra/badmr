@@ -7,6 +7,11 @@ import UserRouter from "../../src/routes/user.ts";
 import TeamRouter from "../../src/routes/team.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
 import Repository from "../../src/repositories/common.ts";
+import Match110Repository from "../../src/repositories/match110.ts";
+import Game110Repository from "../../src/repositories/game110.ts";
+import TeamService from "../../src/services/team.ts";
+import TeamUserService from "../../src/services/team-user.ts";
+import UserService from "../../src/services/user.ts";
 import { clean } from "../helpers/migration.ts";
 import type { AddressInfo } from "node:net";
 
@@ -237,6 +242,41 @@ describe("Game routes", () => {
         [g1, 8, null],
         [games[1].id, null, 19],
       ]);
+    });
+  });
+
+  describe("GET /110/standings", () => {
+    it("возвращает сводную таблицу 110 турнира", async () => {
+      const match110 = new Match110Repository();
+      const game110 = new Game110Repository();
+      const teamService = new TeamService();
+      const teamUserService = new TeamUserService();
+      const userService = new UserService();
+      const seedTeam = async (name: string, rating: number, color: number): Promise<number> => {
+        const { id: userId } = await userService.create(name, "Игрок", "Отчество", 500, 1, 1, "1990-01-01");
+        db.run(`INSERT INTO user_lab (user_id, rating_1) VALUES (?, ?)`, [userId, rating]);
+        const { id: teamId } = teamService.create(4, 1, name, 1, color);
+        teamUserService.create(teamId, userId, 1);
+        return teamId;
+      };
+      const a = await seedTeam("А", 100, 1);
+      const b = await seedTeam("Б", 90, 2);
+      const c = await seedTeam("В", 80, 3);
+      const play = (x: number, y: number, sx: number, sy: number): void => {
+        const { id } = match110.create(x, y, 4);
+        game110.create(id);
+        db.run(`UPDATE game_110 SET score_1 = ?, score_2 = ? WHERE match_110_id = ?`, [sx, sy, id]);
+        db.run(`UPDATE match_110 SET finished = 1 WHERE id = ?`, [id]);
+      };
+      play(a, b, 110, 80);
+      play(b, c, 110, 70);
+      play(c, a, 110, 90);
+
+      const res = await fetch(`${base}/110/standings?tournament=4`);
+      assert.strictEqual(res.status, 200);
+      const rows = await res.json() as { team_id: number; points: number; diff: number }[];
+      assert.deepStrictEqual(rows.map(r => r.team_id), [a, b, c]);
+      assert.deepStrictEqual(rows.map(r => [r.points, r.diff]), [[1, 10], [1, 10], [1, -20]]);
     });
   });
 });

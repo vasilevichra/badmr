@@ -1,45 +1,27 @@
 <% if (kind === 'page') { %>
-    <!doctype html>
-<html lang="en">
+<!doctype html>
+<html lang="ru">
 <head>
     <%- include('theme'); %>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Бадминтон и ром</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+    <title>Регистрация — Бадминтон и ром</title>
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="/css/index.css">
     <link rel="stylesheet" type="text/css" href="/css/auth.css">
 </head>
-<body>
-<section class="prompt">
-    <h3><a href="/">Бадминтон и ром</a></h3>
-    <h1>Регистрация</h1>
-    <img src="/assets/images/soon.jpeg" width=100%></img>
-</section>
+<body class="<%= device %>">
+<div class="auth-stage">
+    <section class="auth-sheet">
+        <h1 class="auth-tabs"><a class="tab" href="/api/auth/login">Вход</a><span class="tab on" aria-current="page">Регистрация</span></h1>
+        <p class="auth-links">Скоро: регистрация откроется позже.</p>
+        <p class="auth-links"><a href="/">Главная</a> <span class="dot">·</span> <span class="social"><%- include('social'); %></span></p>
+    </section>
+    <% if (device !== 'phone') { %><%- include('footer', { device: device }); %><% } %>
+</div>
+</body>
+</html>
 <% } %>
 
 <% if (kind === 'modal') { %>
    <%- include('modal/player/add'); %>
-<% } %>
-
-<script>
-  function sendData(event) {
-    event.preventDefault();
-    const formData = new FormData(event);
-    alert(JSON.stringify(formData));
-    // fetch('/submit', {
-    //   method: 'POST',
-    //   body: formData
-    // })
-    // .then(response => response.text())
-    // .then(data => {
-    //   document.getElementById('result').innerHTML = data;
-    // });
-  }
-</script>
-
-<% if (kind === 'page') { %>
-    <%- include('footer'); %>
-</body>
-</html>
 <% } %>

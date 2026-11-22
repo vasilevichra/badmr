@@ -309,4 +309,54 @@ describe("User routes", () => {
       assert.strictEqual(result?.player?.id, 12345);
     });
   });
+
+  describe("POST /email/:id, /vk/:id, /tg/:id, /phone/:id", () => {
+    const post = async (field: string, id: number, value: string) => {
+      const res = await fetch(`${base}/${field}/${id}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({[field]: value}),
+      });
+      return {status: res.status, body: await res.json() as {error?: string}};
+    };
+    const column = (field: string) => ({vk: "vk_id", tg: "tg_id"}[field] ?? field);
+    const contact = (field: string, id: number): string | null =>
+      db.get<{ v: string | null }>(`SELECT ${column(field)} AS v FROM user WHERE id = ?`, [id])!.v;
+
+    it("должен задать и сбросить почту, VK, Telegram и телефон", async () => {
+      const id = await createUser();
+      for (const [field, value] of [
+        ["email", "roman@example.com"],
+        ["vk", "12345678"],
+        ["tg", "@roman_v"],
+        ["phone", "+79001234567"],
+      ] as const) {
+        const res = await post(field, id, value);
+        assert.strictEqual(res.status, 200, `${field}: ${JSON.stringify(res.body)}`);
+        assert.strictEqual(contact(field, id), value);
+        // пустое значение — сброс (NULL)
+        const reset = await post(field, id, "");
+        assert.strictEqual(reset.status, 200, `${field}: ${JSON.stringify(reset.body)}`);
+        assert.strictEqual(contact(field, id), null);
+      }
+    });
+
+    it("должен отклонить неверную почту и неверный телефон", async () => {
+      const id = await createUser();
+      assert.strictEqual((await post("email", id, "не-почта")).status, 400);
+      assert.strictEqual((await post("email", id, "a@b@c.ru")).status, 400);
+      assert.strictEqual((await post("phone", id, "89522341567")).status, 400);
+      assert.strictEqual((await post("phone", id, "+7952")).status, 400);
+      assert.strictEqual(contact("email", id), null);
+      assert.strictEqual(contact("phone", id), null);
+    });
+
+    it("должен отклонить vk/tg с пробелами и длиннее 50", async () => {
+      const id = await createUser();
+      assert.strictEqual((await post("vk", id, "12 345")).status, 400);
+      assert.strictEqual((await post("tg", id, "a".repeat(51))).status, 400);
+      assert.strictEqual(contact("vk", id), null);
+      assert.strictEqual(contact("tg", id), null);
+    });
+  });
 });

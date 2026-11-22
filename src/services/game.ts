@@ -1,11 +1,15 @@
 import GameRepository from '../repositories/game.ts';
 import Game110Repository from '../repositories/game110.ts';
+import Match110Repository from '../repositories/match110.ts';
 import MatchRepository from '../repositories/match.ts';
+import BracketService from './bracket.ts';
 import RatingService from './rating.ts';
 import SettingsService from './settings.ts';
 
 const ratingService = new RatingService();
 const matchRepository = new MatchRepository();
+const match110Repository = new Match110Repository();
+const bracketService = new BracketService();
 const settingsService = new SettingsService();
 
 class Game {
@@ -26,7 +30,24 @@ class Game {
   getById = (id: number) => this.game.getById(id);
   getCurrentByTeamIds = (teamId1: number, teamId2: number, tournamentId?: number) => this.game110.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
   getResults = (tournamentId?: number) => this.game110.getResults(tournamentId);
-  increaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.increaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
+  /** Очко 110 + роутинг сетки: после завершения матча (finished=1)
+   *  прокидываем победителя/проигравшего в целевые слоты. Вызов
+   *  идемпотентен (слот создаётся один раз), поэтому срабатывает и при
+   *  повторных очках по уже завершённому матчу. Матричные матчи
+   *  (stage IS NULL) роутинг пропускает внутри сервиса. */
+  increaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => {
+    // игру берём ДО очка: после финиша матча getCurrentByTeamIds пуст
+    // (фильтр finished = 0), а нам нужен match_110_id для роутинга
+    const game = this.game110.getCurrentByTeamIds(teamId1, teamId2, tournamentId);
+    const board = this.game110.increaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
+    if (game) {
+      const match = match110Repository.getById(game.match_110_id);
+      if (match?.finished === 1) {
+        bracketService.onMatchFinished(match.id);
+      }
+    }
+    return board;
+  };
   decreaseCurrentByTeamIds = (teamId1: number, teamId2: number, teamNumber: string, tournamentId?: number) => this.game110.decreaseCurrentByTeamIds(teamId1, teamId2, teamNumber, tournamentId);
   /** Подача на 0:0 — тап/двойной клик судьи по чётному игроку пары. */
   setCurrentServeByTeamIds = (teamId1: number, teamId2: number, userId: number, tournamentId?: number) => this.game110.setCurrentServeByTeamIds(teamId1, teamId2, userId, tournamentId);

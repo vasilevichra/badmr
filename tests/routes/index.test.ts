@@ -6,7 +6,12 @@ import IndexRouter from "../../src/routes/index.ts";
 import MatchService from "../../src/services/match.ts";
 import GameService from "../../src/services/game.ts";
 import TournamentService from "../../src/services/tournament.ts";
+import SettingsService from "../../src/services/settings.ts";
 import UserService from "../../src/services/user.ts";
+import TeamService from "../../src/services/team.ts";
+import TeamUserService from "../../src/services/team-user.ts";
+import Match110Repository from "../../src/repositories/match110.ts";
+import Game110Repository from "../../src/repositories/game110.ts";
 import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
 import type { AddressInfo } from "node:net";
@@ -126,6 +131,96 @@ describe("Tournament page", () => {
 
     assert.strictEqual(res.status, 404);
     assert.match(html, /Неизвестный турнир/);
+  });
+});
+
+describe("Историческая сетка архива 110", () => {
+  const db = new Repository().db;
+  const userService = new UserService();
+  const teamService = new TeamService();
+  const teamUserService = new TeamUserService();
+  const match110 = new Match110Repository();
+  const game110 = new Game110Repository();
+
+  // состав команды — полный (2М+2Ж): гейт старта турнира требует
+  // играемый состав в каждом разряде табло; первый игрок — мужского пола
+  const seedTeam = async (groupId: number, color: number, name: string): Promise<number> => {
+    const { id: userId } = await userService.create(name, "Игрок", "Отчество", 500, 1, 1, "1990-01-01");
+    const { id: teamId } = teamService.create(2, groupId, name, 1, color);
+    teamUserService.create(teamId, userId, groupId);
+    const extras: Array<[string, number]> = [["ЗапаснойМ", 1], ["Запасная1", 0], ["Запасная2", 0]];
+    for (const [extraName, sex] of extras) {
+      const { id: extraId } = await userService.create(`${name} ${extraName}`, "Игрок", "Отчество", 400, sex, 1, "1990-01-01");
+      teamUserService.create(teamId, extraId, groupId);
+    }
+    return teamId;
+  };
+
+  it("архив 110 system 1 без слотов показывает реконструкцию по котлам вместо заглушки сетки", async () => {
+    // котлы фикстуры: группа 5 = 'C', группа 7 = 'D'; турнир 2 — архив (status 3) типа 110
+    // цвета не пересекаются с командами фикстуры турнира 2 (UNIQUE tournament+group+color)
+    const a = await seedTeam(5, 1, "Стрелы");
+    const b = await seedTeam(5, 4, "Волки");
+    await seedTeam(7, 2, "Дротики");
+    const { id: mid } = match110.create(a, b, 2);
+    game110.create(mid);
+    db.run(`UPDATE game_110 SET score_1 = 110, score_2 = 95 WHERE match_110_id = ?`, [mid]);
+    db.run(`UPDATE match_110 SET finished = 1 WHERE id = ?`, [mid]);
+
+    const res = await fetch(`${base}t/2`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    // сетки котлов рендерятся под составами групп (2 котла)
+    assert.match(html, /tournament-bracket-pocket/);
+    assert.match(html, /Стрелы/);
+    assert.match(html, /110<\/span>/); // счёт победителя
+    // заглушка генерации сетки не показывается — реконструкция вместо неё
+    assert.doesNotMatch(html, /bracket-generate/);
+    // секция доигровок рисуется без отдельного заголовка (дубль котла-группы)
+    assert.doesNotMatch(html, /Доигровки</);
+  });
+
+  it("архив 110 system 2 реконструкцию не показывает", async () => {
+    const settingsService = new SettingsService();
+    // оба котла t/2 (C и D) переводим в круговую — реконструкция не рисуется
+    await settingsService.set('org_system.c', '2', 2);
+    await settingsService.set('org_system.d', '2', 2);
+    const a = await seedTeam(5, 7, "Соколы");
+    const b = await seedTeam(5, 10, "Тигры");
+    const { id: mid } = match110.create(a, b, 2);
+    game110.create(mid);
+    db.run(`UPDATE game_110 SET score_1 = 110, score_2 = 90 WHERE match_110_id = ?`, [mid]);
+    db.run(`UPDATE match_110 SET finished = 1 WHERE id = ?`, [mid]);
+
+    const res = await fetch(`${base}t/2`);
+    const html = await res.text();
+
+    assert.strictEqual(res.status, 200);
+    // реконструкцию по котлам не рисуем; заглушка bracket-generate для
+    // авторизованного — штатное поведение pocket.ejs, её не проверяем
+    assert.doesNotMatch(html, /Котёл /);
+  });
+
+  it("идущий турнир 110 без сетки показывает per-pocket кнопку генерации, архив — нет", async () => {
+    const settingsService = new SettingsService();
+    // котёл C: олимпийка с корзинами; residents 1 (сид t/2) — группового
+    // этапа нет, сетка сеется сразу по силе, до генерации — заглушка
+    await settingsService.set('org_system.c', '1', 2);
+    await seedTeam(5, 12, "Фениксы");
+    db.run("UPDATE tournament SET tournament_status_id = 2 WHERE id = 2");
+
+    const running = await fetch(`${base}t/2`);
+    const runningHtml = await running.text();
+    assert.strictEqual(running.status, 200);
+    assert.match(runningHtml, /Сетка ещё не сгенерирована/);
+    assert.match(runningHtml, /data-generate-group="5"/);
+
+    db.run("UPDATE tournament SET tournament_status_id = 3 WHERE id = 2");
+    const archive = await fetch(`${base}t/2`);
+    const archiveHtml = await archive.text();
+    assert.strictEqual(archive.status, 200);
+    assert.doesNotMatch(archiveHtml, /data-generate-group/);
   });
 });
 

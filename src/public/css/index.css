@@ -848,6 +848,16 @@ body.desktop #tournament-new-registration-hint > .row {
   position: relative;
 }
 
+/* телефон: таблица игроков — на всю ширину карточки турнира (шапки).
+   Карточка сидит в одном .container с margin 12px (итого 24px от края),
+   а таблица — во вложенном .container (см. tournament/new/index.ejs)
+   внутри .col: без обнуления внутреннего паддинга она уже карточки
+   на 12px с каждой стороны */
+body.phone #player > .container {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* небольшой зазор после селекта подразделения в шапке — даёт gap формы */
 #header #unit {
   margin-right: 0;
@@ -912,19 +922,40 @@ body.desktop #tournament-new-registration-hint > .row {
   font-size: 0.85rem;
 }
 
-/* Общее правило (не device-специфичное): ссылка VK в соцблоке —
-   текстовый логотип синим, как в макете шапки */
-.vk-link {
-  color: #0077ff;
+/* Общее правило (не device-специфичное): соцблок — flex-строка, метки
+   GH/VK/TG выровнены по центру (горизонталь) и по средней линии (вертикаль) */
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6em;
+}
+
+/* Текстовые метки в соцблоке вместо иконок; перелив шапки (синий →
+   фиолетовый, тема через переменные) — единый градиент на все три метки:
+   каждая растянута на ширину блока (300%) и сдвинута на свою треть,
+   сегменты стыкуются без швов; прозрачный цвет + background-clip: text */
+.social-text {
   font-weight: 700;
   font-size: 0.85rem;
   letter-spacing: 0.02em;
   text-decoration: none;
+  line-height: 1;
   vertical-align: middle;
+  background: var(--badmr-hero-progress-fill);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-.vk-link:hover {
-  color: #3395ff;
+.social-text:nth-child(1) { background-position: 0 0; }
+.social-text:nth-child(2) { background-position: 50% 0; }
+.social-text:nth-child(3) { background-position: 100% 0; }
+
+.social-text:hover {
+  filter: brightness(1.25);
 }
 
 .tournament-hero {
@@ -1105,8 +1136,15 @@ body.phone .tournament-hero-name {
   font-size: 1.2rem;
 }
 
+/* телефон: вся второстепенная строка шапки (бейдж типа, дата, рег-строка,
+   чипы, «Вход») — единый кегль 0.875rem: ниже таблицы (1rem), выше ничего.
+   Иначе пять разных размеров (0.7/0.75/0.8/0.875) выглядят в разнобой */
+body.phone .tournament-hero-type {
+  font-size: 0.875rem;
+}
+
 body.phone .tournament-hero-chip {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   padding: 0.1rem 0.55rem;
   /* длинный адрес не влезает в экран: чип занимает всю доступную ширину
      ряда, адрес переносится внутри пилюли на вторую строку */
@@ -1157,7 +1195,7 @@ body.phone .tournament-hero .user {
 }
 
 body.phone .tournament-hero form.login .btn {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   padding: 2px 10px;
 }
 
@@ -1716,12 +1754,12 @@ body.phone .select-board-score {
   cursor: text;
 }
 
-/* короткое имя: инпут правки — на всю строку, текст по центру, как у h5 */
-.player-window-shortname {
+/* короткое имя и контакты: инпут правки — на всю строку, текст по центру */
+.player-window-editable {
   cursor: text;
 }
 
-.player-window-shortname input {
+.player-window-editable input {
   width: 100%;
   text-align: center;
 }
@@ -2242,6 +2280,12 @@ body.phone .select-board-score {
   color: rgba(25, 135, 84, 0.45);
 }
 
+/* Таблица игроков — системным шрифтом: Raleway у́же системного на ~10%
+   (замер «Щетинин Р.»: 78.6px против 87.9px), в таблице выглядит сжатым */
+#player-table {
+  font-family: var(--bs-body-font-family);
+}
+
 #player-table .player-name-cell {
   display: flex;
   align-items: center;
@@ -2333,6 +2377,29 @@ body:not(.phone) #player-table .player-calibration {
 }
 #tournament-groups-team-add .modal-body > *:last-child {
   margin-bottom: 0;
+}
+
+/* Поле игроков с приклеенной справа кнопкой «＋» (новый игрок): select2
+   забирает остаток ширины, скругление и граница — только с внешних сторон
+   пары, как у input-group; карточка нового игрока — лёгкая форма, вдвинута
+   на четверть ширины, чтобы читалась как продолжение поля. */
+#tournament-groups-team-add .team-add-users-group {
+  display: flex;
+}
+#tournament-groups-team-add .team-add-users-group .select2 {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#tournament-groups-team-add .team-add-users-group .select2 .select2-selection {
+  width: 100%;
+  border-radius: var(--bs-border-radius) 0 0 var(--bs-border-radius);
+  border-right: 0;
+}
+#tournament-groups-team-add .team-add-users-group .btn {
+  border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
+}
+#tournament-groups-team-add .team-add-user-card {
+  margin-left: 25%;
 }
 
 /* Плейсхолдер инпута «Название» — тот же цвет, что у плейсхолдеров
@@ -2735,6 +2802,15 @@ body.phone [id^="tournament-groups-board-"] .modal-content * {
    капсом; плашка паузы не задевается (там пользователь просил строчные). */
 .board-swap-overlay:not(.board-break-overlay) .board-swap-plate-title {
   text-transform: uppercase;
+}
+
+/* Плашка отказа (разряд без выставленных игроков): после правил выше —
+   текст-причина длинный, без капса и nowrap, шрифт скромнее */
+.board-swap-overlay.board-refuse-overlay .board-swap-plate-title {
+  font-size: 5vh;
+  white-space: normal;
+  text-transform: none;
+  max-width: 90%;
 }
 
 /* Общее правило (не device-специфичное). Подзаголовок «приготовиться:»
@@ -3500,4 +3576,304 @@ body.desktop:has(> #footer.fixed-bottom) {
 /* стрелка одиночного выбора — светлый штрих вместо #343a40 */
 [data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection--single {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23dee2e6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* ===== Олимпийская сетка 110 (bracket.js, system 1) ===== */
+
+/* верхняя сетка: колонки раундов, внутри каждой пары матчей разнесены
+   по высоте поровну — классический вид «расходящегося» дерева.
+   Центрирование — auto-полями краёв, а не justify-content: center:
+   при переполнении (overflow-x: auto) центр обрезал бы левую колонку
+   без возможности доскроллить, auto-поля при нехватке места схлопываются */
+.tournament-bracket-upper {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.tournament-bracket-upper > :first-child {
+  margin-left: auto;
+}
+
+.tournament-bracket-upper > :last-child {
+  margin-right: auto;
+}
+
+.tournament-bracket-round {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+/* заголовок круга над колонкой: капс, мелкий, серый — как в макете */
+.tournament-bracket-round-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--bs-secondary-color);
+  text-align: center;
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+
+/* матчи круга: равномерное распределение по высоте колонки — пары
+   следующего круга сходятся ровно между парами предыдущего (дерево) */
+.tournament-bracket-round-matches {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.tournament-bracket-match {
+  position: relative;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: var(--bs-body-bg);
+}
+
+.tournament-bracket-match-empty {
+  border-style: dashed;
+}
+
+/* решающий матч (финал сетки, финал кармана): зелёная рамка как в макете */
+.tournament-bracket-match-final {
+  border: 2px solid var(--bs-success);
+}
+
+/* матч доигровки — пунктир */
+.tournament-bracket-match-cons {
+  border-style: dashed;
+}
+
+/* подпись итоговых мест в углу решающего матча («1–2 места») */
+.tournament-bracket-place {
+  width: fit-content;
+  margin-left: auto;
+  margin-top: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, .12);
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+}
+
+.tournament-bracket-empty {
+  color: var(--bs-secondary-color);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.tournament-bracket-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+/* цвет команды тонкой полоской в начале строки */
+.tournament-bracket-team-stripe {
+  flex: none;
+  width: 4px;
+  align-self: stretch;
+  border-radius: 2px;
+}
+
+.tournament-bracket-team + .tournament-bracket-team {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.tournament-bracket-team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* итоговое место команды (в её последнем матче котла): кружок с цифрой
+   у имени; 1–3 — призёры (зелёный), остальные — нейтральный серый */
+.tournament-bracket-team-place {
+  flex: none;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #adb5bd;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.tournament-bracket-team-place-prize {
+  background: #198754;
+}
+
+.tournament-bracket-team-winner .tournament-bracket-team-name,
+.tournament-bracket-team-winner .tournament-bracket-score {
+  font-weight: 700;
+}
+
+.tournament-bracket-score {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* кнопка старта/возобновления — рельс справа на всю высоту карточки,
+ * в два раза шире обычной ▶-кнопки: удобный тап на телефоне;
+ * карточка резервирует место паддингом, кнопка не торчит наружу */
+.tournament-bracket-match-rail {
+  padding-right: 46px;
+}
+
+.tournament-bracket-rail {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  border: 0;
+  border-left: 1px solid var(--bs-border-color);
+  border-radius: 0 9px 9px 0;
+  background: var(--bs-success-bg-subtle);
+  color: var(--bs-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.tournament-bracket-rail:hover {
+  background: var(--bs-success);
+  color: #fff;
+}
+
+/* карман доигровок: заголовок + колонки раундов кармана */
+.tournament-bracket-pocket {
+  margin-top: 28px;
+  /* воздух снизу: сетка — последний элемент группы, до следующей группы
+     нужен зазор больше штатного */
+  margin-bottom: 36px;
+}
+
+.tournament-bracket-pocket-title {
+  font-size: 1.1rem;
+  margin: 0 0 12px;
+  /* содержимое кармана (колонки раундов) центрировано — заголовок центрируем
+     вместе с ним, иначе секция выглядит прижатой влево */
+  text-align: center;
+}
+
+.tournament-bracket-pocket-rounds {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  /* дерево котла — по центру группы; safe: широкая «двухжизненная»
+     реконструкция не должна обрезаться слева */
+  justify-content: center;
+  justify-content: safe center;
+}
+
+/* доигровки идут следом за основным деревом без заголовка — воздух сверху */
+.tournament-bracket-pocket-rounds + .tournament-bracket-pocket-rounds {
+  margin-top: 28px;
+}
+
+/* линии переходов реконструкции котлов (bracket.js → renderBracketLines):
+   svg под колонками, колонки позиционированы, чтобы краситься поверх */
+/* хост линий переходов: и реконструкция (.tournament-bracket-pocket), и
+   клиентский рендер живой сетки (.tournament-bracket) */
+.tournament-bracket-pocket[data-lines],
+.tournament-bracket[data-lines] {
+  position: relative;
+}
+
+.tournament-bracket-pocket[data-lines] .tournament-bracket-round {
+  position: relative;
+}
+
+.tournament-bracket-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.tournament-bracket-line-win {
+  fill: none;
+  stroke: var(--bs-border-color);
+  stroke-width: 2;
+}
+
+/* «вторая жизнь» проигравшего — пунктир */
+.tournament-bracket-line-life {
+  fill: none;
+  stroke: var(--bs-border-color);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+
+/* мобайл: вертикальный список; у матчей карманов — пунктирная стрелка
+   слева, отличающая доигровки от верхней сетки */
+.tournament-bracket-mobile {
+  display: none;
+}
+
+body.phone .tournament-bracket-upper,
+body.phone .tournament-bracket-pocket-rounds {
+  display: none;
+}
+
+/* на телефоне десктопные секции карманов целиком скрыты — их заголовки
+   дублируются в мобильном списке */
+body.phone .tournament-bracket-pocket {
+  display: none;
+}
+
+body.phone .tournament-bracket-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.phone .tournament-bracket-pocket-mobile {
+  margin-left: 14px;
+}
+
+body.phone .tournament-bracket-pocket-mobile::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  width: 10px;
+  border-top: 2px dashed var(--bs-border-color);
+}
+
+
+/* Сводная таблица котла (И/В/П/О) под матрицей — рендерит group.js
+   (renderStandings) в контейнер [data-standings-group] из group.ejs.
+   На телефоне таблица узкая (5 колонок чисел) — гасим гаттеры ячеек,
+   чтобы строки не переносились */
+.tournament-standings-table {
+  margin-bottom: 2em;
+}
+
+.tournament-standings-table th,
+.tournament-standings-table td {
+  padding: 0.35rem 0.5rem;
+}
+
+.tournament-standings-table th:not(.text-start),
+.tournament-standings-table td:not(.text-start) {
+  text-align: center;
+  width: 2.2em;
 }

@@ -1,3 +1,12 @@
+<% /* Каждая группа живёт своей схемой (orgByGroup): круговая (org 2 или
+      мультибуквенная группа) — матрица; олимпийский котёл (org 1) —
+      корзины (при групповом этапе) и сетка под составами. Для архивов
+      без слотов — реконструкция сыгранных матчей по котлам:
+      мапа group_id → котёл */ %>
+<% var pocketByGroup = {}; %>
+<% if (bracketHistorical) { %>
+    <% bracketHistorical.pockets.forEach(p => { pocketByGroup[p.group_id] = p; }); %>
+<% } %>
 <div id="tournament-groups" class="tournament-groups">
     <div class="container">
         <% if (user) { %>
@@ -18,19 +27,29 @@
         <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12 desc">
                 <div id="tournament-groups-block">
-                    <% groups.forEach((g, i) => { %>
-                        <%- include('group', {index: i, group: g, user: user, teamRests: teamRests}); %>
+                    <% groups.forEach((g, i) => { var gid = Number(Object.keys(g)[0]); %>
+                        <%- include('group', {index: i, group: g, user: user, teamRests: teamRests, group_id: gid, org: orgByGroup[gid], groupStage: stageByGroup[gid], pocket: pocketByGroup[gid] ?? null, bracket: bracketByGroup[gid] ?? null, baskets: basketByGroup[gid] ?? null}); %>
                     <% }) %>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<% /* имена/цвета команд для клиентского рендера сеток (bracket.js) —
+      раньше собирал bracket.ejs, теперь он общий для всех котлов */ %>
+<% var bracketTeams = {}; %>
+<% groups.forEach(g => { Object.values(Object.values(g)[0]).forEach(tg => { %>
+<%   bracketTeams[tg[0].team_id] = {name: String(tg[0].team_name), city: String(tg[0].team_city ?? ''), color: tg[0].team_color}; %>
+<% }); }); %>
+<script>
+  window.bracketTeams = <%- JSON.stringify(bracketTeams) %>;
+  window.bracketSignedIn = <%= user ? 'true' : 'false' %>;
+</script>
 
 <% if (user) { %>
 <div class="container">
     <div class="row"><i class="toggler bi bi-chevron-down" onclick="toggler.toggle(this)" role="button" tabindex="0" aria-label="Свернуть или развернуть блок"></i></div>
-    <div id="settings" class="settings closable">
+    <div id="settings" class="settings closable" data-tournament-id="<%= tournament_id %>">
         <h1 class="text-center no-selection">Настройки</h1>
         <table id="settings-table" class="mx-auto w-auto"></table>
     </div>

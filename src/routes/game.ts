@@ -2,8 +2,10 @@ import Express from 'express';
 const router = Express.Router();
 import { ensureLoggedIn } from 'connect-ensure-login';
 import GameService from '../services/game.ts';
+import MatchService from '../services/match.ts';
 import requestedTournament from '../tournament-request.ts';
 const gameService = new GameService();
+const matchService = new MatchService();
 
 router.get('/current110', (req, res) => {
   res.promise(gameService.getCurrentByTeamIds(Number(req.query.team_1_id), Number(req.query.team_2_id), requestedTournament(req)));
@@ -39,6 +41,13 @@ router.post('/current/swap', ensureLoggedIn(), (req, res) => {
 // финишировавший — только счёт, идущий — счёт и кнопка возобновления
 router.get('/110/results', (req, res) => {
   res.promise(gameService.getResults(requestedTournament(req)));
+});
+
+// сводная таблица 110 (весь турнир, одна группа или одна корзина котла)
+router.get('/110/standings', (req, res) => {
+  const group = req.query.group === undefined ? undefined : Number(req.query.group);
+  const basket = req.query.basket === undefined ? undefined : Number(req.query.basket);
+  res.promise(matchService.standings110(requestedTournament(req), group, basket));
 });
 
 router.get('/:id', (req, res) => {

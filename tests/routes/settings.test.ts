@@ -47,6 +47,19 @@ describe("Settings API", () => {
     assert.ok(rows.some((r) => r.name === "wins" && r.description));
   });
 
+  it("зеркало type возвращает тип запрошенного турнира, а не текущего", async () => {
+    // турнир 2 — тип 110 (2), текущий — тип 1: для ?tournament=2 type должен быть «2»
+    // API разворачивает строку: тело — само значение типа («2»)
+    const res = await fetch(`${base}/type?tournament=2`);
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(await res.text(), "2");
+
+    // без параметра — тип текущего турнира (id 4, тип 1)
+    const current = await fetch(`${base}/type`);
+    assert.strictEqual(await current.text(), "1");
+  });
+
   it("должен сохранить значение настройки в tournament_settings текущего турнира", async () => {
     // в тестовой БД текущий турнир — id 4; для wins значение не переопределено
     const res = await post("wins", "3");

@@ -81,7 +81,7 @@ CREATE TABLE defaults
 (
     id          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
     name        TEXT    NOT NULL UNIQUE
-                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'fifty', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_days', 'rating_diff_limit', 'rating_diff_divisor', 'delta_auto', 'rematch_window', 'delta_auto_window', 'delta_auto_lower', 'delta_auto_upper', 'crawl_cache_m', 'crawl_min_ms', 'crawl_max_ms', 'game_break')),
+                        CHECK (name IN ('state', 'region', 'city', 'timezone', 'delta', 'proc', 'type', 'matches', 'wins', 'game_point', 'max_point', 'B_max', 'C_max', 'D_max', 'E_max', 'F_max', 'G_max', 'H_max', 'capacity', 'courts', 'r_min', 'r_max', 'fee', 'fifty', 'calibration_matches', 'calibration_boost', 'calibration_cap', 'calibration_days', 'rating_diff_limit', 'rating_diff_divisor', 'delta_auto', 'rematch_window', 'delta_auto_window', 'delta_auto_lower', 'delta_auto_upper', 'crawl_cache_m', 'crawl_min_ms', 'crawl_max_ms', 'game_break', 'org_system.a', 'org_system.b', 'org_system.c', 'org_system.d', 'org_system.e', 'org_system.f', 'org_system.g', 'org_system.h', 'group_residents.a', 'group_residents.b', 'group_residents.c', 'group_residents.d', 'group_residents.e', 'group_residents.f', 'group_residents.g', 'group_residents.h')),
     value       TEXT    NOT NULL,
     description TEXT    NOT NULL,
     -- все настройки хранят неотрицательные целые
@@ -94,7 +94,11 @@ CREATE TABLE defaults
     CHECK (name <> 'H_max' OR CAST(value AS INTEGER) > 0),
     CHECK (name <> 'r_min' OR CAST(value AS INTEGER) > 0),
     -- выключатели подбора: Система 50% и автоподстройка дельты
-    CHECK (name NOT IN ('fifty', 'delta_auto') OR value IN ('0', '1'))
+    CHECK (name NOT IN ('fifty', 'delta_auto') OR value IN ('0', '1')),
+    -- схема проведения котла (только 110): 1 - олимпийка с корзинами, 2 - круговая
+    CHECK (name NOT GLOB 'org_system.[a-h]' OR CAST(value AS INTEGER) BETWEEN 1 AND 2),
+    -- размер корзины группового этапа котла (только 110)
+    CHECK (name NOT GLOB 'group_residents.[a-h]' OR CAST(value AS INTEGER) >= 1)
 );
 
 CREATE TABLE tournament_settings
@@ -150,6 +154,9 @@ CREATE TABLE user
     shortname       TEXT,
     phone           TEXT UNIQUE,
     email           TEXT UNIQUE,
+    -- VK id и Telegram id — будущие идентификаторы входа; NULL — не задан
+    vk_id           TEXT UNIQUE,
+    tg_id           TEXT UNIQUE,
     hashed_password BLOB,
     salt            BLOB,
     sex             INTEGER NOT NULL,
@@ -233,8 +240,30 @@ CREATE TABLE match_110
     team_1_id     INTEGER  NOT NULL CONSTRAINT team1 REFERENCES team,
     team_2_id     INTEGER  NOT NULL CONSTRAINT team2 REFERENCES team,
     court_id      INTEGER  NOT NULL CONSTRAINT court REFERENCES court,
+    -- котёл матча (группа команды 1); слот сетки идентифицируется вместе
+    -- с group_id — уникальность в рамках котла
+    group_id      INTEGER NULL CONSTRAINT match_110_group REFERENCES "group",
+    -- слот в олимпийской сетке (см. src/services/bracket-structure.ts):
+    -- stage upper/lower + round/pos идентифицируют матч структуры; 'group' —
+    -- матч группового этапа (system 2); NULL — свободная матрица: сетка не
+    -- генерировалась или круговая система
+    stage         TEXT,
+    round         INTEGER,
+    pos           INTEGER,
     finished       INTEGER  NOT NULL DEFAULT 0,
-    CHECK (finished IN (0, 1))
+    CHECK (finished IN (0, 1)),
+    CHECK (stage IN ('upper', 'lower', 'group')),
+    -- слот задан целиком (upper/lower), отсутствует (NULL) или групповой
+    -- этап (group — без round/pos)
+    CHECK (
+        (stage IS NULL AND round IS NULL AND pos IS NULL)
+        OR (stage = 'group' AND round IS NULL AND pos IS NULL)
+        OR (stage IN ('upper', 'lower') AND round IS NOT NULL AND pos IS NOT NULL)
+    ),
+    -- один матч на слот котла (где сетка, там уникальные слоты); для
+    -- stage NULL/'group' с NULL round/pos NULL-значения в UNIQUE различимы —
+    -- групповые и матричные матчи не ограничены
+    UNIQUE (tournament_id, group_id, stage, round, pos)
 );
 
 CREATE TABLE game
@@ -334,6 +363,9 @@ CREATE TABLE team
     name          TEXT    NOT NULL,
     city_id       INTEGER NOT NULL CONSTRAINT city REFERENCES city,
     team_color_id INTEGER NOT NULL CONSTRAINT team_color REFERENCES team_color,
+    -- номер корзины группового этапа внутри котла (1-based; org_system = 1
+    -- и group_residents > 1); NULL — команда вне группового этапа
+    basket        INTEGER NULL,
     UNIQUE (tournament_id, city_id, name),
     UNIQUE (tournament_id, group_id, team_color_id)
 );

@@ -4,6 +4,11 @@ import Express, { type Express as App } from "express";
 import MatchRouter from "../../src/routes/match.ts";
 import UserRouter from "../../src/routes/user.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
+import TeamService from "../../src/services/team.ts";
+import SettingsService from "../../src/services/settings.ts";
+import TeamUserService from "../../src/services/team-user.ts";
+import UserService from "../../src/services/user.ts";
+import Repository from "../../src/repositories/common.ts";
 import { clean } from "../helpers/migration.ts";
 import type { AddressInfo } from "node:net";
 
@@ -108,6 +113,57 @@ describe("Match routes", () => {
 
       const unfinished = await (await fetch(`${base}/unfinished`)).json();
       assert.deepStrictEqual(unfinished, []);
+    });
+  });
+
+  describe("GET /bracket110", () => {
+    // сеет n команд в турнир фикстура (4) и переводит его в «Идёт»
+    const teamService = new TeamService();
+    const teamUserService = new TeamUserService();
+    const userService = new UserService();
+    const db = new Repository().db;
+    const seedTeams = async (n: number): Promise<Map<number, number>> => {
+      db.run(`UPDATE tournament SET tournament_status_id = 2 WHERE id = 4`);
+      const seedToTeam = new Map<number, number>();
+      for (let k = 1; k <= n; k++) {
+        const { id: userId } = await userService.create(`Сеянный${k}`, `Игрок${k}`, "Отчество", 500, 1, 1, "1990-01-01");
+        db.run(`INSERT INTO user_lab (user_id, rating_1) VALUES (?, ?)`, [userId, 1000 - k * 10]);
+        const { id: teamId } = teamService.create(4, 1, `Команда ${k}`, 1, ((k - 1) % 12) + 1);
+        teamUserService.create(teamId, userId, 1);
+        seedToTeam.set(k, teamId);
+      }
+      const settingsService = new SettingsService();
+      await settingsService.set('org_system.a', '1', 4);
+      await settingsService.set('group_residents.a', '1', 4);
+      return seedToTeam;
+    };
+
+    it("без сгенерированной сетки — generated: false", async () => {
+      await seedTeams(8);
+      const res = await fetch(`${base}/bracket110`);
+      assert.strictEqual(res.status, 200);
+      assert.deepStrictEqual(await res.json(), {generated: false});
+    });
+
+    it("после generate — структура и матчи раунда 1", async () => {
+      const seedToTeam = await seedTeams(8);
+      const gen = await post(`${base}/generate110`, {group_id: 1});
+      assert.strictEqual(gen.status, 200);
+
+      const res = await fetch(`${base}/bracket110?group=1`);
+      const body = await res.json() as {
+        generated: boolean;
+        structure: { size: number; slots: unknown[] };
+        matches: { slot: { stage: string; round: number; pos: number }; team_1_id: number; team_2_id: number; score_1: number; score_2: number; finished: number }[];
+      };
+      assert.strictEqual(body.generated, true);
+      assert.strictEqual(body.structure.size, 8);
+      const r1 = body.matches.filter(m => m.slot.stage === 'upper' && m.slot.round === 1);
+      assert.strictEqual(r1.length, 4);
+      const teams = new Set(r1.flatMap(m => [m.team_1_id, m.team_2_id]));
+      const seeded = [...seedToTeam.values()];
+      assert.ok(seeded.every(t => teams.has(t)), "все сеяные в матчах раунда 1");
+      assert.ok(r1.every(m => m.finished === 0 && m.score_1 === 0 && m.score_2 === 0));
     });
   });
 });

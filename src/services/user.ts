@@ -169,6 +169,10 @@ class User {
   setRating = (id: number, rating: number) => this.user.setRating(id, rating);
   setName = (id: number, lastname: string, firstname: string, patronymic: string | null) => this.user.setName(id, lastname, firstname, patronymic);
   setShortname = (id: number, shortname: string | null) => this.user.setShortname(id, shortname);
+  setEmail = (id: number, email: string | null) => this.user.setEmail(id, email);
+  setVk = (id: number, vk: string | null) => this.user.setVk(id, vk);
+  setTg = (id: number, tg: string | null) => this.user.setTg(id, tg);
+  setPhone = (id: number, phone: string | null) => this.user.setPhone(id, phone);
   setBirthday = (id: number, birthday: string) => this.user.setBirthday(id, birthday);
   getDaysUntilBirthday = (id: number) => this.user.getDaysUntilBirthday(id);
   getMatchesCount = (id: number, tournamentId?: number) => this.user.getMatchesCount(id, tournamentId);

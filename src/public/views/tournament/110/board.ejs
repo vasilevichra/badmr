@@ -1,12 +1,12 @@
-<div class="modal fade" id="tournament-groups-board-<%= gameId %>" data-game-break="<%= settings.game_break %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="tournament-groups-board-<%= gameId %>" data-team-1-id="<%= teamIds[0] %>" data-team-2-id="<%= teamIds[1] %>" data-game-break="<%= settings.game_break %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
             <% /* плашка смены сторон: закрывает табло, пока стороны
                   не подтверждены кнопкой; показывает swapBoardSidesPlate */ %>
             <div class="board-swap-overlay" hidden>
                 <div class="board-swap-plate">
-                    <div class="board-swap-plate-title">Смена сторон</div>
-                    <div class="board-swap-plate-subtitle secondary-info">приготовиться:</div>
+                    <div class="board-swap-plate-title no-selection">Смена сторон</div>
+                    <div class="board-swap-plate-subtitle secondary-info no-selection">приготовиться:</div>
                     <% /* игроки с ФИ и аватаркой — как на табло: JS клонирует
                           сюда видимых игроков текущего разряда (lib.js,
                           showBoardSwapPlate) */ %>
@@ -18,14 +18,23 @@
                     </div>
                 </div>
             </div>
+            <% /* отказ в очке: разряд без выставленных игроков не
+                  начат (гейт increaseBoardScore и сервера); причина —
+                  крупным текстом, гаснет по клику (hideBoardRefusePlate) */ %>
+            <div class="board-swap-overlay board-refuse-overlay" hidden onclick="hideBoardRefusePlate(this)">
+                <div class="board-swap-plate">
+                    <div class="board-swap-plate-title no-selection"></div>
+                    <div class="board-swap-plate-subtitle secondary-info no-selection">нажмите, чтобы продолжить</div>
+                </div>
+            </div>
             <% /* пауза между партиями: обратный отсчёт с game_break секунд
                   после счёта, кратного 11; прерывается кнопкой; показывает
                   showBoardBreakPlate */ %>
             <div class="board-swap-overlay board-break-overlay" hidden>
                 <div class="board-swap-plate">
-                    <div class="board-swap-plate-title">таймаут</div>
-                    <div class="board-break-seconds"></div>
-                    <div class="board-swap-plate-subtitle secondary-info">приготовиться:</div>
+                    <div class="board-swap-plate-title no-selection">таймаут</div>
+                    <div class="board-break-seconds no-selection"></div>
+                    <div class="board-swap-plate-subtitle secondary-info no-selection">приготовиться:</div>
                     <% /* игроки с ФИ и аватаркой — как на табло: JS клонирует
                           сюда видимых игроков текущего разряда (lib.js,
                           showBoardBreakPlate) */ %>
@@ -58,7 +67,7 @@
                                         <% teamAvatars[0][avatarType].forEach(player => { %>
                                             <div class="board-player" data-user-id="<%= player.id %>">
                                                 <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
-                                                <div class="board-player-name"><%= player.name %></div>
+                                                <div class="board-player-name no-selection"><%= player.name %></div>
                                             </div>
                                         <% }); %>
                                     </div>
@@ -95,7 +104,7 @@
                                         <% teamAvatars[1][avatarType].forEach(player => { %>
                                             <div class="board-player" data-user-id="<%= player.id %>">
                                                 <span class="board-player-avatar" title="<%= player.name %>"><%- playerAvatarFormatter(player.pic, player.sex) %></span>
-                                                <div class="board-player-name"><%= player.name %></div>
+                                                <div class="board-player-name no-selection"><%= player.name %></div>
                                             </div>
                                         <% }); %>
                                     </div>

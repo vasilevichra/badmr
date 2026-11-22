@@ -38,6 +38,43 @@ class Team {
         [name, team_id]
     );
   }
+
+  /** Команды котла в порядке добавления — вход раскладки корзин. */
+  byGroup(group_id: number): { id: number; basket: number | null }[] {
+    return this.db.all<{ id: number; basket: number | null }>(
+        `SELECT id, basket
+         FROM team
+         WHERE group_id = ?
+         ORDER BY id`,
+        [group_id]
+    );
+  }
+
+  /** Средний рейтинг пары котла: rating_1 последней записи user_lab
+   *  каждого игрока, AVG пропускает игроков без рейтинга; null — рейтинга
+   *  нет ни у кого. */
+  ratingsByGroup(group_id: number): Map<number, number | null> {
+    const rows = this.db.all<{ team_id: number; r: number | null }>(
+        `SELECT tu.team_id AS team_id,
+                AVG((SELECT ul.rating_1 FROM user_lab ul
+                     WHERE ul.user_id = tu.user_id
+                     ORDER BY ul.id DESC LIMIT 1)) AS r
+         FROM team_user tu
+         WHERE tu.group_id = ?
+         GROUP BY tu.team_id`,
+        [group_id]
+    );
+    return new Map(rows.map(row => [row.team_id, row.r]));
+  }
+
+  setBasket(team_id: number, basket: number | null) {
+    return this.db.run(
+        `UPDATE team
+         SET basket = ?
+         WHERE id = ?`,
+        [basket, team_id]
+    );
+  }
 }
 
 export default Team;

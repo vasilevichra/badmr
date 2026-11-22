@@ -319,6 +319,38 @@ describe("Game", () => {
       assert.strictEqual(game.score_1, 110);
       assert.strictEqual(game.score_2, 45);
     });
+
+    it("не должен давать очко в разряде без выставленных игроков", async () => {
+      // команда 1 — два мужчины (женские разряды ЖО/ЖП без игроков),
+      // команда 2 — м+ж (ростеры непусты)
+      const ids: number[] = [];
+      for (let i = 1; i <= 4; i++) {
+        const { id } = await userService.create(`Игрок${i}`, `Имя${i}`, "Отчество", 500, i === 4 ? 0 : 1, 1, "1990-01-01");
+        ids.push(id);
+      }
+      await teamService.create(1, 1, "Команда М", 1, 1);
+      await teamService.create(1, 1, "Команда С", 2, 2);
+      await teamUserService.create(1, ids[0], 1);
+      await teamUserService.create(1, ids[1], 1);
+      await teamUserService.create(2, ids[2], 1);
+      await teamUserService.create(2, ids[3], 1);
+      const match = await matchService.create110(1, 2) as { id: number };
+      await gameService.create110(match.id);
+
+      // ЖО (typePos 1) — у команды 1 нет женщин: очко не засчитывается
+      await gameService.setTypePosByTeamIds(1, 2, 1);
+      const refused = await gameService.increaseCurrentByTeamIds(1, 2, "1");
+      const refusedState = await gameService.getCurrentByTeamIds(1, 2) as Game110Row;
+      assert.strictEqual(refused, null);
+      assert.strictEqual(refusedState.score_1, 0);
+      assert.strictEqual(refusedState.score_2, 0);
+
+      // МО (typePos 0) — игроки есть: очко идёт
+      await gameService.setTypePosByTeamIds(1, 2, 0);
+      await gameService.increaseCurrentByTeamIds(1, 2, "1");
+      const started = await gameService.getCurrentByTeamIds(1, 2) as Game110Row;
+      assert.strictEqual(started.score_1, 1);
+    });
   });
 
   describe("increaseCurrentByTeamIds: чётность и подача (110)", () => {
@@ -388,13 +420,16 @@ describe("Game", () => {
       assert.strictEqual(r.serve_user_id, sp2[0].id);
     });
 
-    it("при пустом ростере победителя чётность и подача не трогаются", async () => {
+    it("при пустом ростере в идущей партии очко засчитывается, чётность и подача не трогаются", async () => {
       const { team1, team2, match110Id } = await seedMatch110();
       await gameService.create110(match110Id);
       db.run(`UPDATE game_110 SET game_type_pos = 4 WHERE match_110_id = ?`, [match110Id]);
       const sp1 = (await teamOrderService.avatars(team1))["СП"];
       const sp2 = (await teamOrderService.avatars(team2))["СП"];
-      // состав 2-й команды изменился между розыгрышами: в разряде никого
+      // партия начата при полном составе; затем состав 2-й команды
+      // изменился: в разряде никого. Старт партии с пустым ростером
+      // гейтится (см. «не должен давать очко…»), идущая — доигрывается
+      await gameService.increaseCurrentByTeamIds(team1, team2, "1");
       db.run(`DELETE FROM team_user WHERE team_id = 2`);
       db.run(`UPDATE game_110 SET even_1_user_id = ?, even_2_user_id = ?, serve_user_id = ?
              WHERE match_110_id = ?`, [sp1[0].id, sp2[0].id, sp1[0].id, match110Id]);

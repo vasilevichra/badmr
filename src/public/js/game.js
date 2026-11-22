@@ -683,6 +683,15 @@ $(document).on('click', '.game-board-score', function () {
   gameBoardScore(this, true);
 });
 
+// десктоп: правый клик по счёту — минус очко (корректировка судьёй), левый
+// остаётся +1. Гейт hover: на тач-устройствах долгий тап тоже стреляет
+// contextmenu — там уменьшение уже есть свайпом (touchend выше)
+$(document).on('contextmenu', '.game-board-score', function (e) {
+  if (!window.matchMedia('(hover: hover)').matches) return;
+  e.preventDefault();
+  gameBoardScore(this, false);
+});
+
 // свап чётности пары (общий для десктоп-клика и мобильного свайпа):
 // игроки пары меняются кортами, подача следует за чётностью счёта пары.
 // Только при 0:0 — при идущем счёте чётность определяют очки

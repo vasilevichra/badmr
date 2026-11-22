@@ -273,15 +273,32 @@ const renderBoardMarkers = (modal) => {
 const increaseBoardScore = (el, team_1_id, team_2_id, team_number) => {
   // матч до 110 очков: дальше счёт не увеличивается
   if (parseInt(el.textContent) >= 110) return;
+  const modal = el.closest('.modal');
+  // разряд без выставленных игроков не начинается: бип и плашка с
+  // причиной, запрос не отправляется (сервер гейтит то же условие)
+  const type = modal.querySelector('.board-game-type-current')?.textContent.trim();
+  const emptyCol = [...modal.querySelectorAll('.board-avatars [data-type]')]
+      .find((c) => c.getAttribute('data-type') === type && c.querySelectorAll('.board-player').length === 0);
+  if (emptyCol) {
+    const teamName = emptyCol.closest('.col')?.querySelector('.board-team-name span')?.textContent.trim() ?? '';
+    showBoardRefusePlate(modal, `В команде «${teamName}» не выставлены игроки в разряде ${type}`);
+    return;
+  }
   let increasedValue = parseInt(el.textContent) + 1;
   el.textContent = increasedValue;
-  const modal = el.closest('.modal');
   // стык партий (type-pos) отправляется из колбэка ответа increase —
   // порядок запросов гарантирован; при реверсе сервер увидел бы счёт
   // до границы, отказал бы — game_type_pos остался бы старым
   let afterIncrease = null;
   $.post(`/api/games/current110/increase?team_1_id=${team_1_id}&team_2_id=${team_2_id}&team_number=${team_number}`,
       {}, (state) => {
+        if (!state) {
+          // отказ сервера (нет матча/пары или пустой ростер на старте
+          // партии — прямой запрос мимо пре-чека): счёт откатываем
+          el.textContent = String(increasedValue - 1);
+          boardBeep(220, 0.1, 0.2);
+          return;
+        }
         updateBoard110State(modal, state);
         if (afterIncrease) afterIncrease();
       });
@@ -601,6 +618,20 @@ const showBoardSwapPlate = (modal) => {
   modal.querySelector('.board-swap-overlay').hidden = false;
 };
 
+// плашка отказа (разряд без выставленных игроков — гейт старта партии):
+// компактная поверх табло с причиной, гаснет по клику (onclick в EJS)
+const showBoardRefusePlate = (modal, text) => {
+  modal.querySelector('.board-refuse-overlay .board-swap-plate-title').textContent = text;
+  modal.querySelector('.board-refuse-overlay').hidden = false;
+  boardBeep(220, 0.1, 0.2);
+  navigator.vibrate?.(30);
+};
+
+const hideBoardRefusePlate = (el) => {
+  el.hidden = true;
+};
+
+
 // «Продолжить» на плашке смены сторон: стороны уже поменяны, просто
 // возвращаем табло в игру
 const hideBoardSwapPlate = (btn) => {
@@ -781,6 +812,19 @@ const addScoreBoardHandlers = () => {
     if (rotated ? dist < 0 : dist > 0) decreaseBoardScore(el, ...args);
     else increaseBoardScore(el, ...args);
   }, {passive: false});
+  // десктоп: правый клик по счёту — минус очко (корректировка судьёй),
+  // левый остаётся +1. Гейт hover: на тач-устройствах долгий тап тоже
+  // стреляет contextmenu — там уменьшение уже есть свайпом
+  document.addEventListener('contextmenu', (e) => {
+    const el = e.target.closest?.('.board-score');
+    if (!el || !el.hasAttribute('data-team-1-id') || !window.matchMedia('(hover: hover)').matches) return;
+    e.preventDefault();
+    // dataset здесь не годится: data-team-1-id из-за цифры даёт ключ "team-1Id"
+    decreaseBoardScore(el,
+        Number(el.getAttribute('data-team-1-id')),
+        Number(el.getAttribute('data-team-2-id')),
+        Number(el.getAttribute('data-team-number')));
+  });
 };
 
 // ===== табло 110: жесты судьи по игрокам =====
@@ -790,7 +834,13 @@ const addScoreBoardHandlers = () => {
 // Сервер повторно валидирует условия и на отказ возвращает пустой ответ
 
 // id команд из id модалки (tournament-groups-board-<t1>-<t2>)
-const board110TeamIds = (modal) => modal.id.replace('tournament-groups-board-', '').split('-').map(Number);
+// id команд табло — из data-атрибутов модалки, не из id: id строится по
+// game_id (у сетки матч может быть не создан), а парные конвенции <t1>-<t2>
+// в разметке не существует
+const board110TeamIds = (modal) => [
+  Number(modal.getAttribute('data-team-1-id')),
+  Number(modal.getAttribute('data-team-2-id')),
+];
 
 // тап/клик по игроку: на 0:0 чётному — подача, нечётному — свап чётности
 // (судья сначала выставляет, кто чётный, затем тапом по нему — подачу);

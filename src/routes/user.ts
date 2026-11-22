@@ -142,6 +142,44 @@ router.post('/shortname/:id', ensureLoggedIn(), (req, res) => {
   res.promise(userService.setShortname(Number(req.params.id), shortname || null));
 });
 
+// контакты карточки игрока (почта, VK, Telegram, телефон) — будущие
+// идентификаторы входа; пустое значение — сброс (NULL); формат телефона —
+// как CHECK в схеме (+79 и 9 цифр), почта — один @ и точка в домене,
+// vk/tg — без пробелов и не длиннее 50 (храним как введено)
+router.post('/email/:id', ensureLoggedIn(), (req, res) => {
+  const email = String(req.body.email || '').trim();
+  if (email && (email.length > 100 ||
+      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ||
+      (email.match(/@/g) ?? []).length !== 1)) {
+    return res.status(400).json({error: 'нужен адрес почты вида name@domain.tld'});
+  }
+  res.promise(userService.setEmail(Number(req.params.id), email || null));
+});
+
+router.post('/vk/:id', ensureLoggedIn(), (req, res) => {
+  const vk = String(req.body.vk || '').trim();
+  if (/\s/.test(vk) || vk.length > 50) {
+    return res.status(400).json({error: 'VK id — без пробелов, до 50 символов'});
+  }
+  res.promise(userService.setVk(Number(req.params.id), vk || null));
+});
+
+router.post('/tg/:id', ensureLoggedIn(), (req, res) => {
+  const tg = String(req.body.tg || '').trim();
+  if (/\s/.test(tg) || tg.length > 50) {
+    return res.status(400).json({error: 'Telegram id — без пробелов, до 50 символов'});
+  }
+  res.promise(userService.setTg(Number(req.params.id), tg || null));
+});
+
+router.post('/phone/:id', ensureLoggedIn(), (req, res) => {
+  const phone = String(req.body.phone || '').trim();
+  if (phone && !/^\+79\d{9}$/.test(phone)) {
+    return res.status(400).json({error: 'нужен телефон в формате +79XXXXXXXXX'});
+  }
+  res.promise(userService.setPhone(Number(req.params.id), phone || null));
+});
+
 router.post('/lab', (req, res) => {
   // краул идёт в фоне — ответ не ждёт обхода (он может длиться минуты),
   // иначе браузер абортит запрос и таблица висит «идёт загрузка»

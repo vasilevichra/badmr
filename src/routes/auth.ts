@@ -60,7 +60,7 @@ router.post('/login/password', passport.authenticate('local', {
 }));
 
 router.get('/signup', (req, res) => {
-  res.render('signup', { kind: 'page' });
+  res.render('signup', { kind: 'page', device: commonService.device(req) });
 });
 
 router.post('/signup', (req, res, next) => {

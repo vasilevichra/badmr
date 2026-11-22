@@ -12,7 +12,34 @@
                     <select id="tournament-groups-team-add-select-color" class="select2 form-control" required></select>
                     <input id="tournament-groups-team-add-add-name" class="form-control" type="text" placeholder="Название" minlength="1" size="8"
                            required/>
-                    <select id="tournament-groups-team-add-select-users" class="select form-control" multiple="multiple" required></select>
+                    <% /* поле игроков с приклеенной кнопкой «＋»: создаёт нового
+                          игрока (лёгкая форма ниже), не выходя из модалки */
+                    %>
+                    <div class="team-add-users-group">
+                        <select id="tournament-groups-team-add-select-users" class="select form-control" multiple="multiple" required></select>
+                        <button type="button" class="btn btn-primary" id="tournament-groups-team-add-user-new"
+                                title="Новый игрок" aria-label="Новый игрок"><i class="bi bi-plus-lg"></i></button>
+                    </div>
+                    <div id="tournament-groups-team-add-user-card" class="team-add-user-card" hidden>
+                        <div class="row g-2">
+                            <div class="col"><input id="tournament-groups-team-add-user-ln" class="form-control form-control-sm" type="text" placeholder="Фамилия" required></div>
+                            <div class="col"><input id="tournament-groups-team-add-user-fn" class="form-control form-control-sm" type="text" placeholder="Имя" required></div>
+                            <div class="col"><input id="tournament-groups-team-add-user-pn" class="form-control form-control-sm" type="text" placeholder="Отчество"></div>
+                        </div>
+                        <div class="row g-2 align-items-center mt-1">
+                            <div class="col-auto">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="Пол">
+                                    <input type="radio" class="btn-check" name="team-add-new-user-sex" id="tournament-groups-team-add-user-sex-m" checked>
+                                    <label class="btn btn-outline-secondary" for="tournament-groups-team-add-user-sex-m">М</label>
+                                    <input type="radio" class="btn-check" name="team-add-new-user-sex" id="tournament-groups-team-add-user-sex-f">
+                                    <label class="btn btn-outline-secondary" for="tournament-groups-team-add-user-sex-f">Ж</label>
+                                </div>
+                            </div>
+                            <div class="col"><input id="tournament-groups-team-add-user-bd" class="form-control form-control-sm" type="date" required></div>
+                            <div class="col-auto"><button type="button" class="btn btn-sm btn-success" id="tournament-groups-team-add-user-create">Создать</button></div>
+                        </div>
+                        <div class="form-text">Город — из поля «Город» формы, стартовый рейтинг — 300</div>
+                    </div>
                 </div>
                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                 <div class="modal-footer">
