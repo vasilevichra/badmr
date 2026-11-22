@@ -55,6 +55,41 @@ renderGroups = () => {
 
   selectUsersByCity();
 
+  // кнопка «＋» у поля игроков: лёгкая форма создания нового игрока
+  // (ФИО, пол, дата рождения); город — из поля «Город», рейтинг — 300
+  const userCard = $('#tournament-groups-team-add-user-card');
+  $('#tournament-groups-team-add-user-new').off('click').click(() => {
+    userCard.prop('hidden', !userCard.prop('hidden'));
+    if (!userCard.prop('hidden')) $('#tournament-groups-team-add-user-ln').trigger('focus');
+  });
+
+  $('#tournament-groups-team-add-user-create').off('click').click(() => {
+    const fields = ['ln', 'fn', 'bd'].map(f => $(`#tournament-groups-team-add-user-${f}`));
+    if (fields.some(f => !String(f.val()).trim())) {
+      // пустые обязательные — отмечаем стандартной валидацией браузера
+      fields.filter(f => !String(f.val()).trim())[0][0].reportValidity();
+      return;
+    }
+    const user = {
+      ln: String($('#tournament-groups-team-add-user-ln').val()).trim(),
+      fn: String($('#tournament-groups-team-add-user-fn').val()).trim(),
+      pn: String($('#tournament-groups-team-add-user-pn').val()).trim(),
+      rate: 300,
+      // роут users/create понимает пол как radio: 'on' — мужчина
+      sex: $('#tournament-groups-team-add-user-sex-m').prop('checked') ? 'on' : '',
+      city: getSelectedCityId() || 1,
+      bd: String($('#tournament-groups-team-add-user-bd').val())
+    };
+    $.post('/api/users/create', user, (created) => {
+      // новый игрок сразу выбран: option добавляется к select напрямую —
+      // ajax-список select2 догрузится позже, выбранное уже отображено
+      userSelector.append(new Option(`${user.ln} ${user.fn}`, created.id, false, true));
+      userSelector.trigger('change');
+      userCard.prop('hidden', true);
+      fields.forEach(f => f.val(''));
+    });
+  });
+
   $('#tournament-groups-team-add-submit').off('click').click((event) => {
     event.preventDefault();
 

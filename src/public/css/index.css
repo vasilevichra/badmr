@@ -2352,6 +2352,29 @@ body:not(.phone) #player-table .player-calibration {
   margin-bottom: 0;
 }
 
+/* Поле игроков с приклеенной справа кнопкой «＋» (новый игрок): select2
+   забирает остаток ширины, скругление и граница — только с внешних сторон
+   пары, как у input-group; карточка нового игрока — лёгкая форма, вдвинута
+   на четверть ширины, чтобы читалась как продолжение поля. */
+#tournament-groups-team-add .team-add-users-group {
+  display: flex;
+}
+#tournament-groups-team-add .team-add-users-group .select2 {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+#tournament-groups-team-add .team-add-users-group .select2 .select2-selection {
+  width: 100%;
+  border-radius: var(--bs-border-radius) 0 0 var(--bs-border-radius);
+  border-right: 0;
+}
+#tournament-groups-team-add .team-add-users-group .btn {
+  border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
+}
+#tournament-groups-team-add .team-add-user-card {
+  margin-left: 25%;
+}
+
 /* Плейсхолдер инпута «Название» — тот же цвет, что у плейсхолдеров
    select2-полей (см. оверрайд .select2-selection__placeholder ниже),
    иначе текст и его яркость отличаются от полей выбора. */
