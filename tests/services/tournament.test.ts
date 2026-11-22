@@ -674,19 +674,22 @@ describe("Tournament", () => {
         `INSERT INTO tournament (user_id, user_club_id, gym_id, unit_id, tournament_type_id,
                                  tournament_status_id, name, current, reg_ended_at, started_at, ended_at)
          VALUES (1, 1, 1, 1, 1, 2, 'Идёт', 0,
-                 datetime('now', '-1 day'), datetime('now', '-1 day'), datetime('now', '+1 second'))`,
+                 datetime('now', '-1 day'), datetime('now', '-1 day'), datetime('now', '+2 seconds'))`,
       );
       // статус 1 ('Регистрация') → по reg_ended_at переводится в 2 ('Идёт')
       db.run(
         `INSERT INTO tournament (user_id, user_club_id, gym_id, unit_id, tournament_type_id,
                                  tournament_status_id, name, current, reg_ended_at, started_at, ended_at)
          VALUES (1, 1, 1, 1, 1, 1, 'Регистрация', 0,
-                 datetime('now', '+1 second'), datetime('now', '+1 day'), datetime('now', '+2 days'))`,
+                 datetime('now', '+2 seconds'), datetime('now', '+1 day'), datetime('now', '+2 days'))`,
       );
 
       tournamentService.setDeferredStatusHandlers();
 
-      // задачи назначены на секунду вперёд, но под нагрузкой (coverage,
+      // задачи назначены на две секунды вперёд (запас против гонки с секундным
+      // разрешением datetime('now'): промежуток между INSERT и SELECT не должен
+      // пересекать границу секунды — иначе ended_at уже не «в будущем» и
+      // задание не планируется вовсе), но под нагрузкой (coverage,
       // последовательное выполнение тестов на 2-ядерных раннерах CI) таймер
       // может сработать сильно позже — опрашиваем с большим запасом
       const status = (name: string) =>
