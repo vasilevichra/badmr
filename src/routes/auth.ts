@@ -4,7 +4,11 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import crypto from 'crypto';
 import DB from '../repositories/common.ts';
 import CommonService from '../services/common.ts';
+import OAuthService from '../services/oauth.ts';
+import UserService from '../services/user.ts';
+import { ensureLoggedIn } from 'connect-ensure-login';
 const commonService = new CommonService();
+const userService = new UserService();
 const db = new DB().db;
 
 interface UserRow {
@@ -99,6 +103,98 @@ router.post('/logout', (req, res, next) => {
     }
     res.redirect('/');
   });
+});
+
+// ——— Вход/привязка через VK ID ———
+
+const oauthService = new OAuthService();
+
+interface SessionLike {
+  messages?: string[];
+  oauth?: unknown;
+}
+
+/** flash-сообщение на странице входа — механизм sess.messages из app.ts. */
+const flash = (res: Express.Response, message: string) => {
+  const sess = res.req.session as unknown as SessionLike;
+  sess.messages = [...(sess.messages ?? []), message];
+  res.redirect('/api/auth/login');
+};
+
+/** Логин существующим passport-механизмом: serializeUser хранит {id, username}. */
+const loginAs = (
+    req: Express.Request,
+    res: Express.Response,
+    next: Express.NextFunction,
+    id: number,
+    username: string | null
+) => {
+  req.login({id, username} as unknown as { id: number; username: string | null }, err => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect('/');
+  });
+};
+
+router.get('/vk', (req, res) => {
+  if (!oauthService.configured()) {
+    return flash(res, 'Вход через VK сейчас недоступен');
+  }
+  const intent = req.user ? 'bind' : 'login';
+  res.redirect(oauthService.startAuth(req.session as unknown as Record<string, unknown>, intent));
+});
+
+router.get('/vk/callback', async (req, res, next) => {
+  // intent живёт в сессии, которую handleCallback очищает — читаем до вызова
+  const intentRaw = (req.session as unknown as SessionLike).oauth as { intent?: string } | undefined;
+  const bind = intentRaw?.intent === 'bind' && Boolean(req.user);
+
+  let profile;
+  try {
+    profile = await oauthService.handleCallback(req as unknown as Parameters<typeof oauthService.handleCallback>[0]);
+  } catch (err) {
+    return flash(res, (err as Error).message);
+  }
+
+  if (bind) {
+    // чужая привязка не перезаписывается: сначала конфликт vk_id с другими,
+    // потом уже собственная существующая привязка (idempotent-принцип)
+    const foreign = userService.getByVkId(profile.vkId);
+    if (foreign && foreign.id !== (req.user as { id: number }).id) {
+      return flash(res, 'Этот VK уже привязан к другому аккаунту');
+    }
+    const id = (req.user as { id: number }).id;
+    const current = db.get<{ vk_id: string | null }>('SELECT vk_id FROM user WHERE id = ?', [id]);
+    if (current?.vk_id) {
+      return flash(res, 'VK уже привязан');
+    }
+    await userService.setVk(id, profile.vkId);
+    return res.redirect('/');
+  }
+
+  const linked = userService.getByVkId(profile.vkId);
+  if (linked) {
+    const row = db.get<{ email: string | null }>('SELECT email FROM user WHERE id = ?', [linked.id]);
+    return loginAs(req, res, next, linked.id, row?.email ?? null);
+  }
+
+  // автопривязка: ровно один уникальный пользователь по подтверждённым контактам
+  const matches = userService.getContactsMatches(profile.email, profile.phone);
+  const unique = [...new Set(matches.map(m => m.id))];
+  if (unique.length === 1) {
+    const id = unique[0];
+    const row = db.get<{ email: string | null }>('SELECT email FROM user WHERE id = ?', [id]);
+    await userService.setVk(id, profile.vkId);
+    return loginAs(req, res, next, id, row?.email ?? null);
+  }
+
+  return flash(res, 'Этот VK не привязан: войдите почтой и привяжите в карточке игрока');
+});
+
+router.post('/vk/unbind', ensureLoggedIn(), (req, res) => {
+  const id = (req.user as { id: number }).id;
+  res.promise(userService.setVk(id, null));
 });
 
 export default router;
