@@ -1,9 +1,24 @@
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
-import { describe, it } from "node:test";
+import { describe, it, beforeEach } from "node:test";
 import OAuthService from "../../src/services/oauth.ts";
+import UserRepository from "../../src/repositories/user.ts";
+import UserService from "../../src/services/user.ts";
+import { clean } from "../helpers/migration.ts";
 
 const oauth = new OAuthService();
+const userRepository = new UserRepository();
+const userService = new UserService();
+
+/** Минимальный пользователь: обязательны lastname/firstname/sex/city_id. */
+const insertUser = (contacts: { email?: string; phone?: string; vkId?: string }): number => {
+  const result = userRepository.db.run(
+      `INSERT INTO user (lastname, firstname, sex, city_id, email, phone, vk_id)
+       VALUES ('Тестов', 'Тест', 1, 1, ?, ?, ?)`,
+      [contacts.email ?? null, contacts.phone ?? null, contacts.vkId ?? null]
+  );
+  return result.id;
+};
 
 /** RSA-пара и JWK для заглушки JWKS VK. */
 function makeKey() {
@@ -157,6 +172,47 @@ describe("OAuth", () => {
         delete process.env.VK_CLIENT_ID;
         delete process.env.VK_CLIENT_SECRET;
       }
+    });
+  });
+
+  describe("поиск по vk_id и контактам", () => {
+    beforeEach(() => {
+      clean();
+    });
+
+    it("getByVkId находит по привязке, по отсутствующей — undefined", () => {
+      const id = insertUser({ vkId: "12345" });
+
+      assert.deepStrictEqual(userService.getByVkId("12345"), { id });
+      assert.strictEqual(userService.getByVkId("999"), undefined);
+    });
+
+    it("getByContacts находит по email без учёта регистра", () => {
+      const id = insertUser({ email: "roman@example.com" });
+
+      assert.deepStrictEqual(userService.getContactsMatches("ROMAN@example.com", null), [{ id }]);
+    });
+
+    it("getByContacts находит по телефону", () => {
+      const id = insertUser({ phone: "+79001234567" });
+
+      assert.deepStrictEqual(userService.getContactsMatches(null, "+79001234567"), [{ id }]);
+    });
+
+    it("email одного и телефон другого — два разных id (расхождение)", () => {
+      const emailId = insertUser({ email: "roman@example.com" });
+      const phoneId = insertUser({ phone: "+79001234567" });
+
+      const matches = userService.getContactsMatches("roman@example.com", "+79001234567");
+      assert.strictEqual(matches.length, 2);
+      const ids = matches.map((m) => m.id).sort((a, b) => a - b);
+      assert.deepStrictEqual(ids, [emailId, phoneId].sort((a, b) => a - b));
+    });
+
+    it("оба контакта null — пустой список", () => {
+      insertUser({ email: "roman@example.com" });
+
+      assert.deepStrictEqual(userService.getContactsMatches(null, null), []);
     });
   });
 });

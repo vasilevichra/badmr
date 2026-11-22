@@ -563,6 +563,27 @@ class User {
     return this.db.run(`UPDATE user SET phone = ? WHERE id = ?`, [phone, id]);
   }
 
+  /** Пользователь по привязанному VK ID — вход по кнопке VK. */
+  getByVkId(vkId: string) {
+    return this.db.get<{ id: number }>(
+        `SELECT id FROM user WHERE vk_id = ?`,
+        [vkId]
+    );
+  }
+
+  /** Кандидаты автопривязки по подтверждённым контактам VK: email без
+   *  учёта регистра, телефон по нормализованному значению. NULL-параметр
+   *  ветку не матчит — контакта из VK может не быть (телефонный скоуп
+   *  под модерацией). */
+  getByContacts(email: string | null, phone: string | null) {
+    return this.db.all<{ id: number }>(
+        `SELECT id FROM user
+         WHERE (email IS NOT NULL AND LOWER(email) = LOWER(?))
+            OR (phone IS NOT NULL AND phone = ?)`,
+        [email, phone]
+    );
+  }
+
   /** Дата рождения редактируется в карточке игрока под админом (YYYY-MM-DD). */
   setBirthday(id: number, birthday: string) {
     return this.db.run(
