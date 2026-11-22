@@ -1,4 +1,4 @@
-<div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable">
+<div class="modal-dialog modal-xl modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Карточка игрока</h5>
@@ -9,168 +9,140 @@
             </button>
         </div>
         <div class="modal-body">
-            <section class="bg-body-tertiary py-3 py-md-5 py-xl-8">
+            <section class="bg-body-tertiary py-3">
                 <div class="container">
-                    <div class="row gy-4 gy-lg-0">
-                        <div class="col-12 col-lg-4 col-xl-3">
-                            <div class="row gy-4">
-                                <div class="col-12">
-                                    <div class="card widget-card border-light shadow-sm">
-                                        <% // под логином имя редактируется по клику (index.js): Enter/фокус — сохранить, Esc — отмена %>
-                                        <div class="card-header text-bg-primary text-truncate<% if (login) { %> player-window-name<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" title="нажмите, чтобы редактировать"<% } %>><%= user.lastname %> <%= user.firstname %><%= user.patronymic ? ' ' + user.patronymic : '' %></div>
-                                        <div class="card-body">
-                                            <div class="text-center mb-3">
-                                                <img class="img-fluid"
-                                                     src="<% if (user.pic && (user.pic.slice(0, 4) === 'http' || user.pic.slice(0, 5) === 'data:')) { %><%= user.pic %><% } else if (user.pic) { %>data:image/png;base64, <%= user.pic %><% } else { %>/assets/images/<%= user.sex ? 'pepe' : 'pepe-girl' %>.svg<% } %>"
-                                                     alt="user@email.com">
-                                            </div>
-                                            <p>
-                                            <h5 class="text-center mb-1"><%= city.name %></h5>
-                                            <div class="text-center text-secondary"><%= region.name %></div>
-                                            <div class="text-center text-secondary mb-2"><%= state.name %></div>
-                                            </p>
-                                            <% // короткое имя: показывается всем, если задано; владелец
-                                               // (и админ) редактирует по клику — как дату рождения;
-                                               // у залогиненного строка видна всегда, чтобы можно было задать %>
-                                            <% if (user.shortname || login) { %>
-                                            <h5 class="text-center mb-1<% if (login) { %> player-window-editable<% } %>"<% if (login) { %> data-endpoint="shortname" data-user-id="<%= user.id %>" data-original-text="<%= user.shortname ?? '' %>" data-placeholder="Юра, Лиза…" title="нажмите, чтобы редактировать"<% } %>>
-                                                <% if (user.shortname) { %><span class="fw-bold">«<%= user.shortname %>»</span><% } else { %><span class="opacity-50">не задано</span><% } %>
-                                            </h5>
-                                            <% } %>
-                                            <% // контакты (почта, VK, Telegram, телефон) — будущие идентификаторы
-                                               // входа; видны и редактируются по клику только залогиненным,
-                                               // тем же механизмом, что короткое имя (data-endpoint) %>
-                                            <% if (login) { %>
-                                            <div class="text-center text-secondary mb-1 player-window-editable" data-endpoint="phone" data-user-id="<%= user.id %>" data-original-text="<%= user.phone ?? '' %>" data-placeholder="+79501234567" title="нажмите, чтобы редактировать">
-                                                <i class="bi bi-phone"> </i><% if (user.phone) { %><%= user.phone %><% } else { %><span class="opacity-50">телефон не задан</span><% } %>
-                                            </div>
-                                            <div class="text-center text-secondary mb-1 player-window-editable" data-endpoint="email" data-user-id="<%= user.id %>" data-original-text="<%= user.email ?? '' %>" data-placeholder="mail@example.com" title="нажмите, чтобы редактировать">
-                                                <i class="bi bi-envelope"> </i><% if (user.email) { %><%= user.email %><% } else { %><span class="opacity-50">почта не задана</span><% } %>
-                                            </div>
-                                            <div class="text-center text-secondary mb-1">
-                                                <% // VK больше не вводится вручную: привязка — через OAuth VK ID,
-                                                   // вход по кнопке VK работает только при привязке.
-                                                   // Кнопки — только в своей карточке: роут действует
-                                                   // на req.user, чужую привязку менять нельзя %>
-                                                VK: <% if (user.vk_id) { %>привязан<% if (login.id === user.id) { %>
-                                                    <button class="btn-vk-unbind btn btn-sm btn-outline-secondary" data-user-id="<%= user.id %>">Отвязать</button>
-                                                <% } } else if (login.id === user.id) { %>
-                                                    <a class="btn-vk-bind btn btn-sm btn-outline-secondary" href="/api/auth/vk">Привязать VK</a>
-                                                <% } %>
-                                            </div>
-                                            <div class="text-center text-secondary mb-1 player-window-editable" data-endpoint="tg" data-user-id="<%= user.id %>" data-original-text="<%= user.tg_id ?? '' %>" data-placeholder="@username или 123456789" title="нажмите, чтобы редактировать">
-                                                <i class="bi bi-telegram"> </i><% if (user.tg_id) { %><%= user.tg_id %><% } else { %><span class="opacity-50">не задан</span><% } %>
-                                            </div>
-                                            <% } %>
-                                            <% const monthArray = ['января', 'февралья', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
-                                                'октября', 'ноября', 'декабря'];
-                                                // знак зодиака: границы смены знака по дням месяцев,
-                                                // signs[0] — Козерог (до 20 января и с 22 декабря)
-                                                const zodiacBounds = [20, 19, 21, 20, 21, 22, 23, 23, 23, 23, 22, 22];
-                                                const zodiacSigns = ['♑', '♒', '♓', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑'];
-                                                const zodiac = (birthday) => {
-                                                    const m = Number(birthday.slice(5, 7));
-                                                    const d = Number(birthday.slice(8, 10));
-                                                    // \uFE0E — текстовый вариант глифа (не эмодзи), не выше строки
-                                                    return zodiacSigns[d >= zodiacBounds[m - 1] ? m : m - 1] + '\uFE0E';
-                                                }; %>
-                                            <p>
-                                            <div class="text-center text-secondary<% if (login) { %> player-window-birthday<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" data-birthday="<%= user.birthday %>" title="нажмите, чтобы редактировать"<% } %>><i class="bi bi-cake2"> </i><%= user.birthday.slice(
-                                                        -2) %> <%= monthArray[Number(user.birthday.slice(5, 7)) - 1] %>
-                                                <% if (login) { %> <%= user.birthday.slice(0, 4) %> (<%= user.age %>) <%= zodiac(user.birthday) %>
-                                                <% } %>
-                                            </div>
-                                            <div class="text-center text-secondary">через <%= days_until_birthday.days %> д.</div>
-                                            </p>
-                                            <% if (user.club) { %><p class="text-center text-secondary"><%= user.club %></p><% } %>
-                                            <p>
-                                            <form class="player-window-change-rating-form">
-                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-                                                <div class="input-group">
-                                                    <div class="text-center text-secondary form-control border-0"><i class="bi bi-activity"></i> Рейтинг</div>
-                                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="рейтинг" maxlength="4" size="3" value="<%= rating.rating %>" required<% if (!login) { %> disabled<% } %>>
-                                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0 mx-2" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
-                                                </div>
-                                            </form>
-                                            <% // блок ЛАБ: скрывается целиком, если нет аккаунта ЛАБ (site_id);
-                                               // рейтинг ЛАБ показывается только если есть %>
-                                            <% if (user.site_id) { %>
-                                            <div class="text-center text-secondary mt-3">
-                                                <i class="bi bi-at"></i><a class="player-window-link link-body-emphasis link-offset-2  me-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a>
-                                                <% if (user.rating_1 || user.rating_2) { %>
-                                                <math class="secondary-info">
-                                                    <% if (user.rating_1) { %>
-                                                    <msub>
-                                                        <mi><%= user.rating_1 %></mi>
-                                                        <mi>1</mi>
-                                                    </msub>
-                                                    <% } %>
-                                                    <% if (user.rating_1 && user.rating_2) { %>
-                                                    <mspace width="3px"/>
-                                                    <% } %>
-                                                    <% if (user.rating_2) { %>
-                                                    <msub>
-                                                        <mi><%= user.rating_2 %></mi>
-                                                        <mi>2</mi>
-                                                    </msub>
-                                                    <% } %>
-                                                </math>
-                                                <% } %>
-                                            </div>
-                                            <% } %>
-                                            <% // критерии калибровки: сид без матча, протухший рейтинг или идущая серия;
-                                               // серия отображается накопленная (stale=1), у сида и протухшего — 0;
-                                               // в завершённом/отменённом турнире прогресс калибровки не показываем %>
-                                            <% const calibrating = !current_tournament_finished && calibration && calibration_matches > 0 && (calibration.is_seed === 1 || calibration.outdated === 1 || (calibration.stale === 1 && calibration.series <= calibration_matches)); %>
-                                            <% const cal_series = calibration && calibration.outdated !== 1 && calibration.stale === 1 ? calibration.series : 0; %>
-                                            <% if (calibrating) { %>
-                                            <div class="progress mt-2">
-                                                <div class="progress-bar" role="progressbar" style="width: <%= Math.round(cal_series / calibration_matches * 100) %>%" aria-valuenow="<%= Math.round(cal_series / calibration_matches * 100) %>" aria-valuemin="0" aria-valuemax="100">Калибровка (<%= cal_series %> из <%= calibration_matches %>)</div>
-                                            </div>
-                                            <% } %>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-<!--                                <div class="col-12">-->
-<!--                                    <div class="card widget-card border-light shadow-sm">-->
-<!--                                        <div class="card-header text-bg-primary">Social Accounts</div>-->
-<!--                                        <div class="card-body">-->
-<!--                                            <a href="#!" class="d-inline-block bg-dark link-light lh-1 p-2 rounded">-->
-<!--                                                <i class="bi bi-youtube"></i>-->
-<!--                                            </a>-->
-<!--                                            <a href="#!" class="d-inline-block bg-dark link-light lh-1 p-2 rounded">-->
-<!--                                                <i class="bi bi-twitter-x"></i>-->
-<!--                                            </a>-->
-<!--                                            <a href="#!" class="d-inline-block bg-dark link-light lh-1 p-2 rounded">-->
-<!--                                                <i class="bi bi-facebook"></i>-->
-<!--                                            </a>-->
-<!--                                            <a href="#!" class="d-inline-block bg-dark link-light lh-1 p-2 rounded">-->
-<!--                                                <i class="bi bi-linkedin"></i>-->
-<!--                                            </a>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-                                <% if (achievements.length) { %>
-                                <div class="col-12">
-                                    <div class="card widget-card border-light shadow-sm">
-                                        <div class="card-header text-bg-primary">Достижения</div>
-                                        <div class="card-body">
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <% achievements.forEach((a) => { %>
-                                                    <span class="achievement-badge badge text-bg-primary" title="<%= a.description %>"><i class="bi <%= a.icon %>"></i> <%= a.title %></span>
-                                                <% }) %>
-                                            </div>
-                                        </div>
-                                    </div>
+                    <div class="pw-grid">
+
+                        <% // Плитка «личность»: аватар, имя, короткое имя, регион и рейтинг.
+                           // Рейтинг правится инпутом внутри бейджа, высота плитки не меняется %>
+                        <div class="pw-tile pw-tile-identity">
+                            <div class="pw-avatar">
+                                <img class="img-fluid" src="<% if (user.pic && (user.pic.slice(0, 4) === 'http' || user.pic.slice(0, 5) === 'data:')) { %><%= user.pic %><% } else if (user.pic) { %>data:image/png;base64, <%= user.pic %><% } else { %>/assets/images/<%= user.sex ? 'pepe' : 'pepe-girl' %>.svg<% } %>" alt="<%= user.lastname %> <%= user.firstname %>">
+                            </div>
+                            <div class="pw-id-text">
+                                <% // под логином имя редактируется по клику (index.js): Enter/фокус — сохранить, Esc — отмена %>
+                                <div class="pw-name text-truncate<% if (login) { %> player-window-name<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" title="нажмите, чтобы редактировать"<% } %>><%= user.lastname %> <%= user.firstname %><%= user.patronymic ? ' ' + user.patronymic : '' %></div>
+                                <% // короткое имя: показывается всем, если задано; владелец
+                                   // (и админ) редактирует по клику — как дату рождения %>
+                                <% if (user.shortname || login) { %>
+                                <div class="pw-sub<% if (login) { %> player-window-editable<% } %>"<% if (login) { %> data-endpoint="shortname" data-user-id="<%= user.id %>" data-original-text="<%= user.shortname ?? '' %>" data-placeholder="Юра, Лиза…" title="нажмите, чтобы редактировать"<% } %>>
+                                    <% if (user.shortname) { %><span class="fw-bold">«<%= user.shortname %>»</span><% } else { %><span class="opacity-50">не задано</span><% } %>
                                 </div>
                                 <% } %>
+                                <div class="pw-sub text-truncate"><%= city.name %> · <%= region.name %> · <%= state.name %></div>
+                                <% if (user.club) { %><div class="pw-sub text-truncate"><%= user.club %></div><% } %>
+                            </div>
+                            <form class="player-window-change-rating-form pw-rating ms-auto">
+                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                                <div class="input-group pw-rating-group">
+                                    <span class="pw-rating-cap"><i class="bi bi-activity"></i> рейтинг</span>
+                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="—" maxlength="4" size="3" value="<%= rating.rating %>" required<% if (!login) { %> disabled<% } %>>
+                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
+                                </div>
+                            </form>
+                        </div>
+
+                        <% // Контакты — будущие идентификаторы входа, видны и редактируются
+                           // только залогиненным; чип фиксированной высоты, правка по клику
+                           // (input внутри чипа). Кнопки VK — только в своей карточке:
+                           // роут действует на req.user, чужую привязку менять нельзя %>
+                        <% if (login) { %>
+                        <div class="pw-tile pw-tile-contacts">
+                            <div class="pw-cap">Контакты</div>
+                            <div class="pw-chips">
+                                <div class="pw-chip player-window-editable" data-endpoint="phone" data-user-id="<%= user.id %>" data-original-text="<%= user.phone ?? '' %>" data-placeholder="+79501234567" title="нажмите, чтобы редактировать">
+                                    <i class="bi bi-phone pw-chip-ic"></i>
+                                    <span class="pw-chip-val<% if (!user.phone) { %> opacity-50<% } %>"><% if (user.phone) { %><%= user.phone %><% } else { %>телефон не задан<% } %></span>
+                                </div>
+                                <div class="pw-chip player-window-editable" data-endpoint="email" data-user-id="<%= user.id %>" data-original-text="<%= user.email ?? '' %>" data-placeholder="mail@example.com" title="нажмите, чтобы редактировать">
+                                    <i class="bi bi-envelope pw-chip-ic"></i>
+                                    <span class="pw-chip-val<% if (!user.email) { %> opacity-50<% } %>"><% if (user.email) { %><%= user.email %><% } else { %>почта не задана<% } %></span>
+                                </div>
+                                <div class="pw-chip">
+                                    <i class="bi bi-person-badge pw-chip-ic"></i>
+                                    <span class="pw-chip-val">VK: <% if (user.vk_id) { %>привязан<% } else { %>не привязан<% } %></span>
+                                    <% if (user.vk_id && login.id === user.id) { %>
+                                    <button class="btn-vk-unbind btn btn-sm btn-outline-secondary pw-chip-btn">Отвязать</button>
+                                    <% } else if (!user.vk_id && login.id === user.id) { %>
+                                    <a class="btn-vk-bind btn btn-sm btn-outline-secondary pw-chip-btn" href="/api/auth/vk">Привязать</a>
+                                    <% } %>
+                                </div>
+                                <div class="pw-chip player-window-editable" data-endpoint="tg" data-user-id="<%= user.id %>" data-original-text="<%= user.tg_id ?? '' %>" data-placeholder="@username или 123456789" title="нажмите, чтобы редактировать">
+                                    <i class="bi bi-telegram pw-chip-ic"></i>
+                                    <span class="pw-chip-val<% if (!user.tg_id) { %> opacity-50<% } %>"><% if (user.tg_id) { %><%= user.tg_id %><% } else { %>не задан<% } %></span>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-12 col-lg-8 col-xl-9">
-                            <div class="card widget-card border-light shadow-sm">
-                                <div class="card-body p-4">
-                                    <ul class="nav nav-tabs" id="profileTab" role="tablist">
+                        <% } %>
+
+                        <% // Плитка «факты»: дата рождения (редактируется), аккаунт ЛАБ,
+                           // прогресс калибровки %>
+                        <div class="pw-tile pw-tile-facts">
+                            <div class="pw-cap">Факты</div>
+                            <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
+                                'октября', 'ноября', 'декабря'];
+                                // знак зодиака: границы смены знака по дням месяцев,
+                                // signs[0] — Козерог (до 20 января и с 22 декабря)
+                                const zodiacBounds = [20, 19, 21, 20, 21, 22, 23, 23, 23, 23, 22, 22];
+                                const zodiacSigns = ['♑', '♒', '♓', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑'];
+                                const zodiac = (birthday) => {
+                                    const m = Number(birthday.slice(5, 7));
+                                    const d = Number(birthday.slice(8, 10));
+                                    // \uFE0E — текстовый вариант глифа (не эмодзи), не выше строки
+                                    return zodiacSigns[d >= zodiacBounds[m - 1] ? m : m - 1] + '\uFE0E';
+                                }; %>
+                            <div class="pw-fact"><span class="pw-fact-k">Дата рожд.</span>
+                                <span class="pw-fact-v">
+                                    <span class="text-secondary<% if (login) { %> player-window-birthday<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" data-birthday="<%= user.birthday %>" title="нажмите, чтобы редактировать"<% } %>><i class="bi bi-cake2"></i> <%= user.birthday.slice(-2) %> <%= monthArray[Number(user.birthday.slice(5, 7)) - 1] %><% if (login) { %> <%= user.birthday.slice(0, 4) %> (<%= user.age %>) <%= zodiac(user.birthday) %><% } %></span>
+                                    <span class="text-secondary">через <%= days_until_birthday.days %> д.</span>
+                                </span>
+                            </div>
+                            <% if (user.site_id) { %>
+                            <% // блок ЛАБ: скрывается целиком, если нет аккаунта ЛАБ (site_id);
+                               // рейтинг ЛАБ показывается только если есть %>
+                            <div class="pw-fact"><span class="pw-fact-k">ЛАБ</span>
+                                <span class="pw-fact-v">
+                                    <a class="player-window-link link-body-emphasis link-offset-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a>
+                                    <% if (user.rating_1 || user.rating_2) { %>
+                                    <math class="secondary-info">
+                                        <% if (user.rating_1) { %>
+                                        <msub><mi><%= user.rating_1 %></mi><mi>1</mi></msub>
+                                        <% } %>
+                                        <% if (user.rating_1 && user.rating_2) { %><mspace width="3px"/><% } %>
+                                        <% if (user.rating_2) { %>
+                                        <msub><mi><%= user.rating_2 %></mi><mi>2</mi></msub>
+                                        <% } %>
+                                    </math>
+                                    <% } %>
+                                </span>
+                            </div>
+                            <% } %>
+                            <% // критерии калибровки: сид без матча, протухший рейтинг или идущая серия;
+                               // серия отображается накопленная (stale=1), у сида и протухшего — 0;
+                               // в завершённом/отменённом турнире прогресс калибровки не показываем %>
+                            <% const calibrating = !current_tournament_finished && calibration && calibration_matches > 0 && (calibration.is_seed === 1 || calibration.outdated === 1 || (calibration.stale === 1 && calibration.series <= calibration_matches)); %>
+                            <% const cal_series = calibration && calibration.outdated !== 1 && calibration.stale === 1 ? calibration.series : 0; %>
+                            <% if (calibrating) { %>
+                            <div class="progress mt-2">
+                                <div class="progress-bar" role="progressbar" style="width: <%= Math.round(cal_series / calibration_matches * 100) %>%" aria-valuenow="<%= Math.round(cal_series / calibration_matches * 100) %>" aria-valuemin="0" aria-valuemax="100">Калибровка (<%= cal_series %> из <%= calibration_matches %>)</div>
+                            </div>
+                            <% } %>
+                        </div>
+
+                        <% if (achievements.length) { %>
+                        <div class="pw-tile pw-tile-ach">
+                            <div class="pw-cap">Достижения</div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <% achievements.forEach((a) => { %>
+                                    <span class="achievement-badge badge text-bg-primary" title="<%= a.description %>"><i class="bi <%= a.icon %>"></i> <%= a.title %></span>
+                                <% }) %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                        <% // Контентная плитка: табы и их содержимое — без изменений %>
+                        <div class="pw-tile pw-tile-content">
+                            <ul class="nav nav-tabs" id="profileTab" role="tablist">
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link<%= active_tab === 'overview' ? ' active' : '' %>" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="<%= active_tab === 'overview' %>">Обзор</button>
                                         </li>
@@ -485,160 +457,10 @@
                                             </div>
                                             <% } %>
                                         </div>
-                                        <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-                                            <form action="#!" class="row gy-3 gy-xxl-4">
-                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-                                                <div class="col-12">
-                                                    <div class="row gy-2">
-                                                        <label class="col-12 form-label m-0">Profile Image</label>
-                                                        <div class="col-12">
-                                                            <img src="/assets/images/<%= user.sex ? 'pepe' : 'pepe-girl' %>.svg" class="img-fluid" alt="Luna John">
-                                                        </div>
-                                                        <div class="col-12">
-                                                            <a href="#!" class="d-inline-block bg-primary link-light lh-1 p-2 rounded">
-                                                                <i class="bi bi-upload"></i>
-                                                            </a>
-                                                            <a href="#!" class="d-inline-block bg-danger link-light lh-1 p-2 rounded">
-                                                                <i class="bi bi-trash"></i>
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputFirstName" class="form-label">First Name</label>
-                                                    <input type="text" class="form-control" id="inputFirstName" value="Ethan">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputLastName" class="form-label">Last Name</label>
-                                                    <input type="text" class="form-control" id="inputLastName" value="Leo">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputEducation" class="form-label">Education</label>
-                                                    <input type="text" class="form-control" id="inputEducation" value="M.S Computer Science">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputSkills" class="form-label">Skills</label>
-                                                    <input type="text" class="form-control" id="inputSkills"
-                                                           value="HTML, SCSS, Javascript, React, Vue, Angular, UI, UX">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputJob" class="form-label">Job</label>
-                                                    <input type="text" class="form-control" id="inputJob" value="Project Manager">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputCompany" class="form-label">Company</label>
-                                                    <input type="text" class="form-control" id="inputCompany" value="GitHub Inc">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputPhone" class="form-label">Phone</label>
-                                                    <input type="tel" class="form-control" id="inputPhone" value="+12486798745">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputEmail" class="form-label">Email</label>
-                                                    <input type="email" class="form-control" id="inputEmail" value="leo@example.com">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputAddress" class="form-label">Address</label>
-                                                    <input type="text" class="form-control" id="inputAddress" value="Mountain View, California">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputCountry" class="form-label">Country</label>
-                                                    <select class="form-select" id="inputCountry">
-                                                        <option value="Afghanistan">Afghanistan</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputYouTube" class="form-label">YouTube</label>
-                                                    <input type="text" class="form-control" id="inputYouTube" value="https://www.youtube.com/EthanLeo">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputX" class="form-label">X</label>
-                                                    <input type="text" class="form-control" id="inputX" value="https://twitter.com/EthanLeo">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputFacebook" class="form-label">Facebook</label>
-                                                    <input type="text" class="form-control" id="inputFacebook" value="https://www.facebook.com/EthanLeo">
-                                                </div>
-                                                <div class="col-12 col-md-6">
-                                                    <label for="inputLinkedIn" class="form-label">LinkedIn</label>
-                                                    <input type="text" class="form-control" id="inputLinkedIn" value="https://www.linkedin.com/EthanLeo">
-                                                </div>
-                                                <div class="col-12">
-                                                    <label for="inputAbout" class="form-label">About</label>
-                                                    <textarea class="form-control" id="inputAbout">Ethan Leo is a seasoned and results-driven Project Manager who brings experience and expertise to project management. With a proven track record of successfully delivering complex projects on time and within budget, Ethan Leo is the go-to professional for organizations seeking efficient and effective project leadership.</textarea>
-                                                </div>
-                                                <div class="col-12">
-                                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <div class="tab-pane fade" id="email-tab-pane" role="tabpanel" aria-labelledby="email-tab" tabindex="0">
-                                            <form action="#!">
-                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-                                                <fieldset class="row gy-3 gy-md-0">
-                                                    <legend class="col-form-label col-12 col-md-3 col-xl-2">Email Alerts</legend>
-                                                    <div class="col-12 col-md-9 col-xl-10">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" id="emailChange">
-                                                            <label class="form-check-label" for="emailChange">
-                                                                Email Changed
-                                                            </label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" id="passwordChange">
-                                                            <label class="form-check-label" for="passwordChange">
-                                                                Password Changed
-                                                            </label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" id="weeklyNewsletter">
-                                                            <label class="form-check-label" for="weeklyNewsletter">
-                                                                Weekly Newsletter
-                                                            </label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" id="productPromotions">
-                                                            <label class="form-check-label" for="productPromotions">
-                                                                Product Promotions
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </fieldset>
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <button type="submit" class="btn btn-primary mt-4">Save Changes</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <div class="tab-pane fade" id="password-tab-pane" role="tabpanel" aria-labelledby="password-tab" tabindex="0">
-                                            <form action="#!">
-                                                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-                                                <div class="row gy-3 gy-xxl-4">
-                                                    <div class="col-12">
-                                                        <label for="currentPassword" class="form-label">Current Password</label>
-                                                        <input type="password" class="form-control" id="currentPassword">
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <label for="newPassword" class="form-label">New Password</label>
-                                                        <input type="password" class="form-control" id="newPassword">
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <label for="confirmPassword" class="form-label">Confirm Password</label>
-                                                        <input type="password" class="form-control" id="confirmPassword">
-                                                    </div>
-                                                    <div class="col-12">
-                                                        <button type="submit" class="btn btn-primary">Change Password</button>
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        </div>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
             </section>
         </div>
     </div>
