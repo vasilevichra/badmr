@@ -2251,6 +2251,12 @@ body.phone .select-board-score {
     padding: 0.1rem 0.6rem;
   }
 
+  /* подпись «РЕЙТИНГ» на мобиле не убирается вместе с плашкой: без неё
+     число и рейтинги ЛАБ умещаются в узкую плитку */
+  .pw-tile-identity .pw-rating-cap {
+    display: none;
+  }
+
   /* уплотнение внутренностей плашки под 56px: cap+число+ЛАБ не влезают
      в десктопных размерах */
   .pw-rating .player-window-change-rating-input {
