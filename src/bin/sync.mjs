@@ -26,12 +26,16 @@ const REMOTE = "box:/home/r/badmr/.data/badmr.sqlite3";
 
 /** Таблицы, переносимые с прода (список владельца проекта).
  *  team_order_110 не переносится: живые данные нарушают CHECK (ms1 != ms2,
- *  ws1 != ws2), с ними дамп перестаёт накатываться на чистую базу. */
+ *  ws1 != ws2), с ними дамп перестаёт накатываться на чистую базу.
+ *  user_id/user_id_type/user_sizes/pocket_structure/game_110 не создаются
+ *  миграциями — их схема живёт в самом дампе 05-specific; на чистой dev-базе
+ *  таблица создаётся из прод-схемы (см. syncProdToDev). */
 const SYNC_TABLES = [
-  "user", "user_lab", "tournament", "tournament_settings", "gym",
+  "unit", "user", "user_lab", "tournament", "tournament_settings", "gym",
   "user_club_gym", "court", "group", "user_pic", "user_club",
   "tournament_user", "match", "match_110", "game", "game_100", "game_type",
   "rating", "team_color", "team", "team_user",
+  "user_id_type", "user_id", "user_sizes", "pocket_structure", "game_110",
 ];
 
 /** Порядок секций дампа 05-specific: сначала то, что переносится,
@@ -40,7 +44,7 @@ const DUMP_TABLES = [
   "unit", "user_club", "gym", "user_club_gym", "tournament",
   "tournament_settings", "tournament_user", "court", "user", "user_pic",
   "user_id_type", "user_id", "user_sizes", "match", "game", "game_100",
-  "rating", "team", "team_user", "match_110", "game_110",
+  "pocket_structure", "rating", "team", "team_user", "match_110", "game_110",
   "user_lab",
 ];
 
@@ -88,9 +92,17 @@ const syncProdToDev = () => {
   dev.exec("BEGIN");
   try {
     for (const t of SYNC_TABLES) {
-      if (!tableExists(prod, t) || !tableExists(dev, t)) {
+      if (!tableExists(prod, t)) {
         skipped.push(t);
         continue;
+      }
+      // таблицы, чья схема живёт в дампе 05 (а не в миграциях): на чистой
+      // dev-базе создаём из прод-схемы, иначе переносить и дампить нечего
+      if (!tableExists(dev, t)) {
+        const create = prod.prepare(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?").get(t).sql;
+        dev.exec(`${create};`);
+        log(`${t}: таблица создана из прод-схемы`);
       }
       dev.exec(`DELETE FROM main."${t}";`);
       // копируем по именам колонок (в порядке dev), а не SELECT *:
