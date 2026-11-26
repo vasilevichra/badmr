@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { describe, beforeEach, after, it } from "node:test";
+import { describe, beforeEach, afterEach, after, it } from "node:test";
 import Express, { type Express as App } from "express";
 import UserRouter from "../../src/routes/user.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";
@@ -323,11 +323,10 @@ describe("User routes", () => {
     const contact = (field: string, id: number): string | null =>
       db.get<{ v: string | null }>(`SELECT ${column(field)} AS v FROM user WHERE id = ?`, [id])!.v;
 
-    it("должен задать и сбросить почту, Telegram и телефон", async () => {
+    it("должен задать и сбросить почту и телефон", async () => {
       const id = await createUser();
       for (const [field, value] of [
         ["email", "roman@example.com"],
-        ["tg", "@roman_v"],
         ["phone", "+79001234567"],
       ] as const) {
         const res = await post(field, id, value);
@@ -354,6 +353,48 @@ describe("User routes", () => {
       const id = await createUser();
       assert.strictEqual((await post("tg", id, "a".repeat(51))).status, 400);
       assert.strictEqual(contact("tg", id), null);
+    });
+
+    it("tg вручную не задаётся: привязка только через бота, сброс — пустым", async () => {
+      const id = await createUser();
+      const denied = await post("tg", id, "123456789");
+      assert.strictEqual(denied.status, 400);
+      assert.strictEqual(contact("tg", id), null);
+    });
+  });
+
+  describe("POST /tg-bind/start, GET /tg-bind/status", () => {
+    // getMe заглушен: сервису нужно имя бота для ссылки t.me;
+    // прочие URL (собственные запросы теста к серверу) — в оригинальный fetch
+    const savedFetch = globalThis.fetch;
+    beforeEach(() => {
+      globalThis.fetch = (async (url: string | URL | Request, init?: RequestInit) =>
+          String(url).includes("api.telegram.org")
+              ? new Response(JSON.stringify({ok: true, result: {username: "badmr_bot"}}),
+                  {headers: {"Content-Type": "application/json"}})
+              : savedFetch(url, init)) as typeof fetch;
+    });
+    afterEach(() => {
+      globalThis.fetch = savedFetch;
+    });
+
+    it("start возвращает код и ссылку на бота", async () => {
+      await createUser();
+      const res = await fetch(`${base}/tg-bind/start`, { method: "POST" });
+      assert.strictEqual(res.status, 200);
+      const data = await res.json() as { code: string; botLink: string };
+      assert.match(data.code, /^[A-HJ-NP-Z2-9]{6}$/);
+      assert.match(data.botLink, /^https:\/\/t\.me\/.+?start=/);
+    });
+
+    it("status отражает привязку текущего пользователя", async () => {
+      await createUser();
+      const before = await fetch(`${base}/tg-bind/status`);
+      assert.strictEqual((await before.json() as { bound: boolean }).bound, false);
+
+      db.run(`UPDATE user SET tg_id = '777' WHERE id = 1`);
+      const after = await fetch(`${base}/tg-bind/status`);
+      assert.strictEqual((await after.json() as { bound: boolean }).bound, true);
     });
   });
 });
