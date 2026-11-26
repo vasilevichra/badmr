@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет: карточка игрока — паспорт с контактами в шапке</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+  :root { --pw-accent: #0d6efd; }
+  body { background: #0b0f14; }
+  .frame-label { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; margin-bottom: .5rem; }
+  .frame { border: 1px solid #1d2733; border-radius: 12px; padding: 10px; background: #0b0f14; }
+  .frame-desktop { container-type: inline-size; }
+  .frame-mobile { width: 390px; max-width: 100%; container-type: inline-size; }
+
+  /* ===== карточка игрока (сам макет) ===== */
+  .pw { background: #101720; border-radius: 10px; overflow: hidden; font-size: 14px; }
+
+  /* шапка-паспорт */
+  .pw-head { padding: 16px; border-bottom: 1px solid #1d2733; }
+  .pw-identity { display: flex; gap: 14px; align-items: flex-start; }
+  .pw-avatar { width: 96px; height: 96px; border-radius: 12px; background: #16202c; display: flex; align-items: center; justify-content: center; font-size: 44px; color: #3f5876; flex: 0 0 auto; }
+  .pw-name { font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .pw-sub { color: #8b98a9; }
+  .pw-rating { text-align: center; background: #16202c; border: 1px solid #223142; border-radius: 12px; padding: 8px 18px; cursor: pointer; }
+  .pw-rating:hover { border-color: var(--pw-accent); }
+  .pw-rating .num { font-size: 28px; font-weight: 800; line-height: 1.1; }
+  .pw-rating .cap { font-size: 11px; color: #8b98a9; letter-spacing: .06em; text-transform: uppercase; }
+
+  /* контакты-чипы */
+  .pw-contacts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+  .pw-chip { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 10px; background: #141d28; border: 1px solid #1d2733; border-radius: 10px; cursor: pointer; overflow: hidden; }
+  .pw-chip:hover { border-color: #2c3d52; }
+  .pw-chip .ic { color: #5a7396; flex: 0 0 auto; }
+  .pw-chip .val { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pw-chip .empty { color: #55647a; font-style: italic; }
+  .pw-chip .pencil { margin-left: auto; color: #55647a; opacity: 0; flex: 0 0 auto; }
+  .pw-chip:hover .pencil { opacity: 1; }
+
+  /* тело: факты + табы */
+  .pw-body { display: grid; grid-template-columns: 280px 1fr; }
+  .pw-facts { border-right: 1px solid #1d2733; padding: 14px 16px; }
+  .pw-facts h6, .pw-content h6 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; margin-bottom: 10px; }
+  .pw-fact { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed #182230; min-height: 30px; align-items: baseline; }
+  .pw-fact .k { color: #8b98a9; flex: 0 0 auto; }
+  .pw-fact .v { text-align: right; }
+  .pw-ach { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .pw-ach .badge { background: #16202c; border: 1px solid #223142; font-weight: 500; }
+  .pw-content { padding: 14px 16px; }
+  .pw-tabs { display: flex; gap: 4px; border-bottom: 1px solid #1d2733; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; }
+  .pw-tab { padding: 8px 14px; border-radius: 8px 8px 0 0; color: #8b98a9; white-space: nowrap; cursor: pointer; border-bottom: 2px solid transparent; }
+  .pw-tab.active { color: #e9edf2; border-bottom-color: var(--pw-accent); font-weight: 600; }
+  .pw-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px dashed #182230; }
+  .pw-mut { color: #55647a; }
+
+  /* ===== мобильная раскладка (container queries: та же разметка) ===== */
+  @container (max-width: 480px) {
+    .pw-head { padding: 12px; }
+    .pw-avatar { width: 56px; height: 56px; font-size: 26px; }
+    .pw-name { font-size: 16px; }
+    .pw-rating { padding: 4px 12px; margin-left: auto; }
+    .pw-rating .num { font-size: 20px; }
+    .pw-contacts { grid-template-columns: 1fr 1fr; margin-top: 12px; }
+    .pw-body { grid-template-columns: 1fr; }
+    .pw-facts { border-right: 0; border-bottom: 1px solid #1d2733; }
+  }
+</style>
+</head>
+<body class="p-3 p-md-4">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container-xxl">
+  <h1 class="h5 mb-1">Макет карточки игрока — «паспорт», контакты в шапке</h1>
+  <p class="text-secondary mb-4">Контакты — чипы фиксированной высоты (сетка 2×2 на мобиле), редактирование — мини-модалка по клику (pencil по hover), рейтинг — бейдж в шапке. Наведите курсор на чип, чтобы увидеть pencil.</p>
+
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="frame-label">Десктоп (широкая рамка — можно менять ширину окна)</div>
+      <div class="frame frame-desktop">
+
+        <!-- ===== НАЧАЛО МАКЕТА (разметка одна для обеих рамок) ===== -->
+        <div class="pw">
+          <div class="pw-head">
+            <div class="pw-identity">
+              <div class="pw-avatar"><i class="bi bi-person-fill"></i></div>
+              <div class="flex-grow-1">
+                <div class="pw-name">Василевич Роман Анатольевич</div>
+                <div class="pw-sub">«Рома»</div>
+                <div class="pw-sub">Доброград · Владимирская обл. · Россия</div>
+              </div>
+              <div class="pw-rating" title="изменить рейтинг">
+                <div class="num">1720</div>
+                <div class="cap">рейтинг</div>
+              </div>
+            </div>
+            <div class="pw-contacts">
+              <div class="pw-chip" title="телефон — нажмите, чтобы редактировать">
+                <i class="bi bi-telephone ic"></i>
+                <span class="val">+7 952 230-11-22</span>
+                <i class="bi bi-pencil pencil"></i>
+              </div>
+              <div class="pw-chip" title="почта — нажмите, чтобы редактировать">
+                <i class="bi bi-envelope ic"></i>
+                <span class="val">roman@example.com</span>
+                <i class="bi bi-pencil pencil"></i>
+              </div>
+              <div class="pw-chip" title="VK: привязан через VK ID">
+                <i class="bi bi-person-badge ic"></i>
+                <span class="val">VK: привязан</span>
+                <span class="btn btn-sm btn-outline-secondary py-0 px-1" style="font-size:11px">Отвязать</span>
+              </div>
+              <div class="pw-chip" title="Telegram — нажмите, чтобы редактировать">
+                <i class="bi bi-telegram ic"></i>
+                <span class="val empty">не задан</span>
+                <i class="bi bi-pencil pencil"></i>
+              </div>
+            </div>
+          </div>
+          <div class="pw-body">
+            <div class="pw-facts">
+              <h6>Факты</h6>
+              <div class="pw-fact"><span class="k">Дата рожд.</span><span class="v">14.03.1988 <i class="bi bi-pencil pencil ms-1" style="font-size:11px"></i></span></div>
+              <div class="pw-fact"><span class="k">Знак</span><span class="v">♓ Рыбы</span></div>
+              <div class="pw-fact"><span class="k">Клуб</span><span class="v">Доброград</span></div>
+              <h6 class="mt-3">Достижения</h6>
+              <div class="pw-ach">
+                <span class="badge">🥈 Финалист Кубка</span>
+                <span class="badge">🏆 Чемпион пар</span>
+                <span class="badge">+3</span>
+              </div>
+            </div>
+            <div class="pw-content">
+              <div class="pw-tabs">
+                <div class="pw-tab active">Обзор</div>
+                <div class="pw-tab">Матчи</div>
+                <div class="pw-tab">Турниры</div>
+                <div class="pw-tab">Настройки</div>
+              </div>
+              <div class="pw-row"><span>Турниров сыграно</span><b>23</b></div>
+              <div class="pw-row"><span>Матчей</span><b>141</b></div>
+              <div class="pw-row"><span>Победы / поражения</span><b>89 / 52</b></div>
+              <div class="pw-row"><span>Последний турнир</span><b class="text-end">Кубок «Рома-кап» <span class="pw-mut">· 15.11.2026</span></b></div>
+              <div class="pw-row"><span>Серия побед</span><b>4 <span class="pw-mut">(накопленная)</span></b></div>
+            </div>
+          </div>
+        </div>
+        <!-- ===== КОНЕЦ МАКЕТА ===== -->
+
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6 col-xl-4">
+      <div class="frame-label">Мобила (390px — та же разметка)</div>
+      <div class="frame frame-mobile">
+
+        <div class="pw">
+          <div class="pw-head">
+            <div class="pw-identity">
+              <div class="pw-avatar"><i class="bi bi-person-fill"></i></div>
+              <div class="flex-grow-1">
+                <div class="pw-name">Василевич Роман Анатольевич</div>
+                <div class="pw-sub">«Рома»</div>
+                <div class="pw-sub">Доброград · Владимирская обл. · Россия</div>
+              </div>
+              <div class="pw-rating" title="изменить рейтинг">
+                <div class="num">1720</div>
+                <div class="cap">рейтинг</div>
+              </div>
+            </div>
+            <div class="pw-contacts">
+              <div class="pw-chip" title="телефон — нажмите, чтобы редактировать">
+                <i class="bi bi-telephone ic"></i>
+                <span class="val">+7 952 230-11-22</span>
+                <i class="bi bi-pencil pencil"></i>
+              </div>
+              <div class="pw-chip" title="почта — нажмите, чтобы редактировать">
+                <i class="bi bi-envelope ic"></i>
+                <span class="val">roman@example.com</span>
+                <i class="bi bi-pencil pencil"></i>
+              </div>
+              <div class="pw-chip" title="VK: привязан через VK ID">
+                <i class="bi bi-person-badge ic"></i>
+                <span class="val">VK: привязан</span>
+                <span class="btn btn-sm btn-outline-secondary py-0 px-1" style="font-size:11px">Отвязать</span>
+              </div>
+              <div class="pw-chip" title="Telegram — нажмите, чтобы редактировать">
+                <i class="bi bi-telegram ic"></i>
+                <span class="val empty">не задан</span>
+                <i class="bi bi-pencil pencil"></i>
+              </div>
+            </div>
+          </div>
+          <div class="pw-body">
+            <div class="pw-facts">
+              <h6>Факты</h6>
+              <div class="pw-fact"><span class="k">Дата рожд.</span><span class="v">14.03.1988</span></div>
+              <div class="pw-fact"><span class="k">Знак</span><span class="v">♓ Рыбы</span></div>
+              <div class="pw-fact"><span class="k">Клуб</span><span class="v">Доброград</span></div>
+            </div>
+            <div class="pw-content">
+              <div class="pw-tabs">
+                <div class="pw-tab active">Обзор</div>
+                <div class="pw-tab">Матчи</div>
+                <div class="pw-tab">Турниры</div>
+                <div class="pw-tab">Настройки</div>
+              </div>
+              <div class="pw-row"><span>Турниров сыграно</span><b>23</b></div>
+              <div class="pw-row"><span>Матчей</span><b>141</b></div>
+              <div class="pw-row"><span>Победы / поражения</span><b>89 / 52</b></div>
+              <div class="pw-row"><span>Серия побед</span><b>4</b></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="pw-mut text-center mt-2 mb-0" style="font-size:12px">Табы скроллятся по горизонтали; скроллится только контент вкладки</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

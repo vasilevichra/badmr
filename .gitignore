@@ -132,6 +132,9 @@ dist
 # Application data
 .data/
 
+# iPhone-эмуляция: профиль браузера
+.iphone-profile/
+
 # IDE
 .idea/*
 

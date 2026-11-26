@@ -25,7 +25,8 @@ router.get('/:id', (req, res) => {
   // личный просмотр: матчи карточки — по турниру из ?tournament=<id>
   // (ссылки вида /t/3?player=1), без параметра — по глобальному current
   const tournamentId = requestedTournament(req);
-  // номинации пользователя — по текущему турниру «Новая Лига»
+  // номинации пользователя — по турниру просматриваемой страницы,
+  // без него — по глобальному current
   const tournament = tournamentService.getCurrent() as { id: number } | undefined;
   // «текущий турнир» статистики карточки: турнир просматриваемой страницы,
   // без него — глобальный current; если и его нет — оба среза совпадают
@@ -38,12 +39,11 @@ router.get('/:id', (req, res) => {
   // 3 — Завершён, 4 — Отменён
   const currentTournamentFinished = currentTournament !== undefined
     && (currentTournament.tournament_status_id === 3 || currentTournament.tournament_status_id === 4);
-  const achievements = tournament ? achievementService.getNominationsByUser(userId, tournament.id) : [];
-  // активная вкладка карточки из ?tab=<имя> (ссылкой можно поделиться);
-  // только известные имена, иначе — «Обзор» по умолчанию
-  const knownTabs = ['matches', 'win', 'lose', 'chance', 'worst'];
-  const requestedTab = String(req.query.tab ?? '');
-  const activeTab = knownTabs.includes(requestedTab) ? requestedTab : 'overview';
+  const achievements = currentTournamentId !== undefined
+    ? achievementService.getNominationsByUser(userId, currentTournamentId)
+    : [];
+  // вкладки карточки упразднены: «Матчи», «Выигрывает», «Проигрывает» —
+  // отдельные плитки; ?tab= больше не влияет на содержимое
   // ?all=1 — раскрыть блоки «За всё время» (ссылкой с раскрытым списком можно поделиться)
   const expandAll = req.query.all === '1';
   Promise.all([
@@ -98,10 +98,13 @@ router.get('/:id', (req, res) => {
       game_point: settingsService.get('game_point'),
       max_point: settingsService.get('max_point'),
       current_tournament_finished: currentTournamentFinished,
-      active_tab: activeTab,
       expand_all: expandAll,
       achievements: achievements,
-      playerNameFormatter: (id: number, name: string, sex: number, pic: string | null) => share.playerNameFormatter(id, name, sex, pic, (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false),
+      // пятый аргумент (short) задаёт сам шаблон (узкая плитка «Неудобные»);
+      // без него — телефонная версия по useragent
+      playerNameFormatter: (id: number, name: string, sex: number, pic: string | null, short?: boolean) => share.playerNameFormatter(id, name, sex, pic, short ?? ((req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false)),
+      // аватар для строк соигроков (co.ejs): имя без «#id» собирается в шаблоне
+      playerAvatarFormatter: (pic: string | null, name: string, sex: number) => share.playerAvatarFormatter(pic, name, sex),
       // мобильная версия карточки: таблица «Остальные матчи» рендерится
       // в вертикальном формате (пары блоками, счёт и дельта по парам)
       is_mobile: (req as unknown as { useragent?: { isMobile?: boolean } }).useragent?.isMobile || false

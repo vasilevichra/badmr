@@ -46,8 +46,8 @@ const vkStubs = (opts: { idToken: string; jwk: crypto.webcrypto.JsonWebKey }) =>
   globalThis.fetch = (async (url: string | URL, init?: RequestInit) => {
     const u = String(url);
     // не-VK запросы (собственный HTTP-клиент теста к серверу) — без заглушки
-    if (!u.includes("id.vk.com")) return saved(url, init!);
-    const body = u.includes("get_token")
+    if (!u.includes("id.vk.ru") && !u.includes("id.vk.com")) return saved(url, init!);
+    const body = u.includes("oauth2/auth")
         ? { access_token: "at-1", id_token: opts.idToken }
         : u.includes("jwks")
             ? { keys: [opts.jwk] }

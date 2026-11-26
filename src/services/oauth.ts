@@ -1,5 +1,5 @@
 // Обобщённый каркас OAuth-провайдеров (VK ID, позже Apple):
-// нормализация контактов, PKCE, верификация id_token по JWKS.
+// нормализация контактов, PKCE, верификация id_token (JWKS + статический ключ).
 import crypto from "node:crypto";
 
 export interface VkProfile {
@@ -9,13 +9,35 @@ export interface VkProfile {
 }
 
 /** Адреса VK ID — константы, чтобы Apple потом лёг вторым конфигом. */
-const AUTHORIZE_URL = "https://id.vk.com/authorize";
-const TOKEN_URL = "https://id.vk.com/oauth2/get_token";
-const JWKS_URL = "https://id.vk.com/.well-known/jwks";
-const USER_INFO_URL = "https://id.vk.com/oauth2/user_info";
-const ISSUER = "https://id.vk.com/";
+const AUTHORIZE_URL = "https://id.vk.ru/authorize";
+const TOKEN_URL = "https://id.vk.ru/oauth2/auth";
+const JWKS_URL = "https://id.vk.ru/oauth2/.well-known/jwks";
+const USER_INFO_URL = "https://id.vk.ru/oauth2/user_info";
+// VK выпускает токены с обоими issuer — принимаем оба
+const ISSUERS = ["https://id.vk.com/", "https://id.vk.ru/"];
 /** TTL кэша JWKS: ключи VK меняются редко, час — компромисс свежести и нагрузки. */
 const JWKS_TTL_MS = 60 * 60 * 1000;
+
+/**
+ * Публичный ключ VK ID для проверки подписи id_token — опубликован в
+ * официальной документации. JWKS-эндпоинт VK стабильно отвечает 403/404,
+ * поэтому статика здесь не запасной вариант, а рабочий механизм;
+ * при ротации ключа VK вход сломается — сигнал обновить константу.
+ */
+const VK_ID_TOKEN_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAvsvJlhFX9Ju/pvCz1frB
+DgJs592VjdwQuRAmnlJAItyHkoiDIOEocPzgcUBTbDf1plDcTyO2RCkUt0pz0WK6
+6HNhpJyIfARjaWHeUlv4TpuHXAJJsBKklkU2gf1cjID+40sWWYjtq5dAkXnSJUVA
+UR+sq0lJ7GmTdJtAr8hzESqGEcSP15PTs7VUdHZ1nkC2XgkuR8KmKAUb388ji1Q4
+n02rJNOPQgd9r0ac4N2v/yTAFPXumO78N25bpcuWf5vcL9e8THk/U2zt7wf+aAWL
+748e0pREqNluTBJNZfmhC79Xx6GHtwqHyyduiqfPmejmiujNM/rqnA4e30Tg86Yn
+cNZ6vLJyF72Eva1wXchukH/aLispbY+EqNPxxn4zzCWaLKHG87gaCxpVv9Tm0jSD
+2es22NjrUbtb+2pAGnXbyDp2eGUqw0RrTQFZqt/VcmmSCE45FlcZMT28otrwG1ZB
+kZAb5Js3wLEch3ZfYL8sjhyNRPBmJBrAvzrd8qa3rdUjkC9sKyjGAaHu2MNmFl1Y
+JFQ3J54tGpkGgJjD7Kz3w0K6OiPDlVCNQN5sqXm24fCw85Pbi8SJiaLTp/CImrs1
+Z3nHW5q8hljA7OGmqfOP0nZS/5zW9GHPyepsI1rW6CympYLJ15WeNzePxYS5KEX9
+EncmkSD9b45ge95hJeJZteUCAwEAAQ==
+-----END PUBLIC KEY-----`;
 
 // kid в стандарте JWK есть, но в типах @types/node его нет — расширяем
 type VkJwk = crypto.webcrypto.JsonWebKey & { kid?: string };
@@ -60,7 +82,7 @@ class OAuthService {
 
   /** Провайдер сконфигурирован — без секретов кнопки и роуты не работают. */
   configured(): boolean {
-    return Boolean(process.env.VK_CLIENT_ID && process.env.VK_CLIENT_SECRET);
+    return Boolean(process.env.VK_CLIENT_ID);
   }
 
   /**
@@ -94,7 +116,7 @@ class OAuthService {
    * Любой провал — Error с человеческим сообщением (роут покажет через flash).
    */
   async handleCallback(req: {
-    query: { code?: string; state?: string; error?: string };
+    query: { code?: string; state?: string; error?: string; device_id?: string };
     session: Record<string, unknown>;
   }): Promise<VkProfile> {
     const oauthSession = req.session.oauth as
@@ -113,15 +135,21 @@ class OAuthService {
       throw new Error("Вход через VK отменён");
     }
 
+    // Контракт «Сервер авторизации 2.1» (документация VK ID, 2026): обмен кода
+    // идёт на oauth2/auth с grant_type и device_id — обязательным спутником code
+    // из колбэка. Для публичных приложений секрет не нужен, PKCE закрывает обмен;
+    // конфиденциальные дополнительно передают service_token из кабинета VK.
     const tokenData = await this.postJson<{ access_token?: string; id_token?: string }>(
         TOKEN_URL,
         {
+          grant_type: "authorization_code",
           code: req.query.code ?? "",
           client_id: process.env.VK_CLIENT_ID!,
-          client_secret: process.env.VK_CLIENT_SECRET!,
           redirect_uri: process.env.VK_REDIRECT_URI || "https://badmr.ru/api/auth/vk/callback",
           code_verifier: oauthSession.verifier ?? "",
           state: oauthSession.state,
+          device_id: req.query.device_id ?? "",
+          ...(process.env.VK_SERVICE_TOKEN ? { service_token: process.env.VK_SERVICE_TOKEN } : {}),
         },
         "запроса токена",
     );
@@ -136,7 +164,7 @@ class OAuthService {
 
     const userInfo = await this.postJson<{ user?: { email?: string; phone?: string } }>(
         USER_INFO_URL,
-        { access_token: tokenData.access_token },
+        { access_token: tokenData.access_token, client_id: process.env.VK_CLIENT_ID! },
         "запроса профиля",
     );
 
@@ -185,7 +213,7 @@ class OAuthService {
     };
 
     const now = Math.floor(Date.now() / 1000);
-    if (payload.iss !== ISSUER) throw new Error("Токен VK выпущен неизвестным сервисом");
+    if (!ISSUERS.includes(payload.iss ?? "")) throw new Error("Токен VK выпущен неизвестным сервисом");
     const clientId = process.env.VK_CLIENT_ID!;
     const audOk = Array.isArray(payload.aud) ? payload.aud.includes(clientId) : payload.aud === clientId;
     if (!audOk) throw new Error("Токен VK выдан другому приложению");
@@ -193,30 +221,39 @@ class OAuthService {
     if (payload.nonce !== nonce) throw new Error("Подозрительный вход через VK: nonce не совпал");
 
     const signature = Buffer.from(sigB64, "base64url");
-    const verify = (jwk: crypto.webcrypto.JsonWebKey) => crypto.createVerify("RSA-SHA256")
-      .update(`${headerB64}.${payloadB64}`)
-      .verify(crypto.createPublicKey({ key: jwk, format: "jwk" }), signature);
+    const signed = `${headerB64}.${payloadB64}`;
+    const verify = (key: crypto.KeyObject) => crypto.createVerify("RSA-SHA256")
+      .update(signed)
+      .verify(key, signature);
 
-    // ключ выбирается по kid из заголовка; провал верификации — повод один раз
-    // принудительно обновить JWKS: после ротации ключей VK вход не должен
-    // ломаться до истечения часового кэша
-    let key = await this.jwkForSignature(header.kid);
-    if (!verify(key)) {
-      await this.fetchJwks();
-      key = await this.jwkForSignature(header.kid);
-      if (!verify(key)) throw new Error("Подпись токена VK не прошла проверку");
+    // провал верификации — повод один раз принудительно обновить JWKS: после
+    // ротации ключей VK вход не должен ломаться до истечения часового кэша;
+    // если JWKS по-прежнему недоступен — остаёмся на статическом ключе
+    let ok = false;
+    for (let attempt = 0; attempt < 2 && !ok; attempt++) {
+      const keys = await this.signingKeys(attempt > 0);
+      ok = keys.some(verify);
     }
+    if (!ok) throw new Error("Подпись токена VK не прошла проверку");
 
     return payload;
   }
 
-  /** Ключ для проверки подписи: по kid, фолбэк — первый ключ набора. */
-  private async jwkForSignature(kid?: string): Promise<VkJwk> {
-    if (!jwksCache || Date.now() - jwksCache.fetchedAt > JWKS_TTL_MS) {
-      await this.fetchJwks();
+  /**
+   * Ключи для проверки подписи: сначала JWKS, при его недоступности —
+   * статический публичный ключ из документации. Провал загрузки кэшируется
+   * на тот же TTL, чтобы каждый логин не долбил заведомо мёртвый эндпоинт.
+   */
+  private async signingKeys(forceRefresh = false): Promise<crypto.KeyObject[]> {
+    if (forceRefresh || !jwksCache || Date.now() - jwksCache.fetchedAt > JWKS_TTL_MS) {
+      try {
+        await this.fetchJwks();
+      } catch {
+        jwksCache = { keys: [], fetchedAt: Date.now() };
+      }
     }
-    const keys = jwksCache!.keys;
-    return (kid && keys.find(k => k.kid === kid)) || keys[0];
+    const jwkKeys = jwksCache!.keys.map(jwk => crypto.createPublicKey({ key: jwk, format: "jwk" }));
+    return jwkKeys.length ? jwkKeys : [crypto.createPublicKey(VK_ID_TOKEN_PUBLIC_KEY)];
   }
 
   private async fetchJwks(): Promise<void> {

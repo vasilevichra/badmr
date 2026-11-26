@@ -37,18 +37,20 @@ function signIdToken(key: crypto.KeyObject | crypto.PrivateKeyInput, payload: ob
   return `${header}.${body}.${b64u(sig)}`;
 }
 
-/** Подмена fetch: get_token / jwks / user_info как у VK ID. */
+/** Подмена fetch: oauth2/auth (токен) / jwks / user_info как у VK ID. */
 function stubFetch(opts: { keys: object[]; idToken: string }) {
   const saved = globalThis.fetch;
-  globalThis.fetch = (async (url: string | URL) => {
+  const bodies: Record<string, string>[] = [];
+  globalThis.fetch = (async (url: string | URL, init?: RequestInit) => {
     const u = String(url);
+    bodies.push(Object.fromEntries(new URLSearchParams(String(init?.body ?? ""))));
     let body: object;
-    if (u.includes("get_token")) body = { access_token: "at-1", id_token: opts.idToken };
+    if (u.includes("oauth2/auth")) body = { access_token: "at-1", id_token: opts.idToken };
     else if (u.includes("jwks")) body = { keys: opts.keys };
     else body = { user: { email: "Roman@Example.com", phone: "+7 (900) 123-45-67" } };
     return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
   }) as typeof fetch;
-  return () => { globalThis.fetch = saved; };
+  return () => { globalThis.fetch = saved; return bodies; };
 }
 
 describe("OAuth", () => {
@@ -80,7 +82,7 @@ describe("OAuth", () => {
       const session: Record<string, unknown> = {};
       const url = new URL(oauth.startAuth(session, "login"));
 
-      assert.strictEqual(url.origin + url.pathname, "https://id.vk.com/authorize");
+      assert.strictEqual(url.origin + url.pathname, "https://id.vk.ru/authorize");
       assert.strictEqual(url.searchParams.get("response_type"), "code");
       assert.strictEqual(url.searchParams.get("scope"), "email phone");
       assert.strictEqual(url.searchParams.get("code_challenge_method"), "S256");
@@ -108,12 +110,23 @@ describe("OAuth", () => {
           nonce: (session.oauth as { nonce: string }).nonce, exp: Math.floor(Date.now() / 1000) + 300,
         }),
       });
+      let bodies: Record<string, string>[] = [];
       try {
         const profile = await oauth.handleCallback({
-          query: { code: "c1", state: (session.oauth as { state: string }).state },
+          query: { code: "c1", state: (session.oauth as { state: string }).state, device_id: "dev-1" },
           session,
         });
         assert.deepStrictEqual(profile, { vkId: "12345", email: "roman@example.com", phone: "+79001234567" });
+        // контракт «Сервер авторизации 2.1»: grant_type + device_id обязательны,
+        // client_secret в новом API не участвует
+        bodies = restore();
+        const tokenBody = bodies[0];
+        assert.strictEqual(tokenBody.grant_type, "authorization_code");
+        assert.strictEqual(tokenBody.device_id, "dev-1");
+        assert.ok(tokenBody.code_verifier);
+        assert.strictEqual(tokenBody.client_secret, undefined);
+        const userInfoBody = bodies[bodies.length - 1];
+        assert.strictEqual(userInfoBody.client_id, "cid");
       } finally {
         restore();
         delete process.env.VK_CLIENT_ID;
@@ -162,7 +175,7 @@ describe("OAuth", () => {
       try {
         await assert.rejects(
           () => oauth.handleCallback({
-            query: { code: "c1", state: (session.oauth as { state: string }).state },
+            query: { code: "c1", state: (session.oauth as { state: string }).state, device_id: "dev-1" },
             session,
           }),
           (err: Error) => /подпис|токен/i.test(err.message),
@@ -189,7 +202,7 @@ describe("OAuth", () => {
       try {
         await assert.rejects(
           () => oauth.handleCallback({
-            query: { code: "c1", state: (session.oauth as { state: string }).state },
+            query: { code: "c1", state: (session.oauth as { state: string }).state, device_id: "dev-1" },
             session,
           }),
           (err: Error) => {

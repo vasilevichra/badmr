@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="ru" data-bs-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10 макетов карточки игрока</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+  body { background: #0b0f14; }
+  .frame-label { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; margin-bottom: .4rem; }
+  .frame { border: 1px solid #1d2733; border-radius: 12px; padding: 10px; background: #0b0f14; }
+  .frame-desktop, .frame-mobile { container-type: inline-size; }
+  .frame-mobile { width: 390px; max-width: 100%; }
+  .layout-no { color: #0d6efd; }
+  .layout-desc { font-size: .85rem; color: #8b98a9; }
+
+  /* ===== общие компоненты ===== */
+  .pw { background: #101720; border-radius: 10px; overflow: hidden; font-size: 14px; color: #e9edf2; }
+  .pw-identity { display: flex; gap: 14px; align-items: flex-start; }
+  .pw-avatar { width: 96px; height: 96px; border-radius: 12px; background: #16202c; display: flex; align-items: center; justify-content: center; font-size: 44px; color: #3f5876; flex: 0 0 auto; }
+  .pw-name { font-weight: 700; line-height: 1.2; }
+  .pw-sub { color: #8b98a9; }
+  .pw-rating { text-align: center; background: #16202c; border: 1px solid #223142; border-radius: 12px; padding: 6px 14px; cursor: pointer; flex: 0 0 auto; }
+  .pw-rating:hover { border-color: #0d6efd; }
+  .pw-rating .num { font-size: 24px; font-weight: 800; line-height: 1.1; }
+  .pw-rating .cap { font-size: 10px; color: #8b98a9; letter-spacing: .06em; text-transform: uppercase; }
+  .pw-contacts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .pw-contacts.c2 { grid-template-columns: 1fr 1fr; }
+  .pw-chip { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 10px; background: #141d28; border: 1px solid #1d2733; border-radius: 10px; cursor: pointer; overflow: hidden; }
+  .pw-chip:hover { border-color: #2c3d52; }
+  .pw-chip .ic { color: #5a7396; flex: 0 0 auto; }
+  .pw-chip .val { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pw-chip .val.empty { color: #55647a; font-style: italic; }
+  .pw-chip .pencil { margin-left: auto; color: #55647a; opacity: 0; flex: 0 0 auto; }
+  .pw-chip:hover .pencil { opacity: 1; }
+  .xbtn { font-size: 11px; padding-top: 0; padding-bottom: 0; }
+  .pw-fact { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed #182230; min-height: 30px; align-items: baseline; }
+  .pw-fact .k { color: #8b98a9; flex: 0 0 auto; }
+  .pw-fact .v { text-align: right; }
+  .pw-row { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px dashed #182230; }
+  .pw-mut { color: #55647a; font-weight: 400; }
+  .pw-ach { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pw-ach .badge { background: #16202c; border: 1px solid #223142; font-weight: 500; }
+  .pw-tabs { display: flex; gap: 4px; border-bottom: 1px solid #1d2733; margin-bottom: 10px; overflow-x: auto; scrollbar-width: none; }
+  .pw-tab { padding: 7px 13px; border-radius: 8px 8px 0 0; color: #8b98a9; white-space: nowrap; cursor: pointer; border-bottom: 2px solid transparent; }
+  .pw-tab.active { color: #e9edf2; border-bottom-color: #0d6efd; font-weight: 600; }
+  .sec-h { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; margin-bottom: 8px; }
+  details.pw-acc { border: 1px solid #1d2733; border-radius: 10px; margin-bottom: 8px; background: #101720; }
+  details.pw-acc > summary { padding: 10px 14px; cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  details.pw-acc > summary::after { content: "▾"; color: #55647a; }
+  details.pw-acc[open] > summary::after { content: "▴"; }
+  details.pw-acc .acc-body { padding: 4px 14px 12px; }
+
+  /* L3: sticky-сплит */
+  .l3 { display: grid; grid-template-columns: 280px 1fr; height: 480px; overflow-y: auto; }
+  .l3 .left { position: sticky; top: 0; align-self: start; background: #101720; border-right: 1px solid #1d2733; padding: 14px 16px; z-index: 2; }
+  .l3 .right { padding: 14px 16px; min-width: 0; }
+  @container (max-width: 480px) {
+    .l3 { grid-template-columns: 1fr; height: 480px; }
+    .l3 .left { border-right: 0; border-bottom: 1px solid #1d2733; }
+  }
+
+  /* L6: лента со sticky-заголовками */
+  .l6 { height: 480px; overflow-y: auto; padding: 0 16px; }
+  .l6 .sec-title { position: sticky; top: 0; background: #101720; padding: 9px 0; margin: 0; border-bottom: 1px solid #1d2733; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #6c757d; z-index: 2; }
+  .l6 .pillbar { display: flex; gap: 6px; padding: 10px 0; position: sticky; top: 0; background: #101720; z-index: 3; }
+  .l6 .pill { padding: 4px 12px; border: 1px solid #1d2733; border-radius: 999px; font-size: 12px; color: #8b98a9; background: #141d28; }
+  .l6 .pill.active { border-color: #0d6efd; color: #e9edf2; }
+
+  /* L7: bento */
+  .l7 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; padding: 12px; }
+  .l7 .tile { background: #141d28; border: 1px solid #1d2733; border-radius: 10px; padding: 10px 12px; min-width: 0; }
+  .l7 .t-av { grid-column: span 2; display: flex; align-items: center; justify-content: center; }
+  .l7 .t-name { grid-column: span 7; }
+  .l7 .t-rate { grid-column: span 3; display: flex; align-items: center; justify-content: center; border-color: #223142; }
+  .l7 .t-contacts { grid-column: span 8; }
+  .l7 .t-facts { grid-column: span 4; }
+  .l7 .t-ach { grid-column: span 4; }
+  .l7 .t-stats { grid-column: span 4; }
+  .l7 .t-matches { grid-column: span 12; }
+  @container (max-width: 700px) {
+    .l7 .t-av, .l7 .t-name, .l7 .t-rate, .l7 .t-contacts, .l7 .t-facts, .l7 .t-ach, .l7 .t-stats, .l7 .t-matches { grid-column: span 12; }
+    .l7 .t-av { display: none; }
+  }
+
+  /* L8: таббар / сайдбар */
+  .l8 { display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr auto; height: 480px; }
+  .l8 .l8-content { grid-row: 1; overflow-y: auto; padding: 12px 16px; }
+  .l8 .l8-nav { grid-row: 2; display: flex; justify-content: space-around; border-top: 1px solid #1d2733; background: #141d28; padding: 7px 0; }
+  .l8 .l8-nav .ni { text-align: center; color: #55647a; font-size: 11px; cursor: pointer; }
+  .l8 .l8-nav .ni i { display: block; font-size: 18px; }
+  .l8 .l8-nav .ni.active { color: #0d6efd; }
+  @container (min-width: 481px) {
+    .l8 { grid-template-columns: 56px 1fr; grid-template-rows: 1fr; }
+    .l8 .l8-nav { grid-row: 1; grid-column: 1; flex-direction: column; justify-content: flex-start; gap: 14px; border-top: 0; border-right: 1px solid #1d2733; padding: 12px 0; }
+    .l8 .l8-content { grid-column: 2; }
+  }
+
+  /* L9: scroll-snap карусель */
+  .l9-head { padding: 12px 16px; border-bottom: 1px solid #1d2733; }
+  .l9 { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; height: 380px; }
+  .l9 .page { min-width: 100%; scroll-snap-align: start; padding: 14px 16px; overflow-y: auto; }
+  .l9-dots { display: flex; gap: 6px; justify-content: center; padding: 9px 0; background: #101720; border-top: 1px solid #1d2733; }
+  .l9-dots i { width: 7px; height: 7px; border-radius: 50%; background: #2c3d52; }
+  .l9-dots i.on { background: #0d6efd; }
+
+  /* L10: дата-лист */
+  .l10-head { display: flex; align-items: baseline; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #1d2733; }
+  .l10-head .big { font-size: 34px; font-weight: 800; margin-left: auto; color: #0d6efd; }
+  .l10 dl { margin: 0; padding: 6px 16px; }
+  .l10 .drow { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px dashed #182230; align-items: center; min-height: 36px; }
+  .l10 dt { color: #8b98a9; flex: 0 0 130px; font-weight: 400; margin: 0; }
+  .l10 dd { margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .l10 .pe { color: #55647a; opacity: 0; cursor: pointer; }
+  .l10 .drow:hover .pe { opacity: 1; }
+
+  /* L1/L2 адаптив */
+  @container (max-width: 480px) {
+    .pw-head-pad { padding: 12px !important; }
+    .pw-av-s { width: 56px !important; height: 56px !important; font-size: 26px !important; }
+    .pw-name { font-size: 15px !important; }
+    .pw-rating .num { font-size: 19px !important; }
+    .pw-contacts.full { grid-template-columns: 1fr 1fr !important; }
+  }
+</style>
+</head>
+<body class="p-3 p-md-4">
+<div class="container-xxl" id="app">
+  <h1 class="h5 mb-1">10 макетов карточки игрока</h1>
+  <p class="text-secondary mb-4">Одни данные, одна разметка на макет; в каждой секции — десктопная рамка (адаптивна к ширине окна) и мобила 390px. Табы кликабельны (подсветка), чипы — pencil по hover.</p>
+</div>
+
+<script>
+const D = {
+  name: 'Василевич Роман Анатольевич', nick: '«Рома»',
+  place: 'Доброград · Владимирская обл. · Россия',
+  bday: '14.03.1988', zodiac: '♓ Рыбы', club: 'Доброград', rating: 1720,
+  contacts: [
+    { ic: 'bi-telephone', v: '+7 952 230-11-22', ph: 'телефон' },
+    { ic: 'bi-envelope', v: 'roman@example.com', ph: 'почта' },
+    { ic: 'bi-person-badge', v: 'VK: привязан', extra: 'Отвязать' },
+    { ic: 'bi-telegram', v: '', ph: 'Telegram' },
+  ],
+  ach: ['🥈 Финалист Кубка', '🏆 Чемпион пар', '🥉 Бронза осени'],
+  stats: [
+    ['Турниров сыграно', '23'], ['Матчей', '141'],
+    ['Победы / поражения', '89 / 52'],
+    ['Последний турнир', 'Кубок «Рома-кап» <span class="pw-mut">· 15.11</span>'],
+    ['Серия побед', '4 <span class="pw-mut">(накопленная)</span>'],
+  ],
+  matches: [
+    ['Кубок «Рома-кап», 1/2', '2:1', 'победа', '15.11'],
+    ['Кубок «Рома-кап», 1/4', '2:0', 'победа', '15.11'],
+    ['Осенний рейтинг-турнир', '1:2', 'поражение', '02.11'],
+    ['Осенний рейтинг-турнир', '2:1', 'победа', '01.11'],
+  ],
+};
+
+const chip = c => `<div class="pw-chip" title="${c.ph || 'VK'} — нажмите, чтобы редактировать">
+  <i class="bi ${c.ic} ic"></i>
+  <span class="val ${c.v ? '' : 'empty'}">${c.v || 'не задан'}</span>
+  ${c.extra ? `<span class="btn btn-sm btn-outline-secondary xbtn">${c.extra}</span>` : '<i class="bi bi-pencil pencil"></i>'}</div>`;
+const chips = (cls = '') => `<div class="pw-contacts ${cls}">${D.contacts.map(chip).join('')}</div>`;
+const factRows = () => [['Дата рожд.', D.bday], ['Знак', D.zodiac], ['Клуб', D.club]]
+  .map(([k, v]) => `<div class="pw-fact"><span class="k">${k}</span><span class="v">${v} <i class="bi bi-pencil pencil pw-mut" style="font-size:11px"></i></span></div>`).join('');
+const statRows = () => D.stats.map(([k, v]) => `<div class="pw-row"><span>${k}</span><b>${v}</b></div>`).join('');
+const matchRows = () => D.matches.map(([t, s, r, d]) => `<div class="pw-row"><span>${t} <span class="pw-mut">· ${d}</span></span><b>${s} <span class="pw-mut">${r}</span></b></div>`).join('');
+const av = (sz, cls = '') => `<div class="pw-avatar ${cls}" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz * .45)}px"><i class="bi bi-person-fill"></i></div>`;
+const rate = () => `<div class="pw-rating" title="изменить рейтинг"><div class="num">${D.rating}</div><div class="cap">рейтинг</div></div>`;
+const achB = () => `<div class="pw-ach">${D.ach.map(a => `<span class="badge">${a}</span>`).join('')}</div>`;
+const tabbar = (act = 0) => `<div class="pw-tabs">${['Обзор', 'Матчи', 'Турниры', 'Настройки'].map((t, i) => `<div class="pw-tab ${i === act ? 'active' : ''}">${t}</div>`).join('')}</div>`;
+const detail = (title, open, body) => `<details class="pw-acc"${open ? ' open' : ''}><summary>${title}</summary><div class="acc-body">${body}</div></details>`;
+const contactRowsL10 = () => [
+  ['Телефон', D.contacts[0].v], ['Почта', D.contacts[1].v], ['VK', D.contacts[2].v], ['Telegram', D.contacts[3].v || 'не задан'],
+].map(([k, v]) => `<div class="drow"><dt>${k}</dt><dd>${v}</dd><i class="bi bi-pencil pe"></i></div>`).join('');
+
+/* ---- каркасы ---- */
+const L = {};
+
+// 1. Паспорт: контакты в шапке + табы
+L[1] = () => `
+<div class="pw">
+  <div class="pw-head-pad" style="padding:16px;border-bottom:1px solid #1d2733">
+    <div class="pw-identity">
+      ${av(96, 'pw-av-s')}
+      <div class="flex-grow-1" style="min-width:0">
+        <div class="pw-name" style="font-size:20px">${D.name}</div>
+        <div class="pw-sub">${D.nick}</div>
+        <div class="pw-sub">${D.place}</div>
+      </div>
+      ${rate()}
+    </div>
+    <div style="margin-top:14px">${chips()}</div>
+  </div>
+  <div style="display:grid;grid-template-columns:280px 1fr">
+    <div class="pw-head-pad" style="padding:14px 16px;border-right:1px solid #1d2733">
+      <div class="sec-h">Факты</div>${factRows()}
+      <div class="sec-h" style="margin-top:12px">Достижения</div>${achB()}
+    </div>
+    <div class="pw-head-pad" style="padding:14px 16px;min-width:0">
+      ${tabbar(0)}${statRows()}
+    </div>
+  </div>
+</div>
+<style>@container (max-width:480px){ [data-l1] .pw-body-grid { grid-template-columns:1fr !important; } }</style>`;
+
+// 2. Шапка-герой + табы, контакты внутри «Обзора»
+L[2] = () => `
+<div class="pw">
+  <div class="pw-head-pad" style="padding:12px 16px;border-bottom:1px solid #1d2733;display:flex;gap:12px;align-items:center">
+    ${av(52, 'pw-av-s')}
+    <div style="min-width:0">
+      <div class="pw-name" style="font-size:16px">${D.name}</div>
+      <div class="pw-sub" style="font-size:12px">${D.nick} · ${D.place}</div>
+    </div>
+    <div style="margin-left:auto">${rate()}</div>
+  </div>
+  <div class="pw-head-pad" style="padding:12px 16px">
+    ${tabbar(0)}
+    <div class="sec-h">Контакты</div>
+    <div style="margin-bottom:10px">${chips('c2 full')}</div>
+    <div class="sec-h">Факты</div>${factRows()}
+    <div class="sec-h" style="margin-top:12px">Статистика</div>${statRows()}
+  </div>
+</div>`;
+
+// 3. Sticky-сплит
+L[3] = () => `
+<div class="pw l3">
+  <div class="left">
+    <div class="pw-identity" style="margin-bottom:10px">
+      ${av(56)}
+      <div style="min-width:0"><div class="pw-name" style="font-size:15px">${D.name}</div><div class="pw-sub">${D.nick}</div></div>
+    </div>
+    <div class="sec-h">Контакты</div><div style="margin-bottom:10px">${chips('c2')}</div>
+    <div class="sec-h">Факты</div>${factRows()}
+    <div class="sec-h" style="margin-top:12px">Достижения</div>${achB()}
+  </div>
+  <div class="right">
+    ${tabbar(1)}${matchRows()}
+    <div class="sec-h" style="margin-top:14px">Статистика</div>${statRows()}
+  </div>
+</div>`;
+
+// 4. ID-card + аккордеон
+L[4] = () => `
+<div class="pw">
+  <div class="pw-head-pad" style="padding:16px;border-bottom:1px solid #1d2733">
+    <div class="pw-identity">
+      ${av(72, 'pw-av-s')}
+      <div class="flex-grow-1" style="min-width:0">
+        <div class="pw-name" style="font-size:17px">${D.name}</div>
+        <div class="pw-sub">${D.nick} · ${D.place}</div>
+      </div>
+      ${rate()}
+    </div>
+    <div style="margin-top:12px">${chips('c2 full')}</div>
+  </div>
+  <div class="pw-head-pad" style="padding:12px 16px">
+    ${detail('Факты', true, factRows())}
+    ${detail('Достижения', false, achB())}
+    ${detail('Матчи', false, matchRows())}
+    ${detail('Статистика', false, statRows())}
+  </div>
+</div>`;
+
+// 5. Аккордеон секций
+L[5] = () => `
+<div class="pw">
+  <div class="pw-head-pad" style="padding:10px 14px;border-bottom:1px solid #1d2733;display:flex;gap:10px;align-items:center">
+    ${av(40)}<div style="min-width:0"><div class="pw-name" style="font-size:15px">${D.name}</div><div class="pw-sub" style="font-size:12px">${D.nick} · ${D.club}</div></div>
+    <div style="margin-left:auto">${rate()}</div>
+  </div>
+  <div class="pw-head-pad" style="padding:12px 14px">
+    ${detail('Контакты', true, chips('c2 full'))}
+    ${detail('Обзор', false, factRows() + `<div class="sec-h" style="margin-top:10px">Статистика</div>` + statRows())}
+    ${detail('Достижения', false, achB())}
+    ${detail('Матчи', false, matchRows())}
+  </div>
+</div>`;
+
+// 6. Лента со sticky-заголовками
+L[6] = () => `
+<div class="pw">
+  <div class="l6">
+    <div class="pillbar">${['Обзор', 'Контакты', 'Достижения', 'Матчи'].map((t, i) => `<span class="pill ${i === 0 ? 'active' : ''}">${t}</span>`).join('')}</div>
+    <div class="pw-head-pad" style="padding:10px 0 14px;display:flex;gap:12px;align-items:center">
+      ${av(52, 'pw-av-s')}
+      <div style="min-width:0"><div class="pw-name" style="font-size:16px">${D.name}</div><div class="pw-sub">${D.nick} · ${D.place}</div></div>
+      <div style="margin-left:auto">${rate()}</div>
+    </div>
+    <div class="sec-title">Контакты</div><div style="padding:8px 0 14px">${chips('c2 full')}</div>
+    <div class="sec-title">Факты и достижения</div><div style="padding:8px 0 14px">${factRows()}<div style="margin-top:8px">${achB()}</div></div>
+    <div class="sec-title">Статистика</div><div style="padding:8px 0 14px">${statRows()}</div>
+    <div class="sec-title">Матчи</div><div style="padding:8px 0 14px">${matchRows()}</div>
+  </div>
+</div>`;
+
+// 7. Bento-grid
+L[7] = () => `
+<div class="pw l7">
+  <div class="tile t-av">${av(56)}</div>
+  <div class="tile t-name"><div class="pw-name" style="font-size:17px">${D.name}</div><div class="pw-sub">${D.nick}</div><div class="pw-sub">${D.place}</div></div>
+  <div class="tile t-rate">${rate()}</div>
+  <div class="tile t-contacts"><div class="sec-h">Контакты</div>${chips('c2 full')}</div>
+  <div class="tile t-facts"><div class="sec-h">Факты</div>${factRows()}</div>
+  <div class="tile t-ach"><div class="sec-h">Достижения</div>${achB()}</div>
+  <div class="tile t-stats"><div class="sec-h">Статистика</div>${statRows()}</div>
+  <div class="tile t-matches"><div class="sec-h">Матчи</div>${matchRows()}</div>
+</div>`;
+
+// 8. Мобильное приложение: нижний таббар / десктопный сайдбар
+L[8] = () => `
+<div class="pw l8">
+  <div class="l8-content">
+    <div class="pw-identity" style="margin-bottom:10px">
+      ${av(56)}
+      <div class="flex-grow-1" style="min-width:0"><div class="pw-name" style="font-size:16px">${D.name}</div><div class="pw-sub">${D.nick} · ${D.place}</div></div>
+      ${rate()}
+    </div>
+    <div class="sec-h">Экран «Обзор»</div>${statRows()}
+    <div class="sec-h" style="margin-top:12px">Контакты</div>${chips('c2 full')}
+  </div>
+  <div class="l8-nav">
+    ${[['bi-person', 'Обзор'], ['bi-trophy', 'Матчи'], ['bi-award', 'Награды'], ['bi-gear', 'Ещё']].map(([i, t], k) => `<div class="ni ${k === 0 ? 'active' : ''}"><i class="bi ${i}"></i>${t}</div>`).join('')}
+  </div>
+</div>`;
+
+// 9. Шапка + scroll-snap карусель
+L[9] = () => `
+<div class="pw">
+  <div class="l9-head pw-head-pad">
+    <div class="pw-identity">
+      ${av(48, 'pw-av-s')}
+      <div style="min-width:0"><div class="pw-name" style="font-size:15px">${D.name}</div><div class="pw-sub" style="font-size:12px">${D.nick} · ${D.club}</div></div>
+      <div style="margin-left:auto">${rate()}</div>
+    </div>
+  </div>
+  <div class="l9">
+    <div class="page"><div class="sec-h">Обзор</div>${statRows()}<div class="sec-h" style="margin-top:10px">Факты</div>${factRows()}</div>
+    <div class="page"><div class="sec-h">Контакты</div>${chips('c2 full')}</div>
+    <div class="page"><div class="sec-h">Матчи</div>${matchRows()}</div>
+    <div class="page"><div class="sec-h">Достижения</div>${achB()}</div>
+  </div>
+  <div class="l9-dots"><i class="on"></i><i></i><i></i><i></i></div>
+</div>`;
+
+// 10. Плотный дата-лист
+L[10] = () => `
+<div class="pw">
+  <div class="l10-head pw-head-pad">
+    <div style="min-width:0">
+      <div class="pw-name" style="font-size:17px">${D.name}</div>
+      <div class="pw-sub">${D.nick} · ${D.place}</div>
+    </div>
+    <span class="big">${D.rating}</span>
+  </div>
+  <dl>
+    <div class="sec-h" style="padding:10px 16px 0">Контакты</div>
+    ${contactRowsL10()}
+    <div class="sec-h" style="padding:12px 16px 0">Факты</div>
+    ${[['Дата рожд.', D.bday], ['Знак', D.zodiac], ['Клуб', D.club]].map(([k, v]) => `<div class="drow"><dt>${k}</dt><dd>${v}</dd><i class="bi bi-pencil pe"></i></div>`).join('')}
+    <div class="sec-h" style="padding:12px 16px 0">Статистика</div>
+    ${D.stats.map(([k, v]) => `<div class="drow"><dt>${k}</dt><dd><b>${v}</b></dd></div>`).join('')}
+  </dl>
+</div>`;
+
+const META = {
+  1: ['Паспорт + табы', 'Одобренный ранее: контакты-чипы в шапке, слева факты+достижения, справа табы. Контакты — приоритет, редактирование модалкой.'],
+  2: ['Шапка-герой + табы', 'Минимальный дифф: компактная шапка без контактов, всё содержимое — внутри вкладок. Мобила: один экран, скролл внутри вкладки.'],
+  3: ['Sticky-сплит', 'Левая панель (профиль+контакты) прилипает при скролле контента справа. На мобиле — тот же порядок, внутренний скролл модалки.'],
+  4: ['ID-card + аккордеон', 'Паспорт с контактами в шапке, детали — аккордеоном (без табов). Мобила: открыт только нужный блок.'],
+  5: ['Аккордеон секций', 'Всё секциями-аккордеонами, высота страницы предсказуема. Самый дешевый в реализации (нативные <details>).'],
+  6: ['Лента со sticky-заголовками', 'Профиль как страница: секции с прилипающими заголовками + pill-навигация сверху. Ничего не перерисовывается — стабильно.'],
+  7: ['Bento-grid', 'Плитки разного размера на CSS grid. Самый современный вид; на мобиле складывается в колонку.'],
+  8: ['Таббар / сайдбар', 'Стиль мобильного приложения: снизу таббар (на десктопе — иконки слева), контент переключается, а не скроллится. Максимальная стабильность.'],
+  9: ['Scroll-snap карусель', 'Горизонтальные страницы-«свитчи» на чистом CSS scroll-snap, свайп на мобиле. Без JS.'],
+  10: ['Плотный дата-лист', 'Отказ от карточек: строки «поле → значение», pencil по hover, рейтинг крупно в шапке. Самый компактный и стабильный.'],
+};
+
+const app = document.getElementById('app');
+for (let n = 1; n <= 10; n++) {
+  const [title, desc] = META[n];
+  const sec = document.createElement('div');
+  sec.className = 'mb-5';
+  sec.innerHTML = `
+    <h2 class="h6 mb-1"><span class="layout-no">${n}.</span> ${title}</h2>
+    <p class="layout-desc mb-2">${desc}</p>
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="frame-label">Десктоп</div>
+        <div class="frame frame-desktop" data-l${n}>${L[n]()}</div>
+      </div>
+      <div class="col-12 col-xl-4">
+        <div class="frame-label">Мобила · 390px</div>
+        <div class="frame frame-mobile" data-l${n}>${L[n]()}</div>
+      </div>
+    </div>`;
+  app.appendChild(sec);
+}
+
+// клик по табу — подсветка активного
+document.addEventListener('click', e => {
+  const tab = e.target.closest('.pw-tab');
+  if (!tab) return;
+  tab.parentElement.querySelectorAll('.pw-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+});
+</script>
+</body>
+</html>
