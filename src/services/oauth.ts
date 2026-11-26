@@ -213,7 +213,12 @@ class OAuthService {
     };
 
     const now = Math.floor(Date.now() / 1000);
-    if (!ISSUERS.includes(payload.iss ?? "")) throw new Error("Токен VK выпущен неизвестным сервисом");
+    // диагностика: фактический iss сервера авторизации 2.1 нигде не
+    // задокументирован — без лога refusal-случай не отличить от подмены
+    if (!ISSUERS.includes(payload.iss ?? "")) {
+      console.error(`VK id_token отклонён: iss=${JSON.stringify(payload.iss)} aud=${JSON.stringify(payload.aud)} kid=${header.kid}`);
+      throw new Error("Токен VK выпущен неизвестным сервисом");
+    }
     const clientId = process.env.VK_CLIENT_ID!;
     const audOk = Array.isArray(payload.aud) ? payload.aud.includes(clientId) : payload.aud === clientId;
     if (!audOk) throw new Error("Токен VK выдан другому приложению");
