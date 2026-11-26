@@ -2204,6 +2204,18 @@ body.phone .select-board-score {
 
 /* мобила: все плитки в колонку */
 @media (max-width: 991.98px) {
+  /* горизонтальные отступы плашек вдвое у́же: 16+12=28px по бокам → 14px
+     (modal-body 8px + container 6px) */
+  #player-window .modal-body {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  #player-window .container {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
   .pw-tile-facts,
   .pw-tile-ach,
   .pw-tile-worst,
