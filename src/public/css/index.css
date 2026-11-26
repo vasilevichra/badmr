@@ -2263,8 +2263,12 @@ body.phone .select-board-score {
     font-size: 1.1rem;
   }
 
+  /* число 680 сидит в высоком боксе инпута (Chrome не даёт его ужать
+     ни height, ни field-sizing) — подтягиваем ЛАБ-рейтинги в пустоту
+     под цифрой, перекрывая десктопное margin:0 !important */
   .pw-rating .pw-rating-lab {
     font-size: 0.75rem;
+    margin-top: -0.45rem !important;
   }
 }
 
