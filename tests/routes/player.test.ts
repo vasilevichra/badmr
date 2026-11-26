@@ -122,13 +122,15 @@ describe("Player page", () => {
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
-    assert.match(html, /Неудобные/);
+    // плитка «Шанс проиграть, %»: полные имена, полоса вместо цифр
+    assert.match(html, /Шанс проиграть, %/);
     assert.match(html, /Фамилия3 Имя3/);
     assert.match(html, /Фамилия4 Имя4/);
-    assert.match(html, /100\.00%/);
-    // выигрывать не с кем — вкладка «Выигрывает» скрыта
+    // вероятность проиграть 100% — полоса красная на всю ширину
+    assert.match(html, /pw-chance-bar bad/);
+    // выигрывать не с кем — плитка «Выигрывает» скрыта
     assert.doesNotMatch(html, /Выигрывает/);
-    // проигрывал с напарником — вкладка «Проигрывает» показана
+    // проигрывал с напарником — плитка «Проигрывает» показана
     assert.match(html, /Проигрывает/);
   });
 
@@ -185,11 +187,11 @@ describe("Player page", () => {
     assert.strictEqual(res.status, 200);
     assert.match(html, /Достижения/);
     assert.match(html, /Пулемётчик/);
-    assert.match(html, /Ну как так\?/);
+    assert.match(html, /Ну как так-то\?/);
     assert.match(html, /Черепаха/);
   });
 
-  it("не должен показывать карточку достижений без номинаций", async () => {
+  it("показывает плитку достижений без номинаций с пометкой «пока нет»", async () => {
     const { id } = await userService.create("Фамилия", "Имя", "Отчество", 500, 1, 1, "1990-01-01");
     await userService.deregisterAll();
     await userService.registerByIds([id]);
@@ -198,7 +200,11 @@ describe("Player page", () => {
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
-    assert.doesNotMatch(html, /Достижения/);
+    // плитка достижений — постоянная часть ряда напарников; без номинаций
+    // бейджей нет, вместо них приглушённая пометка
+    assert.match(html, /Достижения/);
+    assert.match(html, /пока нет/);
+    assert.doesNotMatch(html, /achievement-badge/);
   });
 
   it("не должен показать неудобных соперников когда их нет", async () => {
@@ -221,11 +227,11 @@ describe("Player page", () => {
 
     assert.strictEqual(res.status, 200);
     assert.doesNotMatch(html, /Неудобные/);
-    // имена соперников теперь легитимно видны во вкладке «Матчи» (история),
+    // имена соперников теперь легитимно видны в плитке «Матчи» (история),
     // поэтому проверяем только скрытие статистических вкладок
-    // проигрывать не с кем — вкладка «Проигрывает» скрыта
+    // проигрывать не с кем — плитка «Проигрывает» скрыта
     assert.doesNotMatch(html, /Проигрывает/);
-    // выигрывал с напарником — вкладка «Выигрывает» показана
+    // выигрывал с напарником — плитка «Выигрывает» показана
     assert.match(html, /Выигрывает/);
   });
 
@@ -261,11 +267,11 @@ describe("Player page", () => {
     const html = await res.text();
 
     assert.strictEqual(res.status, 200);
-    // вкладка «Матчи» показана, история отрендерена таблицами match-history
-    assert.match(html, /id="matches-tab"/);
+    // плитка «Матчи» показана, история отрендерена таблицами match-history
+    assert.match(html, /class="pw-tile pw-tile-matches"/);
     assert.match(html, /match-history-players/);
-    // вкладка «Матчи» — вторая, сразу после «Обзор»
-    assert.ok(html.indexOf('id="matches-tab"') < html.indexOf('id="win-tab"'));
+    // плитка «Выигрывает» стоит перед группой исходов (Победы/Поражения/Винрейт)
+    assert.ok(html.indexOf('pw-tile-win') < html.indexOf('Винрейт'));
     // победный матч: напарник в истории, дельта рейтинга положительная
     assert.match(html, /Фамилия2 Имя2/);
     assert.match(html, /rating-plus">\+\d+(\.\d+)?</);
@@ -273,7 +279,7 @@ describe("Player page", () => {
     assert.doesNotMatch(html, /Фамилия5 Имя5/);
   });
 
-  it("должен скрыть все вкладки когда у игрока нет матчей", async () => {
+  it("должен скрыть плитки соигроков и матчей когда у игрока нет матчей", async () => {
     const { id } = await userService.create("Фамилия1", "Имя1", "Отчество", 500, 1, 1, "1990-01-01");
     await userService.deregisterAll();
     await userService.registerByIds([id]);
@@ -284,10 +290,11 @@ describe("Player page", () => {
     assert.strictEqual(res.status, 200);
     assert.doesNotMatch(html, /Выигрывает/);
     assert.doesNotMatch(html, /Проигрывает/);
-    assert.doesNotMatch(html, /Шанс/);
+    // «Шанс выиграть, %» — вкладка; «Шанс проиграть, %» — плитка, не вкладка
+    assert.doesNotMatch(html, /Шанс с ним выиграть/);
     assert.doesNotMatch(html, /Неудобные/);
-    // истории матчей нет — вкладка скрыта
-    assert.doesNotMatch(html, /id="matches-tab"/);
+    // истории матчей нет — плитка «Матчи» скрыта
+    assert.doesNotMatch(html, /pw-tile-matches/);
   });
 
   it("должен показать прогресс калибровки у игрока в серии", async () => {
@@ -389,8 +396,9 @@ describe("Player page", () => {
     assert.match(html, /<mi>454<\/mi>\s*<mi>2<\/mi>/);
     // строки ЛАБ в таблице обзора больше нет
     assert.doesNotMatch(html, /badminton4u\.ru \(ЛАБ\)/);
-    // первая колонка таблицы статистики называется «Параметр»
-    assert.match(html, /Параметр/);
+    // ЛАБ — строка в плитке «Информация», не отдельная плитка
+    assert.match(html, /pw-fact pw-lab-row/);
+    assert.doesNotMatch(html, /pw-tile-lab/);
   });
 
   it("должен скрыть блок ЛАБ когда нет аккаунта ЛАБ", async () => {
@@ -422,7 +430,7 @@ describe("Player page", () => {
     assert.doesNotMatch(html, /<math class="secondary-info">/);
   });
 
-  it("должен открывать вкладку из параметра ?tab= и не активировать чужие", async () => {
+  it("должен игнорировать ?tab=: вкладки упразднены, все блоки — плитки", async () => {
     const ids: number[] = [];
     for (let i = 1; i <= 4; i++) {
       const { id } = await userService.create(`Фамилия${i}`, `Имя${i}`, "Отчество", 500, 1, 1, "1990-01-01");
@@ -435,45 +443,45 @@ describe("Player page", () => {
     await gameService.create(match.id, null, "15", "2026-01-01 10:00:00");
     await gameService.create(match.id, null, "17", "2026-01-01 10:05:00");
 
-    // ?tab=matches — активна вкладка «Матчи»
+    // история матчей — плитка «Матчи», рендерится независимо от ?tab=
     let res = await fetch(`${base}/${ids[0]}?tab=matches`);
     let html = await res.text();
     assert.strictEqual(res.status, 200);
-    assert.match(html, /class="nav-link active"[^>]*id="matches-tab"/);
-    assert.match(html, /class="tab-pane fade show active" id="matches-tab-pane"/);
-    assert.doesNotMatch(html, /class="nav-link active"[^>]*id="overview-tab"/);
+    assert.match(html, /class="pw-tile pw-tile-matches"/);
+    assert.doesNotMatch(html, /id="matches-tab"/);
+    assert.doesNotMatch(html, /id="matches-tab-pane"/);
+    // «Обзор» упразднён: статистика — отдельная плитка, не вкладка
+    assert.doesNotMatch(html, /id="overview-tab"/);
+    assert.doesNotMatch(html, /overview-tab-pane/);
 
-    // ?tab=win — активна вкладка «Выигрывает»
-    res = await fetch(`${base}/${ids[0]}?tab=win`);
-    html = await res.text();
-    assert.match(html, /class="nav-link active"[^>]*id="win-tab"/);
-    assert.match(html, /class="tab-pane fade show active" id="win-tab-pane"/);
+    // ?tab=win и ?tab=lose — плитки, не вкладки; ?tab= ни на что не влияет
+    for (const tab of ["win", "lose"]) {
+      res = await fetch(`${base}/${ids[0]}?tab=${tab}`);
+      html = await res.text();
+      assert.match(html, /class="pw-tile pw-tile-matches"/);
+      assert.doesNotMatch(html, new RegExp(`id="${tab}-tab"`));
+    }
 
-    // невалидный tab — активен «Обзор» по умолчанию, мусор не рендерится
+    // невалидный tab — мусор не рендерится
     res = await fetch(`${base}/${ids[0]}?tab=%3Cscript%3Ealert(1)%3C/script%3E`);
     html = await res.text();
-    assert.match(html, /class="nav-link active"[^>]*id="overview-tab"/);
+    assert.strictEqual(res.status, 200);
     assert.doesNotMatch(html, /alert\(1\)/);
-
-    // без параметра — «Обзор»
-    res = await fetch(`${base}/${ids[0]}`);
-    html = await res.text();
-    assert.match(html, /class="nav-link active"[^>]*id="overview-tab"/);
   });
 
-  it("должен назвать свёрнутый список матчей «Остальные матчи» и списки соигроков «За всё время»", async () => {
+  it("должен назвать свёрнутый список матчей «остальные матчи» и списки соигроков «за всё время»", async () => {
     const [u1] = await seedTwoSameTypeTournaments();
     const res = await fetch(`${base}/${u1}`);
     const html = await res.text();
 
-    // вкладка «Матчи»: свёрнутый список называется «Остальные матчи»
+    // плитка «Матчи»: свёрнутый список называется «Остальные матчи»
     assert.doesNotMatch(html, /Все матчи/);
-    assert.match(html, /Остальные матчи \(\d+\)/);
-    // на вкладках соигроков: без «(турниры того же типа)», без подписи «На этом турнире»
+    assert.match(html, /остальные матчи \(\d+\)/);
+    // на плитках соигроков: без «(турниры того же типа)», без подписи «На этом турнире»
     assert.doesNotMatch(html, /турниры того же типа/);
-    assert.match(html, /<i class="bi bi-chevron-down"><\/i> За всё время/);
-    assert.doesNotMatch(html, /id="win-tab-pane"[\s\S]*?text-secondary mb-1">На этом турнире/);
-    assert.doesNotMatch(html, /id="lose-tab-pane"[\s\S]*?text-secondary mb-1">На этом турнире/);
+    assert.match(html, /<i class="bi bi-chevron-down"><\/i> за всё время/);
+    assert.doesNotMatch(html, /class="pw-tile pw-tile-win"[\s\S]*?text-secondary mb-1">На этом турнире/);
+    assert.doesNotMatch(html, /class="pw-tile pw-tile-lose"[\s\S]*?text-secondary mb-1">На этом турнире/);
   });
 
   it("должен раскрывать блок «За всё время» из параметра ?all=1", async () => {

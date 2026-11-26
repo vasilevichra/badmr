@@ -59,6 +59,39 @@ const playerSexStyle = (sex) => {
       {css: {"background-color": "rgba(250,218,221,0.33)"}};
 }
 
+/** Узкие плитки «Выигрывает»/«Проигрывает» и «Шанс …» карточки игрока: если
+ *  полное имя соигрока не влезло в строку, укорачиваем его до «Фамилия И.»;
+ *  уже краткое или влезшее не трогаем. Вызывается после вставки карточки и
+ *  через ResizeObserver при любой смене раскладки. */
+const fitCoPlayerNames = (root) => {
+  if (!root) return;
+  const rows = [...root.querySelectorAll('td.co-player, div.pw-chance-row.co-player')];
+  rows.forEach((row) => {
+    if (row.scrollWidth <= row.clientWidth) return;
+    const span = row.querySelector('span.text-nowrap');
+    if (!span || !span.lastChild) return;
+    const parts = span.textContent.trim().split(/\s/);
+    if (parts.length < 2 || parts[1].endsWith('.')) return;
+    span.lastChild.textContent = '\u00A0' + `${parts[0]} ${parts[1].charAt(0)}.`;
+  });
+};
+
+if (document.fonts) {
+  document.fonts.ready.then(() => fitCoPlayerNames(document.getElementById('player-window')));
+}
+
+/** Следит за размером плиток соигроков текущей карточки: ResizeObserver
+ *  срабатывает и при первом показе, и при любой последующей смене
+ *  раскладки — подгонка имён не зависит от момента вызова. */
+let coFitObserver = null;
+const watchCoPlayerNames = (root) => {
+  coFitObserver?.disconnect();
+  coFitObserver = null;
+  if (!root) return;
+  coFitObserver = new ResizeObserver(() => fitCoPlayerNames(root));
+  root.querySelectorAll('.pw-tile-win, .pw-tile-lose, .pw-tile-chance').forEach((tile) => coFitObserver.observe(tile));
+};
+
 /** Открывает модальное окно игрока: загружает карточку /web/players/<id>
  *  (с ?tournament=<id> — матчи карточки по открытому турниру)
  *  в #player-window и рисует график рейтинга из /api/ratings/<id>.
@@ -95,18 +128,32 @@ const openPlayerWindow = (id) => {
           // backdrop — при закрытии крестиком удалялся только последний,
           // остальные .modal-backdrop оставались серым экраном
           bootstrap.Modal.getOrCreateInstance('#player-window').show();
+          // тултипы карточки (знак зодиака и др.): контент перерисовывается
+          // ajax'ом — после каждой вставки инициализируем заново
+          $('#player-window [data-bs-toggle="tooltip"]').each(function () {
+            bootstrap.Tooltip.getOrCreateInstance(this);
+          });
+          // узкие плитки «Выигрывает»/«Проигрывает»: полное имя могло не
+          // влезть в строку — укорачиваем до «Фамилия И.» (как в плитках
+          // «Шанс …»); раскладка меняется и после показа (график, скроллбар
+          // модалки) — следим за размером плиток, а не ловим момент
+          watchCoPlayerNames(document.getElementById('player-window'));
+          // график стартует после вставки карточки: при параллельном запросе
+          // рейтингов canvas ещё не существовал и new Chart терялся навсегда
+          drawPlayerRatingChart(id);
         },
       }
   );
+}
 
+const drawPlayerRatingChart = (id) => {
   $.ajax({
     type: 'GET',
     url: `/api/ratings/${id}`,
     async: true,
     success: data => {
       const canvas = document.getElementById('player-window-rating');
-      // графика нет: у нового игрока пустая история рейтинга, а canvas ещё
-      // не отрисовался (карточка грузится параллельным запросом)
+      // графика нет: у нового игрока пустая история рейтинга
       if (!canvas || !data.length) {
         canvas?.classList.add('d-none');
         return;
@@ -134,6 +181,10 @@ const openPlayerWindow = (id) => {
               }
             },
             y: {}
+          },
+          // легенда «Рейтинг» дублирует очевидное — не показываем
+          plugins: {
+            legend: { display: false }
           }
         }
       });

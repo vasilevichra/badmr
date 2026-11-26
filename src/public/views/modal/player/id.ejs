@@ -35,76 +35,14 @@
                             <form class="player-window-change-rating-form pw-rating ms-auto">
                                 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
                                 <div class="input-group pw-rating-group">
-                                    <span class="pw-rating-cap"><i class="bi bi-activity"></i> рейтинг</span>
-                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="—" maxlength="4" size="3" value="<%= rating.rating %>" required<% if (!login) { %> disabled<% } %>>
-                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
-                                </div>
-                            </form>
-                        </div>
-
-                        <% // Контакты — будущие идентификаторы входа, видны и редактируются
-                           // только залогиненным; чип фиксированной высоты, правка по клику
-                           // (input внутри чипа). Кнопки VK — только в своей карточке:
-                           // роут действует на req.user, чужую привязку менять нельзя %>
-                        <% if (login) { %>
-                        <div class="pw-tile pw-tile-contacts">
-                            <div class="pw-cap">Контакты</div>
-                            <div class="pw-chips">
-                                <div class="pw-chip player-window-editable" data-endpoint="phone" data-user-id="<%= user.id %>" data-original-text="<%= user.phone ?? '' %>" data-placeholder="+79501234567" title="нажмите, чтобы редактировать">
-                                    <i class="bi bi-phone pw-chip-ic"></i>
-                                    <span class="pw-chip-val<% if (!user.phone) { %> opacity-50<% } %>"><% if (user.phone) { %><%= user.phone %><% } else { %>телефон не задан<% } %></span>
-                                </div>
-                                <div class="pw-chip player-window-editable" data-endpoint="email" data-user-id="<%= user.id %>" data-original-text="<%= user.email ?? '' %>" data-placeholder="mail@example.com" title="нажмите, чтобы редактировать">
-                                    <i class="bi bi-envelope pw-chip-ic"></i>
-                                    <span class="pw-chip-val<% if (!user.email) { %> opacity-50<% } %>"><% if (user.email) { %><%= user.email %><% } else { %>почта не задана<% } %></span>
-                                </div>
-                                <div class="pw-chip">
-                                    <i class="bi bi-person-badge pw-chip-ic"></i>
-                                    <span class="pw-chip-val">VK: <% if (user.vk_id) { %>привязан<% } else { %>не привязан<% } %></span>
-                                    <% if (user.vk_id && login.id === user.id) { %>
-                                    <button class="btn-vk-unbind btn btn-sm btn-outline-secondary pw-chip-btn">Отвязать</button>
-                                    <% } else if (!user.vk_id && login.id === user.id) { %>
-                                    <a class="btn-vk-bind btn btn-sm btn-outline-secondary pw-chip-btn" href="/api/auth/vk">Привязать</a>
-                                    <% } %>
-                                </div>
-                                <div class="pw-chip player-window-editable" data-endpoint="tg" data-user-id="<%= user.id %>" data-original-text="<%= user.tg_id ?? '' %>" data-placeholder="@username или 123456789" title="нажмите, чтобы редактировать">
-                                    <i class="bi bi-telegram pw-chip-ic"></i>
-                                    <span class="pw-chip-val<% if (!user.tg_id) { %> opacity-50<% } %>"><% if (user.tg_id) { %><%= user.tg_id %><% } else { %>не задан<% } %></span>
-                                </div>
-                            </div>
-                        </div>
-                        <% } %>
-
-                        <% // Плитка «факты»: дата рождения (редактируется), аккаунт ЛАБ,
-                           // прогресс калибровки %>
-                        <div class="pw-tile pw-tile-facts">
-                            <div class="pw-cap">Факты</div>
-                            <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
-                                'октября', 'ноября', 'декабря'];
-                                // знак зодиака: границы смены знака по дням месяцев,
-                                // signs[0] — Козерог (до 20 января и с 22 декабря)
-                                const zodiacBounds = [20, 19, 21, 20, 21, 22, 23, 23, 23, 23, 22, 22];
-                                const zodiacSigns = ['♑', '♒', '♓', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑'];
-                                const zodiac = (birthday) => {
-                                    const m = Number(birthday.slice(5, 7));
-                                    const d = Number(birthday.slice(8, 10));
-                                    // \uFE0E — текстовый вариант глифа (не эмодзи), не выше строки
-                                    return zodiacSigns[d >= zodiacBounds[m - 1] ? m : m - 1] + '\uFE0E';
-                                }; %>
-                            <div class="pw-fact"><span class="pw-fact-k">Дата рожд.</span>
-                                <span class="pw-fact-v">
-                                    <span class="text-secondary<% if (login) { %> player-window-birthday<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" data-birthday="<%= user.birthday %>" title="нажмите, чтобы редактировать"<% } %>><i class="bi bi-cake2"></i> <%= user.birthday.slice(-2) %> <%= monthArray[Number(user.birthday.slice(5, 7)) - 1] %><% if (login) { %> <%= user.birthday.slice(0, 4) %> (<%= user.age %>) <%= zodiac(user.birthday) %><% } %></span>
-                                    <span class="text-secondary">через <%= days_until_birthday.days %> д.</span>
-                                </span>
-                            </div>
-                            <% if (user.site_id) { %>
-                            <% // блок ЛАБ: скрывается целиком, если нет аккаунта ЛАБ (site_id);
-                               // рейтинг ЛАБ показывается только если есть %>
-                            <div class="pw-fact"><span class="pw-fact-k">ЛАБ</span>
-                                <span class="pw-fact-v">
-                                    <a class="player-window-link link-body-emphasis link-offset-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a>
+                                    <span class="pw-rating-cap">рейтинг</span>
+                                    <% // рейтинга может не быть вовсе (пользователь ещё не калибровался) —
+                                       // тогда инпут пустой с плейсхолдером «—» %>
+                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="—" maxlength="4" size="3" value="<%= rating ? rating.rating : '' %>" required<% if (!login) { %> disabled<% } %>>
                                     <% if (user.rating_1 || user.rating_2) { %>
-                                    <math class="secondary-info">
+                                    <% // рейтинги ЛАБ подстрочниками: 380_1 457_2 — под рейтингом игрока;
+                                       // math обёрнут в div: как flex-item MathML ведёт себя некорректно %>
+                                    <div class="pw-rating-lab"><math class="text-secondary">
                                         <% if (user.rating_1) { %>
                                         <msub><mi><%= user.rating_1 %></mi><mi>1</mi></msub>
                                         <% } %>
@@ -112,11 +50,89 @@
                                         <% if (user.rating_2) { %>
                                         <msub><mi><%= user.rating_2 %></mi><mi>2</mi></msub>
                                         <% } %>
-                                    </math>
+                                    </math></div>
                                     <% } %>
+                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
+                                </div>
+                            </form>
+                        </div>
+
+                        <% // Плитка «Информация»: день рождения, телефон, почта,
+                           // аккаунт ЛАБ, привязки VK/TG, прогресс калибровки %>
+                        <div class="pw-tile pw-tile-facts">
+                            <div class="pw-cap">Информация</div>
+                            <% const monthArray = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября',
+                                'октября', 'ноября', 'декабря'];
+                               // знак зодиака: границы смены знака по дням месяцев,
+                               // signs[0] — Козерог (до 20 января и с 22 декабря)
+                               const zodiacBounds = [20, 19, 21, 20, 21, 22, 23, 23, 23, 23, 22, 22];
+                               const zodiacSigns = ['♑', '♒', '♓', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑'];
+                               const zodiacNames = ['Козерог', 'Водолей', 'Рыбы', 'Овен', 'Телец', 'Близнецы', 'Рак', 'Лев', 'Дева', 'Весы', 'Скорпион', 'Стрелец'];
+                               const zodiac = (birthday) => {
+                                   const m = Number(birthday.slice(5, 7));
+                                   const d = Number(birthday.slice(8, 10));
+                                   // текстовый вариант глифа (\uFE0E): монохромный,
+                                   // наследует цвет строки фактов, не кричит эмодзи
+                                   const sym = zodiacSigns[d >= zodiacBounds[m - 1] ? m : m - 1] + '\uFE0E';
+                                   return { sym, name: zodiacNames[d >= zodiacBounds[m - 1] ? m : m - 1] };
+                               };
+                               const zz = zodiac(user.birthday); %>
+                            <% // день рождения: дата и знак зодиака — всем (не приватные данные,
+                               // в отличие от года рождения и возраста), с «через N д.»
+                               // у правого края %>
+                            <div class="pw-fact">
+                                <span class="pw-fact-v">
+                                    <span class="text-secondary<% if (login) { %> player-window-birthday<% } %>"<% if (login) { %> data-user-id="<%= user.id %>" data-birthday="<%= user.birthday %>" title="нажмите, чтобы редактировать"<% } %>><i class="bi bi-cake2"></i> <%= user.birthday.slice(-2) %> <%= monthArray[Number(user.birthday.slice(5, 7)) - 1] %><% if (login) { %> <%= user.birthday.slice(0, 4) %> (<%= user.age %>)<% } %> <span class="pw-zodiac" data-bs-toggle="tooltip" data-bs-placement="bottom" title="<%= zz.name %>"><%= zz.sym %></span></span>
+                                    <span class="text-secondary">через <%= days_until_birthday.days %> д.</span>
                                 </span>
                             </div>
+                            <% // телефон и почта: редактируются по клику (input внутри строки,
+                               // data-endpoint); гостю строки видны,
+                               // только если контакт задан %>
+                            <% if (user.phone || login) { %>
+                            <div class="pw-fact">
+                                <span class="pw-fact-v"><span class="text-secondary<% if (!user.phone) { %> opacity-50<% } %><% if (login) { %> player-window-editable<% } %>"<% if (login) { %> data-endpoint="phone" data-user-id="<%= user.id %>" data-original-text="<%= user.phone ?? '' %>" data-placeholder="+79501234567" title="нажмите, чтобы редактировать"<% } %>><i class="bi bi-telephone"></i> <% if (user.phone) { %><%= user.phone %><% } else { %>не задан<% } %></span></span>
+                            </div>
                             <% } %>
+                            <% // почта: редактируется по клику (input внутри строки, data-endpoint) %>
+                            <% if (user.email || login) { %>
+                            <div class="pw-fact">
+                                <span class="pw-fact-v"><span class="text-secondary<% if (!user.email) { %> opacity-50<% } %><% if (login) { %> player-window-editable<% } %>"<% if (login) { %> data-endpoint="email" data-user-id="<%= user.id %>" data-original-text="<%= user.email ?? '' %>" data-placeholder="mail@example.com" title="нажмите, чтобы редактировать"<% } %>><i class="bi bi-envelope"></i> <% if (user.email) { %><%= user.email %><% } else { %>не задана<% } %></span></span>
+                            </div>
+                            <% } %>
+                            <% if (user.site_id) { %>
+                            <% // аккаунт ЛАБ: ссылкой, рейтинги — дублируются из плашки
+                               // рейтинга справа; строка скрыта целиком, если нет аккаунта %>
+                            <div class="pw-fact pw-lab-row">
+                                <span class="pw-lab-badge">ЛАБ</span><a class="player-window-link link-body-emphasis link-offset-2" href="https://badminton4u.ru/players/<%= user.site_id %>" target="_blank" rel="noopener noreferrer"><%= user.site_login || user.site_id %></a>
+                                <% if (user.rating_1 || user.rating_2) { %>
+                                <span class="pw-fact-v"><math class="text-secondary">
+                                    <% if (user.rating_1) { %>
+                                    <msub><mi><%= user.rating_1 %></mi><mi>1</mi></msub>
+                                    <% } %>
+                                    <% if (user.rating_1 && user.rating_2) { %><mspace width="3px"/><% } %>
+                                    <% if (user.rating_2) { %>
+                                    <msub><mi><%= user.rating_2 %></mi><mi>2</mi></msub>
+                                    <% } %>
+                                </math></span>
+                                <% } %>
+                            </div>
+                            <% } %>
+                            <% // мессенджеры: id привязок — строками после ЛАБ;
+                               // кнопки — только в своей карточке: роут действует на req.user %>
+                            <div class="pw-fact">
+                                <span class="pw-lab-badge">VK</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.vk_id) { %> opacity-50<% } %>"><% if (user.vk_id) { %><%= user.vk_id %><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
+                                <% if (login && login.id === user.id) { %>
+                                    <% if (!user.vk_id) { %>
+                                    <a class="btn-vk-bind btn btn-sm btn-outline-secondary pw-chip-btn" href="/api/auth/vk">Привязать</a>
+                                    <% } else { %>
+                                    <button class="btn-vk-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Отвязать</button>
+                                    <% } %>
+                                <% } %>
+                            </div>
+                            <div class="pw-fact">
+                                <span class="pw-lab-badge">TG</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.tg_id) { %> opacity-50<% } %><% if (login) { %> player-window-editable<% } %>"<% if (login) { %> data-endpoint="tg" data-user-id="<%= user.id %>" data-original-text="<%= user.tg_id ?? '' %>" data-placeholder="@username или 123456789" title="нажмите, чтобы редактировать"<% } %>><% if (user.tg_id) { %><%= user.tg_id %><% } else { %>не привязан<% } %></span></span>
+                            </div>
                             <% // критерии калибровки: сид без матча, протухший рейтинг или идущая серия;
                                // серия отображается накопленная (stale=1), у сида и протухшего — 0;
                                // в завершённом/отменённом турнире прогресс калибровки не показываем %>
@@ -129,230 +145,156 @@
                             <% } %>
                         </div>
 
-                        <% if (achievements.length) { %>
+                        <% if (worst_opponents.length) { %>
+                        <% // плитка «Шанс проиграть»: соперники по доле поражений,
+                            // в стиле плитки «Шанс выиграть» — «имя — полоса»;
+                            // раньше была табом, теперь заполняет колонку рядом с достижениями %>
+                        <div class="pw-tile pw-tile-worst">
+                            <div class="pw-cap">Шанс проиграть, %</div>
+                            <div class="pw-chance-list">
+                            <% worst_opponents.forEach((o) => { %>
+                                <% // 71.43 → 71 — округляем до целых; полоса красная,
+                                   // когда вероятность проиграть не ниже половины %>
+                                <div class="pw-chance-row co-player" data-user-id="<%= o.user_id %>" role="button">
+                                    <span class="pw-chance-name"><span class="no-selection text-nowrap"><%- playerAvatarFormatter(o.user_pic, o.user_name, o.user_sex) %>&nbsp;<%= o.user_name %></span></span>
+                                    <span class="pw-chance-bar<%= Number(o.lose_rate) >= 50 ? ' bad' : '' %>"><i style="width: <%= Math.round(Number(o.lose_rate)) %>%"></i></span>
+                                </div>
+                            <% }); %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                        <% if (buddies.length) { %>
+                        <% // плитка «Шанс выиграть»: соперники с полосой процента;
+                           // раньше была табом, теперь стоит рядом с «Шанс проиграть» %>
+                        <div class="pw-tile pw-tile-chance">
+                            <div class="pw-cap">Шанс выиграть, %</div>
+                            <div class="pw-chance-list">
+                            <% buddies.forEach((b) => { %>
+                                <% // 66.67 → 67 — округляем до целых; значение видно по полосе и её цвету, цифры не дублируем %>
+                                <div class="pw-chance-row co-player" data-user-id="<%= b.user_id %>" role="button">
+                                    <span class="pw-chance-name"><span class="no-selection text-nowrap"><%- playerAvatarFormatter(b.user_pic, b.user_name, b.user_sex) %>&nbsp;<%= b.user_name %></span></span>
+                                    <span class="pw-chance-bar<%= Number(b.win_rate) <= 50 ? ' bad' : '' %>"><i style="width: <%= Math.round(Number(b.win_rate)) %>%"></i></span>
+                                </div>
+                            <% }); %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                        <% // мини-плитки метрик — самостоятельные плитки bento-сетки,
+                            // раньше жили в табе «Обзор», таб упразднён; разбиты на две
+                            // группы под ряды сетки: объёмы (4 штуки в ряд) и исходы
+                            // (3 штуки в ряд) — оба ряда заполнены без пустот %>
+                        <% const single_tournament = !type_matches.length;
+                           const wins_t = co_winners.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0);
+                           const loses_t = co_losers.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0);
+                           const win_rate_t = matches.count ? (wins_t / matches.count * 100).toFixed(2) : 0;
+                           const wins_a = co_winners_all.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0);
+                           const loses_a = co_losers_all.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0);
+                           const win_rate_a = matches_total.count ? (wins_a / matches_total.count * 100).toFixed(2) : 0;
+                           const matches3_t = Number(games.count) - 2 * Number(matches.count);
+                           const matches3_a = Number(games_total.count) - 2 * Number(matches_total.count); %>
+                        <%- include('stat', {cap: 'Матчей', val: matches.count, sub: single_tournament ? '' : matches_total.count, val_class: '', cls: 'pw-stat-sm'}); %>
+                        <%- include('stat', {cap: 'Игр', val: games.count, sub: single_tournament ? '' : games_total.count, val_class: '', cls: 'pw-stat-sm'}); %>
+                        <%- include('stat', {cap: 'Игр на матч', val: matches.count ? (Number(games.count) / Number(matches.count)).toFixed(2) : 0, sub: single_tournament ? '' : (matches_total.count ? (Number(games_total.count) / Number(matches_total.count)).toFixed(2) : 0), val_class: '', cls: 'pw-stat-sm'}); %>
+                        <%- include('stat', {cap: 'Матчей из 3 игр', val: `${matches3_t} (${matches.count ? Math.round(matches3_t / matches.count * 100) : 0}%)`, sub: single_tournament ? '' : `${matches3_a} (${matches_total.count ? Math.round(matches3_a / matches_total.count * 100) : 0}%)`, val_class: '', cls: 'pw-stat-sm'}); %>
+
+                        <% if (co_winners.length || co_winners_all.length) { %>
+                        <% // плитка «Выигрывает»: напарники, с которыми игрок выигрывал;
+                            // раньше была табом, теперь — плашка сразу за «Винрейтом» %>
+                        <div class="pw-tile pw-tile-win">
+                            <div class="pw-cap">Выигрывает</div>
+                            <% if (co_winners.length) { %>
+                            <div class="pw-co-list">
+                            <table class="table table-sm no-selection mb-0">
+                                <tbody>
+                                <% co_winners.forEach((w) => { %>
+                                    <%- include('co', {win_count: w.win_count, user_id: w.user_id, user_name: w.user_name, user_sex: w.user_sex, user_pic: w.user_pic}); %>
+                                <% }); %>
+                                </tbody>
+                            </table>
+                            </div>
+                            <% } %>
+                            <% if (co_winners_all.length && type_matches.length) { %>
+                            <%# «За всё время» скрывается, если других турниров того же типа
+                                у игрока нет (type_matches пуст): список совпадёт с таблицей
+                                напарников этого турнира выше — дубль без новой информации %>
+                            <a class="link-body-emphasis link-underline-opacity-0 d-inline-block mt-2" data-bs-toggle="collapse" href="#win-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="win-all-collapse">
+                                <i class="bi bi-chevron-down"></i> за всё время
+                            </a>
+                            <div class="collapse<%= expand_all ? ' show' : '' %>" id="win-all-collapse">
+                                <table class="table table-sm no-selection mb-0">
+                                    <tbody>
+                                    <% co_winners_all.forEach((w) => { %>
+                                        <%- include('co', {win_count: w.win_count, user_id: w.user_id, user_name: w.user_name, user_sex: w.user_sex, user_pic: w.user_pic}); %>
+                                    <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% } %>
+
+                        <% if (co_losers.length || co_losers_all.length) { %>
+                        <% // плитка «Проигрывает»: игроки, с которыми игрок проигрывал,
+                            // в стиле плитки «Выигрывает», сразу за ней %>
+                        <div class="pw-tile pw-tile-lose">
+                            <div class="pw-cap">Проигрывает</div>
+                            <% if (co_losers.length) { %>
+                            <div class="pw-co-list">
+                            <table class="table table-sm no-selection mb-0">
+                                <tbody>
+                                <% co_losers.forEach((l) => { %>
+                                    <%- include('co', {lose_count: l.lose_count, user_id: l.user_id, user_name: l.user_name, user_sex: l.user_sex, user_pic: l.user_pic}); %>
+                                <% }); %>
+                                </tbody>
+                            </table>
+                            </div>
+                            <% } %>
+                            <% if (co_losers_all.length && type_matches.length) { %>
+                            <%# «За всё время» скрывается, если других турниров того же типа
+                                у игрока нет (type_matches пуст): список совпадёт с таблицей
+                                выше — дубль без новой информации %>
+                            <a class="link-body-emphasis link-underline-opacity-0 d-inline-block mt-2" data-bs-toggle="collapse" href="#lose-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="lose-all-collapse">
+                                <i class="bi bi-chevron-down"></i> за всё время
+                            </a>
+                            <div class="collapse<%= expand_all ? ' show' : '' %>" id="lose-all-collapse">
+                                <table class="table table-sm no-selection mb-0">
+                                    <tbody>
+                                    <% co_losers_all.forEach((l) => { %>
+                                        <%- include('co', {lose_count: l.lose_count, user_id: l.user_id, user_name: l.user_name, user_sex: l.user_sex, user_pic: l.user_pic}); %>
+                                    <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <% } %>
+                        </div>
+                        <% } %>
+
+                        <% // плитка «Достижения»: третья плитка ряда напарников —
+                            // заполняет ряд до 12 колонок; без достижений — приглушённая пометка %>
                         <div class="pw-tile pw-tile-ach">
                             <div class="pw-cap">Достижения</div>
+                            <% if (achievements.length) { %>
                             <div class="d-flex flex-wrap gap-2">
                                 <% achievements.forEach((a) => { %>
                                     <span class="achievement-badge badge text-bg-primary" title="<%= a.description %>"><i class="bi <%= a.icon %>"></i> <%= a.title %></span>
                                 <% }) %>
                             </div>
+                            <% } else { %>
+                            <span class="text-secondary opacity-50">пока нет</span>
+                            <% } %>
                         </div>
-                        <% } %>
 
-                        <% // Контентная плитка: табы и их содержимое — без изменений %>
-                        <div class="pw-tile pw-tile-content">
-                            <ul class="nav nav-tabs" id="profileTab" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link<%= active_tab === 'overview' ? ' active' : '' %>" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-tab-pane" type="button" role="tab" aria-controls="overview-tab-pane" aria-selected="<%= active_tab === 'overview' %>">Обзор</button>
-                                        </li>
-                                        <% if (user_matches.length || type_matches.length) { %>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link<%= active_tab === 'matches' ? ' active' : '' %>" id="matches-tab" data-bs-toggle="tab" data-bs-target="#matches-tab-pane" type="button"
-                                                    role="tab" aria-controls="matches-tab-pane" aria-selected="<%= active_tab === 'matches' %>">Матчи
-                                            </button>
-                                        </li>
-                                        <% } %>
-                                        <% if (co_winners.length || co_winners_all.length) { %>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link<%= active_tab === 'win' ? ' active' : '' %>" id="win-tab" data-bs-toggle="tab" data-bs-target="#win-tab-pane" type="button"
-                                                    role="tab" aria-controls="win-tab-pane" aria-selected="<%= active_tab === 'win' %>">Выигрывает
-                                            </button>
-                                        </li>
-                                        <% } %>
-                                        <% if (co_losers.length || co_losers_all.length) { %>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link<%= active_tab === 'lose' ? ' active' : '' %>" id="lose-tab" data-bs-toggle="tab" data-bs-target="#lose-tab-pane" type="button"
-                                                    role="tab" aria-controls="lose-tab-pane" aria-selected="<%= active_tab === 'lose' %>">Проигрывает
-                                            </button>
-                                        </li>
-                                        <% } %>
-                                        <% if (buddies.length) { %>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link<%= active_tab === 'chance' ? ' active' : '' %>" id="chance-tab" data-bs-toggle="tab" data-bs-target="#chance-tab-pane" type="button"
-                                                    role="tab" aria-controls="chance-tab-pane" aria-selected="<%= active_tab === 'chance' %>">Шанс
-                                            </button>
-                                        </li>
-                                        <% } %>
-                                        <% if (worst_opponents.length) { %>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link<%= active_tab === 'worst' ? ' active' : '' %>" id="worst-tab" data-bs-toggle="tab" data-bs-target="#worst-tab-pane" type="button"
-                                                    role="tab" aria-controls="worst-tab-pane" aria-selected="<%= active_tab === 'worst' %>">Неудобные
-                                            </button>
-                                        </li>
-                                        <% } %>
-<!--                                        <li class="nav-item" role="presentation">-->
-<!--                                            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button"-->
-<!--                                                    role="tab" aria-controls="profile-tab-pane" aria-selected="false">Profile-->
-<!--                                            </button>-->
-<!--                                        </li>-->
-<!--                                        <li class="nav-item" role="presentation">-->
-<!--                                            <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-tab-pane" type="button"-->
-<!--                                                    role="tab" aria-controls="email-tab-pane" aria-selected="false">Emails-->
-<!--                                            </button>-->
-<!--                                        </li>-->
-<!--                                        <li class="nav-item" role="presentation">-->
-<!--                                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password-tab-pane" type="button"-->
-<!--                                                    role="tab" aria-controls="password-tab-pane" aria-selected="false">Password-->
-<!--                                            </button>-->
-<!--                                        </li>-->
-                                    </ul>
-                                    <div class="tab-content pt-4" id="profileTabContent">
-                                        <div class="tab-pane fade<%= active_tab === 'overview' ? ' show active' : '' %>" id="overview-tab-pane" role="tabpanel" aria-labelledby="overview-tab"
-                                             tabindex="0">
-                                            <div class="row g-0">
-                                                <% // разделение статистики: на этом турнире / за всё время (#57) %>
-                                                <% const wins_t = co_winners.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0); %>
-                                                <% const loses_t = co_losers.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0); %>
-                                                <% const win_rate_t = matches.count ? (wins_t / matches.count * 100).toFixed(2) : 0; %>
-                                                <% const wins_a = co_winners_all.map(w => w.win_count).reduce((acc, curr) => acc + curr, 0); %>
-                                                <% const loses_a = co_losers_all.map(l => l.lose_count).reduce((acc, curr) => acc + curr, 0); %>
-                                                <% const win_rate_a = matches_total.count ? (wins_a / matches_total.count * 100).toFixed(2) : 0; %>
-                                                <% const matches3_t = Number(games.count) - 2 * Number(matches.count); %>
-                                                <% const matches3_a = Number(games_total.count) - 2 * Number(matches_total.count); %>
-                                                <% // у игрока нет матчей в других турнирах того же типа —
-                                                    // турнир единственный: колонка «За всё время» дублирует
-                                                    // «Турнир» и скрывается (d-none), «Турнир» занимает её место %>
-                                                <% const single_tournament = !type_matches.length; %>
-                                                <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
-                                                    <div class="p-2 fw-bold">Параметр</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2 fw-bold">Турнир</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2 fw-bold">За всё время</div>
-                                                </div>
-                                                <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
-                                                    <div class="p-2">Матчей</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= matches.count %></div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= matches_total.count %></div>
-                                                </div>
-                                                <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
-                                                    <div class="p-2">Игр</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= games.count %></div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= games_total.count %></div>
-                                                </div>
-                                                <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
-                                                    <div class="p-2">Игр на матч</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= matches.count ? (Number(games.count) / Number(matches.count)).toFixed(2) : 0; %></div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= matches_total.count ? (Number(games_total.count) / Number(matches_total.count)).toFixed(2) : 0; %></div>
-                                                </div>
-                                                <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
-                                                    <div class="p-2">Матчей из трёх игр</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= matches3_t %> (<%= matches.count ? (matches3_t / matches.count * 100).toFixed(2) : 0; %>%)</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><%= matches3_a %> (<%= matches_total.count ? (matches3_a / matches_total.count * 100).toFixed(2) : 0; %>%)</div>
-                                                </div>
-                                                <div class="col-5 col-md-3 bg-body-tertiary border-bottom border-gap border-3">
-                                                    <div class="p-2">Побед / Поражений / %</div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'col-7 col-md-9' : 'col-3 col-md-3' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><span class="rating-plus"><%= wins_t %></span> / <span class="rating-minus"><%= loses_t %></span> / <span class="rating-<%= win_rate_t > 50 ? 'plus' : 'minus' %>"><%= win_rate_t %>%</span></div>
-                                                </div>
-                                                <div class="<%= single_tournament ? 'd-none' : 'col-4 col-md-6' %> bg-body-tertiary border-start border-bottom border-gap border-3">
-                                                    <div class="p-2"><span class="rating-plus"><%= wins_a %></span> / <span class="rating-minus"><%= loses_a %></span> / <span class="rating-<%= win_rate_a > 50 ? 'plus' : 'minus' %>"><%= win_rate_a %>%</span></div>
-                                                </div>
-                                            </div>
-                                            <canvas id="player-window-rating" height="120"></canvas>
-                                        </div>
-                                        <div class="tab-pane fade<%= active_tab === 'win' ? ' show active' : '' %>" id="win-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
-                                            <div class="p-2">
-                                                <% if (co_winners.length) { %>
-                                                <table class="table no-selection">
-                                                    <tbody>
-                                                    <% co_winners.forEach((w) => { %>
-                                                        <%- include('co', {win_count: w.win_count, user_id: w.user_id, user_name: w.user_name, user_sex: w.user_sex, user_pic: w.user_pic}); %>
-                                                    <% }); %>
-                                                    </tbody>
-                                                </table>
-                                                <% } %>
-                                                <% if (co_winners_all.length && type_matches.length) { %>
-                                                <%# «За всё время» скрывается, если других турниров того же типа
-                                                    у игрока нет (type_matches пуст): список совпадёт с таблицей
-                                                    напарников этого турнира выше — дубль без новой информации %>
-                                                <a class="link-body-emphasis link-underline-opacity-0" data-bs-toggle="collapse" href="#win-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="win-all-collapse">
-                                                    <i class="bi bi-chevron-down"></i> За всё время
-                                                </a>
-                                                <div class="collapse<%= expand_all ? ' show' : '' %>" id="win-all-collapse">
-                                                    <table class="table no-selection">
-                                                        <tbody>
-                                                        <% co_winners_all.forEach((w) => { %>
-                                                            <%- include('co', {win_count: w.win_count, user_id: w.user_id, user_name: w.user_name, user_sex: w.user_sex, user_pic: w.user_pic}); %>
-                                                        <% }); %>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <% } %>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade<%= active_tab === 'lose' ? ' show active' : '' %>" id="lose-tab-pane" role="tabpanel" aria-labelledby="lose-tab" tabindex="0">
-                                            <div class="p-2">
-                                                <% if (co_losers.length) { %>
-                                                <table class="table no-selection">
-                                                    <tbody>
-                                                    <% co_losers.forEach((l) => { %>
-                                                        <%- include('co', {lose_count: l.lose_count, user_id: l.user_id, user_name: l.user_name, user_sex: l.user_sex, user_pic: l.user_pic}); %>
-                                                    <% }); %>
-                                                    </tbody>
-                                                </table>
-                                                <% } %>
-                                                <% if (co_losers_all.length && type_matches.length) { %>
-                                                <%# аналогично вкладке «Выигрывает»: без других турниров
-                                                    того же типа список совпадёт с таблицей выше %>
-                                                <a class="link-body-emphasis link-underline-opacity-0" data-bs-toggle="collapse" href="#lose-all-collapse" role="button" aria-expanded="<%= expand_all %>" aria-controls="lose-all-collapse">
-                                                    <i class="bi bi-chevron-down"></i> За всё время
-                                                </a>
-                                                <div class="collapse<%= expand_all ? ' show' : '' %>" id="lose-all-collapse">
-                                                    <table class="table no-selection">
-                                                        <tbody>
-                                                        <% co_losers_all.forEach((l) => { %>
-                                                            <%- include('co', {lose_count: l.lose_count, user_id: l.user_id, user_name: l.user_name, user_sex: l.user_sex, user_pic: l.user_pic}); %>
-                                                        <% }); %>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <% } %>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade<%= active_tab === 'chance' ? ' show active' : '' %>" id="chance-tab-pane" role="tabpanel" aria-labelledby="win-tab" tabindex="0">
-                                            <div class="p-2">
-                                                <table class="table no-selection">
-                                                    <tbody>
-                                                    <% buddies.forEach((b) => { %>
-                                                        <%- include('co', {rate: b.win_rate, user_id: b.user_id, user_name: b.user_name, user_sex: b.user_sex, user_pic: b.user_pic}); %>
-                                                    <% }); %>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade<%= active_tab === 'worst' ? ' show active' : '' %>" id="worst-tab-pane" role="tabpanel" aria-labelledby="worst-tab" tabindex="0">
-                                            <div class="p-2">
-                                                <table class="table no-selection">
-                                                    <tbody>
-                                                    <% worst_opponents.forEach((o) => { %>
-                                                        <%- include('co', {lose_rate: o.lose_rate, user_id: o.user_id, user_name: o.user_name, user_sex: o.user_sex, user_pic: o.user_pic}); %>
-                                                    <% }); %>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade<%= active_tab === 'matches' ? ' show active' : '' %>" id="matches-tab-pane" role="tabpanel" aria-labelledby="matches-tab" tabindex="0">
+                        <% // исходы — второй ряд метрик: 3 плитки заполняют ряд целиком %>
+                        <%- include('stat', {cap: 'Победы', val: wins_t, sub: single_tournament ? '' : wins_a, val_class: 'rating-plus', cls: ''}); %>
+                        <%- include('stat', {cap: 'Поражения', val: loses_t, sub: single_tournament ? '' : loses_a, val_class: 'rating-minus', cls: ''}); %>
+                        <%- include('stat', {cap: 'Винрейт', val: `${win_rate_t}%`, sub: single_tournament ? '' : `${win_rate_a}%`, val_class: `rating-${win_rate_t > 50 ? 'plus' : 'minus'}`, cls: ''}); %>
+
+                        <% // плитка «Матчи»: история матчей игрока (табы упразднены) %>
+                        <% if (user_matches.length || type_matches.length) { %>
+                        <div class="pw-tile pw-tile-matches">
+                            <div class="pw-cap">Матчи</div>
                                             <!-- id отличается от страничного #match-history-block: периодический
                                                  рефреш $(‘#match-history-block’).load(...) затрагивает все элементы
                                                  с этим id и затирал бы фильтр по игроку всеми матчами турнира -->
@@ -365,7 +307,7 @@
                                             <% // свёрнутые матчи турниров того же типа (#57): одна строка на матч %>
                                             <div class="mt-3">
                                                 <a class="link-body-emphasis link-underline-opacity-0" data-bs-toggle="collapse" href="#player-same-type-matches" role="button" aria-expanded="false" aria-controls="player-same-type-matches">
-                                                    <i class="bi bi-chevron-down"></i> Остальные матчи (<%= type_matches.length %>)
+                                                    <i class="bi bi-chevron-down"></i> остальные матчи (<%= type_matches.length %>)
                                                 </a>
                                                 <div class="collapse<%= expand_all ? ' show' : '' %>" id="player-same-type-matches">
                                                     <% // компактная таблица: подпись турнира (#id тип город дата),
@@ -456,8 +398,14 @@
                                                 </div>
                                             </div>
                                             <% } %>
-                                        </div>
-                                    </div>
+                        </div>
+                        <% } %>
+
+                                    <% // плитка «Рейтинг»: график истории рейтинга;
+                                       // раньше жил в табе «Обзор», теперь стоит после статистики %>
+                                    <div class="pw-tile pw-tile-rating">
+                                        <div class="pw-cap">Рейтинг</div>
+                                        <canvas id="player-window-rating" height="120"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -467,26 +415,6 @@
 </div>
 <script>
     (function () {
-        // вкладка карточки синхронизируется с адресом (?tab=<имя>), чтобы
-        // ссылкой с открытой вкладкой можно было поделиться; replaceState —
-        // переключения вкладок не засоряют историю назад/вперёд
-        const nav = document.getElementById('profileTab');
-        if (!nav) {
-            return;
-        }
-        nav.addEventListener('shown.bs.tab', (event) => {
-            const url = new URL(location.href);
-            const name = event.target.id.replace(/-tab$/, '');
-            if (name === 'overview') {
-                url.searchParams.delete('tab');
-            } else {
-                url.searchParams.set('tab', name);
-            }
-            // при переходе на другую вкладку раскрытие «За всё время» сбрасывается
-            url.searchParams.delete('all');
-            history.replaceState({}, '', url);
-        });
-
         // раскрытие блоков «За всё время» синхронизируется с адресом (?all=1),
         // чтобы ссылкой с раскрытым списком можно было поделиться
         const allTargets = ['win-all-collapse', 'lose-all-collapse', 'player-same-type-matches'];

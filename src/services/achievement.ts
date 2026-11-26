@@ -52,7 +52,7 @@ class Achievement {
     medalist: { title: "Медалист", description: "Больше всех номинаций", icon: "bi-award-fill" },
     winner: { title: "Победитель", description: "Больше всех выигранных матчей", icon: "bi-trophy-fill" },
     machine_gunner: { title: "Пулемётчик", description: "Больше всех забитых воланов", icon: "bi-crosshair" },
-    trier: { title: "Ну как так?", description: "Больше всех проигранных матчей с перевесом по забитым очкам", icon: "bi-emoji-frown" },
+    trier: { title: "Ну как так-то?", description: "Больше всех проигранных матчей с перевесом по забитым очкам", icon: "bi-emoji-frown" },
     unrestrainable: { title: "Неудержимый", description: "Самая длинная серия выигранных игр подряд", icon: "bi-fire" },
     fast_start: { title: "Быстрый старт", description: "Чаще всех выигрывал первую игру матча", icon: "bi-rocket-takeoff-fill" },
     finisher: { title: "Дожиматель", description: "Чаще всех выигрывал решающую игру при счёте 1:1", icon: "bi-hammer" },

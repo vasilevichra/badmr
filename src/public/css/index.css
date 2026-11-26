@@ -1771,6 +1771,9 @@ body.phone .select-board-score {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(12, 1fr);
+  /* высота каждой плитки — по её содержимому: плитки ряда не тянутся
+     до высоты самого высокого соседа */
+  align-items: start;
 }
 
 .pw-tile {
@@ -1795,6 +1798,10 @@ body.phone .select-board-score {
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
+  /* без рамки: имя и город — не плитка, а шапка карточки */
+  border: none;
+  background: transparent;
+  padding: 0;
 }
 
 .pw-avatar {
@@ -1822,9 +1829,11 @@ body.phone .select-board-score {
   min-height: 1.4em;
 }
 
-/* бейдж рейтинга: инпут правки живёт внутри, дискета видна по hover/focus */
+/* бейдж рейтинга: инпут правки живёт внутри, дискета видна по hover/focus;
+   высота — как у аватарки (72px) */
 .pw-rating {
-  padding: 0.35rem 0.9rem;
+  height: 72px;
+  padding: 0.25rem 0.9rem;
   background: var(--bs-tertiary-bg);
   border: 1px solid var(--bs-border-color);
   border-radius: 0.75rem;
@@ -1835,7 +1844,16 @@ body.phone .select-board-score {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   width: auto;
+  height: 100%;
+}
+
+/* Bootstrap сдвигает не-первых детей группы на -1px влево (специфичность
+   0,8,0 у :not-цепочки) — в колонке это уводило инпут от центра плашки */
+.pw-rating input.player-window-change-rating-input,
+.pw-rating .pw-rating-lab {
+  margin: 0 !important;
 }
 
 .pw-rating-cap {
@@ -1848,16 +1866,53 @@ body.phone .select-board-score {
 
 .pw-rating .player-window-change-rating-input {
   width: 5ch;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 800;
   text-align: center;
   background: transparent;
   padding: 0;
   height: auto;
+  line-height: 1.2;
+}
+
+/* стрелки спиннера при hover/focus показываются у правого края и
+   сдвигают число от центра плашки — гасим (правка только мышью/клавишами) */
+.pw-rating .player-window-change-rating-input::-webkit-outer-spin-button,
+.pw-rating .player-window-change-rating-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* рейтинги ЛАБ: шрифт — как у строк фактов (0.875rem), Chrome иначе
+   занижает MathML до 0.8em */
+.pw-rating-lab,
+.pw-lab-row math {
+  font-size: 0.875rem;
+}
+
+/* дублирующие рейтинги в строке ЛАБ плитки «Информация» — к правому краю */
+.pw-lab-row .pw-fact-v {
+  justify-content: flex-end;
+}
+
+/* значок знака зодиака у даты рождения — не крупнее текста строки */
+.pw-zodiac {
+  font-size: inherit;
+  margin-left: 0.25rem;
+  cursor: help;
+}
+
+/* дискета: абсолютом в углу, чтобы появление по hover не сдвигало
+   рейтинги ЛАБ и не ломало фиксированную высоту плашки */
+.pw-rating {
+  position: relative;
 }
 
 .pw-rating .player-window-change-rating-button {
   display: none;
+  position: absolute;
+  top: 0.25rem;
+  right: 0.4rem;
   padding: 0 0.25rem;
   margin: 0;
 }
@@ -1867,39 +1922,9 @@ body.phone .select-board-score {
   display: inline-block;
 }
 
-/* контакты-чипы */
-.pw-tile-contacts {
-  grid-column: span 12;
-}
-
-.pw-chips {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.pw-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 40px;
-  padding: 0.3rem 0.6rem;
-  background: var(--bs-tertiary-bg);
-  border: 1px solid var(--bs-border-color);
-  border-radius: 0.6rem;
-  font-size: 0.875rem;
-  overflow: hidden;
-}
-
-.pw-chip.player-window-editable {
-  cursor: text;
-}
-
-.pw-chip-ic {
-  color: var(--bs-secondary-color);
-  flex: 0 0 auto;
-}
-
+/* pw-chip-val и pw-chip-btn используются в строках фактов «Информации»:
+   метка ввода кода из письма (создаётся из index.js) и кнопки привязки VK;
+   длинное значение строки сжимается с многоточием */
 .pw-chip-val {
   min-width: 0;
   white-space: nowrap;
@@ -1931,6 +1956,11 @@ body.phone .select-board-score {
   align-items: baseline;
 }
 
+/* последняя запись фактов без нижней линии: список замыкает рамка плитки */
+.pw-tile-facts .pw-fact:not(:has(~ .pw-fact)) {
+  border-bottom: 0;
+}
+
 .pw-fact-k {
   color: var(--bs-secondary-color);
   flex: 0 0 auto;
@@ -1939,25 +1969,245 @@ body.phone .select-board-score {
 .pw-fact-v {
   text-align: right;
   min-width: 0;
+  /* строка факта растягивается на всю ширину: подстрока «через N д.»
+     уходит к правому краю, дата остаётся слева */
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
+/* строка ЛАБ внутри «Информации»: логин-ссылка + подстрочные рейтинги —
+   шрифт строки, как у остальных фактов (0.875rem); ссылка без своего
+   размера (player-window-link задаёт body-шрифт для других окон) */
+.pw-lab-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-height: 30px;
+}
+
+.pw-lab-row .player-window-link {
+  font-size: inherit;
+}
+
+/* значок «ЛАБ» перед ссылкой аккаунта: маленькая серая плашка */
+.pw-lab-badge {
+  flex: 0 0 auto;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--bs-secondary-color);
+}
+
+/* плитка «Шанс ему проиграть»: строки в стиле «Шанс с ним выиграть»,
+   высота по содержимому (задаёт align-items: start у .pw-grid) */
+.pw-tile-worst {
+  grid-column: span 4;
+  overflow: hidden;
+}
+
+/* плитки «Выигрывает»/«Проигрывает» и «Достижения»: три стандартные
+   колонки ряда — ряд напарников заполняется целиком */
+.pw-tile-win,
+.pw-tile-lose,
 .pw-tile-ach {
-  grid-column: span 8;
+  grid-column: span 4;
 }
 
-.pw-tile-content {
+/* размер имён — как у строк «Шанс с ним выиграть»; таблица не шире плитки:
+   фиксированная раскладка + многоточие у очень длинной фамилии, иначе
+   строка вылезает за скруглённую рамку */
+.pw-tile-win table,
+.pw-tile-lose table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.pw-tile-win td.co-player,
+.pw-tile-lose td.co-player {
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* у последней строки списка нижняя линия не нужна: список замыкает
+   плитка (или ссылка «за всё время») без отделителя */
+.pw-tile-win tr:last-child > *,
+.pw-tile-lose tr:last-child > * {
+  border-bottom: 0;
+}
+
+/* ссылка «за всё время» — в размере строк плитки */
+.pw-tile-win > a[data-bs-toggle="collapse"],
+.pw-tile-lose > a[data-bs-toggle="collapse"] {
+  font-size: 0.9rem;
+}
+
+/* плитка «Шанс с ним выиграть»: вертикальный список «имя — полоса — %»,
+   ширина — как у соседних плиток (1/3 ряда) */
+.pw-tile-chance {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+}
+
+.pw-chance-list,
+.pw-co-list {
+  min-height: 0;
+  /* списки плиток шансов и напарников ограничены единой высотой:
+     ряды сетки выравниваются без провалов, длинный список
+     скроллится внутри плитки */
+  max-height: 12rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bs-border-color) transparent;
+}
+
+/* изящный скроллбар: тонкий, скруглённый, темнеет под курсором */
+.pw-chance-list::-webkit-scrollbar,
+.pw-co-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pw-chance-list::-webkit-scrollbar-track,
+.pw-co-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pw-chance-list::-webkit-scrollbar-thumb,
+.pw-co-list::-webkit-scrollbar-thumb {
+  background: var(--bs-border-color);
+  border-radius: 3px;
+}
+
+.pw-chance-list:hover::-webkit-scrollbar-thumb,
+.pw-co-list:hover::-webkit-scrollbar-thumb {
+  background: var(--bs-secondary-color);
+}
+
+.pw-chance-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.15rem 0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* имя в колонке фиксированной ширины — полосы всех строк начинаются с одной линии */
+/* имя занимает весь остаток строки, полоса — фиксированная узкая:
+   «Макаренкова Ю.» (138px) — самый длинный вариант, умещается */
+.pw-chance-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pw-chance-bar {
+  flex: none;
+  width: 3rem;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--bs-tertiary-bg);
+  position: relative;
+}
+
+.pw-chance-bar i {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  background: var(--bs-success);
+}
+
+.pw-chance-bar.bad i {
+  background: var(--bs-danger);
+}
+
+/* плитка «Матчи»: история матчей, на всю ширину карточки */
+.pw-tile-matches {
   grid-column: span 12;
 }
 
-/* мобила: все плитки в колонку, чипы — сеткой 2×2 */
+/* ссылка «остальные матчи» — в размере строк плиток соигроков */
+.pw-tile-matches > div.mt-3 > a[data-bs-toggle="collapse"] {
+  font-size: 0.9rem;
+}
+
+/* плитка «Рейтинг»: график на всю ширину ряда, между плитками и табами */
+.pw-tile-rating {
+  grid-column: span 12;
+}
+
+.pw-tile-rating canvas {
+  width: 100%;
+}
+
+/* мини-плитки метрик — самостоятельные плитки bento-сетки:
+   базовая ширина span 4 (3 в ряд), узкий вариант span 3 (4 в ряд) —
+   ряд объёмных метрик заполняется без пустой четвёртой колонки */
+.pw-stat {
+  grid-column: span 4;
+  min-width: 0;
+}
+
+.pw-stat-sm {
+  grid-column: span 3;
+}
+
+.pw-stat-cap {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pw-stat-val {
+  /* значение + подпись как flex-элементы: вмещаются — одна строка через «·»,
+     не вмещается — подпись переносится целиком на строку ниже */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35em;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  overflow: hidden;
+}
+
+.pw-stat-main {
+  white-space: nowrap;
+}
+
+.pw-stat-sub {
+  font-size: 0.72rem;
+  font-weight: 400; /* внутри жирного значения — возвращаем обычную насыщенность */
+  color: var(--bs-secondary-color);
+  white-space: nowrap;
+}
+
+/* мобила: все плитки в колонку */
 @media (max-width: 991.98px) {
-  .pw-chips {
-    grid-template-columns: 1fr 1fr;
+  .pw-tile-facts,
+  .pw-tile-ach,
+  .pw-tile-worst,
+  .pw-tile-chance,
+  .pw-tile-win,
+  .pw-tile-lose {
+    grid-column: span 12;
   }
 
-  .pw-tile-facts,
-  .pw-tile-ach {
-    grid-column: span 12;
+  .pw-stat {
+    grid-column: span 6;
   }
 
   .pw-avatar {
