@@ -131,7 +131,14 @@
                                 <% } %>
                             </div>
                             <div class="pw-fact">
-                                <span class="pw-lab-badge">TG</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.tg_id) { %> opacity-50<% } %><% if (login) { %> player-window-editable<% } %>"<% if (login) { %> data-endpoint="tg" data-user-id="<%= user.id %>" data-original-text="<%= user.tg_id ?? '' %>" data-placeholder="@username или 123456789" title="нажмите, чтобы редактировать"<% } %>><% if (user.tg_id) { %><%= user.tg_id %><% } else { %>не привязан<% } %></span></span>
+                                <span class="pw-lab-badge">TG</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.tg_id) { %> opacity-50<% } %>"><% if (user.tg_id) { %><%= user.tg_id %><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
+                                <% if (login && login.id === user.id) { %>
+                                    <% if (!user.tg_id) { %>
+                                    <button class="btn-tg-bind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Привязать</button>
+                                    <% } else { %>
+                                    <button class="btn-tg-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Отвязать</button>
+                                    <% } %>
+                                <% } %>
                             </div>
                             <% // критерии калибровки: сид без матча, протухший рейтинг или идущая серия;
                                // серия отображается накопленная (stale=1), у сида и протухшего — 0;

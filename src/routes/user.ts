@@ -3,9 +3,11 @@ const router = Express.Router();
 // const csrf = require('csurf');
 import { ensureLoggedIn } from 'connect-ensure-login';
 import UserService from '../services/user.ts';
+import TgBotService from '../services/tg-bot.ts';
 import TournamentService from '../services/tournament.ts';
 import requestedTournament from '../tournament-request.ts';
 const userService = new UserService();
+const tgBot = new TgBotService();
 const tournamentService = new TournamentService();
 
 // const csrfProtection = csrf({ cookie: true });
@@ -156,12 +158,26 @@ router.post('/email/:id', ensureLoggedIn(), (req, res) => {
   res.promise(userService.setEmail(Number(req.params.id), email || null));
 });
 
+// tg вручную не задаётся: id подтверждается только через бота
+// (чужой вписать нельзя); пустое значение — сброс привязки (NULL)
 router.post('/tg/:id', ensureLoggedIn(), (req, res) => {
   const tg = String(req.body.tg || '').trim();
-  if (/\s/.test(tg) || tg.length > 50) {
-    return res.status(400).json({error: 'Telegram id — без пробелов, до 50 символов'});
+  if (tg) {
+    return res.status(400).json({error: 'Telegram привязывается только через бота'});
   }
-  res.promise(userService.setTg(Number(req.params.id), tg || null));
+  res.promise(userService.setTg(Number(req.params.id), null));
+});
+
+// привязка Telegram через бота: код + ссылка t.me/<bot>?start=<код>;
+// id чата придёт с сообщением /start, до тех пор карточка опрашивает status
+router.post('/tg-bind/start', ensureLoggedIn(), (req, res) => {
+  res.promise(tgBot.startBind(Number((req as unknown as { user: { id: number } }).user.id)));
+});
+
+router.get('/tg-bind/status', ensureLoggedIn(), (req, res) => {
+  res.promise(Promise.resolve(
+      {bound: tgBot.isBound(Number((req as unknown as { user: { id: number } }).user.id))},
+  ));
 });
 
 router.post('/phone/:id', ensureLoggedIn(), (req, res) => {
