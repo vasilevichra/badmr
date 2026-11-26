@@ -448,14 +448,18 @@ $(document).ready(() => {
     });
 
     // привязка Telegram через бота: сервер выдаёт одноразовый код и ссылку —
-    // открываем бота, пока код жив опрашиваем статус и перезагружаем карточку
+    // сразу уходим в бота (код в deep link, копировать не нужно), пока код
+    // жив опрашиваем статус и перезагружаем карточку
     let tgBindTimer = null;
     $('#player-window').on('click', '.btn-tg-bind', function () {
       const userId = $(this).data('user-id');
       $.post('/api/users/tg-bind/start')
-          .done(({code, botLink}) => {
-            window.open(botLink, '_blank');
-            window.alert(`Код привязки: ${code}\nБот открыт в новой вкладке — отправьте ему /start ${code}`);
+          .done(({botLink}) => {
+            // блокировщик всплывших окон — переходом в той же вкладке
+            if (!window.open(botLink, '_blank')) {
+              location.href = botLink;
+              return;
+            }
             clearInterval(tgBindTimer);
             const deadline = Date.now() + 15 * 60 * 1000;
             tgBindTimer = setInterval(() => {
