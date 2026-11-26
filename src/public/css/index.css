@@ -1767,6 +1767,13 @@ body.phone .select-board-score {
 /* ——— Карточка игрока: bento-плитки (макет №7 из docs/mockups/2026-11-23-player-card-10-layouts.html) ———
    Инвариант анти-«гуляния» на мобиле: чипы/строки фактов фиксированной
    высоты, правка — инпутом внутри чипа, сетка не пересчитывается */
+/* модалка без белой подложки: фон — как у серой секции с плитками,
+   иначе modal-content выглядывает по краям «рамой картины» */
+#player-window .modal-content {
+  background-color: var(--bs-tertiary-bg);
+  border: 0;
+}
+
 .pw-grid {
   display: grid;
   gap: 12px;
