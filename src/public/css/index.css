@@ -2237,6 +2237,29 @@ body.phone .select-board-score {
   .pw-name {
     font-size: 1.05rem;
   }
+
+  /* шапка карточки: аватар и плашка рейтинга — в одной строке, высота
+     плашки = высоте аватарки (56px), справа; текст уходит строкой ниже */
+  .pw-tile-identity .pw-id-text {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .pw-tile-identity .pw-rating {
+    order: 2;
+    height: 56px;
+    padding: 0.1rem 0.6rem;
+  }
+
+  /* уплотнение внутренностей плашки под 56px: cap+число+ЛАБ не влезают
+     в десктопных размерах */
+  .pw-rating .player-window-change-rating-input {
+    font-size: 1.1rem;
+  }
+
+  .pw-rating .pw-rating-lab {
+    font-size: 0.75rem;
+  }
 }
 
 .match {
