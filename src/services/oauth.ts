@@ -13,8 +13,9 @@ const AUTHORIZE_URL = "https://id.vk.ru/authorize";
 const TOKEN_URL = "https://id.vk.ru/oauth2/auth";
 const JWKS_URL = "https://id.vk.ru/oauth2/.well-known/jwks";
 const USER_INFO_URL = "https://id.vk.ru/oauth2/user_info";
-// VK выпускает токены с обоими issuer — принимаем оба
-const ISSUERS = ["https://id.vk.com/", "https://id.vk.ru/"];
+// VK выпускает токены с issuer-URL старого API; сервер авторизации 2.1
+// ставит литерал "VK" (пример payload в документации) — принимаем все три
+const ISSUERS = ["VK", "https://id.vk.com/", "https://id.vk.ru/"];
 /** TTL кэша JWKS: ключи VK меняются редко, час — компромисс свежести и нагрузки. */
 const JWKS_TTL_MS = 60 * 60 * 1000;
 
@@ -209,21 +210,26 @@ class OAuthService {
       { alg?: string; kid?: string };
     if (header.alg !== "RS256") throw new Error("Неподдерживаемый алгоритм токена VK");
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString()) as {
-      iss?: string; aud?: string | string[]; exp?: number; nonce?: string; sub?: string;
+      iss?: string; aud?: string | string[]; app?: string | number;
+      exp?: number; nonce?: string; sub?: string;
     };
 
     const now = Math.floor(Date.now() / 1000);
-    // диагностика: фактический iss сервера авторизации 2.1 нигде не
-    // задокументирован — без лога refusal-случай не отличить от подмены
     if (!ISSUERS.includes(payload.iss ?? "")) {
       console.error(`VK id_token отклонён: iss=${JSON.stringify(payload.iss)} aud=${JSON.stringify(payload.aud)} kid=${header.kid}`);
       throw new Error("Токен VK выпущен неизвестным сервисом");
     }
     const clientId = process.env.VK_CLIENT_ID!;
-    const audOk = Array.isArray(payload.aud) ? payload.aud.includes(clientId) : payload.aud === clientId;
+    // сервер 2.1 не ставит aud: приложение передаётся полем app (дока VK ID)
+    const tokenApp = payload.aud ?? payload.app;
+    const audOk = Array.isArray(tokenApp) ? tokenApp.includes(clientId) : String(tokenApp) === clientId;
     if (!audOk) throw new Error("Токен VK выдан другому приложению");
     if (!payload.exp || payload.exp < now) throw new Error("Токен VK истёк, войдите заново");
-    if (payload.nonce !== nonce) throw new Error("Подозрительный вход через VK: nonce не совпал");
+    // 2.1 не возвращает nonce в payload (пример в доках его не содержит) —
+    // сверяем только если VK его прислал
+    if (payload.nonce !== undefined && payload.nonce !== nonce) {
+      throw new Error("Подозрительный вход через VK: nonce не совпал");
+    }
 
     const signature = Buffer.from(sigB64, "base64url");
     const signed = `${headerB64}.${payloadB64}`;

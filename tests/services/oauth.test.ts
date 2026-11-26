@@ -134,6 +134,30 @@ describe("OAuth", () => {
       }
     });
 
+    it("контракт сервера 2.1: iss=VK, приложение в app, nonce отсутствует", async () => {
+      const key = makeKey();
+      process.env.VK_CLIENT_ID = "555";
+      oauth.resetJwksCache();
+      const session: Record<string, unknown> = {};
+      oauth.startAuth(session, "login");
+      const restore = stubFetch({
+        keys: [key.jwk],
+        // фактический payload прод-токена (лог 2026-11-26): iss="VK",
+        // aud/kid отсутствуют, приложение — числовое поле app
+        idToken: signIdToken(key.privateKey, { iss: "VK", app: 555, sub: "12345", exp: Math.floor(Date.now() / 1000) + 300 }),
+      });
+      try {
+        const profile = await oauth.handleCallback({
+          query: { code: "c1", state: (session.oauth as { state: string }).state, device_id: "dev-1" },
+          session,
+        });
+        assert.strictEqual(profile.vkId, "12345");
+      } finally {
+        restore();
+        delete process.env.VK_CLIENT_ID;
+      }
+    });
+
     it("handleCallback отклоняет чужой state", async () => {
       const key = makeKey();
       process.env.VK_CLIENT_ID = "cid";
