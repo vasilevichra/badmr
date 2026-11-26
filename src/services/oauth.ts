@@ -90,13 +90,13 @@ class OAuthService {
    * Старт авторизации: state/nonce/verifier живут в сессии до callback —
    * там же intent, чтобы callback отличил вход от привязки.
    */
-  startAuth(session: Record<string, unknown>, intent: "login" | "bind"): string {
+  startAuth(session: Record<string, unknown>, intent: "login" | "bind", returnTo?: string): string {
     const state = crypto.randomBytes(16).toString("hex");
     const nonce = crypto.randomBytes(16).toString("hex");
     // PKCE: verifier из допустимого RFC-набора, challenge = S256(verifier)
     const verifier = crypto.randomBytes(48).toString("base64url");
     const challenge = crypto.createHash("sha256").update(verifier).digest("base64url");
-    session.oauth = { state, nonce, verifier, intent };
+    session.oauth = { state, nonce, verifier, intent, ...(returnTo ? { returnTo } : {}) };
 
     const redirectUri = process.env.VK_REDIRECT_URI || "https://badmr.ru/api/auth/vk/callback";
     const params = new URLSearchParams({
@@ -170,7 +170,10 @@ class OAuthService {
     );
 
     return {
-      vkId: payload.sub,
+      // sub приходит из JSON целым числом, но JSON.parse даёт JS-number,
+      // а node:sqlite привязывает number как REAL — TEXT-афинность колонки
+      // сохраняет "651677.0". Строка у источника гарантирует чистый TEXT
+      vkId: String(payload.sub),
       email: this.normalizeEmail(userInfo.user?.email),
       phone: this.normalizePhone(userInfo.user?.phone),
     };

@@ -120,6 +120,10 @@ const flash = (res: Express.Response, message: string) => {
   res.redirect('/api/auth/login');
 };
 
+/** Только внутренние относительные пути — защита от open redirect. */
+const safePath = (value: unknown): string | null =>
+    typeof value === 'string' && /^\/(?!\/)/.test(value) ? value : null;
+
 /** Логин существующим passport-механизмом: serializeUser хранит {id, username}. */
 const loginAs = (
     req: Express.Request,
@@ -141,13 +145,19 @@ router.get('/vk', (req, res) => {
     return flash(res, 'Вход через VK сейчас недоступен');
   }
   const intent = req.user ? 'bind' : 'login';
-  res.redirect(oauthService.startAuth(req.session as unknown as Record<string, unknown>, intent));
+  res.redirect(oauthService.startAuth(
+      req.session as unknown as Record<string, unknown>,
+      intent,
+      safePath(req.query.return_to) ?? undefined,
+  ));
 });
 
 router.get('/vk/callback', async (req, res, next) => {
-  // intent живёт в сессии, которую handleCallback очищает — читаем до вызова
-  const intentRaw = (req.session as unknown as SessionLike).oauth as { intent?: string } | undefined;
-  const bind = intentRaw?.intent === 'bind' && Boolean(req.user);
+  // intent/returnTo живут в сессии, которую handleCallback очищает — читаем до вызова
+  const oauthRaw = (req.session as unknown as SessionLike).oauth as
+      { intent?: string; returnTo?: string } | undefined;
+  const bind = oauthRaw?.intent === 'bind' && Boolean(req.user);
+  const returnTo = safePath(oauthRaw?.returnTo);
 
   let profile;
   try {
@@ -171,7 +181,8 @@ router.get('/vk/callback', async (req, res, next) => {
       return flash(res, 'VK уже привязан');
     }
     await userService.setVk(id, profile.vkId);
-    return res.redirect('/');
+    // возврат на страницу, с которой привязка начата (кнопка карточки передаёт return_to)
+    return res.redirect(returnTo ?? '/');
   }
 
   const linked = userService.getByVkId(profile.vkId);
