@@ -41,10 +41,20 @@ class TgBot {
 
   configured = () => Boolean(this.token);
 
-  /** Код и ссылка на бота: предыдущий код игрока гасится — активен один. */
+  /** Сброс статического состояния — изоляция тестов. */
+  static reset() {
+    TgBot.codes.clear();
+    TgBot.offset = 0;
+    TgBot.username = null;
+    TgBot.running = false;
+  }
+
+  /** Код и ссылка на бота. Предыдущие коды игрока НЕ гасятся: повторный
+   *  клик «Привязать» — обычное дело (закрылось окно, не дошёл пуш),
+   *  коды безвредны, пока не истёк TTL. Протухшие вычищаются тут же. */
   async startBind(userId: number): Promise<{ code: string; botLink: string }> {
     for (const [code, rec] of TgBot.codes) {
-      if (rec.userId === userId) {
+      if (rec.expires <= Date.now()) {
         TgBot.codes.delete(code);
       }
     }
@@ -121,18 +131,34 @@ class TgBot {
     }
     const code = text.split(/\s+/)[1]?.toUpperCase() ?? "";
     const rec = TgBot.codes.get(code);
-    TgBot.codes.delete(code); // код одноразовый — даже при неудаче
-    if (!rec || rec.expires <= Date.now()) {
+    if (!rec) {
+      // код не удаляем при отказе: повторная попытка с тем же сообщением
+      // не должна усугублять (диагностика — в журнал)
+      console.log(`tg-bind: отказ, код "${code}" не выдан (чат ${chatId})`);
+      return this.reply(chatId, "Код не найден или устарел — получите новый в карточке игрока.");
+    }
+    if (rec.expires <= Date.now()) {
+      TgBot.codes.delete(code);
+      console.log(`tg-bind: отказ, код "${code}" просрочен (игрок ${rec.userId}, чат ${chatId})`);
       return this.reply(chatId, "Код не найден или устарел — получите новый в карточке игрока.");
     }
     const occupied = this.user.db.get<{ id: number }>(
         `SELECT id FROM user WHERE tg_id = ?`, [String(chatId)],
     );
     if (occupied && occupied.id !== rec.userId) {
+      console.log(`tg-bind: отказ, чат ${chatId} уже у игрока ${occupied.id}`);
       return this.reply(chatId, "Этот Telegram уже привязан к другому аккаунту.");
     }
-    // числовой id Telegram стабилен, в отличие от @username — храним его
+    if (occupied) {
+      // повторная привязка тем же чатом — состояние не меняется
+      TgBot.codes.delete(code);
+      return this.reply(chatId, "Этот Telegram уже привязан к вашему аккаунту.");
+    }
+    // числовой id Telegram стабилен, в отличие от @username — храним его;
+    // код гасим только после успешной записи — сбой записи оставляет retry
     await this.userService.setTg(rec.userId, String(chatId));
+    TgBot.codes.delete(code);
+    console.log(`tg-bind: игрок ${rec.userId} привязан к чату ${chatId}`);
     return this.reply(chatId, "Telegram привязан к вашему аккаунту.");
   }
 
