@@ -96,6 +96,12 @@ describe("OAuth", () => {
       assert.strictEqual(url.searchParams.get("code_challenge"), challenge);
     });
 
+    it("startAuth сохраняет returnTo в сессии, если он передан", () => {
+      const session: Record<string, unknown> = {};
+      oauth.startAuth(session, "bind", "/t/1?player=1");
+      assert.strictEqual((session.oauth as { returnTo?: string }).returnTo, "/t/1?player=1");
+    });
+
     it("handleCallback возвращает профиль с нормализованными контактами", async () => {
       const key = makeKey();
       process.env.VK_CLIENT_ID = "cid";
@@ -143,8 +149,8 @@ describe("OAuth", () => {
       const restore = stubFetch({
         keys: [key.jwk],
         // фактический payload прод-токена (лог 2026-11-26): iss="VK",
-        // aud/kid отсутствуют, приложение — числовое поле app
-        idToken: signIdToken(key.privateKey, { iss: "VK", app: 555, sub: "12345", exp: Math.floor(Date.now() / 1000) + 300 }),
+        // aud/kid отсутствуют, приложение и sub — числа
+        idToken: signIdToken(key.privateKey, { iss: "VK", app: 555, sub: 12345, exp: Math.floor(Date.now() / 1000) + 300 }),
       });
       try {
         const profile = await oauth.handleCallback({

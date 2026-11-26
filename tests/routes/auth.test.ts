@@ -112,8 +112,10 @@ const stubVk = (vkId: string): (() => void) => {
 };
 
 /** oauth-состояние сессии, совпадающее с query callback (state=x, nonce=n1). */
-const givenOauth = (intent: "login" | "bind") => {
-  sessionState = { oauth: { state: "x", nonce: "n1", verifier: "v".repeat(43), intent } };
+const givenOauth = (intent: "login" | "bind", returnTo?: string) => {
+  sessionState = {
+    oauth: { state: "x", nonce: "n1", verifier: "v".repeat(43), intent, ...(returnTo ? { returnTo } : {}) },
+  };
 };
 const callbackUrl = `${base}/vk/callback?code=c1&state=x`;
 
@@ -243,6 +245,24 @@ describe("Auth routes: VK", () => {
       assert.strictEqual(res.headers.get("location"), "/api/auth/login");
       assert.strictEqual(getUser(myId).vk_id, null);
       assert.strictEqual(getUser(otherId).vk_id, "12345");
+    } finally {
+      restore();
+      delete process.env.VK_CLIENT_ID;
+      delete process.env.VK_CLIENT_SECRET;
+    }
+  });
+
+  it("после привязки возврат на страницу, с которой она начата", async () => {
+    const id = insertUser({});
+    reqUser = { id };
+    givenOauth("bind", "/t/1?player=1");
+    const restore = stubVk("12345");
+    try {
+      const res = await fetch(callbackUrl, { redirect: "manual" });
+
+      assert.strictEqual(res.status, 302);
+      assert.strictEqual(res.headers.get("location"), "/t/1?player=1");
+      assert.strictEqual(getUser(id).vk_id, "12345");
     } finally {
       restore();
       delete process.env.VK_CLIENT_ID;

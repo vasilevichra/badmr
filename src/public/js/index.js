@@ -441,6 +441,12 @@ $(document).ready(() => {
           .fail(() => {});
     });
 
+    // привязка VK: в return_to уходит текущая страница (путь+query) —
+    // после колбэка сервер вернёт сюда же, в открытую карточку
+    $('#player-window').on('click', '.btn-vk-bind', function () {
+      this.href = '/api/auth/vk?return_to=' + encodeURIComponent(location.pathname + location.search);
+    });
+
   }
 
   // название турнира в шапке (hero) редактируется по клику под админом:
