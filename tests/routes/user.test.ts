@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, beforeEach, afterEach, after, it } from "node:test";
+import "./../helpers/env.ts";
 import Express, { type Express as App } from "express";
 import UserRouter from "../../src/routes/user.ts";
 import promiseMiddleware from "../../src/middleware/promise.ts";

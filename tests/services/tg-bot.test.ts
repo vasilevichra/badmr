@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it, beforeEach } from "node:test";
+import "./../helpers/env.ts";
 import TgBotService from "../../src/services/tg-bot.ts";
 import UserService from "../../src/services/user.ts";
 import { clean } from "../helpers/migration.ts";
 
 const userService = new UserService();
-
 interface Sent {
   chatId: number;
   text: string;
@@ -48,6 +48,7 @@ const startUpdate = (updateId: number, chatId: number, text: string) =>
 describe("TgBot", () => {
   beforeEach(async () => {
     await clean();
+    TgBotService.reset();
   });
 
   describe("startBind", () => {
@@ -81,6 +82,26 @@ describe("TgBot", () => {
       } finally {
         restore2();
       }
+    });
+
+    it("повторный startBind не гасит предыдущий код игрока", async () => {
+      const id = insertUser(null);
+      const bot = new TgBotService();
+      const restore = stubFetch();
+      const first = await bot.startBind(id);
+      const second = await bot.startBind(id);
+      restore();
+      // игрок мог уйти к боту по первой ссылке — оба кода должны работать
+      const restore2 = stubFetch({updates: [startUpdate(1, 777, `/start ${first.code}`)]});
+      try {
+        await bot.pollOnce();
+        assert.strictEqual(tgOf(id), "777");
+        const sent = restore2();
+        assert.ok(sent.some((s) => /привязан/i.test(s.text)));
+      } finally {
+        restore2();
+      }
+      assert.notStrictEqual(first.code, second.code);
     });
 
     it("код одноразовый: повторный /start с тем же кодом состояние не меняет", async () => {
