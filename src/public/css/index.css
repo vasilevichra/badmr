@@ -1947,8 +1947,24 @@ body.phone .select-board-score {
   line-height: 1.4;
 }
 
+/* крестик отвязки мессенджера: без рамки и фона кнопки — только значок */
+.pw-msgr-unbind {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--bs-secondary-color);
+}
+
+.pw-msgr-unbind:hover {
+  color: var(--bs-danger);
+}
+
 /* крестик отвязки мессенджера: компактный, по высоте строки факта */
-.pw-chip-btn .bi-x-lg {
+.pw-msgr-unbind .bi-x-lg {
   font-size: 0.7rem;
   vertical-align: 0;
 }
