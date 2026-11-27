@@ -345,6 +345,25 @@ $(document).ready(() => {
           .fail(() => header.text(original));
     });
 
+    // рейтинг в шапке карточки: Enter или смена фокуса — сохранить,
+    // значение без изменения — ничего не трогаем (повторный blur
+    // после неудачного POST не отправит повторный запрос)
+    $('#player-window').on('keydown', '.player-window-change-rating-input', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        $(this).trigger('blur');
+      }
+    });
+
+    $('#player-window').on('blur', '.player-window-change-rating-input', function () {
+      const input = $(this);
+      const value = String(input.val()).trim();
+      if (!value || value === String(input.data('rating-initial'))) return;
+      input.data('rating-initial', value);
+      $.post(`${input.data('rating-save')}?new=${encodeURIComponent(value)}`)
+          .fail(() => input.data('rating-initial', null));
+    });
+
     // дата рождения в карточке редактируется по клику так же, как ФИО:
     // Enter или смена фокуса — сохранить, Esc — отмена. Нативный
     // input[type=date] гарантирует формат ГГГГ-ММ-ДД; после сохранения

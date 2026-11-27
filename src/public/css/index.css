@@ -320,18 +320,7 @@
   --bs-border-color: var(--badmr-gap);
 }
 
-/* дискета сохранения рейтинга: btn-outline-dark в ночной теме не виден */
-[data-bs-theme="dark"] .player-window-change-rating-button {
-  --bs-btn-color: var(--bs-body-color);
-  --bs-btn-border-color: var(--bs-border-color);
-  --bs-btn-hover-color: #212529;
-  --bs-btn-hover-bg: var(--bs-body-color);
-  --bs-btn-hover-border-color: var(--bs-body-color);
-  --bs-btn-focus-shadow-rgb: 248, 249, 250;
-  --bs-btn-active-color: #212529;
-  --bs-btn-active-bg: var(--bs-body-color);
-  --bs-btn-active-border-color: var(--bs-body-color);
-}
+/* сохранение рейтинга теперь по потере фокуса (index.js) — кнопки нет */
 
 body {
   padding: 0;
@@ -1913,20 +1902,6 @@ body.phone .select-board-score {
    рейтинги ЛАБ и не ломало фиксированную высоту плашки */
 .pw-rating {
   position: relative;
-}
-
-.pw-rating .player-window-change-rating-button {
-  display: none;
-  position: absolute;
-  top: 0.25rem;
-  right: 0.4rem;
-  padding: 0 0.25rem;
-  margin: 0;
-}
-
-.pw-rating:hover .player-window-change-rating-button,
-.pw-rating:focus-within .player-window-change-rating-button {
-  display: inline-block;
 }
 
 /* pw-chip-val и pw-chip-btn используются в строках фактов «Информации»:
