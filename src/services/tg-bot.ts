@@ -46,8 +46,32 @@ class TgBot {
 
   configured = () => Boolean(this.token);
 
+  /** Простой вызов Bot API без проверки ok: обработка ответа — на вызывающем. */
+  private call = async <T>(method: string, params: Record<string, string> = {}): Promise<T> => {
+    const res = await fetch(`${API}${this.token}/${method}?${new URLSearchParams(params)}`);
+    const data = await res.json() as { ok: boolean; result?: T };
+    if (!data.ok) throw new Error(`${method} failed`);
+    return data.result as T;
+  };
+
   /** Сообщение в чат Telegram (для уведомлений, не только привязки). */
   send = async (chatId: number | string, text: string): Promise<void> => this.reply(chatId, text);
+
+  /** Аватар Telegram как data-URI: у файла бота ссылка живёт около часа,
+   *  поэтому кэшировать её в БД нельзя — скачиваем байты сразу. */
+  userPhoto = async (tgId: number | string): Promise<string | undefined> => {
+    const photos = await this.call<{ total_count: number; photos?: { file_id: string }[][] }>(
+        "getUserProfilePhotos", { user_id: String(tgId), limit: "1" });
+    const sizes = photos.photos?.[0];
+    if (!sizes?.length) return undefined;
+    const file = await this.call<{ file_path?: string }>("getFile", { file_id: sizes[sizes.length - 1].file_id });
+    if (!file.file_path) return undefined;
+    const res = await fetch(`https://api.telegram.org/file/bot${this.token}/${file.file_path}`);
+    if (!res.ok) return undefined;
+    const buf = Buffer.from(await res.arrayBuffer());
+    const ext = file.file_path.split(".").pop() ?? "jpg";
+    return `data:image/${ext === "png" ? "png" : "jpeg"};base64,${buf.toString("base64")}`;
+  };
 
   /** Сброс статического состояния — изоляция тестов. */
   static reset() {

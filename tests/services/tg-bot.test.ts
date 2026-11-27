@@ -24,7 +24,9 @@ function stubFetch(opts: { username?: string; updates?: { update_id: number; mes
       const params = new URL(u).searchParams;
       sent.push({ chatId: Number(params.get("chat_id")), text: String(params.get("text")) });
       body = { ok: true, result: { message_id: 1 } };
-    } else body = { ok: false };
+    } else if (u.includes("/getUserProfilePhotos")) body = { ok: true, result: { total_count: 1, photos: [[{ file_id: "f1" }]] } };
+    else if (u.includes("/getFile")) body = { ok: true, result: { file_path: "photos/f1.jpg" } };
+    else body = { ok: false };
     return new Response(JSON.stringify(body), { headers: { "Content-Type": "application/json" } });
   }) as typeof fetch;
   return () => { globalThis.fetch = saved; return sent; };
@@ -63,6 +65,25 @@ describe("TgBot", () => {
         assert.match(code, /^[A-HJ-NP-Z2-9]{6}$/);
         assert.strictEqual(botLink, `https://t.me/badmr_bot?start=${code}`);
       } finally {
+        restore();
+      }
+    });
+  });
+
+  describe("userPhoto", () => {
+    it("скачивает файл аватара и возвращает data-URI", async () => {
+      const restore = stubFetch();
+      // файл аватара — отдельный fetch, отдадим байты
+      const saved = globalThis.fetch;
+      globalThis.fetch = (async (url: string | URL) =>
+          String(url).includes("/file/bot")
+              ? new Response(new Uint8Array([1, 2, 3]), { headers: { "Content-Type": "image/jpeg" } })
+              : saved(url)) as typeof fetch;
+      try {
+        const photo = await new TgBotService().userPhoto(777);
+        assert.match(photo!, /^data:image\/jpeg;base64,/);
+      } finally {
+        globalThis.fetch = saved;
         restore();
       }
     });

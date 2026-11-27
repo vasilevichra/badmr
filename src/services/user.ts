@@ -1,6 +1,7 @@
 import UserRepository from '../repositories/user.ts';
 import SettingsService from './settings.ts';
 import Vk from './vk.ts';
+import TgBot from './tg-bot.ts';
 import { JSDOM } from 'jsdom';
 import Bluebird from 'bluebird';
 
@@ -191,6 +192,21 @@ class User {
       if (photo) this.user.setVkPhoto(id, photo);
     } catch (e) {
       console.error(`vk-photo ${u.vk_id}:`, (e as Error).message);
+    }
+  };
+
+  /** Аватар Telegram (бот видит фото только тех, кто ему писал — при
+   *  привязке это так); сохраняется data-URI, сбой молча пропускается.
+   *  Инстанс создаётся на месте: tg-bot импортирует UserService —
+   *  верхнеуровневый new здесь ломается циклом импортов. */
+  refreshTgPhoto = async (id: number): Promise<void> => {
+    const u = this.user.getById(id) as { tg_id: string | null; tg_photo: string | null } | undefined;
+    if (!u?.tg_id || u.tg_photo) return;
+    try {
+      const photo = await new TgBot().userPhoto(u.tg_id);
+      if (photo) this.user.setTgPhoto(id, photo);
+    } catch (e) {
+      console.error(`tg-photo ${u.tg_id}:`, (e as Error).message);
     }
   };
   setPhone = (id: number, phone: string | null) => this.user.setPhone(id, phone);
