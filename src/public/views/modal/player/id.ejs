@@ -121,22 +121,22 @@
                             <% // мессенджеры: id привязок — строками после ЛАБ;
                                // кнопки — только в своей карточке: роут действует на req.user %>
                             <div class="pw-fact">
-                                <span class="pw-lab-badge">VK</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.vk_id) { %> opacity-50<% } %>"><% if (user.vk_id) { %><% // клик по id — страница VK; слева вместо плашки — аватар, если он уже получен %><% if (user.vk_photo) { %><img class="pw-msgr-avatar" src="<%= user.vk_photo %>" alt=""><% } %><a class="link-secondary link-underline-opacity-0" href="https://vk.com/id<%= user.vk_id %>" target="_blank" rel="noopener noreferrer"><%= user.vk_id %></a><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
+                                <span class="pw-lab-badge">VK</span><span class="pw-fact-v"><span class="pw-msgr text-secondary<% if (!user.vk_id) { %> opacity-50<% } %>"><% if (user.vk_id) { %><% // клик по id — страница VK; слева вместо плашки — аватар, если он уже получен %><% if (user.vk_photo) { %><img class="pw-msgr-avatar" src="<%= user.vk_photo %>" alt=""><% } %><a class="link-secondary link-underline-opacity-0" href="https://vk.com/id<%= user.vk_id %>" target="_blank" rel="noopener noreferrer"><%= user.vk_id %></a><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
                                 <% if (login && login.id === user.id) { %>
                                     <% if (!user.vk_id) { %>
                                     <a class="btn-vk-bind btn btn-sm btn-outline-secondary pw-chip-btn" href="/api/auth/vk">Привязать</a>
                                     <% } else { %>
-                                    <button class="btn-vk-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Отвязать</button>
+                                    <button class="btn-vk-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>" aria-label="Отвязать" title="Отвязать"><i class="bi bi-x-lg"></i></button>
                                     <% } %>
                                 <% } %>
                             </div>
                             <div class="pw-fact">
-                                <span class="pw-lab-badge">TG</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.tg_id) { %> opacity-50<% } %>"><% if (user.tg_id) { %><% // клик — чат в Telegram: по @username (бот видит его при привязке); без username — просто id %><% if (user.tg_photo) { %><img class="pw-msgr-avatar" src="<%= user.tg_photo %>" alt=""><% } %><% if (user.tg_username) { %><a class="link-secondary link-underline-opacity-0" href="https://t.me/<%= user.tg_username %>" target="_blank" rel="noopener noreferrer">@<%= user.tg_username %></a><% } else { %><%= user.tg_id %><% } %><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
+                                <span class="pw-lab-badge">TG</span><span class="pw-fact-v"><span class="pw-msgr text-secondary<% if (!user.tg_id) { %> opacity-50<% } %>"><% if (user.tg_id) { %><% // клик — чат в Telegram: по @username (бот видит его при привязке); без username — просто id %><% if (user.tg_photo) { %><img class="pw-msgr-avatar" src="<%= user.tg_photo %>" alt=""><% } %><% if (user.tg_username) { %><a class="link-secondary link-underline-opacity-0" href="https://t.me/<%= user.tg_username %>" target="_blank" rel="noopener noreferrer">@<%= user.tg_username %></a><% } else { %><%= user.tg_id %><% } %><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
                                 <% if (login && login.id === user.id) { %>
                                     <% if (!user.tg_id) { %>
                                     <button class="btn-tg-bind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Привязать</button>
                                     <% } else { %>
-                                    <button class="btn-tg-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Отвязать</button>
+                                    <button class="btn-tg-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>" aria-label="Отвязать" title="Отвязать"><i class="bi bi-x-lg"></i></button>
                                     <% } %>
                                 <% } %>
                             </div>
