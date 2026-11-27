@@ -38,7 +38,7 @@
                                     <span class="pw-rating-cap">рейтинг</span>
                                     <% // рейтинга может не быть вовсе (пользователь ещё не калибровался) —
                                        // тогда инпут пустой с плейсхолдером «—» %>
-                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="—" maxlength="4" size="3" value="<%= rating ? rating.rating : '' %>" required<% if (!login) { %> disabled<% } %>>
+                                    <input class="player-window-change-rating-input form-control border-0" type="number" placeholder="—" maxlength="4" size="3" value="<%= rating ? rating.rating : '' %>" required data-rating-save="/api/users/rating/<%= user.id %>" data-rating-initial="<%= rating ? rating.rating : '' %>"<% if (!login) { %> disabled<% } %>>
                                     <% if (user.rating_1 || user.rating_2) { %>
                                     <% // рейтинги ЛАБ подстрочниками: 380_1 457_2 — под рейтингом игрока;
                                        // math обёрнут в div: как flex-item MathML ведёт себя некорректно %>
@@ -52,7 +52,8 @@
                                         <% } %>
                                     </math></div>
                                     <% } %>
-                                    <% if (login) { %><button class="player-window-change-rating-button bi bi-floppy btn btn-outline-dark border-0" type="button" onclick="$.post(`/api/users/rating/<%= user.id %>?new=${$(this).parent().children('input').val()}`);"></button><% } %>
+                                    <% // сохранение рейтинга — по потере фокуса (index.js);
+                                       // кнопки-дискеты больше нет %>
                                 </div>
                             </form>
                         </div>
