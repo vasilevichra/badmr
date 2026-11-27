@@ -126,7 +126,7 @@
                                     <% if (!user.vk_id) { %>
                                     <a class="btn-vk-bind btn btn-sm btn-outline-secondary pw-chip-btn" href="/api/auth/vk">Привязать</a>
                                     <% } else { %>
-                                    <button class="btn-vk-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>" aria-label="Отвязать" title="Отвязать"><i class="bi bi-x-lg"></i></button>
+                                    <button class="btn-vk-unbind pw-msgr-unbind" data-user-id="<%= user.id %>" aria-label="Отвязать" title="Отвязать"><i class="bi bi-x-lg"></i></button>
                                     <% } %>
                                 <% } %>
                             </div>
@@ -136,7 +136,7 @@
                                     <% if (!user.tg_id) { %>
                                     <button class="btn-tg-bind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Привязать</button>
                                     <% } else { %>
-                                    <button class="btn-tg-unbind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>" aria-label="Отвязать" title="Отвязать"><i class="bi bi-x-lg"></i></button>
+                                    <button class="btn-tg-unbind pw-msgr-unbind" data-user-id="<%= user.id %>" aria-label="Отвязать" title="Отвязать"><i class="bi bi-x-lg"></i></button>
                                     <% } %>
                                 <% } %>
                             </div>
