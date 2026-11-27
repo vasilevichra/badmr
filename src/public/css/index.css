@@ -1947,6 +1947,12 @@ body.phone .select-board-score {
   line-height: 1.4;
 }
 
+/* крестик отвязки мессенджера: компактный, по высоте строки факта */
+.pw-chip-btn .bi-x-lg {
+  font-size: 0.7rem;
+  vertical-align: 0;
+}
+
 /* факты + достижения */
 .pw-tile-facts {
   grid-column: span 4;
@@ -2017,8 +2023,15 @@ body.phone .select-board-score {
   height: 20px;
   border-radius: 50%;
   object-fit: cover;
-  vertical-align: -5px;
   margin-right: 7px;
+}
+
+/* значение мессенджера: аватар и id/@username — одна неразрывная строка
+   (внутри pw-fact-v с flex-wrap span иначе сжимается и переносит текст) */
+.pw-msgr {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 /* плитка «Шанс ему проиграть»: строки в стиле «Шанс с ним выиграть»,
