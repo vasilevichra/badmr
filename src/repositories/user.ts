@@ -79,6 +79,7 @@ class User {
                 u.vk_id,
                 u.tg_id,
                 u.vk_photo,
+                u.tg_photo,
                 u.tg_username,
                 ul.rating_1,
                 ul.rating_2,
@@ -569,6 +570,11 @@ class User {
   /** Ссылка на аватар VK (лениво тянется users.get при просмотре карточки). */
   setVkPhoto(id: number, photo: string | null) {
     return this.db.run(`UPDATE user SET vk_photo = ? WHERE id = ?`, [photo, id]);
+  }
+
+  /** Аватар Telegram (data-URI base64, лениво тянется при просмотре карточки). */
+  setTgPhoto(id: number, photo: string | null) {
+    return this.db.run(`UPDATE user SET tg_photo = ? WHERE id = ?`, [photo, id]);
   }
 
   setPhone(id: number, phone: string | null) {

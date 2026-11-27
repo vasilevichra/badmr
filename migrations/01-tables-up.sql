@@ -160,9 +160,11 @@ CREATE TABLE user
     -- VK id и Telegram id — будущие идентификаторы входа; NULL — не задан
     vk_id           TEXT UNIQUE,
     tg_id           TEXT UNIQUE,
-    -- ссылка на аватар VK (users.get photo_100, лениво при просмотре
-    -- карточки) и @username Telegram (бот видит его в /start) — NULL — не получены
+    -- ссылка на аватар VK (users.get photo_100), аватар Telegram
+    -- (getUserProfilePhotos, хранится base64 — ссылки файлов живут час)
+    -- и @username Telegram (бот видит его в /start) — NULL — не получены
     vk_photo        TEXT,
+    tg_photo        TEXT,
     tg_username     TEXT,
     hashed_password BLOB,
     salt            BLOB,

@@ -131,7 +131,7 @@
                                 <% } %>
                             </div>
                             <div class="pw-fact">
-                                <span class="pw-lab-badge">TG</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.tg_id) { %> opacity-50<% } %>"><% if (user.tg_id) { %><% // клик — чат в Telegram: по @username (бот видит его при привязке); без username — просто id %><% if (user.tg_username) { %><a class="link-secondary link-underline-opacity-0" href="https://t.me/<%= user.tg_username %>" target="_blank" rel="noopener noreferrer">@<%= user.tg_username %></a><% } else { %><%= user.tg_id %><% } %><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
+                                <span class="pw-lab-badge">TG</span><span class="pw-fact-v"><span class="text-secondary<% if (!user.tg_id) { %> opacity-50<% } %>"><% if (user.tg_id) { %><% // клик — чат в Telegram: по @username (бот видит его при привязке); без username — просто id %><% if (user.tg_photo) { %><img class="pw-msgr-avatar" src="<%= user.tg_photo %>" alt=""><% } %><% if (user.tg_username) { %><a class="link-secondary link-underline-opacity-0" href="https://t.me/<%= user.tg_username %>" target="_blank" rel="noopener noreferrer">@<%= user.tg_username %></a><% } else { %><%= user.tg_id %><% } %><% } else if (login && login.id === user.id) { %>&mdash;<% } else { %>не привязан<% } %></span></span>
                                 <% if (login && login.id === user.id) { %>
                                     <% if (!user.tg_id) { %>
                                     <button class="btn-tg-bind btn btn-sm btn-outline-secondary pw-chip-btn" data-user-id="<%= user.id %>">Привязать</button>
