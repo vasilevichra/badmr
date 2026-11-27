@@ -2010,6 +2010,16 @@ body.phone .select-board-score {
   color: var(--bs-secondary-color);
 }
 
+/* аватар из VK в строке мессенджера: вместо плашки-бейджа, высота строки */
+.pw-msgr-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: -5px;
+  margin-right: 2px;
+}
+
 /* плитка «Шанс ему проиграть»: строки в стиле «Шанс с ним выиграть»,
    высота по содержимому (задаёт align-items: start у .pw-grid) */
 .pw-tile-worst {

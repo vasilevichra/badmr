@@ -71,6 +71,12 @@ router.get('/:id', (req, res) => {
       : Promise.resolve([]),
   ])
   .then((promises) => {
+    // аватар VK подтягивается лениво: vk_id есть, ссылки ещё нет —
+    // users.get фоном, фото появится при следующем открытии карточки
+    const card = promises[0] as { id: number; vk_id: string | null; vk_photo: string | null } | undefined;
+    if (card?.vk_id && !card.vk_photo) {
+      void userService.refreshVkPhoto(card.id);
+    }
     return res.render('modal/player/id', {
       login: req.isAuthenticated() ? req.user : null,
       user: promises[0],

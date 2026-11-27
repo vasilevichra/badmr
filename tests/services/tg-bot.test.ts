@@ -41,9 +41,12 @@ const insertUser = (tgId: string | null): number => {
 const tgOf = (id: number): string | null =>
     userService.user.db.get<{ v: string | null }>(`SELECT tg_id AS v FROM user WHERE id = ?`, [id])!.v;
 
+const usernameOf = (id: number): string | null =>
+    userService.user.db.get<{ v: string | null }>(`SELECT tg_username AS v FROM user WHERE id = ?`, [id])!.v;
+
 /** update сообщения /start с кодом от чата chatId. */
-const startUpdate = (updateId: number, chatId: number, text: string) =>
-    ({ update_id: updateId, message: { chat: { id: chatId }, text } });
+const startUpdate = (updateId: number, chatId: number, text: string, username?: string) =>
+    ({ update_id: updateId, message: { chat: { id: chatId }, text, from: { username } } });
 
 describe("TgBot", () => {
   beforeEach(async () => {
@@ -121,6 +124,40 @@ describe("TgBot", () => {
         assert.ok(sent.some((s) => /не найден|устарел/i.test(s.text)));
       } finally {
         restore3();
+      }
+    });
+
+    it("повторная привязка тем же чатом — @username обновляется, состояние то же", async () => {
+      const id = insertUser("777");
+      const bot = new TgBotService();
+      const restore = stubFetch();
+      const { code } = await bot.startBind(id);
+      restore();
+      const restore2 = stubFetch({ updates: [startUpdate(1, 777, `/start ${code}`, "newname")] });
+      try {
+        await bot.pollOnce();
+        const sent = restore2();
+        assert.ok(sent.some((s) => /уже привязан/i.test(s.text)));
+        assert.strictEqual(usernameOf(id), "newname");
+        assert.strictEqual(tgOf(id), "777");
+      } finally {
+        restore2();
+      }
+    });
+
+    it("при успешной привязке сохраняет @username для ссылки t.me", async () => {
+      const id = insertUser(null);
+      const bot = new TgBotService();
+      const restore = stubFetch();
+      const { code } = await bot.startBind(id);
+      restore();
+      const restore2 = stubFetch({ updates: [startUpdate(1, 888, `/start ${code}`, "somebody")] });
+      try {
+        await bot.pollOnce();
+        assert.strictEqual(tgOf(id), "888");
+        assert.strictEqual(usernameOf(id), "somebody");
+      } finally {
+        restore2();
       }
     });
 
