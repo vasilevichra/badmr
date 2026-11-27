@@ -5,12 +5,14 @@ import MatchRepository from '../repositories/match.ts';
 import BracketService from './bracket.ts';
 import RatingService from './rating.ts';
 import SettingsService from './settings.ts';
+import NotifyService from './notify.ts';
 
 const ratingService = new RatingService();
 const matchRepository = new MatchRepository();
 const match110Repository = new Match110Repository();
 const bracketService = new BracketService();
 const settingsService = new SettingsService();
+const notifyService = new NotifyService();
 
 class Game {
   declare static _instance: Game | undefined;
@@ -44,6 +46,9 @@ class Game {
       const match = match110Repository.getById(game.match_110_id);
       if (match?.finished === 1) {
         bracketService.onMatchFinished(match.id);
+        // уведомление о результате: гейт тот же — «game существовал до очка,
+        // матч теперь finished»; на следующих очках game уже пуст
+        void notifyService.matchFinished110(match.id);
       }
     }
     return board;
@@ -60,13 +65,21 @@ class Game {
    *  табло показывает 0:0, игра создаётся первым очком). */
   getCurrentByMatchId = (matchId: number) => this.game.getCurrentByMatchId(matchId);
 
-  increaseCurrentByMatchId = (matchId: number, teamNumber: string) =>
-      this.game.increaseCurrentByMatchId(
-          matchId,
-          teamNumber,
-          Number(settingsService.get('game_point')),
-          Number(settingsService.get('max_point'))
-      );
+  /** Очко обычного матча: при переходе матча в finished (match_over
+   *  возвращается только на самом переходе — повторные очки гейтит
+   *  репозиторий) — уведомление о результате. */
+  increaseCurrentByMatchId = async (matchId: number, teamNumber: string) => {
+    const result = await this.game.increaseCurrentByMatchId(
+        matchId,
+        teamNumber,
+        Number(settingsService.get('game_point')),
+        Number(settingsService.get('max_point'))
+    );
+    if (result?.match_over) {
+      void notifyService.matchFinished(matchId);
+    }
+    return result;
+  };
 
   decreaseCurrentByMatchId = (matchId: number, teamNumber: string) => this.game.decreaseCurrentByMatchId(matchId, teamNumber);
 

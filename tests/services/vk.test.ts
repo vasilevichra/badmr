@@ -38,9 +38,9 @@ describe("Vk", () => {
       }) as typeof fetch;
 
       try {
-        const link = await vkService.createChat("Турнир");
+        const chat = await vkService.createChat("Турнир");
 
-        assert.strictEqual(link, "https://vk.me/join/abc");
+        assert.deepEqual(chat, { chatId: 6, link: "https://vk.me/join/abc" });
         const invite = calls.find((c) => c.method === "messages.getInviteLink")!;
         assert.ok(invite, "getInviteLink должен быть вызван");
         assert.match(invite.body, /peer_id=2000000006/);

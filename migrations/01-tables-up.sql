@@ -71,6 +71,9 @@ CREATE TABLE tournament
     ended_at             DATETIME,
     rules                TEXT,
     chat                 TEXT,
+    -- id VK-чата турнира (peer = 2000000000 + id): нужен для отправки
+    -- сообщений в чат; ссылка-приглашение (chat) его не содержит
+    vk_chat_id           INTEGER,
     CHECK (current IN (0, 1)),
     CHECK (available IN (0, 1)),
     CHECK (reg_ended_at <= started_at),

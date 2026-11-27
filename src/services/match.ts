@@ -3,10 +3,12 @@ import Match110Repository from '../repositories/match110.ts';
 import RatingService from './rating.ts';
 import BracketService from './bracket.ts';
 import StandingsService from './standings.ts';
+import NotifyService from './notify.ts';
 
 const ratingService = new RatingService();
 const bracketService = new BracketService();
 const standingsService = new StandingsService();
+const notifyService = new NotifyService();
 
 class Match {
   declare static _instance: Match | undefined;
@@ -38,8 +40,22 @@ class Match {
   getAverageGamesPerMatch = () => this.match.getAverageGamesPerMatch(false);
   getAverageGamesPerMatchCurrent = (tournamentId?: number) => this.match.getAverageGamesPerMatch(true, tournamentId);
   getById = (id: number) => this.match.getById(id);
-  create = (user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number, tournamentId?: number) => this.match.create(user_1_id, user_2_id, user_3_id, user_4_id, tournamentId);
-  create110 = (team_1_id: number, team_2_id: number, tournamentId?: number) => this.match110.create(team_1_id, team_2_id, tournamentId);
+  /** Вызов на матч: создание + уведомление игроков (TG/VK) — доставка
+   *  фоновая, сбой каналов не влияет на создание. */
+  create = (user_1_id: number, user_2_id: number, user_3_id: number, user_4_id: number, tournamentId?: number) => {
+    const result = this.match.create(user_1_id, user_2_id, user_3_id, user_4_id, tournamentId);
+    if (result.id) {
+      void notifyService.matchCreated(result.id);
+    }
+    return result;
+  };
+  create110 = (team_1_id: number, team_2_id: number, tournamentId?: number) => {
+    const result = this.match110.create(team_1_id, team_2_id, tournamentId);
+    if (result.id) {
+      void notifyService.matchCreated110(result.id);
+    }
+    return result;
+  };
   rests = (tournamentId?: number) => this.match110.rests(tournamentId);
   playedCount110 = (tournamentId?: number) => this.match110.playedCount(tournamentId);
   bracket110 = (tournamentId: number | undefined, groupId: number) => bracketService.bracket110(tournamentId, groupId);

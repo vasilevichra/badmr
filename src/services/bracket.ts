@@ -3,6 +3,7 @@ import Game110 from '../repositories/game110.ts';
 import Tournament from '../repositories/tournament.ts';
 import BasketService from './basket.ts';
 import StandingsService from './standings.ts';
+import NotifyService from './notify.ts';
 import { structure, readySlot, type SlotRef, type BracketStructure } from './bracket-structure.ts';
 
 const basketService = new BasketService();
@@ -10,6 +11,7 @@ const match110 = new Match110();
 const game110 = new Game110();
 const tournament = new Tournament();
 const standingsService = new StandingsService();
+const notifyService = new NotifyService();
 
 const badRequest = (message: string): Error =>
   Object.assign(new Error(message), { status: 400 });
@@ -101,6 +103,7 @@ class Bracket {
       const team2 = teamBySeed.get(slot.seeds[1])!;
       const result = match110.create(team1, team2, id, slot);
       game110.create(result.id);
+      void notifyService.matchCreated110(result.id);
     }
   }
 
@@ -142,6 +145,7 @@ class Bracket {
     }
     const result = match110.create(teams[0], teams[1], tournamentId, target);
     game110.create(result.id);
+    void notifyService.matchCreated110(result.id);
   }
 
   /** Победитель завершённого матча 110: тот, чей счёт больше (110 против <110). */
