@@ -199,18 +199,18 @@ describe("Tournament", () => {
   describe("чат турнира (VK)", () => {
     const link = "https://vk.me/join/testlink";
     const vkMock = () => tournamentService.tournament as unknown as {
-      vk: { createChat: (title: string) => Promise<string | undefined> };
+      vk: { createChat: (title: string) => Promise<{ chatId: number; link: string } | undefined> };
     };
     let calls: string[];
 
     beforeEach(() => {
       // clean() не трогает строку турнира 1 — сбрасываем chat явно
-      db.run(`UPDATE tournament SET chat = NULL WHERE id = 1`);
+      db.run(`UPDATE tournament SET chat = NULL, vk_chat_id = NULL WHERE id = 1`);
       calls = [];
       (vkMock() as { vk: unknown }).vk = {
         createChat: async (title: string) => {
           calls.push(title);
-          return link;
+          return { chatId: 6, link };
         },
       };
     });

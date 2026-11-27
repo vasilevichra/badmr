@@ -389,7 +389,9 @@ describe("User routes", () => {
     });
 
     it("status отражает привязку текущего пользователя", async () => {
-      await createUser();
+      // текущий пользователь тест-стенда — id 1; в дампе 05-specific у него
+      // может быть привязанный tg_id — сбрасываем явно
+      db.run(`UPDATE user SET tg_id = NULL WHERE id = 1`);
       const before = await fetch(`${base}/tg-bind/status`);
       assert.strictEqual((await before.json() as { bound: boolean }).bound, false);
 

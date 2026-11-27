@@ -41,6 +41,9 @@ class TgBot {
 
   configured = () => Boolean(this.token);
 
+  /** Сообщение в чат Telegram (для уведомлений, не только привязки). */
+  send = async (chatId: number | string, text: string): Promise<void> => this.reply(chatId, text);
+
   /** Сброс статического состояния — изоляция тестов. */
   static reset() {
     TgBot.codes.clear();
@@ -162,7 +165,7 @@ class TgBot {
     return this.reply(chatId, "Telegram привязан к вашему аккаунту.");
   }
 
-  private async reply(chatId: number, text: string): Promise<void> {
+  private async reply(chatId: number | string, text: string): Promise<void> {
     await fetch(`${API}${this.token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`);
   }
 }

@@ -169,7 +169,8 @@ class Tournament {
     return result;
   }
 
-  /** Создаёт чат VK для турнира и сохраняет ссылку-приглашение в tournament.chat.
+  /** Создаёт чат VK для турнира и сохраняет ссылку-приглашение и id чата
+   *  в tournament.chat / tournament.vk_chat_id.
    * Вызывается только при создании турнира; в dev-режиме реальный VK не трогаем. */
   createChatIfAbsent(id?: number) {
     if (process.env.NODE_ENV === 'dev') {
@@ -183,20 +184,21 @@ class Tournament {
       return;
     }
     this.vk.createChat(tournament.name)
-        .then((link) => {
-          if (link) {
-            this.setChat(tournament.id, link);
+        .then((chat) => {
+          if (chat) {
+            this.setChat(tournament.id, chat.link, chat.chatId);
           }
         })
         .catch((e: Error) => console.error(`чат VK турнира ${tournament.id}:`, e.message));
   }
 
-  setChat(id: number, link: string) {
+  setChat(id: number, link: string, chatId?: number) {
     return this.db.run(
         `UPDATE tournament
-         SET chat = ?
+         SET chat = ?,
+             vk_chat_id = coalesce(?, vk_chat_id)
          WHERE id = ?`,
-        [link, id]
+        [link, chatId ?? null, id]
     );
   }
 
