@@ -78,6 +78,8 @@ class User {
                 u.phone,
                 u.vk_id,
                 u.tg_id,
+                u.vk_photo,
+                u.tg_username,
                 ul.rating_1,
                 ul.rating_2,
                 ul.site_login,
@@ -557,6 +559,16 @@ class User {
 
   setTg(id: number, tg: string | null) {
     return this.db.run(`UPDATE user SET tg_id = ? WHERE id = ?`, [tg, id]);
+  }
+
+  /** @username Telegram (бот видит его в /start): для ссылки t.me из карточки. */
+  setTgUsername(id: number, username: string | null) {
+    return this.db.run(`UPDATE user SET tg_username = ? WHERE id = ?`, [username, id]);
+  }
+
+  /** Ссылка на аватар VK (лениво тянется users.get при просмотре карточки). */
+  setVkPhoto(id: number, photo: string | null) {
+    return this.db.run(`UPDATE user SET vk_photo = ? WHERE id = ?`, [photo, id]);
   }
 
   setPhone(id: number, phone: string | null) {

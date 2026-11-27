@@ -72,6 +72,15 @@ class Vk {
     });
   };
 
+  /** Ссылка на аватар пользователя (photo_100) — для карточки игрока. */
+  userPhoto = async (vkId: string): Promise<string | undefined> => {
+    const users = await this.call<{ photo_100?: string }[]>("users.get", {
+      user_ids: String(vkId),
+      fields: "photo_100",
+    });
+    return users?.[0]?.photo_100;
+  };
+
   /** id чата по ссылке-приглашению — восстановление для турниров,
    *  созданных до хранения vk_chat_id (getChatPreview отдаёт id чата). */
   chatIdByLink = async (link: string): Promise<number | undefined> => {

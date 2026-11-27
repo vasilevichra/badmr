@@ -13,7 +13,12 @@ interface BindCode {
 
 interface TgUpdate {
   update_id: number;
-  message?: { chat: { id: number }; text?: string };
+  message?: {
+    chat: { id: number };
+    text?: string;
+    // @username нужен для ссылки t.me из карточки игрока
+    from?: { username?: string };
+  };
 }
 
 /** Привязка Telegram через бота: сайт выдаёт одноразовый код, игрок
@@ -153,13 +158,21 @@ class TgBot {
       return this.reply(chatId, "Этот Telegram уже привязан к другому аккаунту.");
     }
     if (occupied) {
-      // повторная привязка тем же чатом — состояние не меняется
+      // повторная привязка тем же чатом — состояние не меняется;
+      // @username мог смениться — обновляем
       TgBot.codes.delete(code);
+      if (u.message?.from?.username) {
+        this.userService.setTgUsername(occupied.id, u.message.from.username);
+      }
       return this.reply(chatId, "Этот Telegram уже привязан к вашему аккаунту.");
     }
     // числовой id Telegram стабилен, в отличие от @username — храним его;
+    // @username — в дополнение, для ссылки t.me из карточки;
     // код гасим только после успешной записи — сбой записи оставляет retry
     await this.userService.setTg(rec.userId, String(chatId));
+    if (u.message?.from?.username) {
+      this.userService.setTgUsername(rec.userId, u.message.from.username);
+    }
     TgBot.codes.delete(code);
     console.log(`tg-bind: игрок ${rec.userId} привязан к чату ${chatId}`);
     return this.reply(chatId, "Telegram привязан к вашему аккаунту.");

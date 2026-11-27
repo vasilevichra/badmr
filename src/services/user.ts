@@ -1,7 +1,10 @@
 import UserRepository from '../repositories/user.ts';
 import SettingsService from './settings.ts';
+import Vk from './vk.ts';
 import { JSDOM } from 'jsdom';
 import Bluebird from 'bluebird';
+
+const vkService = new Vk();
 
 const settingsService = new SettingsService();
 
@@ -176,6 +179,20 @@ class User {
   setEmail = (id: number, email: string | null) => this.user.setEmail(id, email);
   setVk = (id: number, vk: string | null) => this.user.setVk(id, vk);
   setTg = (id: number, tg: string | null) => this.user.setTg(id, tg);
+  setTgUsername = (id: number, username: string | null) => this.user.setTgUsername(id, username);
+
+  /** Аватар VK для карточки: тянется один раз (vk_photo NULL → users.get),
+   *  сбой VK молча пропускается — следующий просмотр повторит попытку. */
+  refreshVkPhoto = async (id: number): Promise<void> => {
+    const u = this.user.getById(id) as { vk_id: string | null; vk_photo: string | null } | undefined;
+    if (!u?.vk_id || u.vk_photo) return;
+    try {
+      const photo = await vkService.userPhoto(u.vk_id);
+      if (photo) this.user.setVkPhoto(id, photo);
+    } catch (e) {
+      console.error(`vk-photo ${u.vk_id}:`, (e as Error).message);
+    }
+  };
   setPhone = (id: number, phone: string | null) => this.user.setPhone(id, phone);
   setBirthday = (id: number, birthday: string) => this.user.setBirthday(id, birthday);
   getDaysUntilBirthday = (id: number) => this.user.getDaysUntilBirthday(id);
